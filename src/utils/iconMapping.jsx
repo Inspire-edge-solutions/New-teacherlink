@@ -1,0 +1,97 @@
+import {
+  FaThumbtack,
+  FaCogs,
+  FaTasks,
+  FaMousePointer,
+  FaBriefcase,
+  FaAddressBook,
+  FaFileAlt,
+  FaSync,
+  FaChartBar,
+  FaChartLine,
+  FaCog,
+  FaCheck,
+  FaEdit,
+  FaShare,
+  FaArrowDown,
+  FaUser,
+  FaSearch,
+  FaMapMarkerAlt,
+  FaUsers,
+  FaBars,
+  FaTimes,
+  FaFacebook,
+  FaTwitter,
+  FaLinkedin,
+  FaInstagram,
+  FaAngleDown,
+  FaAngleRight,
+  FaPhone,
+  FaEnvelope,
+  FaCalendar,
+  FaDollarSign,
+  FaStar,
+  FaHeart,
+  FaBookmark,
+  FaPrint,
+  FaShareAlt,
+  FaBell,
+  FaLock,
+  FaSignOutAlt,
+} from 'react-icons/fa';
+
+// Map your existing icon classes to react-icons components
+export const iconMap = {
+  // User interface icons
+  'icon-user': FaUser,
+  'icon-menu': FaBars,
+  'icon-close': FaTimes,
+  'icon-angle-down': FaAngleDown,
+  'icon-angle-right': FaAngleRight,
+  'icon-phone': FaPhone,
+  'icon-envelope': FaEnvelope,
+  'icon-location': FaMapMarkerAlt,
+  'icon-calendar': FaCalendar,
+  'icon-dollar': FaDollarSign,
+  'icon-star': FaStar,
+  'icon-heart': FaHeart,
+  'icon-bookmark': FaBookmark,
+  'icon-print': FaPrint,
+  'icon-share': FaShareAlt,
+
+  // Social icons
+  'icon-facebook': FaFacebook,
+  'icon-twitter': FaTwitter,
+  'icon-linkedin': FaLinkedin,
+  'icon-instagram': FaInstagram,
+
+  // icomoon icons
+  'icon-drawing': FaThumbtack,
+  'icon-process': FaCogs,
+  'icon-task': FaTasks,
+  'icon-one-finger-click': FaMousePointer,
+  'icon-case': FaBriefcase,
+  'icon-contact': FaAddressBook,
+  'icon-doc': FaFileAlt,
+
+  // flaticon icons
+  'flaticon-renewable': FaSync,
+  'flaticon-bar-chart': FaChartBar,
+  'flaticon-profit': FaChartLine,
+  'flaticon-settings': FaCog,
+  'flaticon-confirm': FaCheck,
+  'flaticon-edit-1': FaEdit,
+  'flaticon-share-1': FaShare,
+  'flaticon-decreasing': FaArrowDown,
+  'flaticon-user': FaUser,
+  'flaticon-menu': FaBars,
+  'flaticon-close': FaTimes,
+  'icon-bell': FaBell,
+  'icon-lock': FaLock,
+  'icon-logout': FaSignOutAlt,
+};
+
+export const getIcon = (iconClass, props = {}) => {
+  const IconComponent = iconMap[iconClass];
+  return IconComponent ? <IconComponent {...props} /> : null;
+}; 

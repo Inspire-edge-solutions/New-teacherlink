@@ -1,0 +1,66 @@
+/* .nav404{
+    border-radius: 0px ;
+} */
+.text-404-logo{
+    position: absolute;
+    margin-top: 40px;
+    margin-left: 50px ;
+    font-size: 30px;
+    /* border: 1px solid;
+    padding: 10px;
+    border-radius: 20px; */
+  }
+  
+  .page_404 {
+    /* z-index: 1; */
+    padding: 10px 0;
+      background-color: #fff;
+    font-family: "Arvo", serif;
+    width: 100vw;
+    height: 640px;
+    overflow: hidden;
+  }
+  
+  .page_404 img {
+    width: 100%;
+  }
+  
+  .page_404_bg {
+    margin-top: 50px;
+    background-image: url('https://cdn.dribbble.com/users/285475/screenshots/2083086/dribbble_1.gif');
+    height: 400px;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  
+  .page_404_bg .header_main { 
+    color: rgb(49, 47, 47);
+    font-size: 80px;
+    font-weight:400;
+    text-align: center;
+  }
+  
+  .page_404_bg  .content_header {
+    font-size: 80px;
+    font-weight: 800;
+  }
+  .page_404_bg  .content_header p{
+    font-size: 30px;
+    
+  }
+  
+  .link_404 {
+    color: #fff !important;
+    padding: 10px 20px;
+    background: #1976d2;
+    margin: 10px 0;
+    display: inline-block;
+    text-decoration: none;
+  }
+  .content_box_404 {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
