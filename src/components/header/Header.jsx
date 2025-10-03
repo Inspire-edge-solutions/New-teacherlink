@@ -35,7 +35,7 @@ const Header = () => {
               style={({ isActive }) => ({ color: isActive ? "red" : "black" })}
               className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
             >
-              Why TeacherLink Page
+              Why TeacherLink
             </NavLink>
             <NavLink
               to="/salient-features"

@@ -8,7 +8,7 @@ const AboutUs = () => {
     },
     {
       title: "No Middlemen, No Commission",
-      description: "We eliminate costly consultants—making the hiring process transparent and cost-effective."
+      description: "We eliminate costly consultants making the hiring process transparent and cost effective."
     },
     {
       title: "Mission: Simplify & Empower",
@@ -29,7 +29,7 @@ const AboutUs = () => {
               <span className="text-red-600">Teachers</span>
             </h1>
             <p className="text-lg text-gray-600 leading-relaxed">
-              Designed exclusively to connect educators with institutions—directly and efficiently.
+              Designed exclusively to connect educators with institutions directly and efficiently.
             </p>
           </div>
 

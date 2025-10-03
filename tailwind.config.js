@@ -6,6 +6,12 @@ export default {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        'gradient-primary': 'linear-gradient(to right, #ec4899, #ef4444)',
+        'gradient-primary-hover': 'linear-gradient(to right, #db2777, #dc2626)',
+        'gradient-brand': 'linear-gradient(90deg, #F34B58 0%, #A1025D 100%)',
+        'gradient-brand-text': 'linear-gradient(to right, #F34B58, #A1025D)',
+      },
       keyframes: {
         slideIn: {
           'from': {

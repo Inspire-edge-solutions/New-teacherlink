@@ -26,7 +26,7 @@ const HowItWorks = () => {
   ];
 
   return (
-    <div className="relative bg-gradient-to-br from-gray-100 to-white overflow-hidden">
+    <div className="relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-20">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">

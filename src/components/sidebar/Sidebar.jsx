@@ -18,6 +18,7 @@ import teacherlinkLogo from "../../assets/teacherlink-logo.png";
 export default function Sidebar({
   isCollapsed,
   setIsCollapsed,
+  setActiveTab,
   className = "",
 }) {
   const [openItems, setOpenItems] = useState({});
@@ -25,6 +26,8 @@ export default function Sidebar({
   const userType = getUserProp("user", "user_type");
 
   const toggleItem = (item) => {
+    console.log("This shows the item :", item);
+    setActiveTab(item);
     setOpenItems((prev) => ({ ...prev, [item]: !prev[item] }));
   };
 
@@ -34,7 +37,7 @@ export default function Sidebar({
 
 
   const providerMenu = [
-    { label: "Dashboard", icon: LayoutDashboard, path: "/provider/dashboard" },
+    { label: "Dashboard", icon: LayoutDashboard, path: "/provider/dashboard"},
     { label: "My Account", icon: User, path: "/provider/my-account" },
     { label: "My Profile", icon: UserCircle, path: "/provider/my-profile" },
     { label: "My Jobs", icon: Briefcase, path: "/provider/post-jobs" },
@@ -70,7 +73,7 @@ export default function Sidebar({
 
   return (
     <div
-      className={`flex flex-col h-screen bg-white border-r transition-all duration-300 ease-in-out ${
+      className={`flex flex-col h-screen bg-white/80 backdrop-blur-sm border-r transition-all duration-300 ease-in-out ${
         isCollapsed ? "w-20" : "w-80"
       } ${className}`}
     >
@@ -112,7 +115,7 @@ export default function Sidebar({
                       ? "bg-blue-50 text-blue-600"
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
-                  onClick={() => item.submenu && toggleItem(item.label)}
+                  onClick={() => toggleItem(item.label)}
                   title={isCollapsed ? item.label : undefined} // tooltip when collapsed
                 >
                   <item.icon className="h-5 w-10 shrink-0" />

@@ -8,51 +8,45 @@ import whyTeacherlink5 from '../../../assets/whyTeacherlink5.png'
 const WhyTeacherlink = () => {
     const features = [
         {
-            emoji: "🎉",
             title: "Inaugural Free Offer!",
-            description: "Unlock full access to TeacherLink's premium features — absolutely FREE for a limited time! Start hiring or job hunting with zero cost. Don't miss out!",
+            description: "Unlock full access to TeacherLink's premium features: absolutely FREE for a limited time! Start hiring or job hunting with zero cost. Don't miss out!",
             image: whyTeacherlink1,
             imagePosition: "left"
         },
         {
-            emoji: "🌐",
             title: "Wide Range of Opportunities",
-            description: "Discover thousands of teaching jobs across schools, colleges, universities, coaching centers, and even home tuitions — all in one place! Your perfect role is just a click away.",
+            description: "Discover thousands of teaching jobs across schools, colleges, universities, coaching centers, and even home tuitions : all in one place! Your perfect role is just a click away.",
             image: whyTeacherlink2,
             imagePosition: "right"
         },
         {
-            emoji: "🚀",
             title: "User-Friendly Experience",
-            description: "Navigate with ease! Our intuitive platform is built to make your job search smooth, simple, and stress-free.",
+            description: "Navigate with ease! Our intuitive platform is built to make your job search smooth, simple, and stress free.",
             image: whyTeacherlink3,
             imagePosition: "left"
         },
         {
-            emoji: "🔔",
             title: "Instant Job Alerts",
-            description: "Be the first to know! Get real-time updates and personalized notifications so you never miss the perfect opportunity. Stay ahead, always.",
+            description: "Be the first to know! Get real time updates and personalized notifications so you never miss the perfect opportunity. Stay ahead, always.",
             image: whyTeacherlink4,
             imagePosition: "right"
         },
         {
-            emoji: "🤝",
             title: "Direct Access to Top Employers",
             description: "Skip the wait! Connect instantly with leading employers and recruiters who are actively looking for talent like yours. Your next big opportunity is just a click away.",
             image: whyTeacherlink5,
             imagePosition: "left"
         },
         {
-            emoji: "💼",
             title: "Verified Profiles & Institutions",
             description: "Apply and hire with confidence! All job postings and user profiles on TeacherLink are verified for authenticity, ensuring a secure and trustworthy experience for both seekers and providers.",
-            image: whyTeacherlink1, // Using first image as placeholder since we only have 5 images
+            image: whyTeacherlink1,
             imagePosition: "right"
         }
     ];
 
     return (
-        <div className="min-h-screen bg-gray-100 py-16">
+        <div className="min-h-screen py-16">
             {/* Background Pattern */}
             <div className="absolute inset-0 bg-gray-100 opacity-50" style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d1d5db' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -86,7 +80,7 @@ const WhyTeacherlink = () => {
                                 {/* Text Section */}
                                 <div className="flex-1 space-y-4">
                                     <div className="flex items-center gap-3">
-                                        <span className="text-4xl">{feature.emoji}</span>
+                                        {/* <span className="text-4xl">{feature.emoji}</span> */}
                                         <h3 className="text-2xl font-bold text-gray-900">{feature.title}</h3>
                                     </div>
                                     <p className="text-gray-700 text-lg leading-relaxed">

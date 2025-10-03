@@ -24,8 +24,7 @@ const RegBanner = () => {
                 👉 Register today to explore opportunities that match your skills and passion.
               </p>
               <button 
-                className="w-full text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
-                style={{background: 'linear-gradient(90deg, #F34B58 0%, #A1025D 100%)'}}
+                className="w-full text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-brand"
               >
                 Register Account
               </button>
@@ -50,8 +49,7 @@ const RegBanner = () => {
               🏫Welcome to TeacherLink—a platform for institutions/parents to find right teaching professionals.Register now to post jobs & connect with top educators.
               </p>
               <button 
-                className="w-full text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
-                style={{background: 'linear-gradient(90deg, #F34B58 0%, #A1025D 100%)'}}
+                className="w-full text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-brand"
               >
                 Register Account
               </button>

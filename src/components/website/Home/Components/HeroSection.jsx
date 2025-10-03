@@ -2,7 +2,7 @@ import React from 'react';
 
 const HeroSection = () => {
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-gray-100 to-white overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden">
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 lg:py-12">
         <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-8">
@@ -38,7 +38,7 @@ const HeroSection = () => {
 
             {/* Register Button */}
             <div className="pt-0 lg:pt-1">
-              <button className="text-white font-semibold px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-lg text-lg sm:text-xl transition-all duration-300 transform hover:scale-105 shadow-lg w-full sm:w-auto" style={{background: 'linear-gradient(90deg, #F34B58 0%, #A1025D 100%)'}}>
+              <button className="text-white font-semibold px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-lg text-lg sm:text-xl transition-all duration-300 transform hover:scale-105 shadow-lg w-full sm:w-auto bg-gradient-brand">
                 Register
               </button>
             </div>

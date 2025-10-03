@@ -10,7 +10,7 @@ const Photo = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [userGender, setUserGender] = useState(null);
-  const [organizationId, setOrganizationId] = useState(null);
+  const [organizationData, setOrganizationData] = useState(null);
 
   const IMAGE_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image";
   const PERSONAL_DETAILS_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal";
@@ -45,7 +45,6 @@ const Photo = () => {
       }
     } catch (error) {
       console.error("Error fetching user details:", error);
-      // Don't show error toast for gender fetch failure as it's not critical
     }
   };
 
@@ -53,19 +52,24 @@ const Photo = () => {
     try {
       if (!user?.uid) return;
 
-      const response = await axios.get(ORGANIZATION_API);
+      const authHeaders = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      };
+
+      const response = await axios.get(ORGANIZATION_API, {
+        params: { firebase_uid: user.uid },
+        ...authHeaders,
+      });
       
-      if (response.data && Array.isArray(response.data)) {
-        // Find the organization that matches the current user's firebase_uid
-        const userOrg = response.data.find(org => org.firebase_uid === user.uid);
-        
-        if (userOrg && userOrg.id) {
-          setOrganizationId(userOrg.id);
-        }
+      if (response.data) {
+        const orgData = Array.isArray(response.data) ? response.data[0] : response.data;
+        setOrganizationData(orgData);
       }
     } catch (error) {
       console.error("Error fetching organization details:", error);
-      // Don't show error toast for organization fetch failure as it's not critical
     }
   };
 
@@ -86,7 +90,6 @@ const Photo = () => {
     } catch (error) {
       console.error("Error fetching profile photo:", error);
       setError(true);
-      // Only show error toast for unexpected errors, not 404s (no image yet)
       if (error.response?.status !== 404) {
         toast.error("Error loading profile photo");
       }
@@ -105,47 +108,47 @@ const Photo = () => {
   };
 
   return (
-    <div className="col-lg-4 col-md-6">
-      <div className="photo-container">
-        {isLoading ? (
-          <div className="photo-loading">
-            <div className="spinner-border text-primary" role="status">
-              <span className="sr-only">Loading...</span>
-            </div>
-            <span className="photo-loading-text">Loading photo...</span>
+    <div className="bg-white rounded-lg shadow-md p-6 relative">
+      {/* ID Badge in top right */}
+      {organizationData?.id && (
+        <div className="absolute top-6 right-6 text-sm text-gray-600">
+          ID: <span className="font-semibold text-gray-800">{organizationData.id}</span>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="flex items-center justify-center h-48">
+          <div className="flex flex-col items-center gap-2">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+            <span className="text-sm text-gray-500">Loading...</span>
           </div>
-        ) : error || !photoUrl ? (
-          <div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-6">
+          {/* Profile Photo */}
+          <div className="flex-shrink-0">
             <img
-              src={getDefaultAvatarForUser()}
-              alt={`${user?.name || 'User'}'s default avatar`}
-              className="profile-photo"
+              src={error || !photoUrl ? getDefaultAvatarForUser() : photoUrl}
+              alt={`${organizationData?.contact_person_name || 'User'}'s profile`}
+              className="w-32 h-32 rounded-full object-cover"
               onError={handleImageLoadError}
             />
           </div>
-        ) : (
-          <div>
-            <img
-              src={photoUrl}
-              alt={`${user?.name || 'User'}'s profile photo`}
-              className="profile-photo"
-              onError={handleImageLoadError}
-            />
+
+          {/* Profile Info */}
+          <div className="flex-grow">
+            <h2 className="text-2xl font-bold text-gray-800 mb-1">
+              {organizationData?.contact_person_name || user?.displayName || 'User Name'}
+            </h2>
+            <p className="text-gray-600 mb-1">
+              {organizationData?.type || 'Organization Type'}
+            </p>
+            <p className="text-gray-600">
+              {organizationData?.city || organizationData?.parent_city || 'City'}
+            </p>
           </div>
-        )}
-        
-        {organizationId ? (
-          <div className="organization-id-container">
-            <span className="organization-id-label">Organization ID:</span>
-            <span className="organization-id-value">{organizationId}</span>
-          </div>
-        ) : !isLoading && (
-          <div className="organization-id-container organization-id-pending">
-            <span className="organization-id-label">Organization ID:</span>
-            <span className="organization-id-pending-text">Complete profile to get ID</span>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

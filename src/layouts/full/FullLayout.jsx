@@ -28,6 +28,7 @@ const FullLayout = () => {
   console.log(user);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [activeTab, setActiveTab] = useState("Dashboard");
 
   useEffect(() => {
     if(userType === "Candidate" || userType === "Employer"){
@@ -40,6 +41,8 @@ const FullLayout = () => {
     navigate("/");
   }
   }, [userType]);
+
+  console.log("active tab :", activeTab);
 
   return (
     <MainWrapper>
@@ -55,18 +58,19 @@ const FullLayout = () => {
             <Sidebar
               isCollapsed={false}
               setIsCollapsed={setIsOpen}
+              setActiveTab={setActiveTab}
               className="absolute left-0 top-0 h-full z-50"
             />
           </div>
         )
       ) : (
         // Desktop normal sidebar
-        <Sidebar isCollapsed={isOpen} setIsCollapsed={setIsOpen} />
+        <Sidebar isCollapsed={isOpen} setIsCollapsed={setIsOpen} setActiveTab={setActiveTab} />
       )}
 
       {/* Page content */}
       <PageWrapper className="page-wrapper">
-        <DashboardHeader onMenuClick={() => setIsOpen((prev) => !prev)} />
+        <DashboardHeader onMenuClick={() => setIsOpen((prev) => !prev)} activeTab={activeTab} />
         <Container>
           <Box sx={{ minHeight: "calc(100vh - 170px)" }}>
             <Outlet />
