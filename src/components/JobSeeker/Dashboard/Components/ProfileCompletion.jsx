@@ -4,6 +4,7 @@ import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { useAuth } from "../../../../Context/AuthContext";
 import axios from 'axios';
+import { Skeleton, Box } from '@mui/material';
 
 const ProfileCompletion = () => {
   const { user } = useAuth();
@@ -220,9 +221,61 @@ const ProfileCompletion = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+      <div className="bg-white rounded-lg shadow-md p-2 sm:p-3 relative">
+        {/* Title Skeleton */}
+        <div className="text-center mb-1 sm:mb-2">
+          <Skeleton variant="text" width="60%" height={24} className="mx-auto" />
+        </div>
+
+        {/* Two Column Grid Skeleton */}
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+          {/* Short Profile Column */}
+          <div className="flex flex-col">
+            <Skeleton variant="text" width="80%" height={20} className="mx-auto mb-1" />
+            <div className="flex flex-col items-center">
+              {/* Circular Progress Skeleton */}
+              <div className="flex items-center justify-center mb-1 sm:mb-2">
+                <Skeleton 
+                  variant="circular" 
+                  width={100} 
+                  height={100}
+                  className="sm:w-[100px] sm:h-[100px] w-[70px] h-[70px]"
+                />
+              </div>
+              
+              {/* Arrow Link Skeleton */}
+              <Skeleton 
+                variant="rectangular" 
+                width={32} 
+                height={32}
+                className="rounded"
+              />
+            </div>
+          </div>
+
+          {/* Complete Profile Column */}
+          <div className="flex flex-col">
+            <Skeleton variant="text" width="80%" height={20} className="mx-auto mb-1" />
+            <div className="flex flex-col items-center">
+              {/* Circular Progress Skeleton */}
+              <div className="flex items-center justify-center mb-1 sm:mb-2">
+                <Skeleton 
+                  variant="circular" 
+                  width={100} 
+                  height={100}
+                  className="sm:w-[100px] sm:h-[100px] w-[70px] h-[70px]"
+                />
+              </div>
+              
+              {/* Arrow Link Skeleton */}
+              <Skeleton 
+                variant="rectangular" 
+                width={32} 
+                height={32}
+                className="rounded"
+              />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -234,9 +287,9 @@ const ProfileCompletion = () => {
   const renderEasyModeContent = () => (
     <div className="flex flex-col items-center">
       {/* Circular Progress with Gradient */}
-      <div className="flex items-center justify-center mb-4">
+      <div className="flex items-center justify-center mb-1 sm:mb-2">
         <Link to="/seeker/my-profile">
-          <div className="w-[100px] h-[100px] relative">
+          <div className="w-[70px] h-[70px] sm:w-[100px] sm:h-[100px] relative">
             <svg style={{ position: 'absolute', width: 0, height: 0 }}>
               <defs>
                 <linearGradient id="progressGradientEasy" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -267,7 +320,7 @@ const ProfileCompletion = () => {
         to="/seeker/my-profile" 
         className="text-red-500 hover:text-red-600 transition-all"
       >
-        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
           <path d="M5.5 7l5 5-5 5V7zm7 0l5 5-5 5V7z"/>
         </svg>
       </Link>
@@ -277,9 +330,9 @@ const ProfileCompletion = () => {
   const renderFullModeContent = () => (
     <div className="flex flex-col items-center">
       {/* Circular Progress with Gradient */}
-      <div className="flex items-center justify-center mb-4">
+      <div className="flex items-center justify-center mb-1 sm:mb-2">
         <Link to="/seeker/my-profile">
-          <div className="w-[100px] h-[100px] relative">
+          <div className="w-[70px] h-[70px] sm:w-[100px] sm:h-[100px] relative">
             <svg style={{ position: 'absolute', width: 0, height: 0 }}>
               <defs>
                 <linearGradient id="progressGradientFull" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -310,7 +363,7 @@ const ProfileCompletion = () => {
         to="/seeker/my-profile" 
         className="text-red-500 hover:text-red-600 transition-all"
       >
-        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
           <path d="M5.5 7l5 5-5 5V7zm7 0l5 5-5 5V7z"/>
         </svg>
       </Link>
@@ -318,20 +371,20 @@ const ProfileCompletion = () => {
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 relative h-full">
+    <div className="bg-white rounded-lg shadow-md p-2 sm:p-3 relative">
       {/* Title at top */}
-      <div className="text-center mb-4">
-        <h5 className="text-lg font-bold text-gray-800">Profile Completion</h5>
+      <div className="text-center mb-1 sm:mb-2">
+        <h5 className="text-sm sm:text-base font-bold text-gray-800">Profile Completion</h5>
       </div>
 
       {/* Two Column Grid for Short and Complete Profile */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <div className="flex flex-col">
-          <h6 className="text-center text-base font-semibold mb-3 text-gray-700">Short Profile</h6>
+          <h6 className="text-center text-xs sm:text-sm font-semibold mb-1 text-gray-700">Short Profile</h6>
           {renderEasyModeContent()}
         </div>
         <div className="flex flex-col">
-          <h6 className="text-center text-base font-semibold mb-3 text-gray-700">Complete Profile</h6>
+          <h6 className="text-center text-xs sm:text-sm font-semibold mb-1 text-gray-700">Complete Profile</h6>
           {renderFullModeContent()}
         </div>
       </div>

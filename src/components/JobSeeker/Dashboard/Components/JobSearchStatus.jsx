@@ -107,15 +107,15 @@ const JobSearch = () => {
   };
 
   return (
-    <div className="rounded-[20px] p-6 shadow-md" style={{ backgroundColor: '#FFDEE0' }}>
+    <div className="p-4 sm:p-6 shadow-md" style={{ backgroundColor: '#FFDEE0' }}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full text-left cursor-pointer transition-all duration-300 ease-in-out flex justify-between items-center"
       >
-        <div className="flex-1 flex items-center gap-3">
-          <h4 className="m-0 text-gray-800 text-base font-semibold">Job Search Status</h4>
+        <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+          <h4 className="m-0 text-gray-800 text-sm sm:text-base font-semibold">Job Search Status</h4>
           <span 
-            className="py-1 px-2.5 rounded-[15px] text-[13px] font-medium"
+            className="py-1 px-2 sm:px-2.5 rounded-[15px] text-xs sm:text-[13px] font-medium w-fit"
             style={{
               backgroundColor: getStatusColor(getOverallStatus()).bg,
               color: getStatusColor(getOverallStatus()).text,
@@ -126,19 +126,19 @@ const JobSearch = () => {
           </span>
         </div>
         
-        <IoChevronDownOutline className={`text-lg text-gray-700 transition-transform duration-300 ease-in-out ${isExpanded ? 'rotate-180' : ''}`} />
+        <IoChevronDownOutline className={`text-base sm:text-lg text-gray-700 transition-transform duration-300 ease-in-out flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />
       </button>
 
       {isExpanded && (
-        <div className="pt-4 mt-4 border-t border-gray-300">
-          <div className="grid grid-cols-2 md:grid-cols-1 gap-[15px]">
+        <div className="pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-gray-300">
+          <div className="grid grid-cols-1 gap-3 sm:gap-[15px]">
             {Object.entries(jobSearchStatus).map(([type, value]) => (
               <div key={type} className="flex flex-col gap-1.5">
-                <label className="block text-[13px] font-medium text-gray-800">
+                <label className="block text-xs sm:text-[13px] font-medium text-gray-800">
                   {getTypeLabel(type)}
                 </label>
                 <select
-                  className="w-full py-1.5 px-2.5 rounded-md font-medium text-[13px] cursor-pointer transition-all duration-200 ease-in-out form-select"
+                  className="w-full py-1.5 px-2 sm:px-2.5 rounded-md font-medium text-xs sm:text-[13px] cursor-pointer transition-all duration-200 ease-in-out form-select"
                   value={value}
                   onChange={(e) => handleJobSearchStatusChange(type, e.target.value)}
                   style={{

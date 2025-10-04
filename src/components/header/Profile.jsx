@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Box,
@@ -9,22 +9,142 @@ import {
   Button,
   IconButton,
 } from "@mui/material";
-// import * as dropdownData from "./data";
-
-// import { IconMail } from "@tabler/icons";
 import { Stack } from "@mui/system";
 import { useNavigate } from "react-router-dom";
-import ProfileImg from "../../assets/user-1.jpg";
-import unlimitedImg from "../../assets/backgrounds/unlimited-bg.png";
 import { MailIcon } from "lucide-react";
 import { useAuth } from "../../Context/AuthContext";
-// import Scrollbar from "src/components/custom-scroll/Scrollbar";
+import { getDefaultAvatar, handleImageError } from "../../utils/Avatar";
+import axios from "axios";
 
 const Profile = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   const [anchorEl2, setAnchorEl2] = useState(null);
+  const [photoUrl, setPhotoUrl] = useState(null);
+  const [userGender, setUserGender] = useState(null);
+  const [personalData, setPersonalData] = useState(null);
+  const [organizationData, setOrganizationData] = useState(null);
+  const [error, setError] = useState(false);
+
+  const IMAGE_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image";
+  const PERSONAL_DETAILS_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal";
+  const ORGANIZATION_API = "https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation";
+
+  // Get user type from localStorage
+  const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const userType = storedUser?.user_type;
+  const isEmployer = userType === "Employer";
+
+  useEffect(() => {
+    if (user?.uid) {
+      fetchUserDetails();
+      fetchProfilePhoto();
+      if (isEmployer) {
+        fetchOrganizationDetails();
+      }
+    }
+  }, [user, isEmployer]);
+
+  const fetchUserDetails = async () => {
+    try {
+      const authHeaders = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      };
+
+      const response = await axios.get(PERSONAL_DETAILS_API, {
+        params: { firebase_uid: user.uid },
+        ...authHeaders,
+      });
+
+      if (response.data && response.data.length > 0) {
+        const userData = response.data[0];
+        setPersonalData(userData);
+        setUserGender(userData.gender);
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+    }
+  };
+
+  const fetchOrganizationDetails = async () => {
+    try {
+      if (!user?.uid) return;
+
+      const authHeaders = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      };
+
+      const response = await axios.get(ORGANIZATION_API, {
+        params: { firebase_uid: user.uid },
+        ...authHeaders,
+      });
+      
+      if (response.data) {
+        const orgData = Array.isArray(response.data) ? response.data[0] : response.data;
+        setOrganizationData(orgData);
+      }
+    } catch (error) {
+      console.error("Error fetching organization details:", error);
+    }
+  };
+
+  const fetchProfilePhoto = async () => {
+    try {
+      if (!user?.uid) return;
+
+      const params = { firebase_uid: user.uid, action: "view" };
+      const { data } = await axios.get(IMAGE_API_URL, { params });
+
+      if (data?.url) {
+        setPhotoUrl(data.url);
+        setError(false);
+      }
+    } catch (error) {
+      console.error("Error fetching profile photo:", error);
+      setError(true);
+    }
+  };
+
+  const handleImageLoadError = (e) => {
+    setError(true);
+    handleImageError(e, userGender);
+  };
+
+  const getProfileImageUrl = () => {
+    if (error || !photoUrl) {
+      return getDefaultAvatar(userGender);
+    }
+    return photoUrl;
+  };
+
+  const getUserName = () => {
+    if (isEmployer) {
+      return organizationData?.contact_person_name || user?.displayName || user?.email?.split('@')[0] || 'User Name';
+    }
+    return personalData?.fullName || user?.displayName || user?.email?.split('@')[0] || 'User Name';
+  };
+
+  const getUserDesignation = () => {
+    if (isEmployer) {
+      return organizationData?.type || 'Organization';
+    }
+    return personalData?.designation || 'Teacher';
+  };
+
+  const getUserEmail = () => {
+    if (isEmployer) {
+      return organizationData?.contact_person_email || personalData?.email || user?.email || 'email@example.com';
+    }
+    return personalData?.email || user?.email || 'email@example.com';
+  };
+
   const handleClick2 = (event) => {
     setAnchorEl2(event.currentTarget);
   };  
@@ -52,11 +172,14 @@ const Profile = () => {
         onClick={handleClick2}
       >
         <Avatar
-          src={ProfileImg}
-          alt={ProfileImg}
+          src={getProfileImageUrl()}
+          alt={getUserName()}
           sx={{
             width: 35,
             height: 35,
+          }}
+          imgProps={{
+            onError: handleImageLoadError
           }}
         />
       </IconButton>
@@ -78,13 +201,15 @@ const Profile = () => {
         }}
       >
         {/* <Scrollbar sx={{ height: "100%", maxHeight: "85vh" }}> */}
-        <Box p={3}>
-          <Typography variant="h5">User Profile</Typography>
-          <Stack direction="row" py={3} spacing={2} alignItems="center">
+        <Box px={3} pb={3} pt={0}>
+          <Stack direction="row" pt={2} pb={1} spacing={2} alignItems="center">
             <Avatar
-              src={ProfileImg}
-              alt={ProfileImg}
+              src={getProfileImageUrl()}
+              alt={getUserName()}
               sx={{ width: 95, height: 95 }}
+              imgProps={{
+                onError: handleImageLoadError
+              }}
             />
             <Box>
               <Typography
@@ -92,10 +217,10 @@ const Profile = () => {
                 color="textPrimary"
                 fontWeight={600}
               >
-                Mathew Anderson
+                {getUserName()}
               </Typography>
               <Typography variant="subtitle2" color="textSecondary">
-                Designer
+                {getUserDesignation()}
               </Typography>
               <Typography
                 variant="subtitle2"
@@ -106,7 +231,7 @@ const Profile = () => {
               >
                 {/* <IconMail width={15} height={15} /> */}
                 <MailIcon width={15} height={15} />
-                info@modernize.com
+                {getUserEmail()}
               </Typography>
             </Box>
           </Stack>

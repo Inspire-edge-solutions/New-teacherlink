@@ -54,7 +54,7 @@ const DashboardHeader = ({ onMenuClick , activeTab }) => {
   return (
     <AppBarStyled position="sticky" color="default">
       <ToolbarStyled>
-      <IconButton
+        <IconButton
           edge="start"
           color="inherit"
           aria-label="menu"
@@ -63,22 +63,20 @@ const DashboardHeader = ({ onMenuClick , activeTab }) => {
         >
           <MenuIcon size={22} />
         </IconButton>
-        <Box flexGrow={1} />
-        <Stack spacing={1} direction="row" alignItems="center">
-        {/* Username Display */}
+        
+        {/* Active Tab - Left Side */}
         <div className="ml-4 flex items-center">
           <h2 
             className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent"
           >
-            {/* {loading ? "Loading..." : (userName ? `Welcome ${userName}!` : "Dashboard")} */}
             {activeTab}
           </h2>
         </div>
         
-        <div className="flex-grow" />
-        <div className="flex items-center gap-2">
+        <Box flexGrow={1} />
+        
+        <Stack spacing={1} direction="row" alignItems="center">
           <Profile />
-        </div>
         </Stack>
       </ToolbarStyled>
     </AppBarStyled>

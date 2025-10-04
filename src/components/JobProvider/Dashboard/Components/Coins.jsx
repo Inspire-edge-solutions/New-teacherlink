@@ -4,6 +4,7 @@ import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
 import axios from "axios";
 import coinsImage from "../../../../assets/coins.png";
+import { Skeleton, Box } from "@mui/material";
 
 const Content = () => {
   const { user } = useAuth();
@@ -161,11 +162,65 @@ const Content = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex items-center justify-center py-12">
-          <div className="flex flex-col items-center gap-2">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
-            <p className="text-gray-500">Loading coin data...</p>
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
+          {/* Left Side - Coupon Details Skeleton */}
+          <div className="lg:col-span-3">
+            <Skeleton 
+              variant="text" 
+              width="60%" 
+              height={32}
+              className="mx-auto mb-3 sm:mb-4"
+            />
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3 sm:mb-4">
+              {/* Left Column Skeleton */}
+              <div className="space-y-2">
+                <Skeleton variant="text" width="100%" height={24} />
+                <Skeleton variant="text" width="80%" height={24} />
+              </div>
+              
+              {/* Right Column Skeleton */}
+              <div className="space-y-2">
+                <Skeleton variant="text" width="100%" height={24} />
+                <Skeleton variant="text" width="80%" height={24} />
+              </div>
+            </div>
+            
+            <div className="text-center mt-3 sm:mt-4">
+              <Skeleton 
+                variant="rectangular" 
+                width={160} 
+                height={36}
+                className="mx-auto rounded-lg"
+              />
+            </div>
+          </div>
+
+          {/* Right Side - Available Coins Skeleton */}
+          <div className="lg:col-span-2">
+            <div 
+              className="rounded-[20px] p-4 sm:p-5 flex flex-col items-center justify-between gap-3 sm:gap-4 h-full"
+              style={{ backgroundColor: '#FFDEE0' }}
+            >
+              <Skeleton variant="text" width="80%" height={24} />
+              
+              <Skeleton variant="text" width="60%" height={48} />
+              
+              <Skeleton 
+                variant="rectangular" 
+                width={80} 
+                height={80}
+                className="rounded-lg"
+              />
+              
+              <Skeleton 
+                variant="rectangular" 
+                width={120} 
+                height={36}
+                className="rounded-lg"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -189,30 +244,27 @@ const Content = () => {
   }
 
   return (
-    <div>
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex justify-between items-start">
-          {/* Left side */}
-          <div className="flex-1">
-            {/* Row 1: Main Title */}
-            <h4 className="text-xl font-bold text-gray-800 mb-6">My Coins & Rewards</h4>
-            
-            {/* Row 2: Coupon Details Section */}
-            {coinData && (
-              <div className="space-y-3">
-                <h6 className="text-base font-bold text-gray-800">Coupon Details</h6>
-                
-                {/* Row 1: Coupon Code and Status */}
-                <div className="flex items-center gap-8">
+    <>
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
+        {/* Left Side - Coupon Details (60% width) */}
+        <div className="lg:col-span-3">
+          {coinData && coinData.coupon_code ? (
+            <>
+              {/* Heading centered */}
+              <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4 text-center">Coupon Details</h3>
+              
+              {/* Two Column Layout */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3 sm:mb-4">
+                {/* Left Column: Coupon Code and Status */}
+                <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-700">Coupon Code:</span>
-                    {coinData.coupon_code && (
-                      <span className="text-base font-bold text-red-500">{coinData.coupon_code}</span>
-                    )}
+                    <span className="text-sm sm:text-base text-gray-700 font-bold">Coupon Code:</span>
+                    <span className="text-base sm:text-lg font-bold text-red-500">{coinData.coupon_code}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-700 font-medium">Status:</span>
-                    <span className={`font-bold ${
+                    <span className="text-sm sm:text-base text-gray-700 font-bold">Status:</span>
+                    <span className={`text-sm sm:text-base font-bold ${
                       new Date(coinData.redeem_valid) > new Date() 
                         ? 'text-green-600' 
                         : 'text-red-600'
@@ -222,52 +274,75 @@ const Content = () => {
                   </div>
                 </div>
                 
-                {/* Row 2: Valid From and Valid Till */}
-                <div className="flex items-center gap-8">
+                {/* Right Column: Valid From and Valid Till */}
+                <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-700">Valid From:</span>
-                    <span className="text-gray-800">{formatDate(coinData.valid_from)}</span>
+                    <span className="text-sm sm:text-base text-gray-700 font-bold">Valid From:</span>
+                    <span className="text-sm sm:text-base text-gray-800">{formatDate(coinData.valid_from)}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-700">Valid Till:</span>
-                    <span className="text-gray-800">{formatDate(coinData.redeem_valid)}</span>
+                    <span className="text-sm sm:text-base text-gray-700 font-bold">Valid Till:</span>
+                    <span className="text-sm sm:text-base text-gray-800">{formatDate(coinData.redeem_valid)}</span>
                   </div>
-                </div>
-                
-                {/* View Coin History Button */}
-                <div className="mt-4">
-                  <button 
-                    className="px-6 py-2 bg-gradient-primary hover:bg-gradient-primary-hover text-white rounded-lg transition-all font-medium"
-                    onClick={handleHistoryClick}
-                  >
-                    View Coin History
-                  </button>
                 </div>
               </div>
-            )}
-          </div>
-          
-          {/* Right: Available Coins - Starts from top */}
-          {coinData && (
+
+              {/* View Coin History Button - Centered */}
+              <div className="text-center mt-3 sm:mt-4">
+                <button 
+                  className="px-4 sm:px-6 py-2 bg-gradient-primary hover:bg-gradient-primary-hover text-white text-xs sm:text-sm rounded-lg transition-all font-medium"
+                  onClick={handleHistoryClick}
+                >
+                  View Coin History
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <h5 className="text-base sm:text-lg font-semibold text-gray-700 mb-2">No Coupon Applied</h5>
+                <p className="text-xs sm:text-sm text-gray-600">Apply a coupon code to see details here.</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Side - Available Coins (40% width) */}
+        <div className="lg:col-span-2">
+          {coinData ? (
             <div 
-              className="rounded-[20px] p-4 flex flex-col items-center justify-between ml-6 self-stretch"
-              style={{ 
-                backgroundColor: '#FFDEE0',
-                width: '270px'
-              }}
+              className="rounded-[20px] p-4 sm:p-5 flex flex-col items-center justify-between gap-3 sm:gap-4 h-full"
+              style={{ backgroundColor: '#FFDEE0' }}
             >
-              <h6 className="text-base font-semibold text-gray-800">Available Coins</h6>
+              <h6 className="text-sm sm:text-base font-semibold text-gray-800">Available Coins</h6>
               
-              <div className="text-5xl font-bold text-gray-800">
+              <div className="text-3xl sm:text-4xl font-bold text-gray-800">
                 {coinData.coin_value?.toLocaleString() || 0}
               </div>
               
               <div className="flex justify-center">
-                <img src={coinsImage} alt="Coins" className="w-28 h-auto" />
+                <img src={coinsImage} alt="Coins" className="w-20 sm:w-24 h-auto" />
               </div>
               
               <button 
-                className="px-4 py-2 bg-gradient-primary hover:bg-gradient-primary-hover text-white text-sm rounded-lg transition-all font-medium"
+                className="px-4 sm:px-5 py-2 bg-gradient-primary hover:bg-gradient-primary-hover text-white text-xs sm:text-sm rounded-lg transition-all font-medium"
+                onClick={fetchUserCoins}
+                disabled={isLoading}
+              >
+                {isLoading ? "Refreshing..." : "Refresh Coins"}
+              </button>
+            </div>
+          ) : (
+            <div className="text-center py-6 sm:py-8 flex flex-col justify-center h-full">
+              <div className="flex justify-center mb-3 sm:mb-4">
+                <img src={coinsImage} alt="No Coins" className="w-18 sm:w-22 h-auto opacity-50" />
+              </div>
+              <h5 className="text-base sm:text-lg font-semibold text-gray-700 mb-2">No Coins Available</h5>
+              <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 px-2">
+                Apply coupon code or make payment to get coins!
+              </p>
+              <button 
+                className="px-4 sm:px-5 py-2 bg-gradient-primary hover:bg-gradient-primary-hover text-white text-xs sm:text-sm rounded-lg transition-all font-medium mx-auto" 
                 onClick={fetchUserCoins}
                 disabled={isLoading}
               >
@@ -276,25 +351,7 @@ const Content = () => {
             </div>
           )}
         </div>
-        
-        {!coinData && (
-          <div className="text-center py-12">
-            <div className="flex justify-center mb-4">
-              <img src={coinsImage} alt="No Coins" className="w-24 h-auto opacity-50" />
-            </div>
-            <h5 className="text-xl font-semibold text-gray-700 mb-2">No Coins Available</h5>
-            <p className="text-gray-600 mb-4">
-              You don't have any coins yet. Use the coupon code, referral or payment to get coins!
-            </p>
-            <button 
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" 
-              onClick={fetchUserCoins}
-              disabled={isLoading}
-            >
-              {isLoading ? "Refreshing..." : "Refresh Coins"}
-            </button>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Coin History Modal */}
@@ -357,9 +414,26 @@ const Content = () => {
 
               {/* History Table */}
               {historyLoading ? (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  <p className="text-gray-500">Loading transaction history...</p>
+                <div className="space-y-4">
+                  {/* Table Header Skeleton */}
+                  <div className="bg-gray-100 rounded-lg p-4">
+                    <div className="grid grid-cols-8 gap-4">
+                      {Array.from({ length: 8 }).map((_, index) => (
+                        <Skeleton key={index} variant="text" width="100%" height={20} />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Table Rows Skeleton */}
+                  {Array.from({ length: 3 }).map((_, rowIndex) => (
+                    <div key={rowIndex} className="bg-white border rounded-lg p-4">
+                      <div className="grid grid-cols-8 gap-4">
+                        {Array.from({ length: 8 }).map((_, colIndex) => (
+                          <Skeleton key={colIndex} variant="text" width="100%" height={16} />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : filteredHistory.length > 0 ? (
                 <div className="overflow-x-auto">
@@ -426,9 +500,8 @@ const Content = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
 export default Content;
-

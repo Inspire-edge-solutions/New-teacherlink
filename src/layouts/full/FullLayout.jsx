@@ -10,7 +10,7 @@ const MainWrapper = styled("div")(() => ({
   width: "100%",
 }));
 
-const PageWrapper = styled("div")(() => ({
+const PageWrapper = styled("div")(({ theme, sidebarWidth }) => ({
   display: "flex",
   flexGrow: 1,
   paddingBottom: "60px",
@@ -18,6 +18,11 @@ const PageWrapper = styled("div")(() => ({
   zIndex: 1,
   width: "100%",
   backgroundColor: "transparent",
+  marginLeft: sidebarWidth,
+  transition: "margin-left 0.3s ease-in-out",
+  [theme.breakpoints.down("sm")]: {
+    marginLeft: 0,
+  },
 }));
 
 const FullLayout = () => {
@@ -69,7 +74,7 @@ const FullLayout = () => {
       )}
 
       {/* Page content */}
-      <PageWrapper className="page-wrapper">
+      <PageWrapper className="page-wrapper" sidebarWidth={isOpen ? "64px" : "250px"}>
         <DashboardHeader onMenuClick={() => setIsOpen((prev) => !prev)} activeTab={activeTab} />
         <Container>
           <Box sx={{ minHeight: "calc(100vh - 170px)" }}>

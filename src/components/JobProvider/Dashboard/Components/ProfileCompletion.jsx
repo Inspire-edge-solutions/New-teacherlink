@@ -4,6 +4,7 @@ import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { useAuth } from '../../../../Context/AuthContext';
 import axios from 'axios';
+import { Skeleton, Box } from '@mui/material';
 
 const EmployerProfileCompletion = () => {
   const { user } = useAuth();
@@ -169,9 +170,30 @@ const EmployerProfileCompletion = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 relative h-full">
+        {/* Title Skeleton */}
+        <div className="text-center mb-3 sm:mb-4">
+          <Skeleton variant="text" width="60%" height={24} className="mx-auto" />
+        </div>
+
+        {/* Circular Progress Skeleton */}
+        <div className="flex items-center justify-center mb-3 sm:mb-4">
+          <Skeleton 
+            variant="circular" 
+            width={100} 
+            height={100}
+            className="sm:w-[100px] sm:h-[100px] w-[80px] h-[80px]"
+          />
+        </div>
+        
+        {/* Arrow Link Skeleton */}
+        <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6">
+          <Skeleton 
+            variant="rectangular" 
+            width={32} 
+            height={32}
+            className="rounded"
+          />
         </div>
       </div>
     );
@@ -180,15 +202,15 @@ const EmployerProfileCompletion = () => {
   const statusColor = getStatusColor(completionData.percentage);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 relative h-full">
+    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 relative h-full">
       {/* Title at top */}
-      <div className="text-center mb-4">
-        <h5 className="text-lg font-bold text-gray-800">Profile Completion</h5>
+      <div className="text-center mb-3 sm:mb-4">
+        <h5 className="text-base sm:text-lg font-bold text-gray-800">Profile Completion</h5>
       </div>
 
       {/* Circular Progress - Centered */}
-      <div className="flex items-center justify-center mb-4">
-        <div className="w-[100px] h-[100px] relative">
+      <div className="flex items-center justify-center mb-3 sm:mb-4">
+        <div className="w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] relative">
           <svg style={{ position: 'absolute', width: 0, height: 0 }}>
             <defs>
               <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -216,9 +238,9 @@ const EmployerProfileCompletion = () => {
       {/* Double Chevron Arrow - Bottom Right */}
       <Link 
         to="/provider/my-profile" 
-        className="absolute bottom-6 right-6 text-red-500 hover:text-red-600 transition-all"
+        className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 text-red-500 hover:text-red-600 transition-all"
       >
-        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
           <path d="M5.5 7l5 5-5 5V7zm7 0l5 5-5 5V7z"/>
         </svg>
       </Link>
