@@ -77,6 +77,22 @@ export default function Sidebar({
         isCollapsed ? "w-20" : "w-64"
       } ${className}`}
     >
+      {/* SVG Gradient Definitions */}
+      <svg width="0" height="0" style={{ position: 'absolute' }}>
+        <defs>
+          {/* Normal gradient */}
+          <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#F34B58" />
+            <stop offset="100%" stopColor="#A1025D" />
+          </linearGradient>
+          {/* Lighter gradient for hover */}
+          <linearGradient id="icon-gradient-hover" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#F67681" />
+            <stop offset="100%" stopColor="#C03479" />
+          </linearGradient>
+        </defs>
+      </svg>
+
       {/* Top header */}
       <div className="p-4 flex items-center justify-between">
         <div className={`w-8 h-8 ${isCollapsed ? "mx-auto" : ""}`}></div>
@@ -87,13 +103,15 @@ export default function Sidebar({
         )}
         <button
           onClick={toggleCollapse}
-          className="p-2 rounded-md hover:bg-gray-100 transition-colors duration-200"
+          className="p-2 rounded-md hover:bg-gray-100 transition-colors duration-200 group"
         >
-          {isCollapsed ? (
-            <ChevronRight className="h-5 w-5" />
-          ) : (
-            <ChevronDown className="h-5 w-5" />
-          )}
+          <div className="icon-gradient-wrapper">
+            {isCollapsed ? (
+              <ChevronRight className="h-5 w-5" />
+            ) : (
+              <ChevronDown className="h-5 w-5" />
+            )}
+          </div>
         </button>
       </div>
 
@@ -108,18 +126,24 @@ export default function Sidebar({
                 <NavLink
                   to={item.path || "#"}
                   // keep NavLink for navigation, but compute active manually for styling
-                  className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-sm font-medium ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium group ${
                     isCollapsed ? "justify-center" : ""
                   } ${
                     active
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-700 hover:bg-gray-100"
+                      ? "bg-gradient-to-r from-[#F34B58]/10 to-[#A1025D]/10"
+                      : "hover:bg-gray-100"
                   }`}
                   onClick={() => toggleItem(item.label)}
                   title={isCollapsed ? item.label : undefined} // tooltip when collapsed
                 >
-                  <item.icon className="h-5 w-10 shrink-0" />
-                  {!isCollapsed && <span>{item.label}</span>}
+                  <div className={`icon-gradient-wrapper ${active ? 'active' : ''}`}>
+                    <item.icon className="h-5 w-10 shrink-0" />
+                  </div>
+                  {!isCollapsed && (
+                    <span className={active ? "bg-gradient-to-r from-[#F34B58] to-[#A1025D] bg-clip-text text-transparent font-semibold" : "text-gray-700"}>
+                      {item.label}
+                    </span>
+                  )}
                 </NavLink>
               </li>
             );

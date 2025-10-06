@@ -24,3 +24,34 @@
     pointer-events: none;
   }
 }
+
+@layer components {
+  /* Gradient Icon Styles */
+  .icon-gradient-wrapper {
+    display: inline-flex;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+
+  .icon-gradient-wrapper svg {
+    stroke: #6B7280; /* Default gray color */
+    transition: all 0.2s ease;
+  }
+
+  /* Active state - gradient effect */
+  .icon-gradient-wrapper.active svg {
+    stroke: url(#icon-gradient);
+  }
+
+  /* Hover state - lighter gradient */
+  .icon-gradient-wrapper:hover svg,
+  a:hover .icon-gradient-wrapper svg {
+    stroke: url(#icon-gradient-hover);
+  }
+
+  /* Active + Hover - even lighter */
+  .icon-gradient-wrapper.active:hover svg,
+  a:hover .icon-gradient-wrapper.active svg {
+    stroke: url(#icon-gradient-hover);
+  }
+}
