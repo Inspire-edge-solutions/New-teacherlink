@@ -1,8 +1,9 @@
-import React from 'react'
+import React from 'react';
+import Subscription from './Components/Subscription';
 
 const MyAccountComponent = () => {
   return (
-    <div>This is my account</div>
+    <div><Subscription /></div>
   )
 }
 
