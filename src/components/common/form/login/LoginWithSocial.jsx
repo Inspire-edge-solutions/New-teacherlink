@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { FcGoogle } from "react-icons/fc";
-import './login.css';
 import TermsAndPrivacyText from "../../../pages-menu/terms/TermsAndPrivacyText";
 
 const GOOGLE_LOGIN_API = "https://ha69bxk1nb.execute-api.ap-south-1.amazonaws.com/dev/google";
@@ -241,15 +240,33 @@ const LoginWithSocial = () => {
   };
 
   const TermsAndPrivacyModal = () => (
-    <div className="modal-overlay">
-      <div className="modal-content terms-modal">
-        <h3>Terms and Conditions & Privacy Policy</h3>
-        <div className="terms-content" onScroll={(e) => handleScrollCheck(e, setHasReadTerms)}>
-          <TermsAndPrivacyText />
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[1000] p-5">
+      <div className="bg-white rounded-lg w-full max-w-2xl max-h-[80vh] flex flex-col animate-modalSlideIn">
+        <h3 className="m-0 p-5 text-2xl text-gray-800 border-b border-gray-200 text-center rounded-t-lg">
+          Terms and Conditions & Privacy Policy
+        </h3>
+        <div 
+          className="p-5 overflow-y-auto flex-1 bg-white" 
+          onScroll={(e) => handleScrollCheck(e, setHasReadTerms)}
+          style={{ maxHeight: 'calc(80vh - 140px)' }}
+        >
+          <div>
+            <style>{`
+              .text-box { margin-bottom: 20px; }
+              .text-box h3 { font-size: 18px; margin-bottom: 10px; color: #333; }
+              .text-box p { margin-bottom: 15px; line-height: 1.6; color: #666; }
+              .text-box h4 { font-size: 15px; color: #666; margin-top: 15px; margin-bottom: 10px; font-weight: 500; }
+              .text-box ul { margin-bottom: 15px; padding-left: 20px; }
+              .text-box li { margin-bottom: 8px; line-height: 1.6; color: #666; }
+              .text-box li a { color: #1967d2; text-decoration: underline; word-break: break-word; display: inline-block; max-width: 100%; }
+              .text-box li a:hover { color: #0d47a1; }
+            `}</style>
+            <TermsAndPrivacyText />
+          </div>
         </div>
-        <div className="modal-actions">
+        <div className="p-4 bg-white border-t border-gray-200 flex justify-center rounded-b-lg">
           <button
-            className="theme-btn btn-style-one"
+            className="w-full min-w-[150px] bg-gradient-brand text-white py-2 sm:py-3 rounded-lg font-medium hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg text-sm sm:text-base cursor-pointer"
             onClick={() => {
               setShowTermsModal(false);
               setShowPrivacyModal(false);
@@ -268,50 +285,55 @@ const LoginWithSocial = () => {
       <div className="btn-box row">
         <div className="col-lg-6 col-md-12">
           <button
-            className="theme-btn google-btn"
+            className="w-full bg-white border-2 border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleGoogleSignIn}
             disabled={loading}
             type="button"
           >
-            {loading ? "Loading..." : <> <FcGoogle style={{ marginRight: "8px", fontSize: "18px" }} /> Log In via Google</>}
+            {loading ? "Loading..." : <> <FcGoogle style={{ fontSize: "18px" }} /> Log In via Google</>}
           </button>
         </div>
       </div>
 
       {showRoleSelection && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="role-selection-container">
-              <h4 className="role-selection-title">Complete Your Profile</h4>
-              <div className="btn-box row role-selection-buttons">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[1000] p-5">
+          <div className="bg-white rounded-lg w-full max-w-lg animate-modalSlideIn">
+            <div className="p-6">
+              <h4 className="text-xl font-semibold text-gray-800 mb-6 text-center">Complete Your Profile</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 {["Employer", "Candidate"].map(role => (
-                  <div className="col-lg-6 col-md-12" key={role}>
-                    <button
-                      className={`theme-btn ${selectedRole === role ? 'btn-style-two selected' : 'btn-style-three'}`}
-                      onClick={() => { setSelectedRole(role); setRoleError(''); }}
-                      type="button"
-                    >
-                      {role === 'Employer' ? 'Job Provider' : 'Job Seeker'}
-                    </button>
-                  </div>
+                  <button
+                    key={role}
+                    className={`py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+                      selectedRole === role 
+                        ? 'bg-gradient-brand text-white shadow-lg' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                    }`}
+                    onClick={() => { setSelectedRole(role); setRoleError(''); }}
+                    type="button"
+                  >
+                    {role === 'Employer' ? 'Job Provider' : 'Job Seeker'}
+                  </button>
                 ))}
               </div>
-              {roleError && <div className="error-message">{roleError}</div>}
-              <div className="form-group">
-                <label>Mobile Number:</label>
+              {roleError && <div className="text-red-600 text-sm mb-4">{roleError}</div>}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Mobile Number:</label>
                 <input
                   type="tel"
                   value={number}
                   onChange={handlePhoneChange}
                   placeholder="Enter 10-digit mobile number"
                   maxLength="10"
-                  className={`phone-input ${phoneError ? 'error' : ''}`}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    phoneError ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   required
                 />
-                {phoneError && <div className="error-message">{phoneError}</div>}
+                {phoneError && <div className="text-red-600 text-sm mt-1">{phoneError}</div>}
               </div>
-              <div className="form-group terms-checkbox">
-                <div className="checkbox-wrapper">
+              <div className="mb-6">
+                <div className="flex items-start gap-2.5 py-1">
                   <input
                     type="checkbox"
                     id="terms-checkbox-google"
@@ -325,10 +347,10 @@ const LoginWithSocial = () => {
                     }}
                     required
                   />
-                  <label htmlFor="terms-checkbox-google" className="checkbox-label">
+                  <label htmlFor="terms-checkbox-google" className="text-sm leading-relaxed text-gray-800 cursor-pointer">
                     I have read and agree to the{" "}
                     <span 
-                      className="terms-link" 
+                      className="text-blue-600 underline cursor-pointer hover:text-blue-800" 
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -338,13 +360,13 @@ const LoginWithSocial = () => {
                       Terms & Conditions and Privacy Policy
                     </span>
                     {" "}of TeacherLink.in{" "}
-                    <span className="company-text">(A Unit of Inspire Edge Innovation LLP)</span>
+                    <span className="text-gray-600 text-xs">(A Unit of Inspire Edge Innovation LLP)</span>
                   </label>
                 </div>
               </div>
-              <div className="submit-btn-container">
+              <div className="flex gap-3">
                 <button
-                  className="theme-btn btn-style-one"
+                  className="flex-1 bg-gradient-brand text-white py-3 px-4 rounded-lg font-medium hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg"
                   onClick={handleSubmit}
                   type="button"
                   disabled={loading || !acceptedTerms}
@@ -352,10 +374,9 @@ const LoginWithSocial = () => {
                   {loading ? "Processing..." : "Complete Registration"}
                 </button>
                 <button
-                  className="theme-btn btn-style-three"
+                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all duration-200"
                   onClick={handleCancelRegistration}
                   type="button"
-                
                 >
                   Cancel
                 </button>
@@ -367,21 +388,22 @@ const LoginWithSocial = () => {
 
       {(showTermsModal || showPrivacyModal) && <TermsAndPrivacyModal />}
       {showLoginPrompt && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="success-prompt">
-              <h3>
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[1000] p-5">
+          <div className="bg-transparent rounded-lg w-full max-w-2xl relative p-0">
+            <div className="text-center py-10 px-8 bg-gradient-to-br from-green-400 via-green-300 to-lime-300 rounded-xl relative border-none shadow-2xl animate-modalSlideIn">
+              <div className="text-5xl mb-5 animate-bounce">🎉</div>
+              <h3 className="text-indigo-900 text-3xl font-bold mb-5 drop-shadow-sm tracking-wide">
                 Welcome to TeacherLink! 
-                <span className="success-emoji">🌟</span>
+                <span className="text-xl mx-1 inline-block animate-successBounce">🌟</span>
               </h3>
-              <p>
-                <span className="success-emoji">🎉</span>
+              <p className="text-gray-800 text-base font-semibold leading-relaxed mb-8 drop-shadow-sm">
+                <span className="text-xl mx-1 inline-block animate-successBounce">🎉</span>
                 Your account is ready! <br/> You can now {selectedRole === 'Employer' ? 'You can now start hiring!' : 'Explore all teaching & non-teaching opportunities'}.
                 <br/>
-                <span className="success-emoji">🚀</span> Your dashboard awaits - let's get started!
+                <span className="text-xl mx-1 inline-block animate-successBounce">🚀</span> Your dashboard awaits - let's get started!
               </p>
               <button 
-                className="theme-btn btn-style-one" 
+                className="bg-gradient-to-br from-indigo-800 to-indigo-600 text-white border-none py-4 px-8 text-base font-semibold rounded-full cursor-pointer transition-all duration-300 uppercase tracking-wide shadow-lg hover:from-blue-800 hover:to-blue-600 hover:-translate-y-0.5 hover:shadow-xl" 
                 onClick={() => {
                   const userType = selectedRole;
                   const redirectPath = userType === "Employer"
@@ -392,9 +414,8 @@ const LoginWithSocial = () => {
                   navigate(redirectPath);
                 }}
               >
-                Go to Dashboard <span className="success-emoji">🚀</span>
+                Go to Dashboard <span className="text-xl mx-1 inline-block animate-successBounce">🚀</span>
               </button>
-
             </div>
           </div>
         </div>

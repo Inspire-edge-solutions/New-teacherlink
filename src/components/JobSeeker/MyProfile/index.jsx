@@ -1,8 +1,11 @@
 import React from 'react'
+import FormInfoBox from './Components/FormInfoBox'
 
 const MyProfileComponent = () => {
   return (
-    <div>This is my profile</div>
+    <div>
+      <FormInfoBox />
+    </div>
   )
 }
 

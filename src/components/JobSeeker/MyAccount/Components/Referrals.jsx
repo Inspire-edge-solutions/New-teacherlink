@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { Skeleton } from "@mui/material";
 
 const Referrals = ({ user, onSuccess }) => {
   const [contactNumber, setContactNumber] = useState('');
@@ -394,8 +395,31 @@ const Referrals = ({ user, onSuccess }) => {
 
   if (loading) {
     return (
-      <div className="w-full flex justify-center items-center py-12">
-        <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="w-full">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
+          {/* Header Skeleton */}
+          <div className="text-center mb-6 sm:mb-8">
+            <Skeleton variant="text" width="70%" height={40} sx={{ mx: 'auto', mb: 1 }} />
+            <Skeleton variant="text" width="50%" height={20} sx={{ mx: 'auto' }} />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+            {/* Left Side Skeleton */}
+            <div className="space-y-4">
+              <Skeleton variant="rectangular" width="100%" height={80} sx={{ borderRadius: 2 }} />
+              <Skeleton variant="rectangular" width="100%" height={80} sx={{ borderRadius: 2 }} />
+              <Skeleton variant="rectangular" width="100%" height={60} sx={{ borderRadius: 2 }} />
+            </div>
+
+            {/* Right Side Skeleton */}
+            <div className="space-y-3">
+              <Skeleton variant="text" width="40%" height={30} sx={{ mb: 2 }} />
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} variant="rectangular" width="100%" height={60} sx={{ borderRadius: 2 }} />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -472,12 +496,7 @@ const Referrals = ({ user, onSuccess }) => {
           <div className="space-y-3 sm:space-y-4">
             <h4 className="text-base sm:text-lg font-semibold text-gray-800">Added Candidates ({contacts.length}/20)</h4>
             
-            {loading ? (
-              <div className="text-center py-6 sm:py-8">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                <p className="text-gray-600 text-sm sm:text-base">Loading candidates...</p>
-              </div>
-            ) : contacts.length > 0 ? (
+            {contacts.length > 0 ? (
               <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto">
                 {contacts.map((number, index) => (
                   <div key={index} className="bg-gray-50 rounded-lg p-3 sm:p-4 flex items-center justify-between">

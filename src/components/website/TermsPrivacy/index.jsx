@@ -5,7 +5,7 @@ const TermsPrivacy = () => {
         <div style={{ textAlign: 'justify' }}>
           {/* Terms and Conditions Section */}
           <div className="text-box">
-            <h3 style={{color:'purple', borderBottom: '2px solid #1967d2', paddingBottom: '10px', marginBottom: '20px' }}>
+            <h3 className="text-center text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent border-b-2 border-[#F34B58] pb-2.5 mb-5">
               Terms and Conditions for Registration with teacherlink.in
             </h3>
             <p>
@@ -15,7 +15,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>1. Consent for Data Use</h3>
+            <h3 className="text-lg font-bold">1. Consent for Data Use</h3>
             <p>
               By registering with teacherlink.in, a unit of Inspire Edge Innovation LLP, candidates and institutions hereby give their 
               express consent for their personal and professional data to be used by teacherlink.in for both commercial and 
@@ -25,7 +25,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>2. Service Availability</h3>
+            <h3 className="text-lg font-bold">2. Service Availability</h3>
             <p>
               Candidates and institutions acknowledge that teacherlink.in reserves the right to offer or withdraw any services 
               at its sole discretion. Neither candidates nor institutions can demand or enforce the provision of services that 
@@ -35,7 +35,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>3. Limitation of Liability for Candidates</h3>
+            <h3 className="text-lg font-bold">3. Limitation of Liability for Candidates</h3>
             <p>
               teacherlink.in is an intermediary platform connecting candidates and institutions, and is not responsible for 
               verifying the background, qualifications, criminal records, or any other legal matters related to the candidates. 
@@ -45,7 +45,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>4. Institutional Legal and Financial Responsibility</h3>
+            <h3 className="text-lg font-bold">4. Institutional Legal and Financial Responsibility</h3>
             <p>
               teacherlink.in is not responsible for verifying the recognition, legal standing, or credibility of institutions 
               registered on the platform. If an institution is unrecognized, or if there are legal disputes, such as non-payment 
@@ -55,7 +55,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>5. Data Privacy and Other Business Usage</h3>
+            <h3 className="text-lg font-bold">5. Data Privacy and Other Business Usage</h3>
             <p>
               Both candidates and institutions agree to provide accurate and up-to-date information. Any falsified data or 
               intentional misrepresentation may result in immediate removal from the platform. While teacherlink.in follows 
@@ -66,7 +66,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>6. No Guarantees</h3>
+            <h3 className="text-lg font-bold">6. No Guarantees</h3>
             <p>
               Registration on teacherlink.in does not guarantee employment, job offers, interviews, or specific results for 
               candidates, nor does it guarantee a successful match or employee retention for institutions. teacherlink.in 
@@ -76,7 +76,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>7. Use of Platform and Technical Limitations</h3>
+            <h3 className="text-lg font-bold">7. Use of Platform and Technical Limitations</h3>
             <p>
               The platform's features and functionalities are provided on an "as-is" and "as-available" basis. Inspire Edge Innovation LLP 
               is not responsible for poor service arising due to technical issues, software or server-related 
@@ -87,7 +87,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>8. Cancellation, Payments, and Refund Policy</h3>
+            <h3 className="text-lg font-bold">8. Cancellation, Payments, and Refund Policy</h3>
             <p>
               All registration charges, service charges, consultancy charges, or subscription fees paid to teacherlink.in 
               are <strong>non-refundable, non-adjustable, and non-transferable</strong> under any circumstances. By agreeing 
@@ -101,7 +101,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>9. Discretion in Registration Approval</h3>
+            <h3 className="text-lg font-bold">9. Discretion in Registration Approval</h3>
             <p>
               The discretion to approve the registration of any candidate or institution rests solely with teacherlink.in. 
               Registrations may be denied without notice if there is suspicion of a fake profile, competition, or for any 
@@ -111,7 +111,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>10. Termination of Services or Access</h3>
+            <h3 className="text-lg font-bold">10. Termination of Services or Access</h3>
             <p>
               teacherlink.in reserves the right to terminate services or block access to any candidate or institution at 
               any time, without notice, if there is suspicion of a fake profile, conflict of interest (e.g., being a 
@@ -121,7 +121,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>11. Amendments to Terms</h3>
+            <h3 className="text-lg font-bold">11. Amendments to Terms</h3>
             <p>
               teacherlink.in reserves the right to modify these terms and conditions at any time. All changes will be 
               posted on the platform and will become effective immediately upon publication. Continued use of the platform 
@@ -130,7 +130,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>12. Dispute Resolution</h3>
+            <h3 className="text-lg font-bold">12. Dispute Resolution</h3>
             <p>
               Any disputes arising out of the use of teacherlink.in shall be governed by the laws of the jurisdiction 
               <strong> Bangalore</strong>, where Inspire Edge Innovation LLP is registered. In case of any legal disputes, candidates 
@@ -139,7 +139,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>13. Shipping & Delivery Policy</h3>
+            <h3 className="text-lg font-bold">13. Shipping & Delivery Policy</h3>
             <p>
               Please note that teacherlink.in is a digital platform and does not sell, ship, or deliver any physical goods.
             </p>
@@ -153,7 +153,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>14. Intellectual Property</h3>
+            <h3 className="text-lg font-bold">14. Intellectual Property</h3>
             <p>
               All content, trademarks, logos, and data displayed on the teacherlink.in platform are the property of 
               Inspire Edge Innovation LLP. Unauthorized use of any content from the platform without written consent may result 
@@ -162,7 +162,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>15. Misuse Policy & Enforcement</h3>
+            <h3 className="text-lg font-bold">15. Misuse Policy & Enforcement</h3>
             <p>
               To maintain the integrity, safety, and trustworthiness of the Teacher Link platform for all users 
               (Institutions and Candidates), the following rules and enforcement actions are strictly applied:
@@ -221,7 +221,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>16. Final Provisions</h3>
+            <h3 className="text-lg font-bold">16. Final Provisions</h3>
             <p>
               teacherlink.in reserves the right to terminate the services or block access to any candidate or institution 
               found in violation of these terms or any applicable law, without prior notice or liability.
@@ -234,7 +234,7 @@ const TermsPrivacy = () => {
     
           {/* Privacy Policy Section */}
           <div className="text-box" style={{ marginTop: '20px' }}>
-            <h3 style={{color:'purple', borderBottom: '2px solid #1967d2', paddingBottom: '10px', marginBottom: '20px' }}>
+            <h3 className="text-center text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent border-b-2 border-[#F34B58] pb-2.5 mb-5">
               Privacy Policy for teacherlink.in
             </h3>
             <p>
@@ -245,7 +245,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>17. Information We Collect</h3>
+            <h3 className="text-lg font-bold">17. Information We Collect</h3>
             <p>
               teacherlink.in collects the following types of information from candidates and institutions:
             </p>
@@ -259,7 +259,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>18. Data Consent and Cross-Business Usage</h3>
+            <h3 className="text-lg font-bold">18. Data Consent and Cross-Business Usage</h3>
             <p>
               By registering with teacherlink.in, candidates and institutions hereby give their <strong>express consent</strong> 
               for their personal and professional data to be used by teacherlink.in for both <strong>commercial and non-commercial purposes</strong>.
@@ -277,7 +277,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>19. How We Use Your Information</h3>
+            <h3 className="text-lg font-bold">19. How We Use Your Information</h3>
             <p>
               Your information is used for the following purposes:
             </p>
@@ -294,7 +294,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>20. Data Sharing and Third Parties</h3>
+            <h3 className="text-lg font-bold">20. Data Sharing and Third Parties</h3>
             <p>
               We may share your information in the following circumstances:
             </p>
@@ -313,7 +313,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>21. Data Security</h3>
+            <h3 className="text-lg font-bold">21. Data Security</h3>
             <p>
               We implement reasonable security measures to protect your information, including:
             </p>
@@ -330,7 +330,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>22. Your Rights and Choices</h3>
+            <h3 className="text-lg font-bold">22. Your Rights and Choices</h3>
             <p>
               As a user of teacherlink.in, you have the following rights:
             </p>
@@ -347,7 +347,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>23. Cookies and Tracking Technologies</h3>
+            <h3 className="text-lg font-bold">23. Cookies and Tracking Technologies</h3>
             <p>
               teacherlink.in uses cookies and similar tracking technologies to:
             </p>
@@ -361,7 +361,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>24. Data Retention</h3>
+            <h3 className="text-lg font-bold">24. Data Retention</h3>
             <p>
               We retain your personal information as follows:
             </p>
@@ -374,7 +374,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>25. Changes to Terms and Privacy Policy</h3>
+            <h3 className="text-lg font-bold">25. Changes to Terms and Privacy Policy</h3>
             <p>
               teacherlink.in reserves the right to modify these terms and conditions and privacy policy at any time. 
               Changes will be posted on the platform and become effective immediately upon publication. Continued use 
@@ -383,7 +383,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>26. Governing Law and Jurisdiction</h3>
+            <h3 className="text-lg font-bold">26. Governing Law and Jurisdiction</h3>
             <p>
               These Terms and Conditions and Privacy Policy are governed by the laws of <strong>Bangalore, India</strong>, 
               where Inspire Edge Innovation LLP is registered. Any disputes related to these terms or privacy matters will 
@@ -392,7 +392,7 @@ const TermsPrivacy = () => {
           </div>
     
           <div className="text-box">
-            <h3>27. Contact Information</h3>
+            <h3 className="text-lg font-bold">27. Contact Information</h3>
             <p>
               For any questions about these Terms and Conditions or Privacy Policy, please contact us at:
             </p>

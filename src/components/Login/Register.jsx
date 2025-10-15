@@ -4,6 +4,7 @@ import axios from "axios";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { Skeleton } from "@mui/material";
 import TermsPrivacy from "../website/TermsPrivacy";
 import LoginWithSocial from "./LoginWithSocial";
 
@@ -232,12 +233,19 @@ const Register = ({ user_type }) => {
 
       {/* Right Section - Form */}
       <div className="w-full lg:flex-1 bg-white flex items-center justify-center px-3 sm:px-4 md:px-6 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg lg:-ml-12">
-        {/* Form Container */}
-        <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg bg-white p-3 sm:p-4 md:p-6 relative">
+        {loading ? (
+          /* Loading Spinner */
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-gray-600 text-lg font-medium">Creating your account...</p>
+          </div>
+        ) : (
+          /* Form Container */
+          <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg bg-white p-3 sm:p-4 md:p-6 relative">
 
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">
-            Create Account
-          </h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">
+              Create Account
+            </h2>
 
           {/* User Type Selection */}
           <div className="flex mb-4 sm:mb-6 bg-gray-100 rounded-lg p-1">
@@ -408,6 +416,7 @@ const Register = ({ user_type }) => {
             <LoginWithSocial />
           </div>
         </div>
+        )}
       </div>
 
       {/* Modals */}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
+import { Skeleton } from "@mui/material";
 import Payment from "./Payments";
 import Referrals from "./Referrals";
 
@@ -146,8 +147,11 @@ const Subscription = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
-        <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+        <div className="max-w-7xl mx-auto">
+          <Skeleton variant="rectangular" width="100%" height={60} sx={{ borderRadius: 2, mb: 3 }} />
+          <Skeleton variant="rectangular" width="100%" height={400} sx={{ borderRadius: 2 }} />
+        </div>
       </div>
     );
   }
@@ -312,8 +316,20 @@ const Subscription = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
-        <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header Skeleton */}
+          <div className="mb-6 sm:mb-8">
+            <Skeleton variant="text" width="40%" height={50} sx={{ mb: 2 }} />
+            <Skeleton variant="rectangular" width="100%" height={60} sx={{ borderRadius: 2 }} />
+          </div>
+          {/* Content Skeleton - 3 Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} variant="rectangular" width="100%" height={400} sx={{ borderRadius: 3 }} />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -482,7 +498,13 @@ const Subscription = () => {
 
             {/* Payment History Content */}
             <div className="p-3 sm:p-6 flex-1 overflow-y-auto min-h-0 flex flex-col">
-              {paymentHistory.length === 0 ? (
+              {historyLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} variant="rectangular" width="100%" height={60} sx={{ borderRadius: 1 }} />
+                  ))}
+                </div>
+              ) : paymentHistory.length === 0 ? (
                 <div className="text-center py-8 sm:py-12 text-gray-600 flex-1 flex flex-col justify-center items-center">
                   <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">📋</div>
                   <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">No Payment History</h3>

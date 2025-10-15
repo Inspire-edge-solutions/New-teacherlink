@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import PropTypes from "prop-types";
 import ReactDOM from 'react-dom';
+import { Skeleton } from "@mui/material";
 
 const Payment = ({ user, onSuccess }) => {
   const firebase_uid = user?.uid;
@@ -9,6 +10,7 @@ const Payment = ({ user, onSuccess }) => {
   // Popup state for blocked coins
   const [showBlockedPopup, setShowBlockedPopup] = useState(false);
   const [selectedPlanForPopup, setSelectedPlanForPopup] = useState(null);
+  const [plansLoading, setPlansLoading] = useState(true);
   
 
   // Employer subscription plans
@@ -87,13 +89,20 @@ const Payment = ({ user, onSuccess }) => {
 
   // Load Razorpay script once on mount
   useEffect(() => {
-    if (window.Razorpay) return; // already loaded
+    if (window.Razorpay) {
+      setPlansLoading(false);
+      return; // already loaded
+    }
 
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
+    script.onload = () => {
+      setPlansLoading(false);
+    };
     script.onerror = () => {
       toast.error("Failed to load payment system. Please refresh.");
+      setPlansLoading(false);
     };
     document.body.appendChild(script);
   }, []);
@@ -305,6 +314,25 @@ const Payment = ({ user, onSuccess }) => {
 
   return (
     <div className="w-full">
+      {/* Loading Skeleton for Plans */}
+      {plansLoading && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto px-2 sm:px-0">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white shadow-lg overflow-hidden" style={{ borderRadius: '20px 4px 20px 4px', padding: '24px' }}>
+              <Skeleton variant="rectangular" width="40%" height={30} sx={{ borderRadius: 2, mb: 2 }} />
+              <Skeleton variant="text" width="60%" height={40} sx={{ mb: 1 }} />
+              <Skeleton variant="text" width="40%" height={20} sx={{ mb: 3 }} />
+              <div className="space-y-2 mb-4">
+                {[1, 2, 3, 4].map((j) => (
+                  <Skeleton key={j} variant="text" width="100%" height={20} />
+                ))}
+              </div>
+              <Skeleton variant="rectangular" width="100%" height={45} sx={{ borderRadius: 2 }} />
+            </div>
+          ))}
+        </div>
+      )}
+      
       {/* Blocked Coins Popup */}
       {showBlockedPopup && ReactDOM.createPortal(
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-2 sm:p-4" onClick={handleCancelPayment}>
@@ -346,8 +374,9 @@ const Payment = ({ user, onSuccess }) => {
       )}
 
       {/* Subscription Plans Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto px-2 sm:px-0">
-        {plans.map((plan) => (
+      {!plansLoading && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto px-2 sm:px-0">
+          {plans.map((plan) => (
           <div key={plan.id} className="bg-white shadow-lg overflow-hidden relative" style={{ borderRadius: '20px 4px 20px 4px' }}>
             {/* Plan Name Badge */}
             <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-10">
@@ -402,7 +431,8 @@ const Payment = ({ user, onSuccess }) => {
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
 
     </div>
   );

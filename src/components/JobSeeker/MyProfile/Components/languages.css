@@ -1,0 +1,372 @@
+/* Languages Component - Compact Table Design */
+
+.language-section {
+  margin-bottom: 20px;
+}
+
+/* Base table styles - Compact and space-efficient */
+.language-table {
+  margin-bottom: 20px;
+  overflow-x: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+}
+
+.language-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.language-table th,
+.language-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: middle;
+}
+
+.language-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.language-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Optimized column widths */
+.language-table .language-col {
+  width: 33%;
+  min-width: 180px;
+}
+
+.language-table .checkbox-col {
+  width: 12%;
+  text-align: center;
+  padding: 8px 4px;
+}
+
+/* Action column styling */
+.language-table .action-col,
+.language-table td.action-col {
+  width: 120px;
+  text-align: center !important;
+  padding: 8px;
+}
+
+.action-col-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.language-table select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #fff;
+  font-size: 13px;
+  color: #495057;
+}
+
+.language-table select:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.language-table input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #007bff;
+}
+
+/* Remove button styling */
+.remove-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  width: 80px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-family: Arial, sans-serif;
+}
+
+/* Desktop: Show text, hide icon */
+.remove-btn .remove-text {
+  display: inline-block;
+}
+
+.remove-btn .remove-icon {
+  display: none;
+}
+
+.remove-btn:hover {
+  background-color: #c82333;
+}
+
+.remove-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.language-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 15px;
+}
+
+.language-actions .theme-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.language-actions .theme-btn:hover {
+  background-color: #0056b3;
+}
+
+.languages-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+  font-size: 16px;
+}
+
+/* Tablet optimization */
+@media (max-width: 992px) {
+  .language-table th,
+  .language-table td {
+    padding: 10px 12px;
+  }
+  
+  .language-table th {
+    font-size: 15px;
+  }
+  
+  .language-table select {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+  
+  .language-table .language-col {
+    min-width: 160px;
+  }
+  
+  .remove-btn {
+    padding: 6px;
+    font-size: 18px;
+    min-width: 32px;
+    height: 32px;
+  }
+  
+  /* Tablet: Switch to icon */
+  .remove-btn .remove-text {
+    display: none;
+  }
+  
+  .remove-btn .remove-icon {
+    display: inline-block;
+  }
+}
+
+/* Mobile optimization - Keep table but make it compact */
+@media (max-width: 768px) {
+  .language-table {
+    margin: 0 -5px 20px -5px;
+    border-radius: 6px;
+  }
+  
+  .language-table th,
+  .language-table td {
+    padding: 8px 8px;
+    font-size: 12px;
+  }
+  
+  .language-table th {
+    font-size: 14px;
+    padding: 10px 8px;
+  }
+  
+  /* Optimize column widths for mobile */
+  .language-table .language-col {
+    width: 40%;
+    min-width: 140px;
+  }
+  
+  .language-table .checkbox-col {
+    width: 15%;
+    padding: 8px 4px;
+  }
+  
+  .language-table .action-col {
+    width: 15%;
+    padding: 8px 4px;
+  }
+  
+  .language-table select {
+    font-size: 11px;
+    padding: 5px 6px;
+  }
+  
+  .language-table input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .remove-btn {
+    padding: 0;
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    line-height: 1;
+  }
+  
+  /* Mobile: Use icon only */
+  .remove-btn .remove-text {
+    display: none;
+  }
+  
+  .remove-btn .remove-icon {
+    display: inline-block;
+  }
+  
+  .language-actions {
+    justify-content: center;
+    margin-top: 12px;
+  }
+  
+  .language-actions .theme-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+/* Small mobile - Ultra compact */
+@media (max-width: 480px) {
+  .language-table {
+    margin: 0 -10px 20px -10px;
+    border-radius: 4px;
+  }
+  
+  .language-table th,
+  .language-table td {
+    padding: 6px 6px;
+    font-size: 11px;
+  }
+  
+  .language-table th {
+    font-size: 13px;
+    padding: 8px 6px;
+  }
+  
+  .language-table .language-col {
+    width: 45%;
+    min-width: 120px;
+  }
+  
+  .language-table .checkbox-col {
+    width: 12%;
+    padding: 6px 3px;
+  }
+  
+  .language-table .action-col {
+    width: 19%;
+    padding: 6px 3px;
+  }
+  
+  .language-table select {
+    font-size: 10px;
+    padding: 4px 5px;
+  }
+  
+  .language-table input[type="checkbox"] {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .remove-btn {
+    padding: 0;
+    width: 12px;
+    height: 12px;
+    min-width: 12px;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    line-height: 1;
+  }
+  
+  /* Small Mobile: Use icon only */
+  .remove-btn .remove-text {
+    display: none;
+  }
+  
+  .remove-btn .remove-icon {
+    display: inline-block;
+  }
+  
+  .language-actions .theme-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+    width: 100%;
+    max-width: 200px;
+  }
+}
+
+/* Horizontal scroll optimization for very small screens */
+@media (max-width: 320px) {
+  .language-table {
+    margin: 0 -15px 20px -15px;
+  }
+  
+  .language-table table {
+    min-width: 300px;
+  }
+  
+  .language-table::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .language-table::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .language-table::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 2px;
+  }
+} 

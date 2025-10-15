@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Skeleton } from "@mui/material";
 
 const API_FORGET = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/forget";
 const API_OTP_CREATE = "https://hmpffcv3r3.execute-api.ap-south-1.amazonaws.com/dev/otp/create";
@@ -326,13 +327,17 @@ const ForgetPassword = () => {
                     />
                   </div>
                   
-                  <button 
-                    type="submit" 
-                    disabled={loading || !email.trim()}
-                    className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 text-sm sm:text-base md:text-lg"
-                  >
-                    {loading ? "Sending..." : "Send OTP"}
-                  </button>
+                  {loading ? (
+                    <Skeleton variant="rectangular" width="100%" height={60} sx={{ borderRadius: 2 }} />
+                  ) : (
+                    <button 
+                      type="submit" 
+                      disabled={loading || !email.trim()}
+                      className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 text-sm sm:text-base md:text-lg"
+                    >
+                      Send OTP
+                    </button>
+                  )}
                 </form>
               )}
 
@@ -349,13 +354,17 @@ const ForgetPassword = () => {
                     />
                   </div>
                   
-                  <button 
-                    type="submit" 
-                    disabled={loading || !otp.trim()}
-                    className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 text-sm sm:text-base md:text-lg"
-                  >
-                    {loading ? "Verifying..." : "Verify OTP"}
-                  </button>
+                  {loading ? (
+                    <Skeleton variant="rectangular" width="100%" height={60} sx={{ borderRadius: 2 }} />
+                  ) : (
+                    <button 
+                      type="submit" 
+                      disabled={loading || !otp.trim()}
+                      className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 text-sm sm:text-base md:text-lg"
+                    >
+                      Verify OTP
+                    </button>
+                  )}
                   
                   <button
                     type="button"
@@ -421,13 +430,17 @@ const ForgetPassword = () => {
                     </div>
                   )}
                   
-                  <button 
-                    type="submit" 
-                    disabled={loading}
-                    className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 text-sm sm:text-base md:text-lg"
-                  >
-                    {loading ? "Changing..." : "Change Password"}
-                  </button>
+                  {loading ? (
+                    <Skeleton variant="rectangular" width="100%" height={60} sx={{ borderRadius: 2 }} />
+                  ) : (
+                    <button 
+                      type="submit" 
+                      disabled={loading}
+                      className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 text-sm sm:text-base md:text-lg"
+                    >
+                      Change Password
+                    </button>
+                  )}
                 </form>
               )}
             </>

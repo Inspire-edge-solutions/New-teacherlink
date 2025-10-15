@@ -1,0 +1,198 @@
+.uploadButton-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+/* Scope all styles to the image upload component */
+.uploadButton-input-wrap .file-upload-label {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 8px 15px;
+  cursor: pointer;
+  border: 2px solid #e0e6f7;
+  border-radius: 8px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+  min-height: 45px;
+  overflow: hidden;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Remove scrollbar for Webkit browsers */
+.uploadButton-input-wrap .file-upload-label::-webkit-scrollbar {
+  display: none;
+}
+
+/* Remove scrollbar for Firefox */
+.uploadButton-input-wrap .file-upload-label {
+  scrollbar-width: none;
+}
+
+/* Remove scrollbar for IE */
+.uploadButton-input-wrap .file-upload-label {
+  -ms-overflow-style: none;
+}
+
+.uploadButton-input-wrap .file-placeholder {
+  color: #696969 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  flex: 1 1 auto !important; /* Allow shrinking to make room for button */
+  margin-right: 10px !important;
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+  min-width: 0 !important; /* Allow shrinking below content size */
+  max-width: calc(100% - 100px) !important; /* Ensure space for button */
+  text-align: left !important;
+}
+
+.uploadButton-input-wrap .file-button {
+  background-color: #1967d2 !important;
+  color: white !important;
+  padding: 8px 16px !important;
+  border-radius: 4px !important;
+  font-size: 14px !important;
+  white-space: nowrap !important;
+  font-weight: 500 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 75px !important;
+  width: 75px !important;
+  height: 32px !important;
+  flex: 0 0 75px !important; /* Fixed size, don't grow or shrink */
+  margin-left: auto !important; /* Push to right */
+  text-align: center !important;
+}
+
+.uploadButton-input-wrap .file-button:hover {
+  background-color: #1967d2 !important;
+  color: white !important;
+  border: none !important;
+}
+
+.uploadButton-input-wrap .file-upload-label:hover .file-button {
+  background-color: #1967d2 !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* Remove default select appearance */
+.uploadButton-input-wrap .file-upload-label::-ms-expand {
+  display: none;
+}
+
+/* Remove focus outline */
+.uploadButton-input-wrap .file-upload-label:focus {
+  outline: none !important;
+}
+
+.uploadButton-input-wrap .file-button:focus {
+  background-color: #145cb3 !important;
+  color: white !important;
+  outline: none !important;
+}
+
+/* Active state (when clicking button) */
+.uploadButton-input-wrap .file-button:active {
+  background-color: #0f4c8c !important;
+  color: white !important;
+}
+
+/* Remove any possibility of scrolling */
+.uploadButton-input-wrap, 
+.uploadButton-input-wrap .file-upload-label, 
+.uploadButton-input-wrap .file-placeholder {
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  overflow: hidden !important;
+}
+
+/* Match other form inputs style */
+.uploadButton-input-wrap .form-control {
+  height: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+/* Mobile fixes for internal overlap */
+@media screen and (max-width: 768px) {
+  .uploadButton-input-wrap .file-upload-label {
+    padding: 6px 10px !important;
+    gap: 8px !important; /* Add gap between file name and button */
+    display: flex !important;
+    justify-content: space-between !important;
+  }
+  
+  .uploadButton-input-wrap .file-placeholder {
+    font-size: 13px !important;
+    margin-right: 0 !important; /* Remove margin, use gap instead */
+    max-width: calc(100% - 80px) !important;
+  }
+  
+  .uploadButton-input-wrap .file-button {
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    min-width: 65px !important;
+    width: 65px !important;
+    height: 28px !important;
+    flex: 0 0 65px !important;
+    margin-left: auto !important;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .uploadButton-input-wrap .file-upload-label {
+    padding: 5px 8px !important;
+    gap: 6px !important;
+    min-height: 36px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+  }
+  
+  .uploadButton-input-wrap .file-placeholder {
+    font-size: 12px !important;
+    max-width: calc(100% - 70px) !important;
+  }
+  
+  .uploadButton-input-wrap .file-button {
+    padding: 5px 10px !important;
+    font-size: 12px !important;
+    min-width: 60px !important;
+    width: 60px !important;
+    height: 26px !important;
+    flex: 0 0 60px !important;
+    margin-left: auto !important;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .uploadButton-input-wrap .file-upload-label {
+    padding: 4px 6px !important;
+    gap: 4px !important;
+    min-height: 32px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+  }
+  
+  .uploadButton-input-wrap .file-placeholder {
+    font-size: 11px !important;
+    max-width: calc(100% - 60px) !important;
+  }
+  
+  .uploadButton-input-wrap .file-button {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    min-width: 50px !important;
+    width: 50px !important;
+    height: 24px !important;
+    flex: 0 0 50px !important;
+    margin-left: auto !important;
+  }
+}

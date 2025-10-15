@@ -31,10 +31,33 @@ export default {
             transform: 'scale(1.03)',
           },
         },
+        modalSlideIn: {
+          '0%': {
+            opacity: '0',
+            transform: 'translateY(-20px)',
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateY(0)',
+          },
+        },
+        successBounce: {
+          '0%, 20%, 50%, 80%, 100%': {
+            transform: 'translateY(0)',
+          },
+          '40%': {
+            transform: 'translateY(-8px)',
+          },
+          '60%': {
+            transform: 'translateY(-4px)',
+          },
+        },
       },
       animation: {
         'slideIn': 'slideIn 0.3s ease-out',
         'gentlePulse': 'gentlePulse 3s infinite',
+        'modalSlideIn': 'modalSlideIn 0.3s ease-out',
+        'successBounce': 'successBounce 2s infinite',
       },
     },
   },

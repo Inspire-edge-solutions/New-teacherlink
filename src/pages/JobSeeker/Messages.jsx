@@ -11,7 +11,7 @@ const Messages = () => {
       
 
   return (
-    <div>
+    <div style={{ marginLeft: '-24px', marginRight: '-24px', marginBottom: '-80px', height: 'calc(100vh - 170px + 80px)' }}>
         <MetaComponent meta={metadata} />
         <MessagesComponent />
     </div>

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import './register.css';
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import TermsAndPrivacyText from "../../../pages-menu/terms/TermsAndPrivacyText";
 
@@ -142,15 +141,33 @@ const FormContent = ({ user_type }) => {
 
   // Combined Terms and Privacy Modal Component
   const TermsAndPrivacyModal = () => (
-    <div className="modal-overlay">
-      <div className="modal-content terms-modal">
-        <h3>Terms and Conditions & Privacy Policy</h3>
-        <div className="terms-content" onScroll={handleTermsScroll}>
-          <TermsAndPrivacyText />
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[1000] p-5">
+      <div className="bg-white rounded-lg w-full max-w-2xl max-h-[80vh] flex flex-col animate-modalSlideIn">
+        <h3 className="m-0 p-5 text-2xl text-gray-800 border-b border-gray-200 text-center rounded-t-lg">
+          Terms and Conditions & Privacy Policy
+        </h3>
+        <div 
+          className="p-5 overflow-y-auto flex-1 bg-white" 
+          onScroll={handleTermsScroll}
+          style={{ maxHeight: 'calc(80vh - 140px)' }}
+        >
+          <div>
+            <style>{`
+              .text-box { margin-bottom: 20px; }
+              .text-box h3 { font-size: 18px; margin-bottom: 10px; color: #333; }
+              .text-box p { margin-bottom: 15px; line-height: 1.6; color: #666; }
+              .text-box h4 { font-size: 15px; color: #666; margin-top: 15px; margin-bottom: 10px; font-weight: 500; }
+              .text-box ul { margin-bottom: 15px; padding-left: 20px; }
+              .text-box li { margin-bottom: 8px; line-height: 1.6; color: #666; }
+              .text-box li a { color: #1967d2; text-decoration: underline; word-break: break-word; display: inline-block; max-width: 100%; }
+              .text-box li a:hover { color: #0d47a1; }
+            `}</style>
+            <TermsAndPrivacyText />
+          </div>
         </div>
-        <div className="modal-actions">
+        <div className="p-4 bg-white border-t border-gray-200 flex justify-center rounded-b-lg">
           <button 
-            className="theme-btn btn-style-one" 
+            className="w-full min-w-[150px] bg-gradient-brand text-white py-2 sm:py-3 rounded-lg font-medium hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg text-sm sm:text-base cursor-pointer" 
             onClick={() => {
               setShowTermsModal(false);
               setShowPrivacyModal(false);
@@ -266,8 +283,8 @@ const FormContent = ({ user_type }) => {
           )}
         </div>
 
-        <div className="form-group terms-checkbox">
-          <div className="checkbox-wrapper">
+        <div className="form-group my-5 w-full">
+          <div className="flex items-start gap-2.5 py-1">
             <input
               type="checkbox"
               id="terms-checkbox"
@@ -282,10 +299,10 @@ const FormContent = ({ user_type }) => {
               }}
               required
             />
-            <label htmlFor="terms-checkbox" className="checkbox-label">
+            <label htmlFor="terms-checkbox" className="m-0 text-sm leading-relaxed text-gray-800 cursor-pointer">
               I have read and agree to the{" "}
               <span
-                className="terms-link"
+                className="text-blue-600 underline cursor-pointer bg-none border-none p-0 m-0 inline text-inherit select-none hover:text-blue-800 hover:underline"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -295,11 +312,11 @@ const FormContent = ({ user_type }) => {
                 Terms & Conditions and Privacy Policy
               </span>
               {" "}of TeacherLink.in{" "}
-              <span className="company-text">(A Unit of Inspire Edge Innovation LLP)</span>
+              <span className="text-gray-600 text-xs inline">(A Unit of Inspire Edge Innovation LLP)</span>
             </label>
           </div>
           {(!hasReadTerms || !hasReadPrivacy) && acceptedTerms && (
-            <p className="validation-message">
+            <p className="text-red-600 text-xs mt-1">
               Please read both documents before accepting
             </p>
           )}
@@ -318,24 +335,25 @@ const FormContent = ({ user_type }) => {
 
       {(showTermsModal || showPrivacyModal) && <TermsAndPrivacyModal />}
       {showLoginPrompt && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="success-prompt">
-              <h3>
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[1000] p-5">
+          <div className="bg-transparent rounded-lg w-full max-w-2xl relative p-0">
+            <div className="text-center py-10 px-8 bg-gradient-to-br from-green-400 via-green-300 to-lime-300 rounded-xl relative border-none shadow-2xl animate-modalSlideIn">
+              <div className="text-5xl mb-5 animate-bounce">🎉</div>
+              <h3 className="text-indigo-900 text-3xl font-bold mb-5 drop-shadow-sm tracking-wide">
                 Welcome to TeacherLink! 
-                <span className="success-emoji">🌟</span>
+                <span className="text-xl mx-1 inline-block animate-successBounce">🌟</span>
               </h3>
-              <p>
-                <span className="success-emoji">🎉</span>
+              <p className="text-gray-800 text-base font-semibold leading-relaxed mb-8 drop-shadow-sm">
+                <span className="text-xl mx-1 inline-block animate-successBounce">🎉</span>
                 Your account is ready. <br/> Hire passionate educators or explore rewarding teaching opportunities. 
                 <br/>
-                <span className="success-emoji">🚀</span> Log in now to continue your journey.
-                </p>
+                <span className="text-xl mx-1 inline-block animate-successBounce">🚀</span> Log in now to continue your journey.
+              </p>
               <button 
-                className="theme-btn btn-style-one" 
+                className="bg-gradient-to-br from-indigo-800 to-indigo-600 text-white border-none py-4 px-8 text-base font-semibold rounded-full cursor-pointer transition-all duration-300 uppercase tracking-wide shadow-lg hover:from-blue-800 hover:to-blue-600 hover:-translate-y-0.5 hover:shadow-xl" 
                 onClick={() => window.location.href = '/login'}
               >
-                Proceed to Login <span className="success-emoji">➡️</span>
+                Proceed to Login <span className="text-xl mx-1 inline-block animate-successBounce">➡️</span>
               </button>
             </div>
           </div>

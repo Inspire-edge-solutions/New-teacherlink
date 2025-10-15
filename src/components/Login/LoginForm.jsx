@@ -7,6 +7,7 @@ import { getFirebaseErrorMessage } from "../../utils/firebaseErrorMessages";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { cleanupModals } from "../../utils/modalCleanup";
 import Spinner from "../../utils/spinner/Spinner";
+import { Skeleton } from "@mui/material";
 
 const API_URL = "https://2u7ec1e22c.execute-api.ap-south-1.amazonaws.com/staging/users";
 const PERSONAL_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal";
@@ -256,7 +257,9 @@ const LoginForm = () => {
       // Use the utility function to clean up all modal remnants
       cleanupModals();
 
+      // Keep loading state active during navigation
       navigate(redirectPath);
+      // Don't set loading to false - let the new page handle it
     } catch (error) {
       console.error("Login error:", error);
       if (error.code) {
@@ -264,7 +267,6 @@ const LoginForm = () => {
       } else {
         toast.error(error.message || 'Failed to login. Please try again.');
       }
-    } finally {
       setLoading(false);
     }
   };
@@ -299,7 +301,52 @@ const LoginForm = () => {
   return (
     <div className="flex flex-col lg:flex-row lg:min-h-screen">
       {
-        loading ? <Spinner /> : 
+        loading ? (
+          <>
+            {/* Left Section - Promotional (Still visible during loading) */}
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-red-50 to-red-100 relative overflow-hidden">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 opacity-5">
+                <div className="absolute top-10 left-10 w-32 h-32 bg-red-500 rounded-full"></div>
+                <div className="absolute bottom-20 right-20 w-24 h-24 bg-red-400 rounded-full"></div>
+                <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-red-300 rounded-full"></div>
+              </div>
+              
+              {/* Content */}
+              <div className="flex flex-col justify-center px-12 py-16 relative z-10">
+                <div className="space-y-6">
+                  <h1 className="text-4xl font-bold text-red-600 leading-tight">
+                    Welcome Back!
+                  </h1>
+                  <div className="space-y-4">
+                    <p className="text-lg text-gray-700 leading-relaxed">
+                      Continue your journey with us and connect with qualified educators and professionals effortlessly!
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Illustration */}
+                <div className="mt-10 relative">
+                  <div className="w-80 h-64 bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-white">
+                    <img 
+                      src="/src/assets/login.png" 
+                      alt="Education professionals connecting" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Section - Loading Spinner */}
+            <div className="w-full lg:w-1/2 bg-white flex items-center justify-center px-3 sm:px-6 md:px-8 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg lg:-ml-12">
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-gray-600 text-lg font-medium">Logging you in...</p>
+              </div>
+            </div>
+          </>
+        ) : 
         <>
       
       {/* Left Section - Promotional */}
