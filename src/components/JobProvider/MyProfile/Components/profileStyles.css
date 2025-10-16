@@ -1,0 +1,717 @@
+.form-control {
+    height: 50px;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    padding: 0 20px;
+    font-size: 15px;
+    color: #696969;
+    width: 100%;
+    background: #f0f5f7;
+  }
+
+.custom-multiselect {
+    position: relative;
+  }
+
+  .select-header {
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .select-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+  }
+  .select-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .select-option:hover {
+    background-color: #f5f5f5;
+  }
+
+  .select-option input[type="checkbox"] {
+    margin-right: 8px;
+  }
+
+  .input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Field validation styles */
+.field-error {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.field-success {
+  color: #2ecc71;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.input-error {
+  border-color: #e74c3c !important;
+}
+
+.input-success {
+  border-color: #2ecc71 !important;
+}
+
+/* Show validation icon */
+.validation-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+}
+
+.info-tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+.info-tooltip-container .custom-tooltip {
+  display: none !important;
+  visibility: visible !important;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 5px;
+  padding: 5px 10px;
+  background-color: orchid !important;
+  color: white !important;
+  border-radius: 4px;
+  font-size: 14px;
+  white-space: nowrap;
+  z-index: 1000;
+  text-align: center;
+  bottom: auto !important;
+  left: auto !important;
+  transform: none !important;
+}
+
+.info-tooltip-container:hover .custom-tooltip {
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Tooltip width variations */
+.custom-tooltip.tooltip-small {
+  width: 250px !important;
+  white-space: normal !important;
+}
+
+.custom-tooltip.tooltip-large {
+  width: 350px !important;
+  white-space: normal !important;
+}
+
+/* Profile Styles with Responsive Design */
+
+/* Logo Upload Section */
+.logo-upload-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.logo-preview-section {
+  flex: 0 0 auto;
+  max-width: 40%;
+  min-width: 150px;
+}
+
+.logo-preview-image {
+  width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.logo-upload-placeholder {
+  flex: 0 0 auto;
+  max-width: 40%;
+  min-width: 150px;
+  min-height: 150px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logo-upload-placeholder:hover {
+  border-color: #007bff;
+  background-color: #f0f8ff;
+}
+
+.logo-upload-content {
+  text-align: center;
+  color: #6c757d;
+}
+
+.logo-upload-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.logo-upload-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.logo-controls-section {
+  flex: 1 1 auto;
+  min-width: 200px;
+}
+
+.logo-upload-field {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.logo-file-input {
+  opacity: 0;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  cursor: pointer;
+}
+
+.logo-upload-button {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: #3498db;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 100px;
+  text-align: center;
+}
+
+.logo-upload-button:hover {
+  background-color: #2980b9;
+}
+
+.logo-upload-help {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6c757d;
+  line-height: 1.4;
+}
+
+.uploading-text {
+  color: #007bff;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* Document Upload Sections */
+.document-upload-section {
+  margin-top: 24px;
+  margin-bottom: 20px;
+}
+
+.document-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.document-upload-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.document-input-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.document-select-wrapper {
+  flex: 0 0 auto;
+  width: 300px;
+  position: relative;
+}
+
+.document-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: white;
+}
+
+.document-select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.info-tooltip-container {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.info-icon {
+  cursor: pointer;
+  font-size: 18px;
+  color: #3498db;
+  transition: color 0.3s ease;
+}
+
+.info-icon:hover {
+  color: #2980b9;
+}
+
+.custom-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  margin-bottom: 5px;
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.custom-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #333;
+}
+
+.info-tooltip-container:hover .custom-tooltip {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1;
+}
+
+/* Tooltip width variations */
+.custom-tooltip.tooltip-small {
+  width: 250px !important;
+  white-space: normal !important;
+}
+
+.custom-tooltip.tooltip-large {
+  width: 350px !important;
+  white-space: normal !important;
+}
+
+/* Input wrapper tooltips */
+.input-wrapper {
+  position: relative;
+}
+
+/* Input with verification styling */
+.input-with-verification {
+  display: grid;
+  grid-template-columns: 1fr 130px;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.input-with-verification .input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-with-verification .form-control {
+  height: 48px;
+  border-radius: 8px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.verification-icon {
+  position: static;
+  transform: none;
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.verify-btn {
+  position: static;
+  width: 100%;
+  height: 48px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  background: #4a6cf7;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.verify-btn:hover {
+  background: #3a5ce5;
+}
+
+.verify-btn:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+/* Desktop responsive styles */
+@media screen and (min-width: 992px) {
+  .input-with-verification { 
+    grid-template-columns: 1fr auto; 
+  }
+  .verify-btn { 
+    width: auto; 
+    padding: 6px 12px; 
+    height: 45px; 
+  }
+}
+
+.input-wrapper .custom-tooltip {
+  position: absolute;
+  top: -30px;
+  left: 0;
+  background-color: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 1000;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.input-wrapper:hover .custom-tooltip {
+  display: block;
+  opacity: 1;
+}
+
+/* Loading states */
+.upload-status {
+  color: #007bff;
+  margin-left: 10px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* =========================
+   RESPONSIVE STYLES
+   ========================= */
+
+/* Tablet Responsive */
+@media (max-width: 768px) {
+  .logo-upload-container {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .logo-preview-section,
+  .logo-upload-placeholder {
+    max-width: 100%;
+    min-width: 100%;
+  }
+  
+  .logo-upload-placeholder {
+    min-height: 120px;
+  }
+  
+  .logo-controls-section {
+    min-width: 100%;
+  }
+  
+  .document-upload-row {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .document-select-wrapper {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+  
+  .document-input-wrapper {
+    width: calc(100% - 40px);
+    flex: 1 1 auto;
+  }
+  
+  .info-tooltip-container {
+    flex: 0 0 auto;
+    margin-left: 8px;
+  }
+  
+  .custom-tooltip.tooltip-small,
+  .custom-tooltip.tooltip-large {
+    width: 280px !important;
+    left: -140px;
+    transform: translateX(0);
+  }
+  
+  .logo-upload-help {
+    font-size: 11px;
+  }
+  
+  /* Verification button responsive styles */
+  .input-with-verification { 
+    grid-template-columns: 1fr 120px; 
+  }
+  .verify-btn { 
+    height: 44px; 
+  }
+  .verification-icon { 
+    justify-self: end; 
+    margin-left: 8px; 
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 576px) {
+  .logo-upload-container {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  
+  .logo-upload-placeholder {
+    min-height: 100px;
+  }
+  
+  .logo-upload-icon {
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+  
+  .logo-upload-text {
+    font-size: 12px;
+  }
+  
+  .logo-upload-button {
+    padding: 5px 10px;
+    font-size: 12px;
+    min-width: 90px;
+  }
+  
+  .logo-upload-help {
+    font-size: 10px;
+    line-height: 1.3;
+  }
+  
+  .document-upload-section {
+    margin-top: 20px;
+    margin-bottom: 16px;
+  }
+  
+  .document-upload-row {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .document-select-wrapper {
+    width: 100%;
+    flex: 1 1 100%;
+    margin-bottom: 8px;
+  }
+  
+  .document-input-wrapper {
+    width: calc(100% - 35px);
+    flex: 1 1 auto;
+  }
+  
+  .info-tooltip-container {
+    flex: 0 0 auto;
+    margin-left: 6px;
+  }
+  
+  .document-select {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  
+  .info-icon {
+    font-size: 16px;
+  }
+  
+  .custom-tooltip {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+  
+  .custom-tooltip.tooltip-small,
+  .custom-tooltip.tooltip-large {
+    width: 250px !important;
+    left: -125px;
+  }
+  
+  .upload-status {
+    font-size: 12px;
+    margin-left: 0;
+    margin-top: 4px;
+    display: block;
+  }
+  
+  .uploading-text {
+    font-size: 12px;
+  }
+  
+  /* Verification button responsive styles for mobile */
+  .input-with-verification { 
+    grid-template-columns: 1fr 100px; 
+  }
+  .verify-btn { 
+    height: 40px; 
+    font-size: 12px;
+  }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 480px) {
+  .logo-upload-container {
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  
+  .logo-upload-placeholder {
+    min-height: 80px;
+  }
+  
+  .logo-upload-icon {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  
+  .logo-upload-text {
+    font-size: 11px;
+  }
+  
+  .logo-upload-button {
+    padding: 4px 8px;
+    font-size: 12px;
+    min-width: 80px;
+  }
+  
+  .logo-upload-help {
+    font-size: 9px;
+  }
+  
+  .document-upload-section {
+    margin-top: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .document-select {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+  
+  .info-icon {
+    font-size: 14px;
+  }
+  
+  .custom-tooltip {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+  
+  .custom-tooltip.tooltip-small,
+  .custom-tooltip.tooltip-large {
+    width: 200px !important;
+    left: -100px;
+  }
+}
+
+/* Header section responsive fixes */
+@media (max-width: 768px) {
+  .widget-title {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px;
+  }
+  
+  .widget-title h4 {
+    margin-bottom: 0 !important;
+    text-align: center;
+  }
+  
+  .widget-title h6 {
+    margin-bottom: 8px !important;
+    text-align: center;
+    font-size: 13px;
+  }
+  
+  .widget-title button {
+    width: 100% !important;
+    max-width: 200px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .widget-title h4 {
+    font-size: 18px;
+  }
+  
+  .widget-title h6 {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  
+  .widget-title button {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+

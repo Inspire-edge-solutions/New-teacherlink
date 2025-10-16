@@ -1,5 +1,6 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle, useRef } from "react";
 import Select from "react-select";
+import { TextField, MenuItem } from "@mui/material";
 import "./profile-styles.css";
 import axios from "axios";
 import { useAuth } from "../../../../Context/AuthContext";
@@ -93,6 +94,71 @@ const Education = forwardRef(({
   const [syllabusOptions, setSyllabusOptions] = useState([]);
 
   const { user } = useAuth();
+
+  // ========== REUSABLE STYLES ==========
+  // MUI TextField styles (for all text inputs and selects)
+  const muiTextFieldStyles = {
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    '& .MuiOutlinedInput-root': {
+      borderRadius: '8px',
+      '& fieldset': {
+        borderColor: '#D1D5DB',
+      },
+      '&:hover fieldset': {
+        borderColor: '#FDA4AF',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#FDA4AF',
+        borderWidth: '2px',
+      },
+    },
+    '& .MuiInputLabel-root': {
+      color: '#6B7280',
+      '&.Mui-focused': {
+        color: '#F43F5E',
+      },
+    },
+    '& .MuiInputLabel-asterisk': {
+      color: '#EF4444', // Red asterisk for required fields
+    },
+    '& .MuiOutlinedInput-input': {
+      padding: '14px',
+    },
+    '& .MuiSelect-icon': {
+      color: '#EF4444',
+    },
+  };
+
+  // MUI Select MenuProps (for z-index)
+  const muiSelectProps = {
+    MenuProps: {
+      sx: {
+        zIndex: 1400,
+      }
+    }
+  };
+
+  // react-select styles
+  const reactSelectStyles = {
+    control: (base, state) => ({
+      ...base,
+      borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+      boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+      '&:hover': { borderColor: '#FDA4AF' },
+      borderRadius: '0.5rem',
+      padding: '0.25rem',
+      backgroundColor: 'white'
+    }),
+    dropdownIndicator: (base) => ({
+      ...base,
+      color: '#EF4444'
+    }),
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: 9999
+    })
+  };
 
   // Dropdown options
   const educationModeOptions = [
@@ -528,12 +594,12 @@ const Education = forwardRef(({
     switch (type) {
       case "grade12":
         return (
-          <div className="row">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {grade12courseStatus && (
-            <div className="form-group col-lg-6 col-md-12">
-              <div className="input-wrapper">
+            <div className="w-full relative">
               <select
-                className="custom-select"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 value={data.courseStatus || ""}
                 onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
                 required
@@ -543,27 +609,28 @@ const Education = forwardRef(({
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
-              <span className="custom-tooltip">Course Status</span>
-              </div>
+              <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
             )}
             {grade12syllabus && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
                 <Select
                   value={syllabusOptions.find(option => option.value === data.syllabus) || null}
-                  onChange={(selectedOption) => handleEducationDataChange(index, "syllabus", selectedOption.value)}
+                  onChange={(selectedOption) => handleEducationDataChange(index, "syllabus", selectedOption ? selectedOption.value : "")}
                   options={syllabusOptions}
                   placeholder="Syllabus"
-                  className="custom-select"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  isClearable={false}
+                  menuPortalTarget={document.body}
+                  styles={reactSelectStyles}
                 />
-                <span className="custom-tooltip">Syllabus</span>
-              </div>
               </div>
             )}
             {grade12school && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
                 <input
                   type="text"
                   value={data.schoolName}
@@ -571,66 +638,76 @@ const Education = forwardRef(({
                   placeholder="School Name"
                   pattern="[a-zA-Z0-9 ]*"
                   maxLength={30}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                 />
-                <span className="custom-tooltip">School Name</span>
-              </div>
               </div>
             )}
             {grade12year && (
-            <div className="form-group col-lg-6 col-md-12">
-              <div className="input-wrapper">
+            <div className="w-full relative">
               <select
                 value={data.yearOfPassing}
                 onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
                 required={data.courseStatus !== "Pursuing"}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
               >
                 <option value="" disabled>
                   {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
                 </option>
                 {generateYearOptions()}
               </select>
-              <span className="custom-tooltip">
-                {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
-              </span>
-              </div>
+              <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
             )}
             {grade12coreSubjects && (
-            <div className="form-group col-lg-6 col-md-12">
-              <div className="input-wrapper">
+            <div className="w-full">
               <Select
                 isMulti
                 value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
                 onChange={(selected) => {
-                  const selectedValues = selected.map(option => option.value);
+                  const selectedValues = selected ? selected.map(option => option.value) : [];
                   handleEducationDataChange(index, "coreSubjects", selectedValues);
                 }}
                 options={coreSubjectsOptions}
-                className="custom-select required"
+                className="react-select-container"
+                classNamePrefix="react-select"
                 placeholder="Core Subjects"
                 required
+                isClearable={false}
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                    '&:hover': { borderColor: '#FDA4AF' },
+                    borderRadius: '0.5rem',
+                    padding: '0.25rem',
+                    backgroundColor: 'white'
+                  }),
+                  dropdownIndicator: (base) => ({
+                    ...base,
+                    color: '#EF4444'
+                  })
+                }}
               />
-              <span className="custom-tooltip">Core Subjects</span>
-              </div>
             </div>
             )}
             {data.coreSubjects.includes("Others") && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
                 <input
                   type="text"
                   value={data.otherSubjects}
                   onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
                   placeholder="Specify other subjects"
                   required
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                 />
-                <span className="custom-tooltip">Specify other subjects</span>
-              </div>
               </div>
             )}
             {grade12percentage && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
                 <input
                   type="text"
                   value={data.percentage}
@@ -640,16 +717,15 @@ const Education = forwardRef(({
                   maxLength={5}
                   minLength={data.courseStatus === "Pursuing" ? 0 : 2}
                   required={data.courseStatus !== "Pursuing"}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                 />
-                <span className="custom-tooltip">{data.courseStatus === "Pursuing" ? "Current Grade / CGPA (Optional)" : "Grade / Percentage"}</span>
-              </div>
               </div>
             )}
             {grade12mode && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full relative">
                 <select
-                  className="custom-select"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                   value={data.mode || ""}
                   onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
                   required
@@ -659,21 +735,21 @@ const Education = forwardRef(({
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
-                <span className="custom-tooltip">Mode of Study</span>
-              </div>
+                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
             )}
           </div>
         );
       case "degree":
         return (
-          <div className="degree-section">
-            <div className="row">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {degreeCourseStatus && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full relative">
                 <select
-                  className="custom-select"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                   value={data.courseStatus || ""}
                   onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
                   required
@@ -683,28 +759,29 @@ const Education = forwardRef(({
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
-                <span className="custom-tooltip">Course Status</span>
-              </div>
+                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
               )}
               {degreeName && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
                 <Select
                   value={degrees.find(d => d.value === data.courseName) || null}
-                  onChange={(selectedOption) => handleEducationDataChange(index, "courseName", selectedOption.value)}
+                  onChange={(selectedOption) => handleEducationDataChange(index, "courseName", selectedOption ? selectedOption.value : "")}
                   options={degrees}
                   placeholder="Degree Name"
-                  className="custom-select required"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
                   required
+                  isClearable={false}
+                  menuPortalTarget={document.body}
+                  styles={reactSelectStyles}
                 />
-                <span className="custom-tooltip">Degree Name</span>
-              </div>
               </div>
               )}
               {degreeCollege && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.collegeName}
@@ -712,14 +789,12 @@ const Education = forwardRef(({
                     placeholder="College Name"
                     pattern="[a-zA-Z0-9 ]*"
                     maxLength={30}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">College Name</span>
-                </div>
                 </div>
               )}
               {degreePlace && (
-                <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.placeOfStudy}
@@ -727,80 +802,75 @@ const Education = forwardRef(({
                     placeholder="Place of Study"
                     maxLength={30}
                     pattern="[a-zA-Z0-9 ]*"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">Place of Study</span>
-                </div>
                 </div>
               )}
               {degreeUniversity && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.universityName}
                     onChange={(e) => handleEducationDataChange(index, "universityName", e.target.value)}
                     placeholder="University Name"
                     maxLength={30}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">University Name</span>
-                </div>
                 </div>
               )}
               {degreeYear && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full relative">
                 <select
                   value={data.yearOfPassing}
                   onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
                   required={data.courseStatus !== "Pursuing"}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 >
                   <option value="" disabled>
                     {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
                   </option>
                   {generateYearOptions()}
                 </select>
-                <span className="custom-tooltip">
-                  {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
-                </span>
+                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
-                </div>
               )}
               {degreeCoreSubjects && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
                 <Select
                   isMulti
                   value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
                   onChange={(selected) => {
-                    const selectedValues = selected.map(option => option.value);
+                    const selectedValues = selected ? selected.map(option => option.value) : [];
                     handleEducationDataChange(index, "coreSubjects", selectedValues);
                   }}
                   options={coreSubjectsOptions}
-                  className="custom-select required"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
                   placeholder="Core Subjects"
                   required
+                  isClearable={false}
+                  menuPortalTarget={document.body}
+                  styles={reactSelectStyles}
                 />
-                <span className="custom-tooltip">Core Subjects</span>
-              </div>
               </div>
               )}
               {data.coreSubjects.includes("Others") && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.otherSubjects}
                     onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
                     placeholder="Specify other subjects"
                     required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">Specify other subjects</span>
-                </div>
                 </div>
               )}
               {degreePercentage && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.percentage}
@@ -810,16 +880,15 @@ const Education = forwardRef(({
                     maxLength={5}
                     minLength={data.courseStatus === "Pursuing" ? 0 : 2}
                     required={data.courseStatus !== "Pursuing"}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">{data.courseStatus === "Pursuing" ? "Current CGPA / Grade (Optional)" : "Grade / Percentage"}</span>
-                </div>
                 </div>
               )}
               {degreeMode && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full relative">
                   <select
-                    className="custom-select"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                     value={data.mode || ""}
                     onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
                     required
@@ -829,22 +898,21 @@ const Education = forwardRef(({
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
-                  <span className="custom-tooltip">Mode of Study</span>
-                </div>
+                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               )}
-            </div>
           </div>
         );
       case "masterDegree":
         return (
-          <div className="master-degree-section">
-            <div className="row">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {masterCourseStatus && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full relative">
                 <select
-                  className="custom-select"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                   value={data.courseStatus || ""}
                   onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
                   required
@@ -854,122 +922,116 @@ const Education = forwardRef(({
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
-                <span className="custom-tooltip">Course Status</span>
-              </div>
+                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
               )}
               {masterName && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
                 <Select
                   value={masterDegrees.find(d => d.value === data.courseName) || null}
-                  onChange={(selectedOption) => handleEducationDataChange(index, "courseName", selectedOption.value)}
+                  onChange={(selectedOption) => handleEducationDataChange(index, "courseName", selectedOption ? selectedOption.value : "")}
                   options={masterDegrees}
                   placeholder="Master Degree Name"
-                  className="custom-select required"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
                   required
+                  isClearable={false}
+                  menuPortalTarget={document.body}
+                  styles={reactSelectStyles}
                 />
-                <span className="custom-tooltip">Master Degree Name</span>
-              </div>
               </div>
               )}
               {masterCollege && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.collegeName}
                     onChange={(e) => handleEducationDataChange(index, "collegeName", e.target.value)}
                     placeholder="College Name"
                     maxLength={30}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">College Name</span>
-                </div>
                 </div>
               )}
               {masterPlace && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.placeOfStudy}
                     onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
                     placeholder="Place of Study"
                     maxLength={30}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">Place of Study</span>
-                </div>
                 </div>
               )}
               {masterUniversity && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.universityName}
                     onChange={(e) => handleEducationDataChange(index, "universityName", e.target.value)}
                     placeholder="University Name"
                     maxLength={30}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">University Name</span>
-                </div>
                 </div>
               )}
               {masterYear && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full relative">
                 <select
                   value={data.yearOfPassing}
                   onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
                   required={data.courseStatus !== "Pursuing"}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 >
                   <option value="" disabled>
                     {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
                   </option>
                   {generateYearOptions()}
                 </select>
-                <span className="custom-tooltip">
-                  {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
-                </span>
-              </div>
+                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
               )}
               {masterCoreSubjects && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
                 <Select
                   isMulti
                   value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
                   onChange={(selected) => {
-                    const selectedValues = selected.map(option => option.value);
+                    const selectedValues = selected ? selected.map(option => option.value) : [];
                     handleEducationDataChange(index, "coreSubjects", selectedValues);
                   }}
                   options={coreSubjectsOptions}
-                  className="custom-select required"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
                   placeholder="Core Subjects"
                   required
+                  isClearable={false}
+                  menuPortalTarget={document.body}
+                  styles={reactSelectStyles}
                 />
-                <span className="custom-tooltip">Core Subjects</span>
-              </div>
               </div>
               )}
               {data.coreSubjects.includes("Others") && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.otherSubjects}
                     onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
                     placeholder="Specify other subjects"
                     required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">Specify other subjects</span>
-                </div>
                 </div>
               )}
               {masterPercentage && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.percentage}
@@ -979,16 +1041,15 @@ const Education = forwardRef(({
                     maxLength={5}
                     minLength={data.courseStatus === "Pursuing" ? 0 : 2}
                     required={data.courseStatus !== "Pursuing"}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">{data.courseStatus === "Pursuing" ? "Current CGPA / Grade (Optional)" : "Grade / Percentage"}</span>
-                </div>
                 </div>
               )}
               {masterMode && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full relative">
                   <select
-                    className="custom-select"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                     value={data.mode || ""}
                     onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
                     required
@@ -998,22 +1059,21 @@ const Education = forwardRef(({
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
-                  <span className="custom-tooltip">Mode of Study</span>
-                </div>
+                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               )}
-            </div>
           </div>
         );
       case "doctorate":
         return (
-          <div className="doctorate-section">
-            <div className="row">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {doctorateCourseStatus && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full relative">
                 <select
-                  className="custom-select"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                   value={data.courseStatus || ""}
                   onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
                   required
@@ -1023,91 +1083,89 @@ const Education = forwardRef(({
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
-                <span className="custom-tooltip">Course Status</span>
-              </div>
+                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
               )}
               {doctorateCollege && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.placeOfStudy}
                     onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
                     placeholder="Place of Study"
                     maxLength={30}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">Place of Study</span>
-                </div>
                 </div>
               )}
               {doctorateUniversity && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.universityName}
                     onChange={(e) => handleEducationDataChange(index, "universityName", e.target.value)}
                     placeholder="University Name"
                     maxLength={30}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">University Name</span>
-                </div>
                 </div>
               )}
               {doctorateYear && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full relative">
                 <select
                   value={data.yearOfCompletion}
                   onChange={(e) => handleEducationDataChange(index, "yearOfCompletion", e.target.value)}
                   required
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 >
                   <option value="" disabled>Year of Completion</option>
                   {generateYearOptions()}
                 </select>
-                <span className="custom-tooltip">Year of Completion</span>
-              </div>
+                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
               )}
               {doctorateCoreSubjects && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
                 <Select
                   isMulti
                   value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
                   onChange={(selected) => {
-                    const selectedValues = selected.map(option => option.value);
+                    const selectedValues = selected ? selected.map(option => option.value) : [];
                     handleEducationDataChange(index, "coreSubjects", selectedValues);
                   }}
                   options={coreSubjectsOptions}
-                  className="custom-select required"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
                   placeholder="Core Subjects"
                   required
+                  isClearable={false}
+                  menuPortalTarget={document.body}
+                  styles={reactSelectStyles}
                 />
-                <span className="custom-tooltip">Core Subjects</span>
-              </div>
               </div>
               )}
               {data.coreSubjects.includes("Others") && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.otherSubjects}
                     onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
                     placeholder="Specify other subjects"
                     required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">Specify other subjects</span>
-                </div>
                 </div>
               )}
               {doctorateMode && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full relative">
                   <select
-                    className="custom-select"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                     value={data.mode || ""}
                     onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
                     required
@@ -1117,37 +1175,38 @@ const Education = forwardRef(({
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
-                  <span className="custom-tooltip">Mode of Study</span>
-                </div>
+                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               )}
-            </div>
           </div>
         );
       case "nttMtt":
         return (
-          <div className="ntt-mtt-section">
-            <div className="row">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {isEasyMode ? (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full md:w-1/2 relative">
                   <select
                     value={data.yearOfPassing}
                     onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
                     required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                   >
                     <option value="" disabled>Year of Passing</option>
                     {generateYearOptions()}
                   </select>
-                  <span className="custom-tooltip">Year of Passing</span>
-                </div>
+                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               ) : (
                 <>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full relative">
                     <select
-                      className="custom-select"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                       value={data.courseStatus || ""}
                       onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
                       required
@@ -1157,11 +1216,11 @@ const Education = forwardRef(({
                         <option key={option.value} value={option.value}>{option.label}</option>
                       ))}
                     </select>
-                    <span className="custom-tooltip">Course Status</span>
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full">
                     <input
                       type="text"
                       value={data.instituteName}
@@ -1169,24 +1228,20 @@ const Education = forwardRef(({
                       placeholder="Institute Name"
                       maxLength={30}
                       pattern="[a-zA-Z0-9 ]*"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                    <span className="custom-tooltip">Institute Name</span>
                   </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full">
                     <input
                       type="text"
                       value={data.placeOfStudy}
                       onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
                       placeholder="Place of Study"
                       maxLength={30}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                    <span className="custom-tooltip">Place of Study</span>
                   </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full">
                     <input
                       type="text"
                       value={data.affiliatedTo}
@@ -1194,36 +1249,51 @@ const Education = forwardRef(({
                       placeholder="Affiliated to / recognized by"
                       maxLength={30}
                       pattern="[a-zA-Z0-9 ]*"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                    <span className="custom-tooltip">Affiliated to / recognized by</span>
                   </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full">
                     <Select
                       value={courseDurationOptions.find(option => option.value === data.courseDuration)}
-                      onChange={(selected) => handleEducationDataChange(index, "courseDuration", selected.value)}
+                      onChange={(selected) => handleEducationDataChange(index, "courseDuration", selected ? selected.value : "")}
                       options={courseDurationOptions}
                       placeholder="Course Duration"
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      isClearable={false}
+                      styles={{
+                        control: (base, state) => ({
+                          ...base,
+                          borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                          boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                          '&:hover': { borderColor: '#FDA4AF' },
+                          borderRadius: '0.5rem',
+                          padding: '0.25rem',
+                          backgroundColor: 'white'
+                        }),
+                        dropdownIndicator: (base) => ({
+                          ...base,
+                          color: '#EF4444'
+                        })
+                      }}
                     />
-                    <span className="custom-tooltip">Course Duration</span>
                   </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full relative">
                     <select
                       value={data.yearOfPassing}
                       onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
                       required
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                     >
                       <option value="" disabled>Year of Passing</option>
                       {generateYearOptions()}
                     </select>
-                    <span className="custom-tooltip">Year of Passing</span>
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full">
                     <input
                       type="text"
                       value={data.percentage}
@@ -1232,14 +1302,13 @@ const Education = forwardRef(({
                       pattern="[a-zA-Z0-9+%]*"
                       maxLength={5}
                       minLength={2}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                    <span className="custom-tooltip">Grade / Percentage</span>
                   </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full relative">
                     <select
-                      className="custom-select"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                       value={data.mode || ""}
                       onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
                       required
@@ -1249,23 +1318,22 @@ const Education = forwardRef(({
                         <option key={option.value} value={option.value}>{option.label}</option>
                       ))}
                     </select>
-                    <span className="custom-tooltip">Mode of Study</span>
-                  </div>
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
                 </>
               )}
-            </div>
           </div>
         );
       case "bEd":
         return (
-          <div className="bed-section">
-            <div className="row">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {bEdCourseStatus && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full relative">
                 <select
-                  className="custom-select"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                   value={data.courseStatus || ""}
                   onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
                   required
@@ -1275,13 +1343,13 @@ const Education = forwardRef(({
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
-                <span className="custom-tooltip">Course Status</span>
-              </div>
+                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
               )}
               {bEdCollege && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.instituteName}
@@ -1289,28 +1357,24 @@ const Education = forwardRef(({
                     placeholder="Institute / College name"
                     maxLength={30}
                     pattern="[a-zA-Z0-9 ]*"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">Institute / College name</span>
-                </div>
                 </div>
                 )}
               {bEdPlace && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.placeOfStudy}
                     onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
                     placeholder="Place of Study"
                     maxLength={30}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">Place of Study</span>
-                </div>
                 </div>
               )}
               {bEdAffiliated && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.affiliatedTo}
@@ -1318,79 +1382,91 @@ const Education = forwardRef(({
                     placeholder="Affiliated to / recognized by"
                     maxLength={30}
                     pattern="[a-zA-Z0-9 ]*"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">Affiliated to / recognized by</span>
-                </div>
                 </div>
               )}
               {bEdCourseDuration && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <Select
                     value={bEdCourseDurationOptions.find(option => option.value === data.courseDuration)}
-                    onChange={(selected) => handleEducationDataChange(index, "courseDuration", selected.value)}
+                    onChange={(selected) => handleEducationDataChange(index, "courseDuration", selected ? selected.value : "")}
                     options={bEdCourseDurationOptions}
                     placeholder="Course Duration"
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    isClearable={false}
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
                   />
-                  <span className="custom-tooltip">Course Duration</span>
-                </div>
                 </div>
               )}
               {bEdYear && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full relative">
                 <select
                   value={data.yearOfPassing}
                   onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
                   required={data.courseStatus !== "Pursuing"}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 >
                   <option value="" disabled>
                     {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
                   </option>
                   {generateYearOptions()}
                 </select>
-                <span className="custom-tooltip">
-                  {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
-                </span>
-              </div>
+                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
               )}
               {bEdCoreSubjects && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
                 <Select
                   isMulti
                   value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
                   onChange={(selected) => {
-                    const selectedValues = selected.map(option => option.value);
+                    const selectedValues = selected ? selected.map(option => option.value) : [];
                     handleEducationDataChange(index, "coreSubjects", selectedValues);
                   }}
                   options={coreSubjectsOptions}
-                  className="custom-select required"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
                   placeholder="Core Subjects"
                   required
+                  isClearable={false}
+                  menuPortalTarget={document.body}
+                  styles={reactSelectStyles}
                 />
-                <span className="custom-tooltip">Core Subjects</span>
-                </div>
-                </div>
+              </div>
               )}
               {data.coreSubjects.includes("Others") && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.otherSubjects}
                     onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
                     placeholder="Specify other subjects"
                     required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">Specify other subjects</span>
-                </div>
                 </div>
               )}
               {bEdPercentage && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.percentage}
@@ -1400,16 +1476,15 @@ const Education = forwardRef(({
                     maxLength={5}
                     minLength={data.courseStatus === "Pursuing" ? 0 : 2}
                     required={data.courseStatus !== "Pursuing"}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">{data.courseStatus === "Pursuing" ? "Current CGPA / Grade (Optional)" : "Grade / Percentage"}</span>
-                </div>
                 </div>
               )}
               {bEdMode && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full relative">
                   <select
-                    className="custom-select"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                     value={data.mode || ""}
                     onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
                     required
@@ -1419,22 +1494,21 @@ const Education = forwardRef(({
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
-                  <span className="custom-tooltip">Mode of Study</span>
-                </div>
+                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               )}
-            </div>
           </div>
         );
       case "certificate":
         return (
-          <div className="certificate-section">
-            <div className="row">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {certificateCourseStatus && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full relative">
                 <select
-                  className="custom-select"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                   value={data.courseStatus || ""}
                   onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
                   required
@@ -1444,13 +1518,13 @@ const Education = forwardRef(({
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
-                <span className="custom-tooltip">Course Status</span>
-              </div>
+                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
               )}
               {certificateName && (
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
                 <input
                   type="text"
                   value={data.courseName}
@@ -1459,54 +1533,67 @@ const Education = forwardRef(({
                   maxLength={30}
                   pattern="[a-zA-Z0-9 ]*"
                   required
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                 />
-                <span className="custom-tooltip">Course Name</span>
-                </div>
-                </div>
+              </div>
               )}
               {certificatePlace && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.placeOfStudy}
                     onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
                     placeholder="Place of Study"
                     maxLength={30}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">Place of Study</span>
-                </div>
                 </div>
               )}
               {certificateCourseDuration && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <Select
                     value={certificateCourseDurationOptions.find(option => option.value === data.courseDuration)}
-                    onChange={(selected) => handleEducationDataChange(index, "courseDuration", selected.value)}
+                    onChange={(selected) => handleEducationDataChange(index, "courseDuration", selected ? selected.value : "")}
                     options={certificateCourseDurationOptions}
                     placeholder="Course Duration"
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    isClearable={false}
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
                   />
-                  <span className="custom-tooltip">Course Duration</span>
-                </div>
                 </div>
               )}
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full relative">
                 <select
                   value={data.yearOfPassing}
                   onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
                   required
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 >
                   <option value="" disabled>Year of Passing</option>
                   {generateYearOptions()}
                 </select>
-                <span className="custom-tooltip">Year of Passing</span>
-              </div>
+                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
               {certificateSpecialization && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full">
                   <input
                     type="text"
                     value={data.specialization}
@@ -1514,16 +1601,15 @@ const Education = forwardRef(({
                     placeholder="Specialization"
                     maxLength={30}
                     pattern="[a-zA-Z0-9 ]*"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   />
-                  <span className="custom-tooltip">Specialization</span>
-                </div>
                 </div>
               )}
               {certificateMode && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full relative">
                   <select
-                    className="custom-select"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                     value={data.mode || ""}
                     onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
                     required
@@ -1533,37 +1619,38 @@ const Education = forwardRef(({
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
-                  <span className="custom-tooltip">Mode of Study</span>
-                  </div>
+                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               )}
-            </div>
           </div>
         );
       case "dEd":
         return (
-          <div className="ded-section">
-            <div className="row">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {isEasyMode ? (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
+                <div className="w-full md:w-1/2 relative">
                   <select
                     value={data.yearOfPassing}
                     onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
                     required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                   >
                     <option value="">Year of Passing</option>
                     {generateYearOptions()}
                   </select>
-                  <span className="custom-tooltip">Year of Passing</span>
-                </div>
+                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               ) : (
                 <>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full relative">
                     <select
-                      className="custom-select"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                       value={data.courseStatus || ""}
                       onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
                       required
@@ -1573,11 +1660,11 @@ const Education = forwardRef(({
                         <option key={option.value} value={option.value}>{option.label}</option>
                       ))}
                     </select>
-                    <span className="custom-tooltip">Course Status</span>
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full">
                     <input
                       type="text"
                       value={data.instituteName}
@@ -1585,12 +1672,10 @@ const Education = forwardRef(({
                       placeholder="Institute / College name"
                       maxLength={30}
                       pattern="[a-zA-Z0-9 ]*"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                    <span className="custom-tooltip">Institute / College name</span>
                   </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full">
                     <input
                       type="text"
                       value={data.placeOfStudy}
@@ -1598,80 +1683,105 @@ const Education = forwardRef(({
                       placeholder="Place of Study"
                       maxLength={30}
                       pattern="[a-zA-Z0-9 ]*"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                    <span className="custom-tooltip">Place of Study</span>
                   </div>
+                  <div className="w-full">
+                    <input
+                      type="text"
+                      value={data.affiliatedTo}
+                      onChange={(e) => handleEducationDataChange(index, "affiliatedTo", e.target.value)}
+                      placeholder="Affiliated to / recognized by"
+                      maxLength={30}
+                      pattern="[a-zA-Z0-9 ]*"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    />
                   </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                      <input
-                        type="text"
-                        value={data.affiliatedTo}
-                        onChange={(e) => handleEducationDataChange(index, "affiliatedTo", e.target.value)}
-                        placeholder="Affiliated to / recognized by"
-                        maxLength={30}
-                        pattern="[a-zA-Z0-9 ]*"
-                      />
-                      <span className="custom-tooltip">Affiliated to / recognized by</span>
-                    </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full">
                     <Select
                       value={dEdCourseDurationOptions.find(option => option.value === data.courseDuration)}
-                      onChange={(selected) => handleEducationDataChange(index, "courseDuration", selected.value)}
+                      onChange={(selected) => handleEducationDataChange(index, "courseDuration", selected ? selected.value : "")}
                       options={dEdCourseDurationOptions}
                       placeholder="Course Duration"
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      isClearable={false}
+                      styles={{
+                        control: (base, state) => ({
+                          ...base,
+                          borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                          boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                          '&:hover': { borderColor: '#FDA4AF' },
+                          borderRadius: '0.5rem',
+                          padding: '0.25rem',
+                          backgroundColor: 'white'
+                        }),
+                        dropdownIndicator: (base) => ({
+                          ...base,
+                          color: '#EF4444'
+                        })
+                      }}
                     />
-                    <span className="custom-tooltip">Course Duration</span>
                   </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full relative">
                     <select
                       value={data.yearOfPassing}
                       onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
                       required
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                     >
                       <option value="" disabled>Year of Passing</option>
                       {generateYearOptions()}
                     </select>
-                    <span className="custom-tooltip">Year of Passing</span>
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full">
                     <Select
                       isMulti
                       value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
                       onChange={(selected) => {
-                        const selectedValues = selected.map(option => option.value);
+                        const selectedValues = selected ? selected.map(option => option.value) : [];
                         handleEducationDataChange(index, "coreSubjects", selectedValues);
                       }}
                       options={coreSubjectsOptions}
-                      className="custom-select required"
+                      className="react-select-container"
+                      classNamePrefix="react-select"
                       placeholder="Core Subjects"
                       required
+                      isClearable={false}
+                      styles={{
+                        control: (base, state) => ({
+                          ...base,
+                          borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                          boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                          '&:hover': { borderColor: '#FDA4AF' },
+                          borderRadius: '0.5rem',
+                          padding: '0.25rem',
+                          backgroundColor: 'white'
+                        }),
+                        dropdownIndicator: (base) => ({
+                          ...base,
+                          color: '#EF4444'
+                        })
+                      }}
                     />
-                    <span className="custom-tooltip">Core Subjects</span>
-                  </div>
                   </div>
                   {data.coreSubjects.includes("Others") && (
-                    <div className="form-group col-lg-6 col-md-12">
-                      <div className="input-wrapper">
+                    <div className="w-full">
                       <input
                         type="text"
                         value={data.otherSubjects}
                         onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
                         placeholder="Specify other subjects"
                         required
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                       />
-                      <span className="custom-tooltip">Specify other subjects</span>
-                    </div>
                     </div>
                   )}
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full">
                     <input
                       type="text"
                       value={data.percentage}
@@ -1679,14 +1789,13 @@ const Education = forwardRef(({
                       placeholder="Percentage"
                       maxLength={5}
                       minLength={2}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                    <span className="custom-tooltip">Percentage</span>
                   </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+                  <div className="w-full relative">
                     <select
-                      className="custom-select"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                       value={data.mode || ""}
                       onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
                       required
@@ -1696,12 +1805,12 @@ const Education = forwardRef(({
                         <option key={option.value} value={option.value}>{option.label}</option>
                       ))}
                     </select>
-                    <span className="custom-tooltip">Mode of Study</span>
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
-                </div>
                 </>
               )}
-            </div>
           </div>
         );
       default:
@@ -2045,158 +2154,190 @@ const Education = forwardRef(({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="education-form">
-      <div className="form-group col-lg-12 col-md-12">
+    <form onSubmit={handleSubmit} className="rounded-lg p-6" style={{backgroundColor: '#F0D8D9'}}>
+      <div className="w-full space-y-6">
         {/* Grade 10 Section (Mandatory) */}
-        <div className="education-section">
-          <h6 style={{color:"brown"}}>Grade 10</h6>
+        <div>
+          <h6 className="text-red-500 font-semibold mb-4">Grade 10</h6>
           {isEasyMode ? (
-            <div className="form-group col-lg-6 col-md-12">
-              <div className="input-wrapper">
-              <select
+            <div className="w-full md:w-1/2">
+              <TextField
+                select
+                label="Year of Passing"
                 value={grade10Data.yearOfPassing}
                 onChange={(e) => handleGrade10Change("yearOfPassing", e.target.value)}
                 required
+                fullWidth
+                SelectProps={muiSelectProps}
+                sx={muiTextFieldStyles}
               >
-                <option value="" disabled>Year of Passing</option>
-                  {generateYearOptions()}
-                </select>
-                <span className="custom-tooltip">Year of Passing</span>
-              </div>
+                {generateYearOptions().map((option) => (
+                  <MenuItem key={option.props.value} value={option.props.value}>
+                    {option.props.children}
+                  </MenuItem>
+                ))}
+              </TextField>
             </div>
           ) : (
-            <div className="row">
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
-                <Select
-                  value={syllabusOptions.find(option => option.value === grade10Data.syllabus) || null}
-                  onChange={(selectedOption) => handleGrade10Change("syllabus", selectedOption.value)}
-                  options={syllabusOptions}
-                  placeholder="Syllabus"
-                  className="custom-select"
-                />
-                <span className="custom-tooltip">Syllabus</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="w-full">
+                <TextField
+                  select
+                  label="Syllabus"
+                  value={grade10Data.syllabus || ""}
+                  onChange={(e) => handleGrade10Change("syllabus", e.target.value)}
+                  fullWidth
+                  SelectProps={muiSelectProps}
+                  sx={muiTextFieldStyles}
+                >
+                  <MenuItem value="" disabled>
+                    Syllabus
+                  </MenuItem>
+                  {syllabusOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </div>
-              </div>
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
-                <input
-                  type="text"
+              <div className="w-full">
+                <TextField
+                  label="School Name"
                   value={grade10Data.schoolName}
                   onChange={(e) => handleGrade10Change("schoolName", e.target.value)}
-                  placeholder="School Name"
-                  pattern="[a-zA-Z0-9 ]*"
-                  maxLength={30}
+                  inputProps={{
+                    pattern: "[a-zA-Z0-9 ]*",
+                    maxLength: 30
+                  }}
+                  fullWidth
+                  sx={muiTextFieldStyles}
                 />
-                <span className="custom-tooltip">School Name</span>
               </div>
-              </div>
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
-                <select
+              <div className="w-full">
+                <TextField
+                  select
+                  label="Year of Passing"
                   value={grade10Data.yearOfPassing}
                   onChange={(e) => handleGrade10Change("yearOfPassing", e.target.value)}
                   required
+                  fullWidth
+                  SelectProps={muiSelectProps}
+                  sx={muiTextFieldStyles}
                 >
-                  <option value="" disabled>Year of Passing</option>
-                  {generateYearOptions()}
-                </select>
-                <span className="custom-tooltip">Year of Passing</span>
+                  <MenuItem value="" disabled>
+                    Year of Passing
+                  </MenuItem>
+                  {generateYearOptions().map((option) => (
+                    <MenuItem key={option.props.value} value={option.props.value}>
+                      {option.props.children}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </div>
-              </div>
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
-                <input
-                  type="text"
+              <div className="w-full">
+                <TextField
+                  label="Grade / Percentage"
                   value={grade10Data.percentage}
                   onChange={(e) => handleGrade10Change("percentage", e.target.value)}
-                  placeholder="Grade / Percentage"
-                  pattern="[a-zA-Z0-9+%]*"
-                  maxLength={5}
-                  minLength={2}
+                  inputProps={{
+                    pattern: "[a-zA-Z0-9+%]*",
+                    maxLength: 5,
+                    minLength: 2
+                  }}
+                  fullWidth
+                  sx={muiTextFieldStyles}
                 />
-                <span className="custom-tooltip">Grade / Percentage</span>
               </div>
-              </div>
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
-                <select
+              <div className="w-full">
+                <TextField
+                  select
+                  label="Mode of Study"
                   value={grade10Data.mode || ""}
                   onChange={(e) => handleGrade10Change("mode", e.target.value)}
+                  fullWidth
+                  SelectProps={muiSelectProps}
+                  sx={muiTextFieldStyles}
                 >
-                  <option value="" disabled>Mode of Study</option>
+                  <MenuItem value="" disabled>
+                    Mode of Study
+                  </MenuItem>
                   {educationModeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
                   ))}
-                </select>
-                <span className="custom-tooltip">Mode of Study</span>
-              </div>
+                </TextField>
               </div>
             </div>
           )}
         </div>
         {/* Additional Education Sections */}
         {additionalEducation.map((education, index) => (
-          <div key={index} className="education-section" style={{ display: "block" }}>
-            <div className="section-header">
-              <h6 style={{color:"brown"}}>{educationTypes.find((type) => type.value === education.type)?.label}</h6>
-              <div>
-                <button type="button" onClick={() => handleRemoveEducation(index)} className="remove-btn">
-                  Remove
-                </button>
-              </div>
+          <div key={index}>
+            <div className="flex justify-between items-center mb-4">
+              <h6 className="text-red-500 font-semibold">{educationTypes.find((type) => type.value === education.type)?.label}</h6>
+              <button 
+                type="button" 
+                onClick={() => handleRemoveEducation(index)} 
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium"
+              >
+                Remove
+              </button>
             </div>
             {renderEducationFields(education.type, education.data, index)}
           </div>
         ))}
         {/* Add More Education Section */}
-        <div className="add-education-section mt-3">
-          <h6 style={{color:"brown"}}>Add More Education</h6>
-          <div className="row">
-            <div className="form-group col-lg-6 col-md-12">
-              <select
-                value=""
-                onChange={(e) => {
-                  const selected = educationTypes.find((type) => type.value === e.target.value);
-                  if (selected) {
-                    const newEducation = {
-                      type: selected.value,
-                      data: getInitialDataForType(selected.value)
-                    };
-                    const updatedAdditionalEducation = [...additionalEducation, newEducation];
-                    setAdditionalEducation(updatedAdditionalEducation);
-                    
-                    // Immediately update parent FormInfoBox to preserve the addition
-                    const newEducationData = {
-                      grade10: grade10Data,
-                      additional: updatedAdditionalEducation
-                    };
-                    
-                    if (updateEducationData) {
-                      updateEducationData(newEducationData);
-                    } else if (setFormData) {
-                      setFormData(prev => ({
-                        ...prev,
-                        education: newEducationData
-                      }));
-                    }
+        <div>
+          <h6 className="text-red-500 font-semibold mb-4">Add More Education</h6>
+          <div className="w-full md:w-1/2 relative">
+            <select
+              value=""
+              onChange={(e) => {
+                const selected = educationTypes.find((type) => type.value === e.target.value);
+                if (selected) {
+                  const newEducation = {
+                    type: selected.value,
+                    data: getInitialDataForType(selected.value)
+                  };
+                  const updatedAdditionalEducation = [...additionalEducation, newEducation];
+                  setAdditionalEducation(updatedAdditionalEducation);
+                  
+                  // Immediately update parent FormInfoBox to preserve the addition
+                  const newEducationData = {
+                    grade10: grade10Data,
+                    additional: updatedAdditionalEducation
+                  };
+                  
+                  if (updateEducationData) {
+                    updateEducationData(newEducationData);
+                  } else if (setFormData) {
+                    setFormData(prev => ({
+                      ...prev,
+                      education: newEducationData
+                    }));
                   }
-                }}
-              >
-                <option value="" disabled>Select Course</option>
-                {educationTypes.map((type) => {
-                  const alreadySelected = additionalEducation.some((edu) => edu.type === type.value);
-                  if (type.allowMultiple || !alreadySelected) {
-                    return (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
-                    );
-                  }
-                  return null;
-                })}
-              </select>
-            </div>
+                }
+              }}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+              style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+            >
+              <option value="" disabled>Select Course</option>
+              {educationTypes.map((type) => {
+                const alreadySelected = additionalEducation.some((edu) => edu.type === type.value);
+                if (type.allowMultiple || !alreadySelected) {
+                  return (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  );
+                }
+                return null;
+              })}
+            </select>
+            <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </div>
         </div>
         {/* Save button hidden - auto-save handles saving when clicking Next */}

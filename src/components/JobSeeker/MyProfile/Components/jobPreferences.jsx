@@ -725,411 +725,610 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
 
   // Renders the lower half of the form (Job details, designations, etc.)
   const renderJobDetailsSection = () => (
-    <div className="form-group col-lg-12">
-      <div className="form-box">
-        <h3 className="form-title">Expected Job Preferences</h3>
-        <div className="row">
-          {/* Job Type */}
-          <div className="form-group col-lg-6 col-md-12">
-            <div className="input-wrapper">
-              <Select
-                placeholder="Job Type"
-                options={Job_TypeOptions}
-                value={Job_TypeOptions.find((option) => option.value === jobDetails.Job_Type)}
-                onChange={(selected) => {
-                  setJobDetails((prev) => ({
-                    ...prev,
-                    Job_Type: selected?.value || '',
-                  }));
-                }}
-                className="custom-select required"
-              />
-              <span className="custom-tooltip">Job Type</span>
-            </div>
-          </div>
+    <div>
+      <h3 className="text-gray-700 font-medium mb-3" style={{color:"brown"}}>Expected Job Preferences</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Job Type */}
+        <div className="w-full">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Job Type</label>
+          <Select
+            placeholder="Job Type"
+            options={Job_TypeOptions}
+            value={Job_TypeOptions.find((option) => option.value === jobDetails.Job_Type)}
+            onChange={(selected) => {
+              setJobDetails((prev) => ({
+                ...prev,
+                Job_Type: selected?.value || '',
+              }));
+            }}
+            className="custom-select required"
+            styles={{
+              control: (base, state) => ({
+                ...base,
+                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                '&:hover': { borderColor: '#FDA4AF' },
+                borderRadius: '0.5rem',
+                padding: '0.25rem',
+                backgroundColor: 'white'
+              }),
+              dropdownIndicator: (base) => ({
+                ...base,
+                color: '#EF4444'
+              })
+            }}
+          />
+        </div>
 
-          {/* Expected Salary */}
-          <div className="form-group col-lg-6 col-md-12">
-            <div className="input-wrapper">
-              <Select
-                required
-                placeholder="Expected salary(INR)"
-                value={salaryRanges.find(option => option.value === jobDetails.expected_salary)}
-                onChange={(selectedOption) =>
-                  setJobDetails((prev) => ({
-                    ...prev,
-                    expected_salary: selectedOption.value,
-                  }))
-                }
-                options={salaryRanges}
-                className="custom-select required"
-              />
-              <span className="custom-tooltip">Expected salary(INR)</span>
-            </div>
-          </div>
+        {/* Expected Salary */}
+        <div className="w-full">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Expected salary(INR)</label>
+          <Select
+            required
+            placeholder="Expected salary(INR)"
+            value={salaryRanges.find(option => option.value === jobDetails.expected_salary)}
+            onChange={(selectedOption) =>
+              setJobDetails((prev) => ({
+                ...prev,
+                expected_salary: selectedOption.value,
+              }))
+            }
+            options={salaryRanges}
+            className="custom-select required"
+            styles={{
+              control: (base, state) => ({
+                ...base,
+                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                '&:hover': { borderColor: '#FDA4AF' },
+                borderRadius: '0.5rem',
+                padding: '0.25rem',
+                backgroundColor: 'white'
+              }),
+              dropdownIndicator: (base) => ({
+                ...base,
+                color: '#EF4444'
+              })
+            }}
+          />
+        </div>
 
-          {/* Notice Period */}
-          <div className="form-group col-lg-6 col-md-12">
-            <div className="input-wrapper">
-              <Select
-                placeholder="Notice Period"
-                options={[
-                  { value: 'immediateJoiner', label: 'Immediate Joiner' },
-                  { value: 'lessThan7', label: '< 7 days' },
-                  { value: 'lessThan15', label: '< 15 days' },
-                  { value: 'lessThan1Month', label: '< 1 month' },
-                  { value: 'moreThan1Month', label: '> 1 Month' },
-                ]}
-                value={
-                  jobDetails.notice_period
-                    ? { 
-                        value: jobDetails.notice_period.value || jobDetails.notice_period, 
-                        label: jobDetails.notice_period.label || jobDetails.notice_period
-                      }
-                    : null
-                }
-                onChange={(selected) =>
-                  setJobDetails((prev) => ({
-                    ...prev,
-                    notice_period: selected
-                  }))
-                }
-                className="custom-select required"
-              />
-              <span className="custom-tooltip">Notice Period</span>
-            </div>
-          </div>
+        {/* Notice Period */}
+        <div className="w-full">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Notice Period</label>
+          <Select
+            placeholder="Notice Period"
+            options={[
+              { value: 'immediateJoiner', label: 'Immediate Joiner' },
+              { value: 'lessThan7', label: '< 7 days' },
+              { value: 'lessThan15', label: '< 15 days' },
+              { value: 'lessThan1Month', label: '< 1 month' },
+              { value: 'moreThan1Month', label: '> 1 Month' },
+            ]}
+            value={
+              jobDetails.notice_period
+                ? { 
+                    value: jobDetails.notice_period.value || jobDetails.notice_period, 
+                    label: jobDetails.notice_period.label || jobDetails.notice_period
+                  }
+                : null
+            }
+            onChange={(selected) =>
+              setJobDetails((prev) => ({
+                ...prev,
+                notice_period: selected
+              }))
+            }
+            className="custom-select required"
+            styles={{
+              control: (base, state) => ({
+                ...base,
+                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                '&:hover': { borderColor: '#FDA4AF' },
+                borderRadius: '0.5rem',
+                padding: '0.25rem',
+                backgroundColor: 'white'
+              }),
+              dropdownIndicator: (base) => ({
+                ...base,
+                color: '#EF4444'
+              })
+            }}
+          />
+        </div>
 
-          {/* Preferred Country */}
-          <div className="form-group col-lg-6 col-md-12">
-            <div className="input-wrapper">
-              <Select
-                placeholder="Preferred Country"
-                options={countries}
-                value={jobDetails.preferred_country}
-                onChange={(option) => {
-                  setJobDetails((prev) => ({
-                    ...prev,
-                    preferred_country: option,
-                    preferred_state: null,
-                    preferred_city: null,
-                  }));
-                }}
-                className="custom-select required"
-              />
-              <span className="custom-tooltip">Preferred Country</span>
-            </div>
-          </div>
+        {/* Preferred Country */}
+        <div className="w-full">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Country</label>
+          <Select
+            placeholder="Preferred Country"
+            options={countries}
+            value={jobDetails.preferred_country}
+            onChange={(option) => {
+              setJobDetails((prev) => ({
+                ...prev,
+                preferred_country: option,
+                preferred_state: null,
+                preferred_city: null,
+              }));
+            }}
+            className="custom-select required"
+            styles={{
+              control: (base, state) => ({
+                ...base,
+                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                '&:hover': { borderColor: '#FDA4AF' },
+                borderRadius: '0.5rem',
+                padding: '0.25rem',
+                backgroundColor: 'white'
+              }),
+              dropdownIndicator: (base) => ({
+                ...base,
+                color: '#EF4444'
+              })
+            }}
+          />
+        </div>
 
-          {/* Preferred State */}
-          <div className="form-group col-lg-6 col-md-12">
-            <div className="input-wrapper">
-              <Select
-                placeholder="Preferred State/UT"
-                options={states}
-                value={jobDetails.preferred_state}
-                onChange={(option) => {
-                  setJobDetails((prev) => ({
-                    ...prev,
-                    preferred_state: option,
-                    preferred_city: null,
-                  }));
-                }}
-                className="custom-select required"
-              />
-              <span className="custom-tooltip">Preferred State/UT</span>
-            </div>
-          </div>
+        {/* Preferred State */}
+        <div className="w-full">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Preferred State/UT</label>
+          <Select
+            placeholder="Preferred State/UT"
+            options={states}
+            value={jobDetails.preferred_state}
+            onChange={(option) => {
+              setJobDetails((prev) => ({
+                ...prev,
+                preferred_state: option,
+                preferred_city: null,
+              }));
+            }}
+            className="custom-select required"
+            styles={{
+              control: (base, state) => ({
+                ...base,
+                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                '&:hover': { borderColor: '#FDA4AF' },
+                borderRadius: '0.5rem',
+                padding: '0.25rem',
+                backgroundColor: 'white'
+              }),
+              dropdownIndicator: (base) => ({
+                ...base,
+                color: '#EF4444'
+              })
+            }}
+          />
+        </div>
 
-          {/* Preferred City */}
-          <div className="form-group col-lg-6 col-md-12">
-            <div className="input-wrapper">
-              <Select
-                placeholder="Preferred City"
-                options={cities}
-                value={jobDetails.preferred_city}
-                onChange={(option) =>
-                  setJobDetails((prev) => ({
-                    ...prev,
-                    preferred_city: option,
-                  }))
-                }
-                className="custom-select required"
-              />
-              <span className="custom-tooltip">Preferred City</span>
-            </div>
-          </div>
+        {/* Preferred City */}
+        <div className="w-full">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Preferred City</label>
+          <Select
+            placeholder="Preferred City"
+            options={cities}
+            value={jobDetails.preferred_city}
+            onChange={(option) =>
+              setJobDetails((prev) => ({
+                ...prev,
+                preferred_city: option,
+              }))
+            }
+            className="custom-select required"
+            styles={{
+              control: (base, state) => ({
+                ...base,
+                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                '&:hover': { borderColor: '#FDA4AF' },
+                borderRadius: '0.5rem',
+                padding: '0.25rem',
+                backgroundColor: 'white'
+              }),
+              dropdownIndicator: (base) => ({
+                ...base,
+                color: '#EF4444'
+              })
+            }}
+          />
+        </div>
 
-          {/* Teaching + Admin */}
-          {jobDetails.Job_Type && (
-            <>
-              {jobDetails.Job_Type === 'teachingAndAdmin' && (
-                <div className='row'>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                      <Select
-                        isMulti
-                        placeholder="Teaching & Administrative Designation(s)"
-                        options={teachingAdminDesignations}
-                        value={jobDetails.teachingAdminDesignations.map((val) => {
-                          const option = teachingAdminDesignations.find((opt) => opt.value === val);
-                          return option ? { value: option.value, label: option.label } : null;
-                        }).filter(Boolean)}
-                        onChange={(selected) =>
-                          setJobDetails((prev) => ({
-                            ...prev,
-                            teachingAdminDesignations: selected ? selected.map((item) => item.value) : [],
-                          }))
-                        }
-                        className="custom-select required"
-                      />
-                      <span className="custom-tooltip">Teaching & Administrative Designation(s)</span>
-                    </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                      <Select
-                        isMulti
-                        placeholder="Curriculum/Board/University"
-                        options={curriculum}
-                        value={jobDetails.teachingAdminCurriculum.map((val) => {
-                          const opt = curriculum.find((c) => c.value === val);
-                          return opt ? { value: opt.value, label: opt.label } : null;
-                        }).filter(Boolean)}
-                        onChange={(selected) =>
-                          setJobDetails((prev) => ({
-                            ...prev,
-                            teachingAdminCurriculum: selected ? selected.map((item) => item.value) : [],
-                          }))
-                        }
-                      />
-                      <span className="custom-tooltip">Curriculum/Board/University</span>
-                    </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                      <Select
-                        isMulti
-                        placeholder="Subjects"
-                        options={subjectsOptions}
-                        value={jobDetails.teachingAdminSubjects.map((val) => {
-                          const opt = subjectsOptions.find((s) => s.value === val);
-                          return opt ? { value: opt.value, label: opt.label } : null;
-                        }).filter(Boolean)}
-                        onChange={(selected) =>
-                          setJobDetails((prev) => ({
-                            ...prev,
-                            teachingAdminSubjects: selected ? selected.map((item) => item.value) : [],
-                          }))
-                        }
-                        className="custom-select required"
-                      />
-                      <span className="custom-tooltip">Subjects</span>
-                    </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                      <Select
-                        isMulti
-                        placeholder="Grades"
-                        options={grades}
-                        value={jobDetails.teachingAdminGrades.map((val) => {
-                          const opt = grades.find((g) => g.value === val);
-                          return opt ? { value: opt.value, label: opt.label } : null;
-                        }).filter(Boolean)}
-                        onChange={(selected) =>
-                          setJobDetails((prev) => ({
-                            ...prev,
-                            teachingAdminGrades: selected ? selected.map((item) => item.value) : [],
-                          }))
-                        }
-                        className="custom-select required"
-                      />
-                      <span className="custom-tooltip">Grades</span>
-                    </div>
-                  </div>
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                      <Select
-                        isMulti
-                        placeholder="Core Expertise"
-                        options={coreExpertise}
-                        value={jobDetails.teachingAdminCoreExpertise.map((val) => {
-                          const opt = coreExpertise.find((c) => c.value === val);
-                          return opt ? { value: opt.value, label: opt.label } : null;
-                        }).filter(Boolean)}
-                        onChange={(selected) =>
-                          setJobDetails((prev) => ({
-                            ...prev,
-                            teachingAdminCoreExpertise: selected ? selected.map((item) => item.value) : [],
-                          }))
-                        }
-                        className="custom-select required"
-                      />
-                      <span className="custom-tooltip">Core Expertise</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Teaching only */}
-          {jobDetails.Job_Type === 'teaching' && (
-            <div className="row">
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+        {/* Teaching + Admin */}
+        {jobDetails.Job_Type && (
+          <>
+            {jobDetails.Job_Type === 'teachingAndAdmin' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Teaching & Administrative Designation(s)</label>
                   <Select
                     isMulti
-                    placeholder="Teaching Designation(s)"
-                    options={teachingDesignations}
-                    value={teachingDesignations.filter((opt) =>
-                      jobDetails.teachingDesignation.includes(opt.value)
-                    )}
+                    placeholder="Teaching & Administrative Designation(s)"
+                    options={teachingAdminDesignations}
+                    value={jobDetails.teachingAdminDesignations.map((val) => {
+                      const option = teachingAdminDesignations.find((opt) => opt.value === val);
+                      return option ? { value: option.value, label: option.label } : null;
+                    }).filter(Boolean)}
                     onChange={(selected) =>
                       setJobDetails((prev) => ({
                         ...prev,
-                        teachingDesignation: selected ? selected.map((item) => item.value) : [],
+                        teachingAdminDesignations: selected ? selected.map((item) => item.value) : [],
                       }))
                     }
                     className="custom-select required"
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
                   />
-                  <span className="custom-tooltip">Teaching Designation(s)</span>
                 </div>
-              </div>
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Curriculum/Board/University</label>
                   <Select
                     isMulti
                     placeholder="Curriculum/Board/University"
                     options={curriculum}
-                    value={jobDetails.teachingCurriculum.map((val) => {
+                    value={jobDetails.teachingAdminCurriculum.map((val) => {
                       const opt = curriculum.find((c) => c.value === val);
                       return opt ? { value: opt.value, label: opt.label } : null;
                     }).filter(Boolean)}
                     onChange={(selected) =>
                       setJobDetails((prev) => ({
                         ...prev,
-                        teachingCurriculum: selected ? selected.map((item) => item.value) : [],
+                        teachingAdminCurriculum: selected ? selected.map((item) => item.value) : [],
                       }))
                     }
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
                   />
-                  <span className="custom-tooltip">Curriculum/Board/University</span>
                 </div>
-              </div>
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Subjects</label>
                   <Select
                     isMulti
                     placeholder="Subjects"
                     options={subjectsOptions}
-                    value={jobDetails.teachingSubjects.map((val) => {
+                    value={jobDetails.teachingAdminSubjects.map((val) => {
                       const opt = subjectsOptions.find((s) => s.value === val);
                       return opt ? { value: opt.value, label: opt.label } : null;
                     }).filter(Boolean)}
                     onChange={(selected) =>
                       setJobDetails((prev) => ({
                         ...prev,
-                        teachingSubjects: selected ? selected.map((item) => item.value) : [],
+                        teachingAdminSubjects: selected ? selected.map((item) => item.value) : [],
                       }))
                     }
                     className="custom-select required"
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
                   />
-                  <span className="custom-tooltip">Subjects</span>
                 </div>
-              </div>
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Grades</label>
                   <Select
                     isMulti
                     placeholder="Grades"
                     options={grades}
-                    value={jobDetails.teachingGrades.map((val) => {
+                    value={jobDetails.teachingAdminGrades.map((val) => {
                       const opt = grades.find((g) => g.value === val);
                       return opt ? { value: opt.value, label: opt.label } : null;
                     }).filter(Boolean)}
                     onChange={(selected) =>
                       setJobDetails((prev) => ({
                         ...prev,
-                        teachingGrades: selected ? selected.map((item) => item.value) : [],
+                        teachingAdminGrades: selected ? selected.map((item) => item.value) : [],
                       }))
                     }
                     className="custom-select required"
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
                   />
-                  <span className="custom-tooltip">Grades</span>
                 </div>
-              </div>
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Core Expertise</label>
                   <Select
                     isMulti
                     placeholder="Core Expertise"
                     options={coreExpertise}
-                    value={jobDetails.teachingCoreExpertise.map((val) => {
+                    value={jobDetails.teachingAdminCoreExpertise.map((val) => {
                       const opt = coreExpertise.find((c) => c.value === val);
                       return opt ? { value: opt.value, label: opt.label } : null;
                     }).filter(Boolean)}
                     onChange={(selected) =>
                       setJobDetails((prev) => ({
                         ...prev,
-                        teachingCoreExpertise: selected ? selected.map((item) => item.value) : [],
+                        teachingAdminCoreExpertise: selected ? selected.map((item) => item.value) : [],
                       }))
                     }
                     className="custom-select required"
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
                   />
-                  <span className="custom-tooltip">Core Expertise</span>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </>
+        )}
 
-          {/* Administration only */}
-          {jobDetails.Job_Type === 'administration' && (
-            <>
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
-                  <Select
-                    isMulti
-                    placeholder="Administrative Designation(s)"
-                    options={adminDesignations}
-                    value={jobDetails.adminDesignations.map((val) => {
-                      const opt = adminDesignations.find((a) => a.value === val);
-                      return opt ? { value: opt.value, label: opt.label } : null;
-                    }).filter(Boolean)}
-                    onChange={(selected) =>
-                      setJobDetails((prev) => ({
-                        ...prev,
-                        adminDesignations: selected ? selected.map((item) => item.value) : [],
-                      }))
-                    }
-                    className="custom-select required"
-                  />
-                  <span className="custom-tooltip">Administrative Designation(s)</span>
-                </div>
-              </div>
-              {/* <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
-                  <Select
-                    isMulti
-                    placeholder="Curriculum/Board/University"
-                    options={curriculum}
-                    value={jobDetails.adminCurriculum.map((val) => {
-                      const opt = curriculum.find((c) => c.value === val);
-                      return opt ? { value: opt.value, label: opt.label } : null;
-                    }).filter(Boolean)}
-                    onChange={(selected) =>
-                      setJobDetails((prev) => ({
-                        ...prev,
-                        adminCurriculum: selected ? selected.map((item) => item.value) : [],
-                      }))
-                    }
-                  />
-                  <span className="custom-tooltip">Curriculum/Board/University</span>
-                </div>
-              </div> */}
-            </>
-          )}
-        </div>
+        {/* Teaching only */}
+        {jobDetails.Job_Type === 'teaching' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Teaching Designation(s)</label>
+              <Select
+                isMulti
+                placeholder="Teaching Designation(s)"
+                options={teachingDesignations}
+                value={teachingDesignations.filter((opt) =>
+                  jobDetails.teachingDesignation.includes(opt.value)
+                )}
+                onChange={(selected) =>
+                  setJobDetails((prev) => ({
+                    ...prev,
+                    teachingDesignation: selected ? selected.map((item) => item.value) : [],
+                  }))
+                }
+                className="custom-select required"
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                    '&:hover': { borderColor: '#FDA4AF' },
+                    borderRadius: '0.5rem',
+                    padding: '0.25rem',
+                    backgroundColor: 'white'
+                  }),
+                  dropdownIndicator: (base) => ({
+                    ...base,
+                    color: '#EF4444'
+                  })
+                }}
+              />
+            </div>
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Curriculum/Board/University</label>
+              <Select
+                isMulti
+                placeholder="Curriculum/Board/University"
+                options={curriculum}
+                value={jobDetails.teachingCurriculum.map((val) => {
+                  const opt = curriculum.find((c) => c.value === val);
+                  return opt ? { value: opt.value, label: opt.label } : null;
+                }).filter(Boolean)}
+                onChange={(selected) =>
+                  setJobDetails((prev) => ({
+                    ...prev,
+                    teachingCurriculum: selected ? selected.map((item) => item.value) : [],
+                  }))
+                }
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                    '&:hover': { borderColor: '#FDA4AF' },
+                    borderRadius: '0.5rem',
+                    padding: '0.25rem',
+                    backgroundColor: 'white'
+                  }),
+                  dropdownIndicator: (base) => ({
+                    ...base,
+                    color: '#EF4444'
+                  })
+                }}
+              />
+            </div>
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Subjects</label>
+              <Select
+                isMulti
+                placeholder="Subjects"
+                options={subjectsOptions}
+                value={jobDetails.teachingSubjects.map((val) => {
+                  const opt = subjectsOptions.find((s) => s.value === val);
+                  return opt ? { value: opt.value, label: opt.label } : null;
+                }).filter(Boolean)}
+                onChange={(selected) =>
+                  setJobDetails((prev) => ({
+                    ...prev,
+                    teachingSubjects: selected ? selected.map((item) => item.value) : [],
+                  }))
+                }
+                className="custom-select required"
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                    '&:hover': { borderColor: '#FDA4AF' },
+                    borderRadius: '0.5rem',
+                    padding: '0.25rem',
+                    backgroundColor: 'white'
+                  }),
+                  dropdownIndicator: (base) => ({
+                    ...base,
+                    color: '#EF4444'
+                  })
+                }}
+              />
+            </div>
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Grades</label>
+              <Select
+                isMulti
+                placeholder="Grades"
+                options={grades}
+                value={jobDetails.teachingGrades.map((val) => {
+                  const opt = grades.find((g) => g.value === val);
+                  return opt ? { value: opt.value, label: opt.label } : null;
+                }).filter(Boolean)}
+                onChange={(selected) =>
+                  setJobDetails((prev) => ({
+                    ...prev,
+                    teachingGrades: selected ? selected.map((item) => item.value) : [],
+                  }))
+                }
+                className="custom-select required"
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                    '&:hover': { borderColor: '#FDA4AF' },
+                    borderRadius: '0.5rem',
+                    padding: '0.25rem',
+                    backgroundColor: 'white'
+                  }),
+                  dropdownIndicator: (base) => ({
+                    ...base,
+                    color: '#EF4444'
+                  })
+                }}
+              />
+            </div>
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Core Expertise</label>
+              <Select
+                isMulti
+                placeholder="Core Expertise"
+                options={coreExpertise}
+                value={jobDetails.teachingCoreExpertise.map((val) => {
+                  const opt = coreExpertise.find((c) => c.value === val);
+                  return opt ? { value: opt.value, label: opt.label } : null;
+                }).filter(Boolean)}
+                onChange={(selected) =>
+                  setJobDetails((prev) => ({
+                    ...prev,
+                    teachingCoreExpertise: selected ? selected.map((item) => item.value) : [],
+                  }))
+                }
+                className="custom-select required"
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                    '&:hover': { borderColor: '#FDA4AF' },
+                    borderRadius: '0.5rem',
+                    padding: '0.25rem',
+                    backgroundColor: 'white'
+                  }),
+                  dropdownIndicator: (base) => ({
+                    ...base,
+                    color: '#EF4444'
+                  })
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Administration only */}
+        {jobDetails.Job_Type === 'administration' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Administrative Designation(s)</label>
+              <Select
+                isMulti
+                placeholder="Administrative Designation(s)"
+                options={adminDesignations}
+                value={jobDetails.adminDesignations.map((val) => {
+                  const opt = adminDesignations.find((a) => a.value === val);
+                  return opt ? { value: opt.value, label: opt.label } : null;
+                }).filter(Boolean)}
+                onChange={(selected) =>
+                  setJobDetails((prev) => ({
+                    ...prev,
+                    adminDesignations: selected ? selected.map((item) => item.value) : [],
+                  }))
+                }
+                className="custom-select required"
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                    '&:hover': { borderColor: '#FDA4AF' },
+                    borderRadius: '0.5rem',
+                    padding: '0.25rem',
+                    backgroundColor: 'white'
+                  }),
+                  dropdownIndicator: (base) => ({
+                    ...base,
+                    color: '#EF4444'
+                  })
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1330,22 +1529,23 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
 
   return (
     <form 
-      className="default-form" 
+      className="rounded-lg p-6" 
+      style={{backgroundColor: '#F0D8D9'}} 
       onSubmit={(e) => {
         e.preventDefault();
         handleSubmit(e);
       }}
     >
-      <div className="row">
+      <div className="w-full space-y-6">
         {/* Job Shift & Job Category Section */}
-        <div className="form-group">
-          <h3 className='form-title' style={{color:"brown"}}>Select your preferred teaching mode :</h3>
-          <div className='row'>
-            <div className='form-group col-lg-6 col-md-12'>
-              <label htmlFor="teachingMode_online">Online</label>
+        <div>
+          <h3 className='text-gray-700 font-medium mb-3' style={{color:"brown"}}>Select your preferred teaching mode :</h3>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className='w-full'>
+              <label htmlFor="teachingMode_online" className="block text-sm font-medium text-gray-700 mb-2">Online</label>
               <select
-
-                className="form-select"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 value={preferences.teachingMode.online?.value || preferences.teachingMode.online}
                 onChange={(e) => {
                   handlePreferenceChange('teachingMode', 'online', null, e.target.value);
@@ -1355,11 +1555,11 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
                 <option value="no">No</option>
               </select>
             </div>
-            <div className='form-group col-lg-6 col-md-12'>
-              <label htmlFor="teachingMode_offline">Offline</label>
+            <div className='w-full'>
+              <label htmlFor="teachingMode_offline" className="block text-sm font-medium text-gray-700 mb-2">Offline</label>
               <select
-                
-                className="form-select"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 value={preferences.teachingMode.offline?.value || preferences.teachingMode.offline}
                 onChange={(e) => {
                   handlePreferenceChange('teachingMode', 'offline', null, e.target.value);
@@ -1371,14 +1571,14 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
           </div>
         </div>
-        <div className="form-group">
-          <h3 className="form-title" style={{color:"brown"}}>Job Shift Preferences :</h3>
-          <div className="row">
-            <div className="form-group col-lg-6 col-md-12">
-              <label htmlFor="Full_time">Full Time</label>
+        <div>
+          <h3 className="text-gray-700 font-medium mb-3" style={{color:"brown"}}>Job Shift Preferences :</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="w-full">
+              <label htmlFor="Full_time" className="block text-sm font-medium text-gray-700 mb-2">Full Time</label>
               <select
-                
-                className="form-select"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 value={preferences.jobShift.Full_time.value}
                 onChange={(e) => {
                   handlePreferenceChange('jobShift', 'Full_time', 'value', e.target.value);
@@ -1389,11 +1589,11 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
               </select>
             </div>
 
-            <div className="form-group col-lg-6 col-md-12">
-              <label htmlFor="Part_time_weekdays">Part Time (Weekdays)</label>
+            <div className="w-full">
+              <label htmlFor="Part_time_weekdays" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Weekdays)</label>
               <select
-              
-                className="form-select"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 value={preferences.jobShift.part_time_weekdays.value}
                 onChange={(e) => {
                   handlePreferenceChange('jobShift', 'part_time_weekdays', 'value', e.target.value);
@@ -1404,11 +1604,11 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
               </select>
             </div>
 
-            <div className="form-group col-lg-6 col-md-12">
-              <label htmlFor="Part_time_weekends">Part Time (Weekends)</label>
+            <div className="w-full">
+              <label htmlFor="Part_time_weekends" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Weekends)</label>
               <select
-                
-                className="form-select"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 value={preferences.jobShift.part_time_weekends.value}
                 onChange={(e) => {
                   handlePreferenceChange('jobShift', 'part_time_weekends', 'value', e.target.value);
@@ -1419,11 +1619,11 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
               </select>
             </div>
 
-            <div className="form-group col-lg-6 col-md-12">
-              <label htmlFor="Part_time_vacations">Part Time (Vacations)</label>
+            <div className="w-full">
+              <label htmlFor="Part_time_vacations" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Vacations)</label>
               <select
-                
-                className="form-select"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 value={preferences.jobShift.part_time_vacations.value}
                 onChange={(e) => {
                   handlePreferenceChange('jobShift', 'part_time_vacations', 'value', e.target.value);
@@ -1437,14 +1637,14 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
         </div>
 
         {/* Organization Type Section */}
-        <div className="form-group">
-          <h3 className="form-title" style={{color:"brown"}}>Organization Type Preferences :</h3>
-          <div className="row">
-            <div className="form-group col-lg-6 col-md-12">
-              <label htmlFor="school_college_university">School / College / University</label>
+        <div>
+          <h3 className="text-gray-700 font-medium mb-3" style={{color:"brown"}}>Organization Type Preferences :</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="w-full">
+              <label htmlFor="school_college_university" className="block text-sm font-medium text-gray-700 mb-2">School / College / University</label>
               <select
-                
-                className="form-select"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 value={preferences.organizationType.school_college_university.value}
                 onChange={(e) => {
                   handlePreferenceChange('organizationType', 'school_college_university', 'value', e.target.value);
@@ -1455,11 +1655,11 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
               </select>
             </div>
 
-            <div className="form-group col-lg-6 col-md-12">
-              <label htmlFor="coaching_institute">Coaching Centers / Institutes</label>
+            <div className="w-full">
+              <label htmlFor="coaching_institute" className="block text-sm font-medium text-gray-700 mb-2">Coaching Centers / Institutes</label>
               <select
-                
-                className="form-select"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 value={preferences.organizationType.coaching_institute.value}
                 onChange={(e) => {
                   handlePreferenceChange('organizationType', 'coaching_institute', 'value', e.target.value);
@@ -1470,11 +1670,11 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
               </select>
             </div>
 
-            <div className="form-group col-lg-6 col-md-12">
-              <label htmlFor="Ed_TechCompanies">EdTech Companies</label>
+            <div className="w-full">
+              <label htmlFor="Ed_TechCompanies" className="block text-sm font-medium text-gray-700 mb-2">EdTech Companies</label>
               <select
-                
-                className="form-select"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                 value={preferences.organizationType.Ed_TechCompanies.value}
                 onChange={(e) => {
                   handlePreferenceChange('organizationType', 'Ed_TechCompanies', 'value', e.target.value);
@@ -1488,117 +1688,119 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
         </div>
       </div>
 
-      {/* Parent / Guardian Section */}
-      <div className="form-group">
-        <h3 className="form-title" style={{color:"brown"}}>Tuition Preferences :</h3>
-        <div className="row">
-          <div className="form-group col-lg-6 col-md-12">
-            <label htmlFor="Home_Tutor">Home Tutor (One-to-One at Students Home)</label>
-            <select
-              
-              className="form-select"
-              value={preferences.parentGuardian.Home_Tutor.value}
-              onChange={(e) => {
-                handlePreferenceChange('parentGuardian', 'Home_Tutor', 'value', e.target.value);
-              }}
-            >
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </div>
+        {/* Parent / Guardian Section */}
+        <div>
+          <h3 className="text-gray-700 font-medium mb-3" style={{color:"brown"}}>Tuition Preferences :</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="w-full">
+              <label htmlFor="Home_Tutor" className="block text-sm font-medium text-gray-700 mb-2">Home Tutor (One-to-One at Students Home)</label>
+              <select
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                value={preferences.parentGuardian.Home_Tutor.value}
+                onChange={(e) => {
+                  handlePreferenceChange('parentGuardian', 'Home_Tutor', 'value', e.target.value);
+                }}
+              >
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
 
-          <div className="form-group col-lg-6 col-md-12">
-            <label htmlFor="Private_Tutor">Private Tutor (One-to-One at Tutors Place)</label>
-            <select
-              
-              className="form-select"
-              value={preferences.parentGuardian.Private_Tutor.value}
-              onChange={(e) => {
-                handlePreferenceChange('parentGuardian', 'Private_Tutor', 'value', e.target.value);
-              }}
-            >
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </div>
+            <div className="w-full">
+              <label htmlFor="Private_Tutor" className="block text-sm font-medium text-gray-700 mb-2">Private Tutor (One-to-One at Tutors Place)</label>
+              <select
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                value={preferences.parentGuardian.Private_Tutor.value}
+                onChange={(e) => {
+                  handlePreferenceChange('parentGuardian', 'Private_Tutor', 'value', e.target.value);
+                }}
+              >
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
 
-          <div className="form-group col-lg-6 col-md-12">
-            <label htmlFor="Group_Tutor_offline">Group Tuitions (at teachers home)</label>
-            <select
-              
-              className="form-select"
-              value={preferences.parentGuardian.Group_Tutor.value}
-              onChange={(e) => {
-                handlePreferenceChange('parentGuardian', 'Group_Tutor', 'value', e.target.value);
-              }}
-            >
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </div>
+            <div className="w-full">
+              <label htmlFor="Group_Tutor_offline" className="block text-sm font-medium text-gray-700 mb-2">Group Tuitions (at teachers home)</label>
+              <select
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                value={preferences.parentGuardian.Group_Tutor.value}
+                onChange={(e) => {
+                  handlePreferenceChange('parentGuardian', 'Group_Tutor', 'value', e.target.value);
+                }}
+              >
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
 
-          <div className="form-group col-lg-6 col-md-12">
-            <label htmlFor="Private_Tutions_online">Private Tuitions (One-One)</label>
-            <select
-              
-              className="form-select"
-              value={preferences.parentGuardian.Private_Tutions.value}
-              onChange={(e) => {
-                handlePreferenceChange('parentGuardian', 'Private_Tutions', 'value', e.target.value);
-              }}
-            >
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </div>
+            <div className="w-full">
+              <label htmlFor="Private_Tutions_online" className="block text-sm font-medium text-gray-700 mb-2">Private Tuitions (One-One)</label>
+              <select
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                value={preferences.parentGuardian.Private_Tutions.value}
+                onChange={(e) => {
+                  handlePreferenceChange('parentGuardian', 'Private_Tutions', 'value', e.target.value);
+                }}
+              >
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
 
-          <div className="form-group col-lg-6 col-md-12">
-            <label htmlFor="Group_Tutor_online">Group Tuitions (from teacher as tutor)</label>
-            <select
-              
-              className="form-select"
-              value={preferences.parentGuardian.Group_Tuitions.value}
-              onChange={(e) => {
-                handlePreferenceChange('parentGuardian', 'Group_Tuitions', 'value', e.target.value);
-              }}
-            >
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
+            <div className="w-full">
+              <label htmlFor="Group_Tutor_online" className="block text-sm font-medium text-gray-700 mb-2">Group Tuitions (from teacher as tutor)</label>
+              <select
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                value={preferences.parentGuardian.Group_Tuitions.value}
+                onChange={(e) => {
+                  handlePreferenceChange('parentGuardian', 'Group_Tuitions', 'value', e.target.value);
+                }}
+              >
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Lower half (job details, designations, etc.) */}
       {renderJobDetailsSection()}
 
-      {/* Job Search Status Section */}
-      <div className="form-group">
-        <h3 className="form-title">Job Search Status</h3>
-        <div className="row">
-          <div className="form-group col-lg-6 col-md-12">
-            <label htmlFor="Full_time_status">Full Time</label>
-            <select
-              required
-              className="form-select"
-              value={jobSearchStatus.Full_time.value}
-              onChange={(e) => {
-                handleJobSearchStatusChange('Full_time', 'value', e.target.value);
-              }}
-            >
-              <option value="activelySearching">Actively Searching Jobs</option>
-              <option value="casuallyExploring">Casually Exploring Jobs</option>
-              <option value="notLooking">Not looking for Jobs</option>
-            </select>
-          </div>
+        {/* Job Search Status Section */}
+        <div>
+          <h3 className="text-gray-700 font-medium mb-3" style={{color:"brown"}}>Job Search Status</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="w-full">
+              <label htmlFor="Full_time_status" className="block text-sm font-medium text-gray-700 mb-2">Full Time</label>
+              <select
+                required
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                value={jobSearchStatus.Full_time.value}
+                onChange={(e) => {
+                  handleJobSearchStatusChange('Full_time', 'value', e.target.value);
+                }}
+              >
+                <option value="activelySearching">Actively Searching Jobs</option>
+                <option value="casuallyExploring">Casually Exploring Jobs</option>
+                <option value="notLooking">Not looking for Jobs</option>
+              </select>
+            </div>
 
-          <div className="form-group col-lg-6 col-md-12">
-            <label htmlFor="part_time_weekdays_status">Part Time (Weekdays)</label>
-            <select
-              required
-              className="form-select"
-              value={jobSearchStatus.part_time_weekdays.value}
-              onChange={(e) => {
+            <div className="w-full">
+              <label htmlFor="part_time_weekdays_status" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Weekdays)</label>
+              <select
+                required
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                value={jobSearchStatus.part_time_weekdays.value}
+                onChange={(e) => {
                 handleJobSearchStatusChange('part_time_weekdays', 'value', e.target.value);
               }}
             >
@@ -1608,55 +1810,58 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </select>
           </div>
 
-          <div className="form-group col-lg-6 col-md-12">
-            <label htmlFor="part_time_weekends_status">Part Time (Weekends)</label>
-            <select
-              required
-              className="form-select"
-              value={jobSearchStatus.part_time_weekends.value}
-              onChange={(e) => {
-                handleJobSearchStatusChange('part_time_weekends', 'value', e.target.value);
-              }}
-            >
-              <option value="activelySearching">Actively Searching Jobs</option>
-              <option value="casuallyExploring">Casually Exploring Jobs</option>
-              <option value="notLooking">Not looking for Jobs</option>
-            </select>
-          </div>
+            <div className="w-full">
+              <label htmlFor="part_time_weekends_status" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Weekends)</label>
+              <select
+                required
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                value={jobSearchStatus.part_time_weekends.value}
+                onChange={(e) => {
+                  handleJobSearchStatusChange('part_time_weekends', 'value', e.target.value);
+                }}
+              >
+                <option value="activelySearching">Actively Searching Jobs</option>
+                <option value="casuallyExploring">Casually Exploring Jobs</option>
+                <option value="notLooking">Not looking for Jobs</option>
+              </select>
+            </div>
 
-          <div className="form-group col-lg-6 col-md-12">
-            <label htmlFor="part_time_vacations_status">Part Time (Vacations)</label>
-            <select
-              required
-              className="form-select"
-              value={jobSearchStatus.part_time_vacations.value}
-              onChange={(e) => {
-                handleJobSearchStatusChange('part_time_vacations', 'value', e.target.value);
-              }}
-            >
-              <option value="activelySearching">Actively Searching Jobs</option>
-              <option value="casuallyExploring">Casually Exploring Jobs</option>
-              <option value="notLooking">Not looking for Jobs</option>
-            </select>
-          </div>
+            <div className="w-full">
+              <label htmlFor="part_time_vacations_status" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Vacations)</label>
+              <select
+                required
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                value={jobSearchStatus.part_time_vacations.value}
+                onChange={(e) => {
+                  handleJobSearchStatusChange('part_time_vacations', 'value', e.target.value);
+                }}
+              >
+                <option value="activelySearching">Actively Searching Jobs</option>
+                <option value="casuallyExploring">Casually Exploring Jobs</option>
+                <option value="notLooking">Not looking for Jobs</option>
+              </select>
+            </div>
 
-          <div className="form-group col-lg-6 col-md-12">
-            <label htmlFor="tuitions_status">Tuitions</label>
-            <select
-              required
-              className="form-select"
-              value={jobSearchStatus.tuitions.value}
-              onChange={(e) => {
-                handleJobSearchStatusChange('tuitions', 'value', e.target.value);
-              }}
-            >
-              <option value="activelySearching">Actively Searching Jobs</option>
-              <option value="casuallyExploring">Casually Exploring Jobs</option>
-              <option value="notLooking">Not looking for Jobs</option>
-            </select>
+            <div className="w-full">
+              <label htmlFor="tuitions_status" className="block text-sm font-medium text-gray-700 mb-2">Tuitions</label>
+              <select
+                required
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                value={jobSearchStatus.tuitions.value}
+                onChange={(e) => {
+                  handleJobSearchStatusChange('tuitions', 'value', e.target.value);
+                }}
+              >
+                <option value="activelySearching">Actively Searching Jobs</option>
+                <option value="casuallyExploring">Casually Exploring Jobs</option>
+                <option value="notLooking">Not looking for Jobs</option>
+              </select>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Save button hidden - auto-save handles saving when clicking Next */}
     </form>

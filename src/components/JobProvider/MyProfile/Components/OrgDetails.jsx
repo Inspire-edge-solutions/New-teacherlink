@@ -1,0 +1,1359 @@
+import React, { useState, useEffect } from "react";
+import Select from "react-select";
+import { Country, State, City } from "country-state-city";
+import axios from "axios";
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import { FaCheckCircle } from "react-icons/fa";
+import { useAuth } from "../../../../Context/AuthContext";
+import { getAuth, updateEmail, fetchSignInMethodsForEmail } from "firebase/auth";
+import ContactInfoBox from "../ContactInfoBox";
+import { validateField, formatFieldValue, validateWithFeedback } from "../../../../utils/formValidation";
+import CollapsibleSection from "./CollapsibleSection";
+
+const LOGIN_API_URL = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login";
+const API_URL = "https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation";
+const PROFILE_APPROVED_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved";
+const MSG91_API = "https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev";
+
+const authHeaders = {
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+};
+
+const OrgDetails = () => {
+  const { user, loading } = useAuth();
+  
+  const providerIsGoogle = user?.providerData?.some?.((p) => p.providerId === "google.com");
+  const isGoogleFromDb = user?.is_google_account === 1 || user?.is_google_account === true;
+  const isGoogleAccount = providerIsGoogle || isGoogleFromDb;
+
+  const PARENT_TYPE = "Parent/ Guardian looking for Tuitions";
+  const [selectedType, setSelectedType] = useState("");
+  const [originalType, setOriginalType] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [emailOtp, setEmailOtp] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(isGoogleAccount);
+  
+  // Phone verification states
+  const [showPhoneOtpInput, setShowPhoneOtpInput] = useState(false);
+  const [phoneOtp, setPhoneOtp] = useState("");
+  const [isPhoneVerifying, setIsPhoneVerifying] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+
+  if (loading) return <div>Loading...</div>;
+  const firebase_uid = user.uid;
+
+  const [orgDetails, setOrgDetails] = useState({
+    name: "",
+    websiteUrl: "",
+    video: "",
+    panNumber: "",
+    panName: "",
+    gstin: "",
+    address: "",
+    country: "India",
+    state: "",
+    city: "",
+    pincode: "",
+    contactPerson: {
+      name: user.name || "",
+      gender: "",
+      designation: [],
+      phone1: user.phone_number || "",
+      phone2: "",
+      email: user.email || ""
+    }
+  });
+  const [parentDetails, setParentDetails] = useState({
+    address: "",
+    country: "India",
+    state: "",
+    city: "",
+    pincode: ""
+  });
+  const [reportingAuthority, setReportingAuthority] = useState({
+    name: "",
+    gender: "",
+    designation: [],
+    phone1: "",
+    phone2: "",
+    email: ""
+  });
+  const [otherContactPersonDesignation, setOtherContactPersonDesignation] = useState("");
+  const [otherReportingAuthorityDesignation, setOtherReportingAuthorityDesignation] = useState("");
+  const [images, setImages] = useState([]);
+  const [socialData, setSocialData] = useState({
+    facebook: "",
+    twitter: "",
+    linkedin: "",
+    instagram: ""
+  });
+  const [designations, setDesignations] = useState([]);
+  const [isOwner, setIsOwner] = useState("");
+  const [sameAsCallingNumber, setSameAsCallingNumber] = useState(false);
+  const [reportingAuthoritySameNumber, setReportingAuthoritySameNumber] = useState(false);
+
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [parentStates, setParentStates] = useState([]);
+  const [parentCities, setParentCities] = useState([]);
+  const [isFetched, setIsFetched] = useState(false);
+
+  useEffect(() => {
+    const allCountries = Country.getAllCountries();
+    setCountries(allCountries);
+    const indiaCountry = allCountries.find(c => c.name === "India");
+    if (indiaCountry) {
+      const indiaStates = State.getStatesOfCountry(indiaCountry.isoCode);
+      setStates(indiaStates);
+      setParentStates(indiaStates);
+    }
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_DEV1_API}/constants`);
+        const opts = res.data
+          .filter(item => item.category === "Administration")
+          .map(item => ({ value: item.value, label: item.label }));
+        setDesignations(opts);
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const resp = await axios.get(API_URL, { params: { firebase_uid } });
+        const raw = Array.isArray(resp.data) ? resp.data[0] : resp.data;
+        if (raw) {
+          setSelectedType(raw.type || "");
+          setOriginalType(raw.type || "");
+          setEmailVerified(isGoogleAccount || raw.is_email_verified === 1 || raw.is_email_verified === true);
+          setPhoneVerified(raw.is_phone1_verified === 1 || raw.is_phone1_verified === true);
+          setOrgDetails(prev => ({
+            ...prev,
+            name: raw.name || "",
+            websiteUrl: raw.website_url || "",
+            video: raw.video_url || "",
+            panNumber: raw.pan_number || "",
+            panName: raw.pan_name || "",
+            gstin: raw.gstin || "",
+            address: raw.address || "",
+            country: (raw.country && raw.country.trim()) || "India",
+            state: (raw.state && raw.state.trim()) || "",
+            city: (raw.city && raw.city.trim()) || "",
+            pincode: raw.pincode || "",
+            contactPerson: {
+              name: raw.contact_person_name || user.name || "",
+              gender: raw.contact_person_gender || "",
+              designation: raw.contact_person_designation || [],
+              phone1: raw.contact_person_phone1 || user.phone_number || "",
+              phone2: raw.contact_person_phone2 || "",
+              email: raw.contact_person_email || user.email || ""
+            }
+          }));
+          setParentDetails(prev => ({
+            ...prev,
+            address: raw.parent_address || "",
+            country: (raw.parent_country && raw.parent_country.trim()) || "India",
+            state: (raw.parent_state && raw.parent_state.trim()) || "",
+            city: (raw.parent_city && raw.parent_city.trim()) || "",
+            pincode: raw.parent_pincode || ""
+          }));
+          setReportingAuthority({
+            name: raw.reporting_authority_name || "",
+            gender: raw.reporting_authority_gender || "",
+            designation: raw.reporting_authority_designation || [],
+            phone1: raw.phone1 || "",
+            phone2: raw.phone2 || "",
+            email: raw.email || ""
+          });
+          setSocialData({
+            facebook: raw.facebook || "",
+            twitter: raw.twitter || "",
+            linkedin: raw.linkedin || "",
+            instagram: raw.instagram || ""
+          });
+        }
+      } catch (err) {
+        console.error("Error loading existing org:", err);
+      } finally {
+        setIsFetched(true);
+      }
+    })();
+  }, [firebase_uid, user.name, user.phone_number, user.email, isGoogleAccount]);
+
+  useEffect(() => {
+    if (isGoogleAccount) setEmailVerified(true);
+  }, [isGoogleAccount]);
+
+  useEffect(() => {
+    if (!isFetched || !countries.length) return;
+    const orgCountry = orgDetails.country || "India";
+    const countryObj = countries.find(c => c.name === orgCountry);
+    if (countryObj) {
+      const newStates = State.getStatesOfCountry(countryObj.isoCode);
+      setStates(newStates);
+      if (orgDetails.state) {
+        const stateObj = newStates.find(s => s.name === orgDetails.state);
+        if (stateObj) {
+          const newCities = City.getCitiesOfState(countryObj.isoCode, stateObj.isoCode);
+          setCities(newCities);
+        }
+      } else {
+        setCities([]);
+      }
+    }
+    const parentCountry = parentDetails.country || "India";
+    const parentCountryObj = countries.find(c => c.name === parentCountry);
+    if (parentCountryObj) {
+      const newParentStates = State.getStatesOfCountry(parentCountryObj.isoCode);
+      setParentStates(newParentStates);
+      if (parentDetails.state) {
+        const stateObj = newParentStates.find(s => s.name === parentDetails.state);
+        if (stateObj) {
+          const newCities = City.getCitiesOfState(parentCountryObj.isoCode, stateObj.isoCode);
+          setParentCities(newCities);
+        }
+      } else {
+        setParentCities([]);
+      }
+    }
+  }, [isFetched, countries, orgDetails.country, orgDetails.state, parentDetails.country, parentDetails.state]);
+
+  useEffect(() => {
+    setOrgDetails(prev => ({
+      ...prev,
+      contactPerson: { ...prev.contactPerson, designation: [] }
+    }));
+    setReportingAuthority(prev => ({ ...prev, designation: [] }));
+  }, [selectedType]);
+
+  useEffect(() => {
+    if (sameAsCallingNumber && orgDetails.contactPerson.phone1) {
+      setOrgDetails(prev => ({
+        ...prev,
+        contactPerson: {
+          ...prev.contactPerson,
+          phone2: prev.contactPerson.phone1
+        }
+      }));
+    }
+  }, [sameAsCallingNumber, orgDetails.contactPerson.phone1]);
+
+  useEffect(() => {
+    if (reportingAuthoritySameNumber && reportingAuthority.phone1) {
+      setReportingAuthority(prev => ({
+        ...prev,
+        phone2: prev.phone1
+      }));
+    }
+  }, [reportingAuthoritySameNumber, reportingAuthority.phone1]);
+
+  const checkEmailExists = async (emailToCheck) => {
+    if (!emailToCheck) return false;
+    
+    console.log("🔍 Checking email:", emailToCheck);
+    console.log("🔍 Current user firebase_uid:", firebase_uid);
+    
+    // Firebase check
+    try {
+      const auth = getAuth();
+      const methods = await fetchSignInMethodsForEmail(auth, emailToCheck);
+      console.log("🔥 Firebase methods for email:", methods);
+      if (methods.length > 0) {
+        console.log("🔥 Firebase found methods, checking if different from current email");
+        if (emailToCheck.toLowerCase() !== orgDetails.contactPerson.email.toLowerCase()) {
+          console.log("🔥 Firebase: Email already in use (different from current)");
+          return true;
+        }
+      }
+    } catch (err) {
+      console.warn("Firebase fetchSignInMethodsForEmail error:", err);
+    }
+    
+    // Backend check
+    try {
+      const resp = await axios.get(LOGIN_API_URL, { params: { email: emailToCheck } });
+      console.log("📡 Backend response:", resp.data);
+      console.log("📡 Response status:", resp.status);
+      console.log("📡 Is array:", Array.isArray(resp.data));
+      
+      if (resp.status === 200 && Array.isArray(resp.data)) {
+        // Filter users that actually have the email we're checking
+        const usersWithThisEmail = resp.data.filter(u => 
+          u.email && u.email.toLowerCase() === emailToCheck.toLowerCase()
+        );
+        console.log("📡 Users with this specific email:", usersWithThisEmail);
+        
+        if (usersWithThisEmail.length > 0) {
+          // Check if any user with this email has a different firebase_uid
+          const conflictingUsers = usersWithThisEmail.filter(u => u.firebase_uid !== firebase_uid);
+          console.log("📡 Conflicting users (different firebase_uid):", conflictingUsers);
+          
+          if (conflictingUsers.length > 0) {
+            console.log("📡 Backend: Email already in use (different firebase_uid found)");
+            return true;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Backend login table email check error:", err);
+    }
+    
+    console.log("✅ Email check passed - email is available");
+    return false;
+  };
+
+  const sendEmailOtp = async () => {
+    if (isGoogleAccount) {
+      setEmailVerified(true);
+      toast.info("Google sign-in: Email auto-verified.");
+      return;
+    }
+    const emailToCheck = orgDetails.contactPerson.email.trim().toLowerCase();
+    if (!emailToCheck) {
+      toast.error("Enter a valid email.");
+      return;
+    }
+    setIsVerifying(true);
+    try {
+      const exists = await checkEmailExists(emailToCheck);
+      if (exists) {
+        toast.error("Email already in use.");
+        setIsVerifying(false);
+        return;
+      }
+      await axios.post(`${import.meta.env.VITE_DEV1_API}/otp/create`, {
+        email: emailToCheck
+      });
+      toast.success("OTP sent!");
+      setShowOtpInput(true);
+    } catch (err) {
+      toast.error("OTP send failed.");
+      console.error(err);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const verifyEmailOtp = async () => {
+    setIsVerifying(true);
+    try {
+      await axios.post(`${import.meta.env.VITE_DEV1_API}/otp/verify`, {
+        email: orgDetails.contactPerson.email,
+        otp: emailOtp
+      });
+      try {
+        const auth = getAuth();
+        if (auth.currentUser && orgDetails.contactPerson.email !== auth.currentUser.email) {
+          await updateEmail(auth.currentUser, orgDetails.contactPerson.email);
+        }
+      } catch (err) {
+        console.warn("Firebase updateEmail error:", err);
+        if (err.code === "auth/email-already-in-use") {
+          toast.error("Email already in use");
+          setIsVerifying(false);
+          return;
+        }
+        if (err.code === "auth/requires-recent-login") {
+          toast.error("Please re-login to update email.");
+          setIsVerifying(false);
+          return;
+        }
+      }
+      try {
+        const token = localStorage.getItem("token");
+        const headers = token ? { headers: { Authorization: `Bearer ${token}` } } : undefined;
+        const loginResp = await axios.put(
+          LOGIN_API_URL,
+          {
+            firebase_uid,
+            email: orgDetails.contactPerson.email,
+            name: orgDetails.contactPerson.name,
+            phone_number: orgDetails.contactPerson.phone1
+          },
+          headers
+        );
+        if (loginResp.status !== 200 && loginResp.status !== 201) {
+          throw new Error("Login table not updated");
+        }
+      } catch (err) {
+        console.warn("User table update error:", err);
+      }
+      setEmailVerified(true);
+      setShowOtpInput(false);
+      toast.success("Email verified and updated everywhere!");
+    } catch (err) {
+      toast.error("Invalid OTP");
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const sendPhoneOtp = async () => {
+    if (orgDetails.contactPerson.phone1.length !== 10) {
+      toast.error("Enter a valid 10-digit number");
+      return;
+    }
+    
+    setIsPhoneVerifying(true);
+    const mobileWithCountryCode = `91${orgDetails.contactPerson.phone1}`;
+    
+    try {
+      const response = await axios.post(
+        `${MSG91_API}/otp/send`,
+        {
+          mobile: mobileWithCountryCode,
+          expiry: "10",
+          via: "sendotp"
+        },
+        authHeaders
+      );
+      
+      console.log("✅ Phone OTP Response:", response.data);
+      toast.success("OTP sent to your phone!");
+      setShowPhoneOtpInput(true);
+    } catch (e) {
+      console.error("❌ Phone OTP Error:", e);
+      toast.error(`Failed to send phone OTP: ${e.message}`);
+    } finally {
+      setIsPhoneVerifying(false);
+    }
+  };
+
+  const verifyPhoneOtp = async () => {
+    if (!phoneOtp || phoneOtp.length < 4) {
+      toast.error("Enter a valid OTP");
+      return;
+    }
+    
+    const mobileWithCountryCode = `91${orgDetails.contactPerson.phone1}`;
+    
+    try {
+      const response = await axios.post(
+        `${MSG91_API}/otp/verify`,
+        {
+          mobile: mobileWithCountryCode,
+          otp: phoneOtp,
+          firebase_uid: firebase_uid
+        },
+        authHeaders
+      );
+      
+      console.log("✅ Phone OTP Verification Response:", response.data);
+      
+      // Check if the OTP verification was successful
+      if (response.data && response.data.ok === true && response.data.provider && response.data.provider.type === 'success') {
+        // OTP verification successful
+        toast.success("Phone verified successfully!");
+        setPhoneVerified(true);
+        setShowPhoneOtpInput(false);
+        setPhoneOtp(""); // Clear the OTP input
+        
+        // Update the phone verification status in the database
+        try {
+          console.log("🔍 Phone verification successful - updating database");
+          
+          const updatePayload = {
+            firebase_uid: firebase_uid,
+            is_phone1_verified: 1  // Update the phone verification status
+          };
+          
+          console.log("🔍 Updating phone verification in database:", updatePayload);
+          
+          const updateResponse = await axios.put(
+            API_URL,
+            updatePayload,
+            authHeaders
+          );
+          console.log("✅ Phone verification status updated in database");
+          console.log("🔍 Update Response:", updateResponse.data);
+          
+          // Add a small delay to ensure database update is committed
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Refresh organization details to ensure verification status is loaded
+          try {
+            const resp = await axios.get(API_URL, { params: { firebase_uid } });
+            const raw = Array.isArray(resp.data) ? resp.data[0] : resp.data;
+            if (raw) {
+              setPhoneVerified(raw.is_phone1_verified === 1 || raw.is_phone1_verified === true);
+            }
+          } catch (refreshErr) {
+            console.error("❌ Failed to refresh organization details:", refreshErr);
+          }
+        } catch (updateErr) {
+          console.error("❌ Failed to update phone verification status:", {
+            error: updateErr.message,
+            status: updateErr.response?.status,
+            data: updateErr.response?.data
+          });
+          
+          // If database update fails, show error to user
+          toast.error("Phone verification failed to save. Please try again.");
+        }
+      } else {
+        // OTP verification failed
+        console.log("❌ OTP verification failed:", response.data);
+        toast.error("Invalid OTP. Please try again.");
+        setPhoneOtp(""); // Clear the OTP input for retry
+      }
+    } catch (e) {
+      console.error("❌ Phone OTP Verification Error:", e);
+      if (e.response?.status === 400) {
+        toast.error("Invalid OTP. Please try again.");
+      } else {
+        toast.error(`Phone OTP verification failed: ${e.message}`);
+      }
+      setPhoneOtp(""); // Clear the OTP input for retry
+    }
+  };
+
+  const updateUserEmail = async (newEmail) => {
+    if (!newEmail) return;
+    try {
+      const auth = getAuth();
+      if (auth.currentUser && newEmail !== auth.currentUser.email) {
+        await updateEmail(auth.currentUser, newEmail);
+        toast.success("Firebase email updated");
+      }
+    } catch (err) {
+      console.warn("Firebase updateEmail error:", err);
+      toast.error("Failed to update email in Firebase");
+    }
+    try {
+      const token = localStorage.getItem("token");
+      const headers = token ? { headers: { Authorization: `Bearer ${token}` } } : undefined;
+      const loginResp = await axios.put(
+        LOGIN_API_URL,
+        {
+          firebase_uid,
+          email: newEmail,
+          name: orgDetails.contactPerson.name,
+          phone_number: orgDetails.contactPerson.phone1
+        },
+        headers
+      );
+      if (loginResp.status !== 200 && loginResp.status !== 201) {
+        throw new Error("Login table not updated");
+      }
+    } catch (err) {
+      toast.error("User data update failed!");
+      console.warn("User table update error:", err);
+    }
+  };
+
+  const handleTypeChange = e => setSelectedType(e.target.value);
+
+  const handleInputChange = e => {
+    const { name, value } = e.target;
+    const formattedValue = formatFieldValue(name, value);
+    validateWithFeedback(name, formattedValue, false);
+    setOrgDetails(prev => ({
+      ...prev,
+      [name]: formattedValue,
+      ...(name === "country" ? { state: "", city: "" } : {}),
+      ...(name === "state" ? { city: "" } : {})
+    }));
+  };
+
+  const handleParentInputChange = e => {
+    const { name, value } = e.target;
+    const formattedValue = formatFieldValue(name, value);
+    validateWithFeedback(name, formattedValue, false);
+    setParentDetails(prev => ({ ...prev, [name]: formattedValue }));
+  };
+
+  const handleFileChange = async e => {
+    const files = Array.from(e.target.files);
+    const converted = await Promise.all(
+      files.map(f =>
+        new Promise((res, rej) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(f);
+          reader.onload = () => {
+            const b64 = reader.result.split(",")[1];
+            res({ base64: b64, fileName: f.name });
+          };
+          reader.onerror = rej;
+        })
+      )
+    );
+    setImages(converted);
+  };
+
+  const handleSocialChange = e => {
+    const { name, value } = e.target;
+    setSocialData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleContactPersonChange = e => {
+    const { name, value } = e.target;
+    const formattedValue = formatFieldValue(name, value);
+    validateWithFeedback(name, formattedValue, false);
+    if (name === "phone2" && sameAsCallingNumber) {
+      setSameAsCallingNumber(false);
+    }
+    if (name === "phone1" && sameAsCallingNumber) {
+      setOrgDetails(prev => ({
+        ...prev,
+        contactPerson: {
+          ...prev.contactPerson,
+          [name]: formattedValue,
+          phone2: formattedValue
+        }
+      }));
+    } else {
+      setOrgDetails(prev => ({
+        ...prev,
+        contactPerson: { ...prev.contactPerson, [name]: formattedValue }
+      }));
+    }
+  };
+
+  const handleContactPersonDesignationChange = opts => {
+    setOrgDetails(prev => ({
+      ...prev,
+      contactPerson: {
+        ...prev.contactPerson,
+        designation: opts ? opts.map(o => o.value) : []
+      }
+    }));
+  };
+
+  const handleReportingAuthorityChange = e => {
+    const { name, value } = e.target;
+    const formattedValue = formatFieldValue(name, value);
+    if (name === 'name' && formattedValue.toLowerCase() === orgDetails.contactPerson.name.toLowerCase()) {
+      toast.error("Reporting authority name cannot be same as contact person name");
+      return;
+    }
+    if (name === 'email' && formattedValue.toLowerCase() === orgDetails.contactPerson.email.toLowerCase()) {
+      toast.error("Reporting authority email cannot be same as contact person email");
+      return;
+    }
+    if (name === 'phone1' && formattedValue === orgDetails.contactPerson.phone1) {
+      toast.error("Reporting authority phone number cannot be same as contact person phone number");
+      return;
+    }
+    if (name === 'phone2' && formattedValue === orgDetails.contactPerson.phone2) {
+      toast.error("Reporting authority WhatsApp number cannot be same as contact person WhatsApp number");
+      return;
+    }
+    validateWithFeedback(name, formattedValue, false);
+    if (name === "phone2" && reportingAuthoritySameNumber) {
+      setReportingAuthoritySameNumber(false);
+    }
+    if (name === "phone1" && reportingAuthoritySameNumber) {
+      setReportingAuthority(prev => ({
+        ...prev,
+        [name]: formattedValue,
+        phone2: formattedValue
+      }));
+    } else {
+      setReportingAuthority(prev => ({ ...prev, [name]: formattedValue }));
+    }
+  };
+
+  const handleReportingAuthorityDesignationChange = opts => {
+    const newDesignations = opts ? opts.map(o => o.value) : [];
+    const contactPersonDesignations = new Set(orgDetails.contactPerson.designation);
+    const hasMatchingDesignations = newDesignations.some(d => contactPersonDesignations.has(d));
+    if (hasMatchingDesignations) {
+      toast.error("Reporting authority designation cannot be same as contact person designation");
+      return;
+    }
+    setReportingAuthority(prev => ({
+      ...prev,
+      designation: newDesignations
+    }));
+  };
+
+  const isNonParent = () => selectedType && selectedType !== PARENT_TYPE;
+
+  // ---- /profile_approved HANDLING ----
+  const handleSubmit = async e => {
+    e.preventDefault();
+    const cp = orgDetails.contactPerson;
+    const isParent = selectedType === PARENT_TYPE;
+    const payload = {
+      firebase_uid,
+      type: selectedType || null,
+      name: orgDetails.name || null,
+      website_url: orgDetails.websiteUrl || null,
+      institution_photos: images.length ? images : null,
+      video_url: orgDetails.video || null,
+      pan_number: orgDetails.panNumber || null,
+      pan_name: orgDetails.panName || null,
+      gstin: orgDetails.gstin || null,
+      address: orgDetails.address || null,
+      country: orgDetails.country || null,
+      state: orgDetails.state || null,
+      city: orgDetails.city || null,
+      pincode: orgDetails.pincode || null,
+      contact_person_name: cp.name || null,
+      contact_person_gender: cp.gender || null,
+      contact_person_designation: cp.designation.length ? cp.designation : null,
+      contact_person_other_designation: cp.designation.includes("Others") ? otherContactPersonDesignation : null,
+      contact_person_phone1: cp.phone1 || null,
+      contact_person_phone2: cp.phone2 || null,
+      contact_person_email: cp.email || null,
+      is_owner: isOwner === "yes" ? 1 : 0,
+      reporting_authority_name: isOwner === "no" ? reportingAuthority.name || null : null,
+      reporting_authority_gender: isOwner === "no" ? reportingAuthority.gender || null : null,
+      reporting_authority_designation: isOwner === "no" && reportingAuthority.designation.length
+        ? reportingAuthority.designation : null,
+      reporting_authority_other_designation: isOwner === "no" && reportingAuthority.designation.includes("Others")
+        ? otherReportingAuthorityDesignation : null,
+      phone1: isOwner === "no" ? reportingAuthority.phone1 || null : null,
+      phone2: isOwner === "no" ? reportingAuthority.phone2 || null : null,
+      email: isOwner === "no" ? reportingAuthority.email || null : null,
+      parent_address: isParent ? parentDetails.address || null : null,
+      parent_country: isParent ? parentDetails.country || null : null,
+      parent_state: isParent ? parentDetails.state || null : null,
+      parent_city: isParent ? parentDetails.city || null : null,
+      parent_pincode: isParent ? parentDetails.pincode || null : null,
+      facebook: socialData.facebook || null,
+      twitter: socialData.twitter || null,
+      linkedin: socialData.linkedin || null,
+      instagram: socialData.instagram || null,
+             is_email_verified: isGoogleAccount ? 1 : (emailVerified ? 1 : 0),
+       is_phone1_verified: phoneVerified ? 1 : 0,
+       is_phone2_verified: 0,
+       isBlocked: 0
+    };
+
+    setIsSaving(true);
+    try {
+      let result;
+      if (originalType) {
+        result = await axios.put(API_URL, payload);
+      } else {
+        result = await axios.post(API_URL, payload);
+      }
+      if (result.status === 200 || result.status === 201) {
+        toast.success("Organization details saved!");
+        toast.info("Thank you for providing details. Your profile is now under review by Admin! You will be notified soon");
+        
+        // Update login endpoint with organization name
+        try {
+          await axios.put(
+            LOGIN_API_URL,
+            {
+              firebase_uid: firebase_uid,
+              email: cp.email,
+              name: orgDetails.name || cp.name, // Use organization name if available, otherwise contact person name
+              phone_number: cp.phone1,
+            },
+            { headers: { "Content-Type": "application/json" } }
+          );
+          console.log("✅ Login endpoint updated successfully with organization name:", orgDetails.name);
+        } catch (loginError) {
+          console.error("❌ Failed to update login endpoint:", loginError);
+          console.error("Login update payload:", {
+            firebase_uid: firebase_uid,
+            email: cp.email,
+            name: orgDetails.name || cp.name,
+            phone_number: cp.phone1,
+          });
+        }
+      } else {
+        toast.error("Failed to save details. Try again.");
+      }
+
+      // PROFILE_APPROVED logic
+      let exists = false;
+      let existingRow = null;
+      try {
+        const checkRes = await axios.get(`${PROFILE_APPROVED_API}?firebase_uid=${firebase_uid}`);
+        if (Array.isArray(checkRes.data) && checkRes.data.length > 0) {
+          existingRow = checkRes.data.find(obj => obj.firebase_uid === firebase_uid);
+        } else if (typeof checkRes.data === "object" && checkRes.data !== null && checkRes.data.firebase_uid === firebase_uid) {
+          existingRow = checkRes.data;
+        }
+        if (existingRow) exists = true;
+      } catch (err) {}
+
+      if (exists) {
+        await axios.put(PROFILE_APPROVED_API, {
+          firebase_uid: firebase_uid,
+          isApproved: 0,
+          isRejected: 0,
+          response: 0,
+          profile_updated: 1,
+          approved_by: "",
+          approved_email: "",
+          education_updated: "",
+          additionalDetails_updated: "",
+          profile_image_updated: ""
+        });
+      } else {
+        await axios.post(PROFILE_APPROVED_API, {
+          firebase_uid: firebase_uid,
+          isApproved: 0,
+          isRejected: 0,
+          response: 0,
+          profile_updated: 0,
+          approved_by: "",
+          approved_email: "",
+          education_updated: "",
+          additionalDetails_updated: "",
+          profile_image_updated: ""
+        });
+      }
+    } catch (err) {
+      toast.error("Failed to save organization details");
+      console.error("Save error:", err, err?.response?.data);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="bg-gray-50 min-h-screen p-6">
+      <form onSubmit={handleSubmit} className="max-w-6xl mx-auto">
+        {/* Organization Type Selection */}
+        <div className="mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Organization/Entity Type
+              </label>
+              <select
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                value={selectedType}
+                onChange={handleTypeChange}
+                required
+              >
+                <option value="" disabled>Select Organization/Entity Type</option>
+                <option value="School / College/ University">School / College/ University</option>
+                <option value="Coaching Centers/ Institutes">Coaching Centers/ Institutes</option>
+                <option value="Ed Tech company">Ed Tech company</option>
+                <option value={PARENT_TYPE}>Parent/ Guardian looking for Tuitions</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Account Details Section */}
+        {selectedType && (
+          <CollapsibleSection title="Account Details" defaultOpen={true}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Organization Name */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  School / College / University
+                </label>
+                <input
+                  name="name"
+                  type="text"
+                  placeholder="School / College / University"
+                  className="w-full px-4 py-3 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-700"
+                  value={orgDetails.name}
+                  onChange={handleInputChange}
+                  required
+                  maxLength={50}
+                  minLength={10}
+                />
+              </div>
+
+              {/* Website URL */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Website URL
+                </label>
+                <input
+                  name="websiteUrl"
+                  type="text"
+                  placeholder="Website URL"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                  value={orgDetails.websiteUrl}
+                  onChange={handleInputChange}
+                  onBlur={(e) => validateWithFeedback('websiteUrl', e.target.value, true)}
+                />
+              </div>
+
+              {/* Address Proof Dropdown */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Select Address Proof University
+                </label>
+                <select className="w-full px-4 py-3 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-700">
+                  <option value="" disabled>Select Address Proof University</option>
+                  <option value="bank-statement">Bank Account Statement</option>
+                  <option value="credit-card">Credit Card Statement</option>
+                  <option value="tax-certificate">Service Tax / Sales Tax/ TAN</option>
+                  <option value="govt-registration">Govt. Registration Certificate</option>
+                  <option value="rent-agreement">Rent Agreement / Lease Proof</option>
+                  <option value="incorporation">Certificate of Incorporation</option>
+                  <option value="shop-establishment">Shop and Establishment certificate</option>
+                  <option value="telephone-bill">Telephone Bill</option>
+                  <option value="electricity-bill">Electricity Bill</option>
+                  <option value="water-bill">Water Bill</option>
+                  <option value="aadhar-passport">Aadhar Card / Passport/Driver's License</option>
+                </select>
+              </div>
+
+              {/* Upload Address Proof */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Upload Address Proof
+                </label>
+                <div className="flex items-center justify-center w-full px-4 py-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <span className="text-sm text-gray-600">Upload Address Proof</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upload PAN Card */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Upload PAN card
+                </label>
+                <div className="flex items-center justify-center w-full px-4 py-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <span className="text-sm text-gray-600">Upload PAN card</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* PAN Number */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  PAN Number
+                </label>
+                <input
+                  name="panNumber"
+                  type="text"
+                  placeholder="PAN Number"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                  value={orgDetails.panNumber}
+                  onChange={handleInputChange}
+                  onBlur={(e) => validateWithFeedback('panNumber', e.target.value, true)}
+                  pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                  title="Enter a valid 10-character PAN number (e.g., ABCDE1234F)"
+                  minLength={10}
+                  maxLength={10}
+                />
+              </div>
+
+              {/* Name on PAN Number */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Name on PAN Number
+                </label>
+                <input
+                  name="panName"
+                  type="text"
+                  placeholder="Name on PAN Number"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                  value={orgDetails.panName}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              {/* GSTIN */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  GSTIN
+                </label>
+                <input
+                  name="gstin"
+                  type="text"
+                  placeholder="GSTIN"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                  value={orgDetails.gstin}
+                  onChange={handleInputChange}
+                  onBlur={(e) => validateWithFeedback('gstin', e.target.value, true)}
+                  pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
+                  title="Enter a valid 15-character GSTIN (e.g., 27AAPFU0939F1Z5)"
+                  minLength={15}
+                  maxLength={15}
+                />
+              </div>
+
+              {/* Street / Area */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Street / Area
+                </label>
+                <input
+                  name="address"
+                  type="text"
+                  placeholder="Street / Area"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                  value={orgDetails.address}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              {/* State Dropdown */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  State
+                </label>
+                <Select
+                  name="state"
+                  options={states.map(s => ({ value: s.name, label: s.name, isoCode: s.isoCode }))}
+                  value={states.find(s => s.name === orgDetails.state) ?
+                    { value: orgDetails.state, label: orgDetails.state } : null}
+                  onChange={(selectedOption) => {
+                    const stateName = selectedOption ? selectedOption.value : "";
+                    const stateCode = selectedOption ? selectedOption.isoCode : "";
+                    setOrgDetails(prev => ({
+                      ...prev,
+                      state: stateName,
+                      city: ""
+                    }));
+                    if (stateCode && orgDetails.country) {
+                      const countryCode = countries.find(c => c.name === orgDetails.country)?.isoCode;
+                      if (countryCode) {
+                        const newCities = City.getCitiesOfState(countryCode, stateCode);
+                        setCities(newCities);
+                      }
+                    } else {
+                      setCities([]);
+                    }
+                  }}
+                  placeholder="Andhra Pradesh"
+                  className="custom-select"
+                  isSearchable
+                  isDisabled={!states.length}
+                />
+              </div>
+
+              {/* City Dropdown */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  City
+                </label>
+                <Select
+                  name="city"
+                  options={cities.map(c => ({ value: c.name, label: c.name }))}
+                  value={cities.find(c => c.name === orgDetails.city) ?
+                    { value: orgDetails.city, label: orgDetails.city } : null}
+                  onChange={(selectedOption) => {
+                    const cityName = selectedOption ? selectedOption.value : "";
+                    setOrgDetails(prev => ({
+                      ...prev,
+                      city: cityName
+                    }));
+                  }}
+                  placeholder="City"
+                  className="custom-select"
+                  isSearchable
+                  isDisabled={!cities.length}
+                />
+              </div>
+
+              {/* Country Dropdown */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Country
+                </label>
+                <Select
+                  name="country"
+                  options={countries.map(c => ({ value: c.name, label: c.name, isoCode: c.isoCode }))}
+                  value={countries.find(c => c.name === orgDetails.country) ?
+                    { value: orgDetails.country, label: orgDetails.country } : null}
+                  onChange={(selectedOption) => {
+                    const countryName = selectedOption ? selectedOption.value : "";
+                    const countryCode = selectedOption ? selectedOption.isoCode : "";
+                    setOrgDetails(prev => ({
+                      ...prev,
+                      country: countryName,
+                      state: "",
+                      city: ""
+                    }));
+                    if (countryCode) {
+                      const newStates = State.getStatesOfCountry(countryCode);
+                      setStates(newStates);
+                    } else {
+                      setStates([]);
+                    }
+                    setCities([]);
+                  }}
+                  placeholder="India"
+                  className="custom-select"
+                  isSearchable
+                />
+              </div>
+
+              {/* Pincode */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Pincode
+                </label>
+                <input
+                  name="pincode"
+                  type="text"
+                  placeholder="Pincode"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                  value={orgDetails.pincode}
+                  onChange={handleInputChange}
+                  onBlur={(e) => validateWithFeedback('pincode', e.target.value, true)}
+                  pattern="^[1-9][0-9]{5}$"
+                  title="Enter a valid 6-digit pincode"
+                  minLength={6}
+                  maxLength={6}
+                />
+              </div>
+
+              {/* Organization Name Field */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Organization Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Inspire Edge"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                  value={orgDetails.name}
+                  readOnly
+                />
+              </div>
+            </div>
+          </CollapsibleSection>
+        )}
+
+        {/* Contact Person Section */}
+        {selectedType && (
+          <CollapsibleSection title="Contact Person" defaultOpen={true}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Contact Person Name */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Name"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                  value={orgDetails.contactPerson.name}
+                  onChange={handleContactPersonChange}
+                  required
+                />
+              </div>
+
+              {/* Gender */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Gender
+                </label>
+                <input
+                  type="text"
+                  name="gender"
+                  placeholder="Gender"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                  value={orgDetails.contactPerson.gender}
+                  onChange={handleContactPersonChange}
+                />
+              </div>
+
+              {/* Designation */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Designation
+                </label>
+                <Select
+                  isMulti
+                  options={designations}
+                  value={designations.filter(opt =>
+                    orgDetails.contactPerson.designation.includes(opt.value)
+                  )}
+                  onChange={handleContactPersonDesignationChange}
+                  placeholder="Designation"
+                  className="custom-select"
+                />
+              </div>
+
+              {/* Mobile Number with Verification */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Mobile Number
+                </label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    name="phone1"
+                    placeholder="Mobile Number"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                    value={orgDetails.contactPerson.phone1}
+                    onChange={handleContactPersonChange}
+                    onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
+                    maxLength="10"
+                    required
+                    disabled={phoneVerified}
+                  />
+                  {phoneVerified ? (
+                    <FaCheckCircle className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <button
+                      type="button"
+                      className="px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      onClick={sendPhoneOtp}
+                      disabled={isPhoneVerifying}
+                    >
+                      {isPhoneVerifying ? "Sending..." : "Verify"}
+                    </button>
+                  )}
+                </div>
+                {showPhoneOtpInput && !phoneVerified && (
+                  <div className="flex items-center space-x-2 mt-2">
+                    <input
+                      type="text"
+                      placeholder="Enter Phone OTP"
+                      value={phoneOtp}
+                      onChange={(e) => setPhoneOtp(e.target.value)}
+                      maxLength="6"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <button
+                      type="button"
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                      onClick={verifyPhoneOtp}
+                      disabled={isPhoneVerifying}
+                    >
+                      {isPhoneVerifying ? "Verifying..." : "Submit"}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Email Address with Verification */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Email Address
+                </label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="email"
+                    name="email"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                    placeholder="Email Address"
+                    value={orgDetails.contactPerson.email}
+                    onChange={handleContactPersonChange}
+                    onBlur={(e) => validateWithFeedback('email', e.target.value, true)}
+                    required
+                    disabled={isGoogleAccount || emailVerified}
+                  />
+                  {(isGoogleAccount || emailVerified) ? (
+                    <FaCheckCircle className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <button
+                      type="button"
+                      className="px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      onClick={sendEmailOtp}
+                      disabled={isVerifying}
+                    >
+                      {isVerifying ? "Sending…" : "Verify"}
+                    </button>
+                  )}
+                </div>
+                {showOtpInput && !emailVerified && !isGoogleAccount && (
+                  <div className="flex items-center space-x-2 mt-2">
+                    <input
+                      type="text"
+                      placeholder="Enter OTP"
+                      value={emailOtp}
+                      onChange={e => setEmailOtp(e.target.value)}
+                      maxLength="6"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <button
+                      type="button"
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                      onClick={verifyEmailOtp}
+                      disabled={isVerifying}
+                    >
+                      {isVerifying ? "Verifying…" : "Submit"}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* WhatsApp Number */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Whats app Number
+                </label>
+                <input
+                  type="text"
+                  name="phone2"
+                  placeholder="Whats app Number"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                  value={orgDetails.contactPerson.phone2}
+                  onChange={handleContactPersonChange}
+                  onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
+                  maxLength="10"
+                  disabled={sameAsCallingNumber}
+                />
+              </div>
+
+              {/* Checkboxes */}
+              <div className="col-span-2 space-y-4">
+                <label className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    checked={sameAsCallingNumber}
+                    onChange={(e) => setSameAsCallingNumber(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">Whatsapp Number same as Mobile Number</span>
+                </label>
+
+                {isNonParent() && (
+                  <label className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={isOwner === "yes"}
+                      onChange={(e) => setIsOwner(e.target.checked ? "yes" : "no")}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">Are you the owner or the main head of the organization?</span>
+                  </label>
+                )}
+              </div>
+            </div>
+          </CollapsibleSection>
+        )}
+
+        {/* Submit Button */}
+        {selectedType && (
+          <div className="mt-8 text-center">
+            <button 
+              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium"
+              type="submit"
+              disabled={isSaving}
+            >
+              {isSaving ? "Saving..." : "Save details"}
+            </button>
+          </div>
+        )}
+      </form>
+    </div>
+  );
+};
+
+export default OrgDetails;

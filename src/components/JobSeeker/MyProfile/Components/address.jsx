@@ -365,139 +365,219 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
   };
 
   return (
-    <form onSubmit={handleSubmit} className={`address ${className}`}>
-      <div className="row">
+    <form onSubmit={handleSubmit} className={`rounded-lg p-6 ${className}`} style={{backgroundColor: '#F0D8D9'}}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* PERMANENT ADDRESS */}
-        <h6>Permanent Address</h6>
-        <div className="form-group col-lg-4 col-md-12">
-          <div className="input-wrapper">
+        <div className="w-full md:col-span-2">
+          <h6 className="text-gray-700 font-medium mb-3">Permanent Address</h6>
+        </div>
+        
+        <div className="w-full">
           <Select
             required
             id="permanentCountry"
             name="permanentCountry"
             placeholder="Permanent Country"
-            className="custom-select required"
+            className="react-select-container"
+            classNamePrefix="react-select"
             options={countries}
             value={localFormData.permanentAddress.country}
             onChange={(option) => handleAddressChange("permanentAddress", "country", option)}
             isClearable={false}
+            styles={{
+              control: (base, state) => ({
+                ...base,
+                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                '&:hover': { borderColor: '#FDA4AF' },
+                borderRadius: '0.5rem',
+                padding: '0.25rem',
+                backgroundColor: 'white'
+              }),
+              dropdownIndicator: (base) => ({
+                ...base,
+                color: '#EF4444'
+              })
+            }}
           />
-          <span className="custom-tooltip">Permanent Country</span>
-          </div>
         </div>
 
-        <div className="form-group col-lg-4 col-md-12">
-          <div className="input-wrapper">
+        <div className="w-full">
           <Select
             required
             id="permanentState"
             name="permanentState"
             placeholder="Permanent State"
-            className="custom-select required"
+            className="react-select-container"
+            classNamePrefix="react-select"
             options={getStates(localFormData.permanentAddress.country?.value)}
             value={localFormData.permanentAddress.state}
             onChange={(option) => handleAddressChange("permanentAddress", "state", option)}
             isDisabled={!localFormData.permanentAddress.country}
             isClearable={false}
+            styles={{
+              control: (base, state) => ({
+                ...base,
+                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                '&:hover': { borderColor: '#FDA4AF' },
+                borderRadius: '0.5rem',
+                padding: '0.25rem',
+                backgroundColor: 'white'
+              }),
+              dropdownIndicator: (base) => ({
+                ...base,
+                color: '#EF4444'
+              })
+            }}
           />
-          <span className="custom-tooltip">Permanent State</span>
-          </div>
         </div>
 
         {permanentCity && (
-            <div className="form-group col-lg-4 col-md-12">
-            <div className="input-wrapper">
+          <div className="w-full">
             <Select
               id="permanentCity"
               name="permanentCity"
               placeholder="Permanent City"
-              className="custom-select"
+              className="react-select-container"
+              classNamePrefix="react-select"
               options={getCities(localFormData.permanentAddress.state?.value)}
               value={localFormData.permanentAddress.city}
               onChange={(option) => handleAddressChange("permanentAddress", "city", option)}
               isDisabled={!localFormData.permanentAddress.state}
               isClearable={false}
+              styles={{
+                control: (base, state) => ({
+                  ...base,
+                  borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                  boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                  '&:hover': { borderColor: '#FDA4AF' },
+                  borderRadius: '0.5rem',
+                  padding: '0.25rem',
+                  backgroundColor: 'white'
+                }),
+                dropdownIndicator: (base) => ({
+                  ...base,
+                  color: '#EF4444'
+                })
+              }}
             />
-            <span className="custom-tooltip">Permanent City</span>
-            </div>
           </div>
         )}
 
         {/* PRESENT ADDRESS CHECKBOX */}
-        <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "500" }}>
-          <input
-            id="sameAsPermanent"
-            name="sameAsPermanent"
-            type="checkbox"
-            onChange={handleSameAsPermanent}
-            checked={localFormData.presentAddress.sameAsPermanent}
-            style={{ marginRight: "10px" }}
-          />
-          Present Address (Same as Permanent Address)
-        </label>
+        <div className="w-full md:col-span-2">
+          <label className="flex items-center gap-3 my-4">
+            <input
+              id="sameAsPermanent"
+              name="sameAsPermanent"
+              type="checkbox"
+              onChange={handleSameAsPermanent}
+              checked={localFormData.presentAddress.sameAsPermanent}
+              className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
+            />
+            <span className="text-sm text-gray-700">Present Address (Same as Permanent Address)</span>
+          </label>
+        </div>
 
         {/* PRESENT ADDRESS */}
         {!localFormData.presentAddress.sameAsPermanent && (
           <>
-            <div className="form-group col-lg-4 col-md-12">
-              <div className="input-wrapper">
+            <div className="w-full">
               <Select
                 required
                 id="presentCountry"
                 name="presentCountry"
                 placeholder="Present Country"
-                className="custom-select required"
+                className="react-select-container"
+                classNamePrefix="react-select"
                 options={countries}
                 value={localFormData.presentAddress.country}
                 onChange={(option) => handleAddressChange("presentAddress", "country", option)}
                 isClearable={false}
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                    '&:hover': { borderColor: '#FDA4AF' },
+                    borderRadius: '0.5rem',
+                    padding: '0.25rem',
+                    backgroundColor: 'white'
+                  }),
+                  dropdownIndicator: (base) => ({
+                    ...base,
+                    color: '#EF4444'
+                  })
+                }}
               />
-              <span className="custom-tooltip">Present Country</span>
-              </div>
             </div>
 
-            <div className="form-group col-lg-4 col-md-12">
-              <div className="input-wrapper">
+            <div className="w-full">
               <Select
                 required
                 id="presentState"
                 name="presentState"
                 placeholder="Present State"
-                className="custom-select required"
+                className="react-select-container"
+                classNamePrefix="react-select"
                 options={getStates(localFormData.presentAddress.country?.value)}
                 value={localFormData.presentAddress.state}
                 onChange={(option) => handleAddressChange("presentAddress", "state", option)}
                 isDisabled={!localFormData.presentAddress.country}
                 isClearable={false}
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                    '&:hover': { borderColor: '#FDA4AF' },
+                    borderRadius: '0.5rem',
+                    padding: '0.25rem',
+                    backgroundColor: 'white'
+                  }),
+                  dropdownIndicator: (base) => ({
+                    ...base,
+                    color: '#EF4444'
+                  })
+                }}
               />
-              <span className="custom-tooltip">Present State</span>
-              </div>
             </div>
 
             {presentCity && (
-              <div className="form-group col-lg-4 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
                 <Select
                   id="presentCity"
                   name="presentCity"
                   placeholder="Present City"
-                  className="custom-select"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
                   options={getCities(localFormData.presentAddress.state?.value)}
                   value={localFormData.presentAddress.city}
                   onChange={(option) => handleAddressChange("presentAddress", "city", option)}
                   isDisabled={!localFormData.presentAddress.state}
                   isClearable={false}
+                  styles={{
+                    control: (base, state) => ({
+                      ...base,
+                      borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                      boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                      '&:hover': { borderColor: '#FDA4AF' },
+                      borderRadius: '0.5rem',
+                      padding: '0.25rem',
+                      backgroundColor: 'white'
+                    }),
+                    dropdownIndicator: (base) => ({
+                      ...base,
+                      color: '#EF4444'
+                    })
+                  }}
                 />
-                <span className="custom-tooltip">Present City</span>
-                </div>
               </div>
             )}
           </>
         )}
       </div>
-
-      {/* SAVE BUTTON - Hidden for auto-save */}
-      {/* Auto-save handles saving when clicking Next */}
     </form>
   );
 });

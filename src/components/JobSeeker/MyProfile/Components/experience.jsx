@@ -838,7 +838,7 @@ const Experience = forwardRef(({
   }));
 
   return (
-    <div className="work-experience-section">
+    <div className="rounded-lg p-6" style={{backgroundColor: '#F0D8D9'}}>
       {/* Total and Teaching Experience */}
       <div className="experience-row">
         <div className="experience-col">
@@ -1087,13 +1087,14 @@ const Experience = forwardRef(({
               )}
             </div>
 
-            <div className="row">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Organization Name */}
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
+                <label htmlFor={`organizationName-${index}`} className="block text-sm font-medium text-gray-700 mb-2">Organization Name</label>
                 <input
                   type="text"
-                  className="form-control"
+                  id={`organizationName-${index}`}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                   maxLength="20"
                   value={experience.organizationName}
                   onChange={(e) => {
@@ -1104,15 +1105,15 @@ const Experience = forwardRef(({
                   placeholder="Name of the organization"
                   required
                 />
-                <span className="custom-tooltip">Name of the organization</span>
-                </div>
               </div>
 
               {/* Job Category */}
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
+                <label htmlFor={`jobCategory-${index}`} className="block text-sm font-medium text-gray-700 mb-2">Job Category</label>
                 <select
-                  className="custom-select"
+                  id={`jobCategory-${index}`}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                   value={experience.jobCategory || ""}
                   onChange={(e) => {
                     const newArr = [...experienceEntries];
@@ -1125,15 +1126,15 @@ const Experience = forwardRef(({
                   <option value="fullTime">Full Time</option>
                   <option value="partTime">Part Time</option>
                 </select>
-                <span className="custom-tooltip">Job Category</span>
-                </div>
               </div>
 
               {/* Job Type */}
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
+                <label htmlFor={`jobType-${index}`} className="block text-sm font-medium text-gray-700 mb-2">Job Type</label>
                 <select
-                  className="form-select"
+                  id={`jobType-${index}`}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                   value={experience.jobType}
                   onChange={(e) => {
                     const newArr = [...experienceEntries];
@@ -1149,15 +1150,15 @@ const Experience = forwardRef(({
                     Education - Teaching + Non - Teaching
                   </option>
                 </select>
-                <span className="custom-tooltip">Job Type</span>
-                </div>
               </div>
 
               {/* Currently Working */}
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
+                <label htmlFor={`currentlyWorking-${index}`} className="block text-sm font-medium text-gray-700 mb-2">Currently Working</label>
                 <select
-                  className="custom-select"
+                  id={`currentlyWorking-${index}`}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                   value={
                     experience.currentlyWorking === null
                       ? ""
@@ -1178,16 +1179,15 @@ const Experience = forwardRef(({
                   <option value="yes">Yes</option>
                   <option value="no">No</option>
                 </select>
-                <span className="custom-tooltip">Are you currently working here?</span>
-                </div>
               </div>
 
               {/* Work Period: From */}
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
-                <label>Worked from</label>
-                <div className="date-selector" style={{ display: "flex", gap: 5 }}>
+              <div className="w-full">
+                <label htmlFor={`workFrom-${index}`} className="block text-sm font-medium text-gray-700 mb-2">Worked From</label>
+                <div className="flex gap-2">
                   <select
+                    className="flex-1 px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                     value={experience.work_from_month}
                     onChange={(e) => {
                       const newArr = [...experienceEntries];
@@ -1208,6 +1208,8 @@ const Experience = forwardRef(({
                     ))}
                   </select>
                   <select
+                    className="flex-1 px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                     value={experience.work_from_year}
                     onChange={(e) => {
                       const newArr = [...experienceEntries];
@@ -1229,17 +1231,16 @@ const Experience = forwardRef(({
                     })}
                   </select>
                 </div>
-                <span className="custom-tooltip">Worked from</span>
-                </div>
               </div>
 
               {/* Work Period: Till */}
               {!experience.currentlyWorking && (
-                <div className="form-group col-lg-6 col-md-12">
-                  <div className="input-wrapper">
-                  <label>Worked till</label>
-                  <div className="date-selector" style={{ display: "flex", gap: 5 }}>
+                <div className="w-full">
+                  <label htmlFor={`workTill-${index}`} className="block text-sm font-medium text-gray-700 mb-2">Worked Till</label>
+                  <div className="flex gap-2">
                     <select
+                      className="flex-1 px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                       value={experience.work_till_month}
                       onChange={(e) => {
                         const newArr = [...experienceEntries];
@@ -1260,6 +1261,8 @@ const Experience = forwardRef(({
                       ))}
                     </select>
                     <select
+                      className="flex-1 px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                       value={experience.work_till_year}
                       onChange={(e) => {
                         const newArr = [...experienceEntries];
@@ -1281,21 +1284,19 @@ const Experience = forwardRef(({
                       })}
                     </select>
                   </div>
-                  <span className="custom-tooltip">Worked till</span>
-                  </div>
                 </div>
               )}
 
               {/* Salary */}
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
-                <label>Salary</label>
-                <div className="salary-input d-flex align-items-center">
-                  <span>Rs.</span>
+              <div className="w-full">
+                <label htmlFor={`salary-${index}`} className="block text-sm font-medium text-gray-700 mb-2">Salary</label>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-700">Rs.</span>
                   <input
+                    id={`salary-${index}`}
                     required
                     type="number"
-                    className="form-control"
+                    className="flex-1 px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     step="0.1"
                     min="0"
                     value={experience.salary}
@@ -1305,475 +1306,589 @@ const Experience = forwardRef(({
                       setExperienceEntries(newArr);
                     }}
                     placeholder="Salary"
-                    style={{ maxWidth: "200px", marginLeft: 8, marginRight: 8 }}
                   />
-                  {experience.jobCategory === "fullTime" ? "in LPA" : "per hour"}
-                </div>
-                <span className="custom-tooltip">Salary</span>
+                  <span className="text-gray-700">{experience.jobCategory === "fullTime" ? "in LPA" : "per hour"}</span>
                 </div>
               </div>
+            </div>
 
-              {/* TEACHING FIELDS */}
-              {experience.jobType === "teaching" && (
-                <div className="row">
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+            {/* TEACHING FIELDS */}
+            {experience.jobType === "teaching" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="w-full">
+                  <Select
+                    options={teachingDesignations}
+                    value={teachingDesignations.find(
+                      (opt) => opt.value === experience.teachingDesignation
+                    )}
+                    onChange={(selected) => {
+                      const newArr = [...experienceEntries];
+                      newArr[index].teachingDesignation = selected?.value || "";
+                      setExperienceEntries(newArr);
+                    }}
+                    placeholder="Teaching designation"
+                    isClearable
+                    className={`custom-select ${
+                      !experience.teachingDesignation ? "required" : ""
+                    }`}
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
+                  />
+                </div>
+                {experience.teachingDesignation === "Others" && (
+                  <div className="w-full">
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      value={experience.otherTeachingDesignation}
+                      onChange={(e) => {
+                        const newArr = [...experienceEntries];
+                        newArr[index].otherTeachingDesignation = e.target.value;
+                        setExperienceEntries(newArr);
+                      }}
+                      placeholder="Specify other designation"
+                      required
+                    />
+                  </div>
+                )}
+
+                {excludeTeachingCurriculum && (
+                  <div className="w-full">
                     <Select
-                      options={teachingDesignations}
-                      value={teachingDesignations.find(
-                        (opt) => opt.value === experience.teachingDesignation
+                      options={curriculum}
+                      value={curriculum.find(
+                        (opt) => opt.value === experience.teachingCurriculum
                       )}
                       onChange={(selected) => {
                         const newArr = [...experienceEntries];
-                        newArr[index].teachingDesignation = selected?.value || "";
+                        newArr[index].teachingCurriculum = selected?.value || "";
                         setExperienceEntries(newArr);
                       }}
-                      placeholder="Teaching designation"
+                      placeholder="Curriculum"
                       isClearable
-                      className={`custom-select ${
-                        !experience.teachingDesignation ? "required" : ""
-                      }`}
+                      styles={{
+                        control: (base, state) => ({
+                          ...base,
+                          borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                          boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                          '&:hover': { borderColor: '#FDA4AF' },
+                          borderRadius: '0.5rem',
+                          padding: '0.25rem',
+                          backgroundColor: 'white'
+                        }),
+                        dropdownIndicator: (base) => ({
+                          ...base,
+                          color: '#EF4444'
+                        })
+                      }}
                     />
-                    <span className="custom-tooltip">Teaching designation</span>
-                    </div>
                   </div>
-                  {experience.teachingDesignation === "Others" && (
-                    <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                      <input
-                        type="text"
-                        value={experience.otherTeachingDesignation}
-                        onChange={(e) => {
-                          const newArr = [...experienceEntries];
-                          newArr[index].otherTeachingDesignation = e.target.value;
-                          setExperienceEntries(newArr);
-                        }}
-                        placeholder="Specify other designation"
-                        required
-                      />
-                      <span className="custom-tooltip">Specify other designation</span>
-                    </div>
-                    </div>
-                  )}
-
-                  {excludeTeachingCurriculum && (
-                    <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                      <Select
-                        options={curriculum}
-                        value={curriculum.find(
-                          (opt) => opt.value === experience.teachingCurriculum
-                        )}
-                        onChange={(selected) => {
-                          const newArr = [...experienceEntries];
-                          newArr[index].teachingCurriculum = selected?.value || "";
-                          setExperienceEntries(newArr);
-                        }}
-                        placeholder="Curriculum"
-                        isClearable
-                      />
-                      <span className="custom-tooltip">Curriculum</span>
-                      </div>
-                    </div>
-                  )}
-                  {experience.teachingCurriculum === "Others" && (
-                    <div className="form-group col-lg-6 col-md-12">
-                      <div className="input-wrapper">
-                      <input
-                        type="text"
-                        value={experience.otherTeachingCurriculum}
-                        onChange={(e) => {
-                          const newArr = [...experienceEntries];
-                          newArr[index].otherTeachingCurriculum = e.target.value;
-                          setExperienceEntries(newArr);
-                        }}
-                        placeholder="Specify other curriculum"
-                      />
-                      <span className="custom-tooltip">Specify other curriculum</span>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                    <Select
-                      isMulti
-                      options={subjectsOptions}
-                      value={subjectsOptions.filter((opt) =>
-                        experience.teachingSubjects.includes(opt.value)
-                      )}
-                      onChange={(selected) => {
+                )}
+                {experience.teachingCurriculum === "Others" && (
+                  <div className="w-full">
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      value={experience.otherTeachingCurriculum}
+                      onChange={(e) => {
                         const newArr = [...experienceEntries];
-                        newArr[index].teachingSubjects = selected
-                          ? selected.map((item) => item.value)
-                          : [];
+                        newArr[index].otherTeachingCurriculum = e.target.value;
                         setExperienceEntries(newArr);
                       }}
-                      placeholder="Subjects you handled"
-                      isClearable
-                      className={`custom-select ${
-                        experience.teachingSubjects && experience.teachingSubjects.length
-                          ? ""
-                          : "required"
-                      }`}
+                      placeholder="Specify other curriculum"
                     />
-                    <span className="custom-tooltip">Subjects you handled</span>
-                    </div>
                   </div>
-                  {experience.teachingSubjects.includes("Others") && (
-                    <div className="form-group col-lg-6 col-md-12">
-                      <div className="input-wrapper">
-                      <input
-                        type="text"
-                        value={experience.otherTeachingSubjects}
-                        onChange={(e) => {
-                          const newArr = [...experienceEntries];
-                          newArr[index].otherTeachingSubjects = e.target.value;
-                          setExperienceEntries(newArr);
-                        }}
-                        placeholder="Specify other subjects"
-                        required
-                      />
-                      <span className="custom-tooltip">Specify other subjects</span>
-                      </div>
-                    </div>
-                  )}
+                )}
 
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                    <Select
-                      isMulti
-                      options={grades}
-                      value={grades.filter((opt) =>
-                        experience.teachingGrades.includes(opt.value)
-                      )}
-                      onChange={(selected) => {
+                <div className="w-full">
+                  <Select
+                    isMulti
+                    options={subjectsOptions}
+                    value={subjectsOptions.filter((opt) =>
+                      experience.teachingSubjects.includes(opt.value)
+                    )}
+                    onChange={(selected) => {
+                      const newArr = [...experienceEntries];
+                      newArr[index].teachingSubjects = selected
+                        ? selected.map((item) => item.value)
+                        : [];
+                      setExperienceEntries(newArr);
+                    }}
+                    placeholder="Subjects you handled"
+                    isClearable
+                    className={`custom-select ${
+                      experience.teachingSubjects && experience.teachingSubjects.length
+                        ? ""
+                        : "required"
+                    }`}
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
+                  />
+                </div>
+                {experience.teachingSubjects.includes("Others") && (
+                  <div className="w-full">
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      value={experience.otherTeachingSubjects}
+                      onChange={(e) => {
                         const newArr = [...experienceEntries];
-                        newArr[index].teachingGrades = selected
-                          ? selected.map((item) => item.value)
-                          : [];
+                        newArr[index].otherTeachingSubjects = e.target.value;
                         setExperienceEntries(newArr);
                       }}
-                      placeholder="Grades you handled"
-                      isClearable
-                      className={`custom-select ${
-                        experience.teachingGrades && experience.teachingGrades.length
-                          ? ""
-                          : "required"
-                      }`}
+                      placeholder="Specify other subjects"
+                      required
                     />
-                    <span className="custom-tooltip">Grades you handled</span>
-                    </div>
                   </div>
+                )}
 
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                    <Select
-                      isMulti
-                      options={coreExpertise}
-                      value={coreExpertise.filter((opt) =>
-                        experience.teachingCoreExpertise.includes(opt.value)
-                      )}
-                      onChange={(selected) => {
+                <div className="w-full">
+                  <Select
+                    isMulti
+                    options={grades}
+                    value={grades.filter((opt) =>
+                      experience.teachingGrades.includes(opt.value)
+                    )}
+                    onChange={(selected) => {
+                      const newArr = [...experienceEntries];
+                      newArr[index].teachingGrades = selected
+                        ? selected.map((item) => item.value)
+                        : [];
+                      setExperienceEntries(newArr);
+                    }}
+                    placeholder="Grades you handled"
+                    isClearable
+                    className={`custom-select ${
+                      experience.teachingGrades && experience.teachingGrades.length
+                        ? ""
+                        : "required"
+                    }`}
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
+                  />
+                </div>
+
+                <div className="w-full">
+                  <Select
+                    isMulti
+                    options={coreExpertise}
+                    value={coreExpertise.filter((opt) =>
+                      experience.teachingCoreExpertise.includes(opt.value)
+                    )}
+                    onChange={(selected) => {
+                      const newArr = [...experienceEntries];
+                      newArr[index].teachingCoreExpertise = selected
+                        ? selected.map((item) => item.value)
+                        : [];
+                      setExperienceEntries(newArr);
+                    }}
+                    placeholder="Core Expertise"
+                    isClearable
+                    className={`custom-select ${
+                      experience.teachingCoreExpertise &&
+                      experience.teachingCoreExpertise.length
+                        ? ""
+                        : "required"
+                    }`}
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
+                  />
+                </div>
+                {experience.teachingCoreExpertise.includes("Others") && (
+                  <div className="w-full">
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      value={experience.otherTeachingCoreExpertise}
+                      onChange={(e) => {
                         const newArr = [...experienceEntries];
-                        newArr[index].teachingCoreExpertise = selected
-                          ? selected.map((item) => item.value)
-                          : [];
+                        newArr[index].otherTeachingCoreExpertise =
+                          e.target.value;
                         setExperienceEntries(newArr);
                       }}
-                      placeholder="Core Expertise"
-                      isClearable
-                      className={`custom-select ${
-                        experience.teachingCoreExpertise &&
-                        experience.teachingCoreExpertise.length
-                          ? ""
-                          : "required"
-                      }`}
+                      placeholder="Specify other core expertise"
+                      required
                     />
-                    <span className="custom-tooltip">Core Expertise</span>
-                    </div>
                   </div>
-                  {experience.teachingCoreExpertise.includes("Others") && (
-                    <div className="form-group col-lg-6 col-md-12">
-                      <div className="input-wrapper">
-                      <input
-                        type="text"
-                        value={experience.otherTeachingCoreExpertise}
-                        onChange={(e) => {
-                          const newArr = [...experienceEntries];
-                          newArr[index].otherTeachingCoreExpertise =
-                            e.target.value;
-                          setExperienceEntries(newArr);
-                        }}
-                        placeholder="Specify other core expertise"
-                        required
-                      />
-                      <span className="custom-tooltip">Specify other core expertise</span>
-                      </div>
-                    </div>
-                  )}
+                )}
+                </div>
+            )}
+
+            {/* ADMIN FIELDS */}
+            {experience.jobType === "administration" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="w-full">
+                  <Select
+                    options={adminDesignations}
+                    value={adminDesignations.find(
+                      (opt) => opt.value === experience.adminDesignation
+                    )}
+                    onChange={(selected) => {
+                      const newArr = [...experienceEntries];
+                      newArr[index].adminDesignation = selected?.value || "";
+                      setExperienceEntries(newArr);
+                    }}
+                    placeholder="Designation"
+                    isClearable
+                    className={`custom-select ${
+                      !experience.adminDesignation ? "required" : ""
+                    }`}
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
+                  />
+                </div>
+                {experience.adminDesignation === "Others" && (
+                  <div className="w-full">
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      value={experience.otherAdminDesignation}
+                      onChange={(e) => {
+                        const newArr = [...experienceEntries];
+                        newArr[index].otherAdminDesignation = e.target.value;
+                        setExperienceEntries(newArr);
+                      }}
+                      placeholder="Specify other designation"
+                      required
+                    />
+                  </div>
+                )}
                 </div>
               )}
 
-              {/* ADMIN FIELDS */}
-              {experience.jobType === "administration" && (
-                <div className="row">
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
+            {/* TEACHING + ADMIN FIELDS */}
+            {experience.jobType === "teachingAndAdministration" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="w-full">
+                  <Select
+                    isMulti
+                    options={teachingAdminDesignations}
+                    value={teachingAdminDesignations.filter((opt) =>
+                      experience.teachingAdminDesignations.includes(opt.value)
+                    )}
+                    onChange={(selected) => {
+                      const newArr = [...experienceEntries];
+                      newArr[index].teachingAdminDesignations = selected
+                        ? selected.map((item) => item.value)
+                        : [];
+                      setExperienceEntries(newArr);
+                    }}
+                    placeholder="Designation"
+                    isClearable
+                    className={`custom-select ${
+                      experience.teachingAdminDesignations &&
+                      experience.teachingAdminDesignations.length
+                        ? ""
+                        : "required"
+                    }`}
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
+                  />
+                </div>
+                {experience.teachingAdminDesignations.includes("Others") && (
+                  <div className="w-full">
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      value={experience.otherTeachingAdminDesignation}
+                      onChange={(e) => {
+                        const newArr = [...experienceEntries];
+                        newArr[index].otherTeachingAdminDesignation = e.target.value;
+                        setExperienceEntries(newArr);
+                      }}
+                      placeholder="Specify other designation"
+                      required
+                    />
+                  </div>
+                )}
+
+                {excludeTeachingAdminCurriculum && (
+                  <div className="w-full">
                     <Select
-                      options={adminDesignations}
-                      value={adminDesignations.find(
-                        (opt) => opt.value === experience.adminDesignation
+                      options={curriculum}
+                      value={curriculum.find(
+                        (opt) => opt.value === experience.teachingAdminCurriculum
                       )}
                       onChange={(selected) => {
                         const newArr = [...experienceEntries];
-                        newArr[index].adminDesignation = selected?.value || "";
+                        newArr[index].teachingAdminCurriculum =
+                          selected?.value || "";
                         setExperienceEntries(newArr);
                       }}
-                      placeholder="Designation"
+                      placeholder="Curriculum"
                       isClearable
-                      className={`custom-select ${
-                        !experience.adminDesignation ? "required" : ""
-                      }`}
+                      styles={{
+                        control: (base, state) => ({
+                          ...base,
+                          borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                          boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                          '&:hover': { borderColor: '#FDA4AF' },
+                          borderRadius: '0.5rem',
+                          padding: '0.25rem',
+                          backgroundColor: 'white'
+                        }),
+                        dropdownIndicator: (base) => ({
+                          ...base,
+                          color: '#EF4444'
+                        })
+                      }}
                     />
-                    <span className="custom-tooltip">Designation</span>
-                    </div>
                   </div>
-                  {experience.adminDesignation === "Others" && (
-                    <div className="form-group col-lg-6 col-md-12">
-                      <div className="input-wrapper">
-                      <input
-                        type="text"
-                        value={experience.otherAdminDesignation}
-                        onChange={(e) => {
-                          const newArr = [...experienceEntries];
-                          newArr[index].otherAdminDesignation = e.target.value;
-                          setExperienceEntries(newArr);
-                        }}
-                        placeholder="Specify other designation"
-                        required
-                      />
-                      <span className="custom-tooltip">Specify other designation</span>
-                      </div>
-                    </div>
-                  )}
+                )}
+                {experience.teachingAdminCurriculum === "Others" && (
+                  <div className="w-full">
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      value={experience.otherTeachingAdminCurriculum}
+                      onChange={(e) => {
+                        const newArr = [...experienceEntries];
+                        newArr[index].otherTeachingAdminCurriculum = e.target.value;
+                        setExperienceEntries(newArr);
+                      }}
+                      placeholder="Specify other curriculum"
+                    />
+                  </div>
+                )}
+
+                <div className="w-full">
+                  <Select
+                    isMulti
+                    options={subjectsOptions}
+                    value={subjectsOptions.filter((opt) =>
+                      experience.teachingAdminSubjects.includes(opt.value)
+                    )}
+                    onChange={(selected) => {
+                      const newArr = [...experienceEntries];
+                      newArr[index].teachingAdminSubjects = selected
+                        ? selected.map((item) => item.value)
+                        : [];
+                      setExperienceEntries(newArr);
+                    }}
+                    placeholder="Subjects you handled"
+                    isClearable
+                    className={`custom-select ${
+                      experience.teachingAdminSubjects &&
+                      experience.teachingAdminSubjects.length
+                        ? ""
+                        : "required"
+                    }`}
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
+                  />
+                </div>
+                {experience.teachingAdminSubjects.includes("Others") && (
+                  <div className="w-full">
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      value={experience.otherTeachingAdminSubjects}
+                      onChange={(e) => {
+                        const newArr = [...experienceEntries];
+                        newArr[index].otherTeachingAdminSubjects = e.target.value;
+                        setExperienceEntries(newArr);
+                      }}
+                      placeholder="Specify other subjects"
+                    />
+                  </div>
+                )}
+
+                <div className="w-full">
+                  <Select
+                    isMulti
+                    options={grades}
+                    value={grades.filter((opt) =>
+                      experience.teachingAdminGrades.includes(opt.value)
+                    )}
+                    onChange={(selected) => {
+                      const newArr = [...experienceEntries];
+                      newArr[index].teachingAdminGrades = selected
+                        ? selected.map((item) => item.value)
+                        : [];
+                      setExperienceEntries(newArr);
+                    }}
+                    placeholder="Grades you handled"
+                    isClearable
+                    className={`custom-select ${
+                      experience.teachingAdminGrades &&
+                      experience.teachingAdminGrades.length
+                        ? ""
+                        : "required"
+                    }`}
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
+                  />
+                </div>
+
+                <div className="w-full">
+                  <Select
+                    isMulti
+                    options={coreExpertise}
+                    value={coreExpertise.filter((opt) =>
+                      experience.teachingAdminCoreExpertise.includes(opt.value)
+                    )}
+                    onChange={(selected) => {
+                      const newArr = [...experienceEntries];
+                      newArr[index].teachingAdminCoreExpertise = selected
+                        ? selected.map((item) => item.value)
+                        : [];
+                      setExperienceEntries(newArr);
+                    }}
+                    placeholder="Core Expertise"
+                    isClearable
+                    className={`custom-select ${
+                      experience.teachingAdminCoreExpertise &&
+                      experience.teachingAdminCoreExpertise.length
+                        ? ""
+                        : "required"
+                    }`}
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                        '&:hover': { borderColor: '#FDA4AF' },
+                        borderRadius: '0.5rem',
+                        padding: '0.25rem',
+                        backgroundColor: 'white'
+                      }),
+                      dropdownIndicator: (base) => ({
+                        ...base,
+                        color: '#EF4444'
+                      })
+                    }}
+                  />
+                </div>
+
+                {experience.teachingAdminCoreExpertise.includes("Others") && (
+                  <div className="w-full">
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      value={experience.otherTeachingAdminCoreExpertise}
+                      onChange={(e) => {
+                        const newArr = [...experienceEntries];
+                        newArr[index].otherTeachingAdminCoreExpertise =
+                          e.target.value;
+                        setExperienceEntries(newArr);
+                      }}
+                      placeholder="Specify other core expertise"
+                      required
+                    />
+                  </div>
+                )}
                 </div>
               )}
 
-              {/* TEACHING + ADMIN FIELDS */}
-              {experience.jobType === "teachingAndAdministration" && (
-                <div className="row">
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                    <Select
-                      isMulti
-                      options={teachingAdminDesignations}
-                      value={teachingAdminDesignations.filter((opt) =>
-                        experience.teachingAdminDesignations.includes(opt.value)
-                      )}
-                      onChange={(selected) => {
-                        const newArr = [...experienceEntries];
-                        newArr[index].teachingAdminDesignations = selected
-                          ? selected.map((item) => item.value)
-                          : [];
-                        setExperienceEntries(newArr);
-                      }}
-                      placeholder="Designation"
-                      isClearable
-                      className={`custom-select ${
-                        experience.teachingAdminDesignations &&
-                        experience.teachingAdminDesignations.length
-                          ? ""
-                          : "required"
-                      }`}
-                    />
-                    <span className="custom-tooltip">Designation</span>
-                    </div>
-                  </div>
-                  {experience.teachingAdminDesignations.includes("Others") && (
-                    <div className="form-group col-lg-6 col-md-12">
-                      <div className="input-wrapper">
-                      <input
-                        type="text"
-                        value={experience.otherTeachingAdminDesignation}
-                        onChange={(e) => {
-                          const newArr = [...experienceEntries];
-                          newArr[index].otherTeachingAdminDesignation = e.target.value;
-                          setExperienceEntries(newArr);
-                        }}
-                        placeholder="Specify other designation"
-                        required
-                      />
-                      <span className="custom-tooltip">Specify other designation</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {excludeTeachingAdminCurriculum && (
-                    <div className="form-group col-lg-6 col-md-12">
-                      <div className="input-wrapper">
-                      <Select
-                        options={curriculum}
-                        value={curriculum.find(
-                          (opt) => opt.value === experience.teachingAdminCurriculum
-                        )}
-                        onChange={(selected) => {
-                          const newArr = [...experienceEntries];
-                          newArr[index].teachingAdminCurriculum =
-                            selected?.value || "";
-                          setExperienceEntries(newArr);
-                        }}
-                        placeholder="Curriculum"
-                        isClearable
-                      />
-                      <span className="custom-tooltip">Curriculum</span>
-                      </div>
-                    </div>
-                  )}
-                  {experience.teachingAdminCurriculum === "Others" && (
-                    <div className="form-group col-lg-6 col-md-12">
-                      <div className="input-wrapper">
-                      <input
-                        type="text"
-                        value={experience.otherTeachingAdminCurriculum}
-                        onChange={(e) => {
-                          const newArr = [...experienceEntries];
-                          newArr[index].otherTeachingAdminCurriculum = e.target.value;
-                          setExperienceEntries(newArr);
-                        }}
-                        placeholder="Specify other curriculum"
-                      />
-                      <span className="custom-tooltip">Specify other curriculum</span>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                    <Select
-                      isMulti
-                      options={subjectsOptions}
-                      value={subjectsOptions.filter((opt) =>
-                        experience.teachingAdminSubjects.includes(opt.value)
-                      )}
-                      onChange={(selected) => {
-                        const newArr = [...experienceEntries];
-                        newArr[index].teachingAdminSubjects = selected
-                          ? selected.map((item) => item.value)
-                          : [];
-                        setExperienceEntries(newArr);
-                      }}
-                      placeholder="Subjects you handled"
-                      isClearable
-                      className={`custom-select ${
-                        experience.teachingAdminSubjects &&
-                        experience.teachingAdminSubjects.length
-                          ? ""
-                          : "required"
-                      }`}
-                    />
-                    <span className="custom-tooltip">Subjects you handled</span>
-                    </div>
-                  </div>
-                  {experience.teachingAdminSubjects.includes("Others") && (
-                    <div className="form-group col-lg-6 col-md-12">
-                      <div className="input-wrapper">
-                      <input
-                        type="text"
-                        value={experience.otherTeachingAdminSubjects}
-                        onChange={(e) => {
-                          const newArr = [...experienceEntries];
-                          newArr[index].otherTeachingAdminSubjects = e.target.value;
-                          setExperienceEntries(newArr);
-                        }}
-                        placeholder="Specify other subjects"
-                      />
-                      <span className="custom-tooltip">Specify other subjects</span>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                    <Select
-                      isMulti
-                      options={grades}
-                      value={grades.filter((opt) =>
-                        experience.teachingAdminGrades.includes(opt.value)
-                      )}
-                      onChange={(selected) => {
-                        const newArr = [...experienceEntries];
-                        newArr[index].teachingAdminGrades = selected
-                          ? selected.map((item) => item.value)
-                          : [];
-                        setExperienceEntries(newArr);
-                      }}
-                      placeholder="Grades you handled"
-                      isClearable
-                      className={`custom-select ${
-                        experience.teachingAdminGrades &&
-                        experience.teachingAdminGrades.length
-                          ? ""
-                          : "required"
-                      }`}
-                    />
-                    <span className="custom-tooltip">Grades you handled</span>
-                    </div>
-                  </div>
-
-                  <div className="form-group col-lg-6 col-md-12">
-                    <div className="input-wrapper">
-                    <Select
-                      isMulti
-                      options={coreExpertise}
-                      value={coreExpertise.filter((opt) =>
-                        experience.teachingAdminCoreExpertise.includes(opt.value)
-                      )}
-                      onChange={(selected) => {
-                        const newArr = [...experienceEntries];
-                        newArr[index].teachingAdminCoreExpertise = selected
-                          ? selected.map((item) => item.value)
-                          : [];
-                        setExperienceEntries(newArr);
-                      }}
-                      placeholder="Core Expertise"
-                      isClearable
-                      className={`custom-select ${
-                        experience.teachingAdminCoreExpertise &&
-                        experience.teachingAdminCoreExpertise.length
-                          ? ""
-                          : "required"
-                      }`}
-                    />
-                    <span className="custom-tooltip">Core Expertise</span>
-                    </div>
-                  </div>
-
-                  {experience.teachingAdminCoreExpertise.includes("Others") && (
-                    <div className="form-group col-lg-6 col-md-12">
-                      <div className="input-wrapper">
-                      <input
-                        type="text"
-                        value={experience.otherTeachingAdminCoreExpertise}
-                        onChange={(e) => {
-                          const newArr = [...experienceEntries];
-                          newArr[index].otherTeachingAdminCoreExpertise =
-                            e.target.value;
-                          setExperienceEntries(newArr);
-                        }}
-                        placeholder="Specify other core expertise"
-                        required
-                      />
-                      <span className="custom-tooltip">Specify other core expertise</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
+            {/* Location and Job Process Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               {/* Country */}
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
+                <label htmlFor={`country-${index}`} className="block text-sm font-medium text-gray-700 mb-2">Country</label>
                 <Select
                   placeholder="Country"
                   options={allCountries}
@@ -1786,14 +1901,27 @@ const Experience = forwardRef(({
                     setExperienceEntries(newArr);
                   }}
                   className={`custom-select ${!experience.country ? "required" : ""}`}
+                  styles={{
+                    control: (base, state) => ({
+                      ...base,
+                      borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                      boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                      '&:hover': { borderColor: '#FDA4AF' },
+                      borderRadius: '0.5rem',
+                      padding: '0.25rem',
+                      backgroundColor: 'white'
+                    }),
+                    dropdownIndicator: (base) => ({
+                      ...base,
+                      color: '#EF4444'
+                    })
+                  }}
                 />
-                <span className="custom-tooltip">Country</span>
-                </div>
               </div>
 
               {/* State */}
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
+                <label htmlFor={`state-${index}`} className="block text-sm font-medium text-gray-700 mb-2">State / UT</label>
                 <Select
                   placeholder="State / UT"
                   options={statesInCountry}
@@ -1805,14 +1933,27 @@ const Experience = forwardRef(({
                     setExperienceEntries(newArr);
                   }}
                   className={`custom-select ${!experience.state ? "required" : ""}`}
+                  styles={{
+                    control: (base, state) => ({
+                      ...base,
+                      borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                      boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                      '&:hover': { borderColor: '#FDA4AF' },
+                      borderRadius: '0.5rem',
+                      padding: '0.25rem',
+                      backgroundColor: 'white'
+                    }),
+                    dropdownIndicator: (base) => ({
+                      ...base,
+                      color: '#EF4444'
+                    })
+                  }}
                 />
-                <span className="custom-tooltip">State / UT</span>
-                </div>
               </div>
 
               {/* City */}
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
+                <label htmlFor={`city-${index}`} className="block text-sm font-medium text-gray-700 mb-2">City</label>
                 <Select
                   placeholder="City"
                   options={citiesInState}
@@ -1823,16 +1964,31 @@ const Experience = forwardRef(({
                     setExperienceEntries(newArr);
                   }}
                   className={`custom-select ${!experience.city ? "required" : ""}`}
+                  styles={{
+                    control: (base, state) => ({
+                      ...base,
+                      borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+                      boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+                      '&:hover': { borderColor: '#FDA4AF' },
+                      borderRadius: '0.5rem',
+                      padding: '0.25rem',
+                      backgroundColor: 'white'
+                    }),
+                    dropdownIndicator: (base) => ({
+                      ...base,
+                      color: '#EF4444'
+                    })
+                  }}
                 />
-                <span className="custom-tooltip">City</span>
-                </div>
               </div>
 
               {/* Job Process */}
-              <div className="form-group col-lg-6 col-md-12">
-                <div className="input-wrapper">
+              <div className="w-full">
+                <label htmlFor={`jobProcess-${index}`} className="block text-sm font-medium text-gray-700 mb-2">Job Process</label>
                 <select
-                  className="form-select"
+                  id={`jobProcess-${index}`}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                   value={experience.jobProcess}
                   onChange={(e) => {
                     const newArr = [...experienceEntries];
@@ -1846,8 +2002,6 @@ const Experience = forwardRef(({
                   <option value="online">Online</option>
                   <option value="hybrid">Hybrid</option>
                 </select>
-                <span className="custom-tooltip">Job Process</span>
-                </div>
               </div>
             </div>
           </div>
@@ -1865,69 +2019,59 @@ const Experience = forwardRef(({
       </div>
 
       {/* Other Teaching Experiences */}
-      {(!excludeOtherTeaching && 
-      <div className="other-teaching-experience mt-4">
-        <h5 style={{color:"brown",paddingLeft:"10px"}}>Other Teaching Experiences</h5>
-        <div className="table-responsive">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Experience</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { key: "edTechCompany", label: "Worked in Edu tech.companies ?" },
-                { key: "online", label: "Experience of content preparation ?" },
-                { key: "coachingTuition", label: "Expertise of handling online classes ?" },
-                { key: "groupTuitions", label: "Experience of working in Coaching / Tuition Centers ?" },
-                { key: "privateTuitions", label: "Experience of handling Personal / Home tuitions ? " },
-              ].map(({ key, label }) => (
-                <tr key={key}>
-                  <td>{label}</td>
-                  <td>
-                    <div className="radio-group" style={{ display: "flex", gap: 10 }}>
-                      <div>
-                        <input
-                          type="radio"
-                          name={key}
-                          value="yes"
-                          checked={otherTeachingExp[key] === true}
-                          onChange={() =>
-                            {
-                              const newExp = { ...otherTeachingExp, [key]: true };
-                              setOtherTeachingExp(newExp);
-                              handleOtherTeachingExpChange(newExp);
-                            }
-                          }
-                        />
-                        <span style={{ marginLeft: 5 }}>Yes</span>
-                      </div>
-                      <div>
-                        <input
-                          type="radio"
-                          name={key}
-                          value="no"
-                          checked={otherTeachingExp[key] === false}
-                          onChange={() =>
-                            {
-                              const newExp = { ...otherTeachingExp, [key]: false };
-                              setOtherTeachingExp(newExp);
-                              handleOtherTeachingExpChange(newExp);
-                            }
-                          }
-                        />
-                        <span style={{ marginLeft: 5 }}>No</span>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {!excludeOtherTeaching && (
+        <div className="rounded-lg p-6 mt-6" style={{backgroundColor: '#F0D8D9'}}>
+          <h3 className="text-gray-700 font-medium mb-6" style={{color: "brown"}}>Other Teaching Experiences</h3>
+          <div className="space-y-6">
+            {[
+              { key: "edTechCompany", label: "Worked in Edu tech companies?" },
+              { key: "online", label: "Experience of content preparation?" },
+              { key: "coachingTuition", label: "Expertise of handling online classes?" },
+              { key: "groupTuitions", label: "Experience of working in Coaching / Tuition Centers?" },
+              { key: "privateTuitions", label: "Experience of handling Personal / Home tuitions?" },
+            ].map(({ key, label }) => (
+              <div key={key} className="bg-white rounded-lg p-4 border border-gray-200">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex-1">
+                    <p className="text-gray-700 font-medium text-sm">{label}</p>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name={key}
+                        value="yes"
+                        checked={otherTeachingExp[key] === true}
+                        onChange={() => {
+                          const newExp = { ...otherTeachingExp, [key]: true };
+                          setOtherTeachingExp(newExp);
+                          handleOtherTeachingExpChange(newExp);
+                        }}
+                        className="w-4 h-4 text-rose-600 border-gray-300 focus:ring-rose-500 focus:ring-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Yes</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name={key}
+                        value="no"
+                        checked={otherTeachingExp[key] === false}
+                        onChange={() => {
+                          const newExp = { ...otherTeachingExp, [key]: false };
+                          setOtherTeachingExp(newExp);
+                          handleOtherTeachingExpChange(newExp);
+                        }}
+                        className="w-4 h-4 text-rose-600 border-gray-300 focus:ring-rose-500 focus:ring-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">No</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
       )}
 
       {/* Save button hidden - auto-save handles saving when clicking Next */}

@@ -228,88 +228,94 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
   }
 
   return (
-    <div className="language-section">
+    <div className="rounded-lg p-6" style={{backgroundColor: '#F0D8D9'}}>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <div className="language-table">
-            <table className="table">
+        <div className="w-full">
+          {/* Language table header */}
+          <div className="bg-white rounded-lg overflow-hidden shadow-sm">
+            <table className="w-full">
               <thead>
-                <tr>
-                  <th className="language-col">Languages Known</th>
-                  <th className="checkbox-col">Speak</th>
-                  <th className="checkbox-col">Read</th>
-                  <th className="checkbox-col">Write</th>
-                  <th className="action-col">Action</th>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left px-4 py-3 text-sm font-semibold text-red-500">Languages Known</th>
+                  <th className="text-center px-4 py-3 text-sm font-semibold text-red-500">Speak</th>
+                  <th className="text-center px-4 py-3 text-sm font-semibold text-red-500">Read</th>
+                  <th className="text-center px-4 py-3 text-sm font-semibold text-red-500">Write</th>
+                  <th className="text-center px-4 py-3 text-sm font-semibold text-red-500">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {languages.map((lang, index) => (
-                  <tr key={index}>
-                    <td className="language-col">
-                      <select
-                        className="form-control"
-                        id={`language-${index}`}
-                        name={`language-${index}`}
-                        value={lang.language}
-                        onChange={(e) =>
-                          handleLanguageChange(index, "language", e.target.value)
-                        }
-                      >
-                        <option value="" disabled>Select Language</option>
-                        {availableLanguages
-                          .filter((availableLang) =>
-                            !languages.some(
-                              (l, i) =>
-                                i !== index && l.language === availableLang.value
+                  <tr key={index} className="border-b border-gray-100 last:border-0">
+                    <td className="px-4 py-3">
+                      <div className="relative">
+                        <select
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-8 text-sm"
+                          id={`language-${index}`}
+                          name={`language-${index}`}
+                          value={lang.language}
+                          onChange={(e) =>
+                            handleLanguageChange(index, "language", e.target.value)
+                          }
+                        >
+                          <option value="" disabled>Select Language</option>
+                          {availableLanguages
+                            .filter((availableLang) =>
+                              !languages.some(
+                                (l, i) =>
+                                  i !== index && l.language === availableLang.value
+                              )
                             )
-                          )
-                          .map((availableLang) => (
-                            <option key={availableLang.id} value={availableLang.value}>
-                              {availableLang.label}
-                            </option>
-                          ))}
-                      </select>
+                            .map((availableLang) => (
+                              <option key={availableLang.id} value={availableLang.value}>
+                                {availableLang.label}
+                              </option>
+                            ))}
+                        </select>
+                        <svg className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
                     </td>
-                    <td className="checkbox-col">
+                    <td className="px-4 py-3 text-center">
                       <input
                         type="checkbox"
                         checked={lang.speak}
                         onChange={(e) =>
                           handleLanguageChange(index, "speak", e.target.checked)
                         }
+                        className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
                       />
                     </td>
-                    <td className="checkbox-col">
+                    <td className="px-4 py-3 text-center">
                       <input
                         type="checkbox"
                         checked={lang.read}
                         onChange={(e) =>
                           handleLanguageChange(index, "read", e.target.checked)
                         }
+                        className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
                       />
                     </td>
-                    <td className="checkbox-col">
+                    <td className="px-4 py-3 text-center">
                       <input
                         type="checkbox"
                         checked={lang.write}
                         onChange={(e) =>
                           handleLanguageChange(index, "write", e.target.checked)
                         }
+                        className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
                       />
                     </td>
-                    <td className="action-col">
-                      <div className="action-col-container">
-                        <button
-                          type="button"
-                          className="remove-btn"
-                          onClick={() => removeLanguage(index)}
-                          disabled={languages.length === 1}
-                          title="Remove language"
-                        >
-                          <span className="remove-text">Remove</span>
-                          <span className="remove-icon">✕</span>
-                        </button>
-                      </div>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        type="button"
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium"
+                        onClick={() => removeLanguage(index)}
+                        disabled={languages.length === 1}
+                        title="Remove language"
+                      >
+                        Remove
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -317,13 +323,14 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
             </table>
           </div>
           
-          <div className="language-actions">
+          {/* Add Language button */}
+          <div className="mt-4">
             <button
               type="button"
-              className="theme-btn btn-style-three"
+              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium"
               onClick={addLanguage}
             >
-              Add Language
+              Add Language +
             </button>
           </div>
         </div>

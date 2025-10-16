@@ -840,222 +840,204 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
   };
 
   return (
-    <div className={`personal-details ${className}`}>
+    <div className={`rounded-lg p-6 ${className}`} style={{backgroundColor: '#F0D8D9'}}>
       <form onSubmit={handleSubmit}>
-        <div className="row">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Full Name */}
-          <div className="form-group col-lg-6 col-md-12">
-            <div className="input-wrapper">
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                placeholder="Full Name"
-                required
-                maxLength={50}
-                className={validationErrors.fullName ? "error" : ""}
-              />
-              {validationErrors.fullName && (
-                <span className="error-message">{validationErrors.fullName}</span>
-              )}
-              <span className="custom-tooltip">Full Name</span>
-            </div>
-          </div>
-          {/* Profile Image */}
-          {photo && (
-            <div className="form-group col-lg-6 col-md-12">
-              <ImageUpload
-                imageFile={imageFile || profileImageName || ""}
-                onImageSelect={(file) => {
-                  setImageFile(file);
-                  handlePhotoUpload(file);
-                }}
-                placeholder="Upload your profile image"
-                id="upload-profile-image"
-              />
-            </div>
-          )}
-          {/* Email */}
-          <div className="form-group col-lg-6 col-md-12">
-            <div className="input-wrapper">
-              <div className="input-with-verification">
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="Email address"
-                  maxLength={50}
-                  required
-                  disabled={isGoogleAccount || emailVerified}
-                  className={validationErrors.email ? "error" : ""}
-                />
-                {emailVerified ? (
-                  <span className="verification-icon">
-                    <FaCheckCircle color="green" />
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    className="verify-btn"
-                    onClick={sendEmailOtp}
-                    disabled={isEmailVerifying}
-                  >
-                    {isEmailVerifying ? "Sending..." : "Verify"}
-                  </button>
-                )}
-              </div>
-              {validationErrors.email && (
-                <span className="error-message">{validationErrors.email}</span>
-              )}
-              {showEmailOtpInput && !emailVerified && !isGoogleAccount && (
-                <div className="otp-verification">
-                  <input
-                    type="text"
-                    placeholder="Enter Email OTP"
-                    value={emailOtp}
-                    onChange={(e) => setEmailOtp(e.target.value)}
-                    maxLength={6}
-                  />
-                  <button type="button" className="verify-otp-btn" onClick={verifyEmailOtp}>
-                    Submit
-                  </button>
-                </div>
-              )}
-              <span className="custom-tooltip">Email</span>
-            </div>
+          <div className="w-full">
+            <input
+              type="text"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleInputChange}
+              placeholder="Name"
+              required
+              maxLength={50}
+              className={`w-full px-4 py-3 rounded-lg border ${validationErrors.fullName ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300`}
+            />
+            {validationErrors.fullName && (
+              <span className="text-red-500 text-xs mt-1">{validationErrors.fullName}</span>
+            )}
           </div>
           {/* Gender */}
-          <div className="form-group col-lg-6 col-md-12">
-            <div className="input-wrapper">
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleInputChange}
-                className="form-select"
-                
-              >
-                <option value="" disabled>
-                  Select Gender
-                </option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="transgender">Transgender</option>
-              </select>
-              <span className="custom-tooltip">Gender</span>
-            </div>
+          <div className="w-full relative">
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+            >
+              <option value="" disabled>Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="transgender">Transgender</option>
+            </select>
+            <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </div>
-          {/* Date of Birth - Wheel Picker */}
+          {/* Date of Birth */}
           {dateOfBirth && (
-            <div className="form-group col-lg-6 col-md-12">
-              <div className="input-wrapper">
-                <WheelDatePicker
-                  value={formData.dateOfBirth}
-                  onChange={(date) => setFormData(prev => ({ ...prev, dateOfBirth: date }))}
-                  placeholder="Select Date of Birth"
-                />
-                <span className="custom-tooltip">Date of Birth</span>
-              </div>
+            <div className="w-full relative">
+              <WheelDatePicker
+                value={formData.dateOfBirth}
+                onChange={(date) => setFormData(prev => ({ ...prev, dateOfBirth: date }))}
+                placeholder="Select Date of Birth"
+              />
             </div>
           )}
-          {/* Calling Number */}
-          <div className="form-group col-lg-6 col-md-12">
-            <div className="input-wrapper">
-              <div className="input-with-verification">
+
+          {/* Email */}
+          <div className="w-full">
+            <div className="flex gap-2">
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="Email Id"
+                maxLength={50}
+                required
+                disabled={isGoogleAccount || emailVerified}
+                className={`flex-1 px-4 py-3 rounded-lg border ${validationErrors.email ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:bg-gray-100`}
+              />
+              {emailVerified ? (
+                <span className="flex items-center justify-center w-12">
+                  <FaCheckCircle color="green" size={20} />
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 text-sm font-medium"
+                  onClick={sendEmailOtp}
+                  disabled={isEmailVerifying}
+                >
+                  {isEmailVerifying ? "Sending..." : "Verify"}
+                </button>
+              )}
+            </div>
+            {validationErrors.email && (
+              <span className="text-red-500 text-xs mt-1">{validationErrors.email}</span>
+            )}
+            {showEmailOtpInput && !emailVerified && !isGoogleAccount && (
+              <div className="flex gap-2 mt-2">
                 <input
                   type="text"
-                  name="callingNumber"
-                  value={formData.callingNumber}
-                  onChange={handleInputChange}
-                  placeholder="Mobile Number (calling)"
-                  onInput={(e) => (e.target.value = e.target.value.replace(/[^0-9]/g, ""))}
-                  maxLength={10}
-                  minLength={10}
-                  required
-                  disabled={phoneVerified}
-                  className={validationErrors.callingNumber ? "error" : ""}
+                  placeholder="Enter Email OTP"
+                  value={emailOtp}
+                  onChange={(e) => setEmailOtp(e.target.value)}
+                  maxLength={6}
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                 />
-                {phoneVerified ? (
-                  <span className="verification-icon">
-                    <FaCheckCircle color="green" />
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    className="verify-btn"
-                    onClick={sendPhoneOtp}
-                    disabled={isPhoneVerifying}
-                  >
-                    {isPhoneVerifying ? "Sending..." : "Verify"}
-                  </button>
-                )}
+                <button 
+                  type="button" 
+                  className="px-4 py-2 bg-green-400 text-white rounded-lg hover:bg-green-500 text-sm font-medium" 
+                  onClick={verifyEmailOtp}
+                >
+                  Submit
+                </button>
               </div>
-              {validationErrors.callingNumber && (
-                <span className="error-message">{validationErrors.callingNumber}</span>
-              )}
-              {showPhoneOtpInput && !phoneVerified && (
-                <div className="otp-verification">
-                  <input
-                    type="text"
-                    placeholder="Enter Phone OTP"
-                    value={phoneOtp}
-                    onChange={(e) => setPhoneOtp(e.target.value)}
-                    maxLength={6}
-                  />
-                  <button type="button" className="verify-otp-btn" onClick={verifyPhoneOtp}>
-                    Submit
-                  </button>
-                  <button 
-                    type="button" 
-                    className="resend-otp-btn" 
-                    onClick={sendPhoneOtp}
-                    style={{ marginLeft: "10px", fontSize: "12px", padding: "5px 10px" }}
-                  >
-                    Resend
-                  </button>
-                </div>
-              )}
-              <span className="custom-tooltip">Mobile Number</span>
-            </div>
+            )}
           </div>
-          {/* Checkbox for same number */}
-          <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "500" }}>
-            <input
-              type="checkbox"
-              checked={sameAsCallingNumber}
-              onChange={(e) => setSameAsCallingNumber(e.target.checked)}
-              style={{ marginRight: "10px" }}
-            />
-            WhatsApp number is same as mobile number
-          </label>
-          {/* WhatsApp Number */}
-          <div className="form-group col-lg-6 col-md-12">
-            <div className="input-wrapper">
+          {/* Mobile Number */}
+          <div className="w-full">
+            <div className="flex gap-2">
+              <div className="flex items-center px-4 py-3 bg-white rounded-lg border border-gray-300 w-12 justify-center">
+                <span className="text-gray-600">?</span>
+              </div>
               <input
-                type={whatsappType}
-                name="whatsappNumber"
-                value={formData.whatsappNumber}
+                type="text"
+                name="callingNumber"
+                value={formData.callingNumber}
                 onChange={handleInputChange}
-                onFocus={handleFocusWhatsapp}
-                onBlur={handleBlurWhatsapp}
-                placeholder="WhatsApp Number"
-                onInput={(e) => {
-                  const v = e.target.value.replace(/[^0-9]/g, "");
-                  e.target.value = v.length <= 10 ? v : v.slice(0, 10);
-                }}
+                placeholder="Mobile Number"
+                onInput={(e) => (e.target.value = e.target.value.replace(/[^0-9]/g, ""))}
+                maxLength={10}
+                minLength={10}
                 required
-                disabled={sameAsCallingNumber}
-                className={validationErrors.whatsappNumber ? "error" : ""}
+                disabled={phoneVerified}
+                className={`flex-1 px-4 py-3 rounded-lg border ${validationErrors.callingNumber ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:bg-gray-100`}
               />
-              {validationErrors.whatsappNumber && (
-                <span className="error-message">{validationErrors.whatsappNumber}</span>
+              {phoneVerified ? (
+                <span className="flex items-center justify-center w-12">
+                  <FaCheckCircle color="green" size={20} />
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 text-sm font-medium"
+                  onClick={sendPhoneOtp}
+                  disabled={isPhoneVerifying}
+                >
+                  {isPhoneVerifying ? "Sending..." : "Verify"}
+                </button>
               )}
-              <span className="custom-tooltip">WhatsApp Number</span>
             </div>
+            {validationErrors.callingNumber && (
+              <span className="text-red-500 text-xs mt-1">{validationErrors.callingNumber}</span>
+            )}
+            {showPhoneOtpInput && !phoneVerified && (
+              <div className="flex gap-2 mt-2">
+                <input
+                  type="text"
+                  placeholder="Enter Phone OTP"
+                  value={phoneOtp}
+                  onChange={(e) => setPhoneOtp(e.target.value)}
+                  maxLength={6}
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                />
+                <button 
+                  type="button" 
+                  className="px-4 py-2 bg-green-400 text-white rounded-lg hover:bg-green-500 text-sm font-medium" 
+                  onClick={verifyPhoneOtp}
+                >
+                  Submit
+                </button>
+                <button 
+                  type="button" 
+                  className="px-3 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500 text-xs font-medium" 
+                  onClick={sendPhoneOtp}
+                >
+                  Resend
+                </button>
+              </div>
+            )}
           </div>
-          {/* {showWhatsappHint && <small>Calling and WhatsApp numbers can be the same</small>} */}
-          {/* Save button hidden - auto-save handles saving when clicking Next */}
+          {/* WhatsApp Number */}
+          <div className="w-full md:col-span-2">
+            <label className="flex items-center gap-3 mb-3">
+              <input
+                type="checkbox"
+                checked={sameAsCallingNumber}
+                onChange={(e) => setSameAsCallingNumber(e.target.checked)}
+                className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
+              />
+              <span className="text-sm text-gray-700">WhatsApp Number same as Mobile Number</span>
+            </label>
+          </div>
+
+          {/* WhatsApp Number Input */}
+          <div className="w-full relative">
+            <input
+              type={whatsappType}
+              name="whatsappNumber"
+              value={formData.whatsappNumber}
+              onChange={handleInputChange}
+              onFocus={handleFocusWhatsapp}
+              onBlur={handleBlurWhatsapp}
+              placeholder="Whats app Number"
+              onInput={(e) => {
+                const v = e.target.value.replace(/[^0-9]/g, "");
+                e.target.value = v.length <= 10 ? v : v.slice(0, 10);
+              }}
+              required
+              disabled={sameAsCallingNumber}
+              className={`w-full px-4 py-3 rounded-lg border ${validationErrors.whatsappNumber ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:bg-gray-100`}
+            />
+            {validationErrors.whatsappNumber && (
+              <span className="text-red-500 text-xs mt-1">{validationErrors.whatsappNumber}</span>
+            )}
+          </div>
         </div>
       </form>
     </div>
