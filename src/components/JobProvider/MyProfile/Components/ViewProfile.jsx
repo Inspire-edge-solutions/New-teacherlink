@@ -3,8 +3,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../../../Context/AuthContext";
-import { Country, State } from 'country-state-city';
-import { FaBuilding, FaUser, FaPhone, FaEnvelope, FaMapMarkerAlt, FaGlobe, FaVideo, FaIdCard, FaUsers, FaFacebook, FaTwitter, FaLinkedin, FaInstagram, FaCamera, FaWhatsapp } from 'react-icons/fa';
+import csc from "countries-states-cities"; // For countries, states, cities
+import { FaBuilding, FaUser, FaPhone, FaEnvelope, FaMapMarkerAlt, FaGlobe, FaIdCard, FaFacebook, FaTwitter, FaLinkedin, FaInstagram, FaWhatsapp } from 'react-icons/fa';
 
 const Field = ({ label, value, isUrl = false }) => {
   if (!value) return null;
@@ -15,39 +15,20 @@ const Field = ({ label, value, isUrl = false }) => {
 
   return (
     <div className="col-12">
-      <div style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        marginBottom: '10px'
-      }}>
-        <div style={{ 
-          width: '120px',
-          minWidth: '120px',
-          color: '#666', 
-          fontSize: '14px',
-          paddingRight: '10px'
-        }}>{label}:</div>
-        <div style={{ flex: 1 }}>
+      <div className="flex items-start mb-2.5">
+        <div className="w-32 min-w-32 text-gray-500 text-sm pr-2.5">{label}:</div>
+        <div className="flex-1">
           {isUrl ? (
             <a 
               href={displayValue.startsWith('http') ? displayValue : `https://${displayValue}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-decoration-none"
-              style={{ 
-                color: '#1967d2', 
-                fontSize: '14px',
-                wordBreak: 'break-all'
-              }}
+              className="text-decoration-none text-blue-600 text-sm break-all"
             >
               {displayValue}
             </a>
           ) : (
-            <span style={{ 
-              color: '#202124', 
-              fontSize: '14px',
-              display: 'block'
-            }}>{displayValue}</span>
+            <span className="text-gray-900 text-sm block">{displayValue}</span>
           )}
         </div>
       </div>
@@ -56,32 +37,14 @@ const Field = ({ label, value, isUrl = false }) => {
 };
 
 const Section = ({ title, children, icon: Icon }) => (
-  <div className="mb-3" style={{ 
-    backgroundColor: title === "Organization Details" ? '#f0f2f5' : '#fff', 
-    borderRadius: '8px', 
-    padding: '20px', 
-    boxShadow: '0 2px 4px rgba(0,0,0,0.08)' 
-  }}>
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      marginBottom: '15px',
-      borderBottom: '1px solid #e6e6e6',
-      paddingBottom: '10px'
-    }}>
+  <div className={`mb-3 rounded-lg p-5 shadow-sm ${
+    title === "Organization Details" ? 'bg-gray-50' : 'bg-white'
+  }`}>
+    <div className="flex items-center mb-4 border-b border-gray-200 pb-2.5">
       {Icon && (
-        <Icon style={{ 
-          color: '#1967d2',
-          fontSize: '18px',
-          marginRight: '10px'
-        }} />
+        <Icon className="text-blue-600 text-lg mr-2.5" />
       )}
-      <h4 style={{ 
-        color: '#202124', 
-        fontSize: '18px', 
-        fontWeight: '600',
-        margin: 0
-      }}>
+      <h4 className="text-gray-900 text-lg font-semibold m-0">
         {title}
       </h4>
     </div>
@@ -94,39 +57,15 @@ const SocialLink = ({ icon: Icon, url, label, color }) => {
   
   return (
     <div className="col-12">
-      <div style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        marginBottom: '10px'
-      }}>
-        <div style={{ 
-          width: '120px',
-          minWidth: '120px',
-          color: '#666', 
-          fontSize: '14px',
-          paddingRight: '10px'
-        }}>{label}:</div>
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          flex: 1
-        }}>
-          <Icon style={{ 
-            color, 
-            fontSize: '14px',
-            marginRight: '8px',
-            flexShrink: 0
-          }} />
+      <div className="flex items-start mb-2.5">
+        <div className="w-32 min-w-32 text-gray-500 text-sm pr-2.5">{label}:</div>
+        <div className="flex items-center flex-1">
+          <Icon className="text-sm mr-2 flex-shrink-0" style={{ color }} />
           <a 
             href={url.startsWith('http') ? url : `https://${url}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-decoration-none"
-            style={{ 
-              color: '#1967d2', 
-              fontSize: '14px',
-              wordBreak: 'break-all'
-            }}
+            className="text-decoration-none text-blue-600 text-sm break-all"
           >
             {url}
           </a>
@@ -136,20 +75,7 @@ const SocialLink = ({ icon: Icon, url, label, color }) => {
   );
 };
 
-// Update the header section contact info layout
-const contactInfoStyle = {
-  display: 'flex',
-  alignItems: 'flex-start',
-  marginBottom: '10px'
-};
-
-const iconStyle = {
-  color: '#1967d2',
-  fontSize: '14px',
-  marginRight: '8px',
-  marginTop: '3px',
-  flexShrink: 0
-};
+// Style constants removed - now using Tailwind classes
 
 const ViewProfile = () => {
   const { user, loading } = useAuth();
@@ -221,7 +147,7 @@ const ViewProfile = () => {
   const getCountryName = (countryCode) => {
     if (!countryCode) return "";
     try {
-      const country = Country.getCountryByCode(countryCode);
+      const country = csc.getCountryById(countryCode);
       return country ? country.name : countryCode;
     } catch (error) {
       return countryCode;
@@ -232,7 +158,7 @@ const ViewProfile = () => {
   const getStateName = (countryCode, stateCode) => {
     if (!countryCode || !stateCode) return "";
     try {
-      const state = State.getStateByCodeAndCountry(stateCode, countryCode);
+      const state = csc.getStateById(stateCode, countryCode);
       return state ? state.name : stateCode;
     } catch (error) {
       return stateCode;
@@ -264,159 +190,86 @@ const ViewProfile = () => {
   const isParent = orgData.type === PARENT_TYPE;
 
   return (
-    <div className="profile-view-container" style={{ 
-      backgroundColor: '#f8f9fa', 
-      minHeight: '100vh', 
-      padding: window.innerWidth < 768 ? '10px' : '20px' 
-    }}>
+    <div className="profile-view-container bg-gray-50 min-h-screen p-2.5 md:p-5">
       <div className="container-fluid">
         
         {/* Header Section with Profile Photo */}
-        <div className="profile-header-card mb-4" style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '10px',
-          padding: window.innerWidth < 768 ? '15px' : '25px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
-          border: '1px solid #e9ecef'
-        }}>
+        <div className="profile-header-card mb-4 bg-white rounded-lg p-4 md:p-6 shadow-sm border border-gray-200">
           <div className="row align-items-center">
             <div className="col-md-3 col-sm-12 text-center mb-md-0 mb-3">
-              <div className="profile-image-container" style={{
-                width: window.innerWidth < 768 ? '100px' : '120px',
-                height: window.innerWidth < 768 ? '100px' : '120px',
-                margin: '0 auto',
-                borderRadius: '50%',
-                border: '3px solid #e9ecef',
-                overflow: 'hidden',
-                backgroundColor: '#f8f9fa',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
+              <div className="profile-image-container w-24 h-24 md:w-32 md:h-32 mx-auto rounded-full border-4 border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
                 {profileImage ? (
                   <img 
                     src={profileImage} 
                     alt="Organization Logo" 
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }}
+                    className="w-full h-full object-cover"
                     onError={(e) => {
                       e.target.style.display = 'none';
                       e.target.nextSibling.style.display = 'flex';
                     }}
                   />
                 ) : null}
-                <div style={{
-                  display: profileImage ? 'none' : 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '100%',
-                  height: '100%',
-                  backgroundColor: '#e9ecef',
-                  color: '#6c757d'
-                }}>
+                <div className={`${profileImage ? 'hidden' : 'flex'} items-center justify-center w-full h-full bg-gray-200 text-gray-600`}>
                   <FaBuilding size={30} />
                 </div>
               </div>
             </div>
             <div className="col-md-9 col-sm-12">
               <div className="d-flex align-items-center mb-3">
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  width: '100%'
-                }}>
-                  <FaBuilding style={{ 
-                    color: '#1967d2',
-                    fontSize: '24px',
-                    marginRight: '12px'
-                  }} />
-                  <h3 style={{ 
-                    fontWeight: '600', 
-                    color: '#202124', 
-                    fontSize: '24px', 
-                    margin: 0
-                  }}>
+                <div className="flex items-center w-full">
+                  <FaBuilding className="text-blue-600 text-2xl mr-3" />
+                  <h3 className="font-semibold text-gray-900 text-2xl m-0">
                     {orgData?.name || 'Organization Name Not Set'}
                   </h3>
                 </div>
               </div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                marginBottom: '15px'
-              }}>
-                <FaBuilding style={{ 
-                  color: '#1967d2',
-                  fontSize: '16px',
-                  marginRight: '10px'
-                }} />
-                <span style={{ 
-                  fontSize: '16px',
-                  color: '#202124',
-                  fontWeight: '500'
-                }}>
+              <div className="flex items-center mb-4">
+                <FaBuilding className="text-blue-600 text-base mr-2.5" />
+                <span className="text-base text-gray-900 font-medium">
                   {orgData?.type || 'Organization Type Not Set'}
                 </span>
               </div>
               <div className="row">
                 <div className="col-12">
                   {orgData?.contact_person_name && (
-                    <div style={contactInfoStyle}>
-                      <FaUser style={iconStyle} />
-                      <div style={{ flex: 1 }}>
+                    <div className="flex items-start mb-2.5">
+                      <FaUser className="text-blue-600 text-sm mr-2 mt-1 flex-shrink-0" />
+                      <div className="flex-1">
                         <strong>Contact:</strong> {orgData.contact_person_name}
                       </div>
                     </div>
                   )}
                   {orgData?.contact_person_email && (
-                    <div style={contactInfoStyle}>
-                      <FaEnvelope style={iconStyle} />
+                    <div className="flex items-start mb-2.5">
+                      <FaEnvelope className="text-blue-600 text-sm mr-2 mt-1 flex-shrink-0" />
                       <a href={`mailto:${orgData.contact_person_email}`} 
-                         style={{ 
-                           color: '#1967d2', 
-                           textDecoration: 'none', 
-                           fontSize: '14px',
-                           flex: 1
-                         }}>
+                         className="text-blue-600 no-underline text-sm flex-1">
                         {orgData.contact_person_email}
                       </a>
                     </div>
                   )}
                   {(orgData?.city || orgData?.country) && (
-                    <div style={contactInfoStyle}>
-                      <FaMapMarkerAlt style={iconStyle} />
-                      <div style={{ flex: 1 }}>
+                    <div className="flex items-start mb-2.5">
+                      <FaMapMarkerAlt className="text-blue-600 text-sm mr-2 mt-1 flex-shrink-0" />
+                      <div className="flex-1">
                         {[orgData.city, orgData.state, orgData.country].filter(Boolean).join(', ')}
                       </div>
                     </div>
                   )}
                   {orgData?.contact_person_phone1 && (
-                    <div style={contactInfoStyle}>
-                      <FaPhone style={iconStyle} />
+                    <div className="flex items-start mb-2.5">
+                      <FaPhone className="text-blue-600 text-sm mr-2 mt-1 flex-shrink-0" />
                       <a href={`tel:${orgData.contact_person_phone1}`} 
-                         style={{ 
-                           color: '#1967d2', 
-                           textDecoration: 'none', 
-                           fontSize: '14px',
-                           flex: 1
-                         }}>
+                         className="text-blue-600 no-underline text-sm flex-1">
                         {orgData.contact_person_phone1}
                       </a>
                     </div>
                   )}
                   {orgData?.contact_person_phone2 && (
-                    <div style={contactInfoStyle}>
-                      <FaWhatsapp style={{...iconStyle, color: '#25D366'}} />
+                    <div className="flex items-start mb-2.5">
+                      <FaWhatsapp className="text-sm mr-2 mt-1 flex-shrink-0" style={{color: '#25D366'}} />
                       <a href={`https://wa.me/${orgData.contact_person_phone2}`} 
-                         style={{ 
-                           color: '#1967d2', 
-                           textDecoration: 'none', 
-                           fontSize: '14px',
-                           flex: 1
-                         }}>
+                         className="text-blue-600 no-underline text-sm flex-1">
                         {orgData.contact_person_phone2}
                       </a>
                     </div>
@@ -443,23 +296,10 @@ const ViewProfile = () => {
                 {(orgData?.facebook || orgData?.twitter || orgData?.linkedin || orgData?.instagram) && (
                   <>
                     <div className="col-12">
-                      <hr className="my-3" style={{ borderColor: '#e9ecef' }} />
-                      <div style={{ 
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginBottom: '15px'
-                      }}>
-                        <FaGlobe style={{ 
-                          color: '#1967d2',
-                          fontSize: '18px',
-                          marginRight: '10px'
-                        }} />
-                        <h5 style={{ 
-                          color: '#202124',
-                          fontSize: '16px',
-                          fontWeight: '500',
-                          margin: 0
-                        }}>
+                      <hr className="my-3 border-gray-200" />
+                      <div className="flex items-center mb-4">
+                        <FaGlobe className="text-blue-600 text-lg mr-2.5" />
+                        <h5 className="text-gray-900 text-base font-medium m-0">
                           Social Media Links
                         </h5>
                       </div>

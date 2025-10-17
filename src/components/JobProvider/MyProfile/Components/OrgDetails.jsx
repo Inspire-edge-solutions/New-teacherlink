@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import Select from "react-select";
-import { Country, State, City } from "country-state-city";
+import csc from "countries-states-cities"; // For countries, states, cities
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { FaCheckCircle } from "react-icons/fa";
 import { useAuth } from "../../../../Context/AuthContext";
 import { getAuth, updateEmail, fetchSignInMethodsForEmail } from "firebase/auth";
-import ContactInfoBox from "../ContactInfoBox";
 import { validateField, formatFieldValue, validateWithFeedback } from "../../../../utils/formValidation";
 import CollapsibleSection from "./CollapsibleSection";
+import LogoCoverUploader from "./LogoCoverUploader";
 
 const LOGIN_API_URL = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login";
 const API_URL = "https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation";
@@ -107,28 +107,14 @@ const OrgDetails = () => {
   const [isFetched, setIsFetched] = useState(false);
 
   useEffect(() => {
-    const allCountries = Country.getAllCountries();
+    const allCountries = csc.getAllCountries();
     setCountries(allCountries);
     const indiaCountry = allCountries.find(c => c.name === "India");
     if (indiaCountry) {
-      const indiaStates = State.getStatesOfCountry(indiaCountry.isoCode);
+      const indiaStates = csc.getStatesOfCountry(indiaCountry.id);
       setStates(indiaStates);
       setParentStates(indiaStates);
     }
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_DEV1_API}/constants`);
-        const opts = res.data
-          .filter(item => item.category === "Administration")
-          .map(item => ({ value: item.value, label: item.label }));
-        setDesignations(opts);
-      } catch (err) {
-        console.error(err);
-      }
-    })();
   }, []);
 
   useEffect(() => {
@@ -203,12 +189,12 @@ const OrgDetails = () => {
     const orgCountry = orgDetails.country || "India";
     const countryObj = countries.find(c => c.name === orgCountry);
     if (countryObj) {
-      const newStates = State.getStatesOfCountry(countryObj.isoCode);
+      const newStates = csc.getStatesOfCountry(countryObj.id);
       setStates(newStates);
       if (orgDetails.state) {
         const stateObj = newStates.find(s => s.name === orgDetails.state);
         if (stateObj) {
-          const newCities = City.getCitiesOfState(countryObj.isoCode, stateObj.isoCode);
+          const newCities = csc.getCitiesOfState(stateObj.id);
           setCities(newCities);
         }
       } else {
@@ -218,12 +204,12 @@ const OrgDetails = () => {
     const parentCountry = parentDetails.country || "India";
     const parentCountryObj = countries.find(c => c.name === parentCountry);
     if (parentCountryObj) {
-      const newParentStates = State.getStatesOfCountry(parentCountryObj.isoCode);
+      const newParentStates = csc.getStatesOfCountry(parentCountryObj.id);
       setParentStates(newParentStates);
       if (parentDetails.state) {
         const stateObj = newParentStates.find(s => s.name === parentDetails.state);
         if (stateObj) {
-          const newCities = City.getCitiesOfState(parentCountryObj.isoCode, stateObj.isoCode);
+          const newCities = csc.getCitiesOfState(stateObj.id);
           setParentCities(newCities);
         }
       } else {
@@ -264,18 +250,18 @@ const OrgDetails = () => {
   const checkEmailExists = async (emailToCheck) => {
     if (!emailToCheck) return false;
     
-    console.log("🔍 Checking email:", emailToCheck);
-    console.log("🔍 Current user firebase_uid:", firebase_uid);
+    console.log("ðŸ” Checking email:", emailToCheck);
+    console.log("ðŸ” Current user firebase_uid:", firebase_uid);
     
     // Firebase check
     try {
       const auth = getAuth();
       const methods = await fetchSignInMethodsForEmail(auth, emailToCheck);
-      console.log("🔥 Firebase methods for email:", methods);
+      console.log("ðŸ”¥ Firebase methods for email:", methods);
       if (methods.length > 0) {
-        console.log("🔥 Firebase found methods, checking if different from current email");
+        console.log("ðŸ”¥ Firebase found methods, checking if different from current email");
         if (emailToCheck.toLowerCase() !== orgDetails.contactPerson.email.toLowerCase()) {
-          console.log("🔥 Firebase: Email already in use (different from current)");
+          console.log("ðŸ”¥ Firebase: Email already in use (different from current)");
           return true;
         }
       }
@@ -286,24 +272,24 @@ const OrgDetails = () => {
     // Backend check
     try {
       const resp = await axios.get(LOGIN_API_URL, { params: { email: emailToCheck } });
-      console.log("📡 Backend response:", resp.data);
-      console.log("📡 Response status:", resp.status);
-      console.log("📡 Is array:", Array.isArray(resp.data));
+      console.log("ðŸ“¡ Backend response:", resp.data);
+      console.log("ðŸ“¡ Response status:", resp.status);
+      console.log("ðŸ“¡ Is array:", Array.isArray(resp.data));
       
       if (resp.status === 200 && Array.isArray(resp.data)) {
         // Filter users that actually have the email we're checking
         const usersWithThisEmail = resp.data.filter(u => 
           u.email && u.email.toLowerCase() === emailToCheck.toLowerCase()
         );
-        console.log("📡 Users with this specific email:", usersWithThisEmail);
+        console.log("ðŸ“¡ Users with this specific email:", usersWithThisEmail);
         
         if (usersWithThisEmail.length > 0) {
           // Check if any user with this email has a different firebase_uid
           const conflictingUsers = usersWithThisEmail.filter(u => u.firebase_uid !== firebase_uid);
-          console.log("📡 Conflicting users (different firebase_uid):", conflictingUsers);
+          console.log("ðŸ“¡ Conflicting users (different firebase_uid):", conflictingUsers);
           
           if (conflictingUsers.length > 0) {
-            console.log("📡 Backend: Email already in use (different firebase_uid found)");
+            console.log("ðŸ“¡ Backend: Email already in use (different firebase_uid found)");
             return true;
           }
         }
@@ -312,7 +298,7 @@ const OrgDetails = () => {
       console.warn("Backend login table email check error:", err);
     }
     
-    console.log("✅ Email check passed - email is available");
+    console.log("âœ… Email check passed - email is available");
     return false;
   };
 
@@ -422,11 +408,11 @@ const OrgDetails = () => {
         authHeaders
       );
       
-      console.log("✅ Phone OTP Response:", response.data);
+      console.log("âœ… Phone OTP Response:", response.data);
       toast.success("OTP sent to your phone!");
       setShowPhoneOtpInput(true);
     } catch (e) {
-      console.error("❌ Phone OTP Error:", e);
+      console.error("âŒ Phone OTP Error:", e);
       toast.error(`Failed to send phone OTP: ${e.message}`);
     } finally {
       setIsPhoneVerifying(false);
@@ -452,7 +438,7 @@ const OrgDetails = () => {
         authHeaders
       );
       
-      console.log("✅ Phone OTP Verification Response:", response.data);
+      console.log("âœ… Phone OTP Verification Response:", response.data);
       
       // Check if the OTP verification was successful
       if (response.data && response.data.ok === true && response.data.provider && response.data.provider.type === 'success') {
@@ -464,22 +450,22 @@ const OrgDetails = () => {
         
         // Update the phone verification status in the database
         try {
-          console.log("🔍 Phone verification successful - updating database");
+          console.log("ðŸ” Phone verification successful - updating database");
           
           const updatePayload = {
             firebase_uid: firebase_uid,
             is_phone1_verified: 1  // Update the phone verification status
           };
           
-          console.log("🔍 Updating phone verification in database:", updatePayload);
+          console.log("ðŸ” Updating phone verification in database:", updatePayload);
           
           const updateResponse = await axios.put(
             API_URL,
             updatePayload,
             authHeaders
           );
-          console.log("✅ Phone verification status updated in database");
-          console.log("🔍 Update Response:", updateResponse.data);
+          console.log("âœ… Phone verification status updated in database");
+          console.log("ðŸ” Update Response:", updateResponse.data);
           
           // Add a small delay to ensure database update is committed
           await new Promise(resolve => setTimeout(resolve, 1000));
@@ -492,10 +478,10 @@ const OrgDetails = () => {
               setPhoneVerified(raw.is_phone1_verified === 1 || raw.is_phone1_verified === true);
             }
           } catch (refreshErr) {
-            console.error("❌ Failed to refresh organization details:", refreshErr);
+            console.error("âŒ Failed to refresh organization details:", refreshErr);
           }
         } catch (updateErr) {
-          console.error("❌ Failed to update phone verification status:", {
+          console.error("âŒ Failed to update phone verification status:", {
             error: updateErr.message,
             status: updateErr.response?.status,
             data: updateErr.response?.data
@@ -506,12 +492,12 @@ const OrgDetails = () => {
         }
       } else {
         // OTP verification failed
-        console.log("❌ OTP verification failed:", response.data);
+        console.log("âŒ OTP verification failed:", response.data);
         toast.error("Invalid OTP. Please try again.");
         setPhoneOtp(""); // Clear the OTP input for retry
       }
     } catch (e) {
-      console.error("❌ Phone OTP Verification Error:", e);
+      console.error("âŒ Phone OTP Verification Error:", e);
       if (e.response?.status === 400) {
         toast.error("Invalid OTP. Please try again.");
       } else {
@@ -759,9 +745,9 @@ const OrgDetails = () => {
             },
             { headers: { "Content-Type": "application/json" } }
           );
-          console.log("✅ Login endpoint updated successfully with organization name:", orgDetails.name);
+          console.log("âœ… Login endpoint updated successfully with organization name:", orgDetails.name);
         } catch (loginError) {
-          console.error("❌ Failed to update login endpoint:", loginError);
+          console.error("âŒ Failed to update login endpoint:", loginError);
           console.error("Login update payload:", {
             firebase_uid: firebase_uid,
             email: cp.email,
@@ -823,7 +809,7 @@ const OrgDetails = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen p-6">
-      <form onSubmit={handleSubmit} className="max-w-6xl mx-auto">
+      <form onSubmit={handleSubmit} className="max-w-7xl mx-auto">
         {/* Organization Type Selection */}
         <div className="mb-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -832,7 +818,7 @@ const OrgDetails = () => {
                 Organization/Entity Type
               </label>
               <select
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700 bg-white"
                 value={selectedType}
                 onChange={handleTypeChange}
                 required
@@ -846,511 +832,549 @@ const OrgDetails = () => {
             </div>
           </div>
         </div>
-
+        
         {/* Account Details Section */}
         {selectedType && (
           <CollapsibleSection title="Account Details" defaultOpen={true}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Organization Name */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  School / College / University
-                </label>
-                <input
-                  name="name"
-                  type="text"
+              {/* School / College / University Name */}
+              <div>
+                    <input
+                      name="name"
+                      type="text"
                   placeholder="School / College / University"
-                  className="w-full px-4 py-3 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-700"
-                  value={orgDetails.name}
-                  onChange={handleInputChange}
-                  required
-                  maxLength={50}
-                  minLength={10}
-                />
-              </div>
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                      value={orgDetails.name}
+                      onChange={handleInputChange}
+                      required
+                      maxLength={50}
+                      minLength={10}
+                    />
+                  </div>
 
               {/* Website URL */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Website URL
-                </label>
-                <input
-                  name="websiteUrl"
-                  type="text"
+              <div>
+                    <input
+                      name="websiteUrl"
+                      type="text"
                   placeholder="Website URL"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                  value={orgDetails.websiteUrl}
-                  onChange={handleInputChange}
-                  onBlur={(e) => validateWithFeedback('websiteUrl', e.target.value, true)}
-                />
-              </div>
-
-              {/* Address Proof Dropdown */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Select Address Proof University
-                </label>
-                <select className="w-full px-4 py-3 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-700">
-                  <option value="" disabled>Select Address Proof University</option>
-                  <option value="bank-statement">Bank Account Statement</option>
-                  <option value="credit-card">Credit Card Statement</option>
-                  <option value="tax-certificate">Service Tax / Sales Tax/ TAN</option>
-                  <option value="govt-registration">Govt. Registration Certificate</option>
-                  <option value="rent-agreement">Rent Agreement / Lease Proof</option>
-                  <option value="incorporation">Certificate of Incorporation</option>
-                  <option value="shop-establishment">Shop and Establishment certificate</option>
-                  <option value="telephone-bill">Telephone Bill</option>
-                  <option value="electricity-bill">Electricity Bill</option>
-                  <option value="water-bill">Water Bill</option>
-                  <option value="aadhar-passport">Aadhar Card / Passport/Driver's License</option>
-                </select>
-              </div>
-
-              {/* Upload Address Proof */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Upload Address Proof
-                </label>
-                <div className="flex items-center justify-center w-full px-4 py-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                  <div className="flex items-center space-x-2">
-                    <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    <span className="text-sm text-gray-600">Upload Address Proof</span>
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                      value={orgDetails.websiteUrl}
+                      onChange={handleInputChange}
+                      onBlur={(e) => validateWithFeedback('websiteUrl', e.target.value, true)}
+                    />
                   </div>
                 </div>
-              </div>
 
-              {/* Upload PAN Card */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Upload PAN card
-                </label>
-                <div className="flex items-center justify-center w-full px-4 py-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                  <div className="flex items-center space-x-2">
-                    <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    <span className="text-sm text-gray-600">Upload PAN card</span>
-                  </div>
-                </div>
-              </div>
+            {/* Logo and Document Uploads - Full Width */}
+            <div className="mt-6">
+              <LogoCoverUploader />
+            </div>
 
+            {/* Continue with remaining fields in grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
               {/* PAN Number */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  PAN Number
-                </label>
-                <input
-                  name="panNumber"
-                  type="text"
-                  placeholder="PAN Number"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                  value={orgDetails.panNumber}
-                  onChange={handleInputChange}
-                  onBlur={(e) => validateWithFeedback('panNumber', e.target.value, true)}
-                  pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
-                  title="Enter a valid 10-character PAN number (e.g., ABCDE1234F)"
-                  minLength={10}
-                  maxLength={10}
-                />
-              </div>
+              <div>
+                    <input
+                      name="panNumber"
+                      type="text"
+                      placeholder="PAN Number"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                      value={orgDetails.panNumber}
+                      onChange={handleInputChange}
+                      onBlur={(e) => validateWithFeedback('panNumber', e.target.value, true)}
+                      pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                      title="Enter a valid 10-character PAN number (e.g., ABCDE1234F)"
+                      minLength={10}
+                      maxLength={10}
+                    />
+                  </div>
 
               {/* Name on PAN Number */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Name on PAN Number
-                </label>
-                <input
-                  name="panName"
-                  type="text"
+              <div>
+                    <input
+                      name="panName"
+                      type="text"
                   placeholder="Name on PAN Number"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                  value={orgDetails.panName}
-                  onChange={handleInputChange}
-                />
-              </div>
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                      value={orgDetails.panName}
+                      onChange={handleInputChange}
+                    />
+                  </div>
 
               {/* GSTIN */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  GSTIN
-                </label>
-                <input
-                  name="gstin"
-                  type="text"
-                  placeholder="GSTIN"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                  value={orgDetails.gstin}
-                  onChange={handleInputChange}
-                  onBlur={(e) => validateWithFeedback('gstin', e.target.value, true)}
-                  pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
-                  title="Enter a valid 15-character GSTIN (e.g., 27AAPFU0939F1Z5)"
-                  minLength={15}
-                  maxLength={15}
-                />
-              </div>
+              <div>
+                    <input
+                      name="gstin"
+                      type="text"
+                      placeholder="GSTIN"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                      value={orgDetails.gstin}
+                      onChange={handleInputChange}
+                      onBlur={(e) => validateWithFeedback('gstin', e.target.value, true)}
+                      pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
+                      title="Enter a valid 15-character GSTIN (e.g., 27AAPFU0939F1Z5)"
+                      minLength={15}
+                      maxLength={15}
+                    />
+                  </div>
 
               {/* Street / Area */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Street / Area
-                </label>
-                <input
-                  name="address"
-                  type="text"
+              <div>
+                    <input
+                      name="address"
+                      type="text"
                   placeholder="Street / Area"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                  value={orgDetails.address}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-
-              {/* State Dropdown */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  State
-                </label>
-                <Select
-                  name="state"
-                  options={states.map(s => ({ value: s.name, label: s.name, isoCode: s.isoCode }))}
-                  value={states.find(s => s.name === orgDetails.state) ?
-                    { value: orgDetails.state, label: orgDetails.state } : null}
-                  onChange={(selectedOption) => {
-                    const stateName = selectedOption ? selectedOption.value : "";
-                    const stateCode = selectedOption ? selectedOption.isoCode : "";
-                    setOrgDetails(prev => ({
-                      ...prev,
-                      state: stateName,
-                      city: ""
-                    }));
-                    if (stateCode && orgDetails.country) {
-                      const countryCode = countries.find(c => c.name === orgDetails.country)?.isoCode;
-                      if (countryCode) {
-                        const newCities = City.getCitiesOfState(countryCode, stateCode);
-                        setCities(newCities);
-                      }
-                    } else {
-                      setCities([]);
-                    }
-                  }}
-                  placeholder="Andhra Pradesh"
-                  className="custom-select"
-                  isSearchable
-                  isDisabled={!states.length}
-                />
-              </div>
-
-              {/* City Dropdown */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  City
-                </label>
-                <Select
-                  name="city"
-                  options={cities.map(c => ({ value: c.name, label: c.name }))}
-                  value={cities.find(c => c.name === orgDetails.city) ?
-                    { value: orgDetails.city, label: orgDetails.city } : null}
-                  onChange={(selectedOption) => {
-                    const cityName = selectedOption ? selectedOption.value : "";
-                    setOrgDetails(prev => ({
-                      ...prev,
-                      city: cityName
-                    }));
-                  }}
-                  placeholder="City"
-                  className="custom-select"
-                  isSearchable
-                  isDisabled={!cities.length}
-                />
-              </div>
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                      value={orgDetails.address}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
 
               {/* Country Dropdown */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Country
-                </label>
-                <Select
-                  name="country"
-                  options={countries.map(c => ({ value: c.name, label: c.name, isoCode: c.isoCode }))}
+              <div>
+                    <Select
+                      name="country"
+                    options={countries.map(c => ({ value: c.name, label: c.name, id: c.id }))}
                   value={countries.find(c => c.name === orgDetails.country) ?
-                    { value: orgDetails.country, label: orgDetails.country } : null}
-                  onChange={(selectedOption) => {
-                    const countryName = selectedOption ? selectedOption.value : "";
-                    const countryCode = selectedOption ? selectedOption.isoCode : "";
-                    setOrgDetails(prev => ({
-                      ...prev,
-                      country: countryName,
-                      state: "",
-                      city: ""
-                    }));
-                    if (countryCode) {
-                      const newStates = State.getStatesOfCountry(countryCode);
-                      setStates(newStates);
-                    } else {
-                      setStates([]);
-                    }
-                    setCities([]);
-                  }}
-                  placeholder="India"
-                  className="custom-select"
-                  isSearchable
-                />
-              </div>
+                    { value: orgDetails.country, label: orgDetails.country, id: countries.find(c => c.name === orgDetails.country)?.id } : null}
+                    onChange={(selectedOption) => {
+                      const countryName = selectedOption ? selectedOption.value : "";
+                      const countryId = selectedOption ? selectedOption.id : "";
+                      
+                      
+                      setOrgDetails(prev => ({
+                        ...prev,
+                        country: countryName,
+                        state: "",
+                        city: ""
+                      }));
+                      
+                      if (countryId) {
+                        const newStates = csc.getStatesOfCountry(countryId);
+                        setStates(newStates);
+                      } else {
+                        setStates([]);
+                      }
+                      setCities([]);
+                    }}
+                      placeholder="Country"
+                  className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
+                  classNamePrefix="react-select"
+                      isSearchable
+                    isClearable
+                  />
+                  </div>
+
+              {/* State Dropdown */}
+              <div>
+                    <Select
+                      name="state"
+                      options={states.map(s => ({ value: s.name, label: s.name, id: s.id }))}
+                      value={states.find(s => s.name === orgDetails.state) ?
+                        { value: orgDetails.state, label: orgDetails.state, id: states.find(s => s.name === orgDetails.state)?.id } : null}
+                      onChange={(selectedOption) => {
+                        const stateName = selectedOption ? selectedOption.value : "";
+                        const stateId = selectedOption ? selectedOption.id : "";
+                        setOrgDetails(prev => ({
+                          ...prev,
+                          state: stateName,
+                          city: ""
+                        }));
+                        if (stateId) {
+                          const newCities = csc.getCitiesOfState(stateId);
+                          setCities(newCities);
+                        } else {
+                          setCities([]);
+                        }
+                      }}
+                      placeholder="State"
+                  className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  classNamePrefix="react-select"
+                      isSearchable
+                      isClearable
+                      isDisabled={!orgDetails.country}
+                    />
+                  </div>
+
+              {/* City Dropdown */}
+              <div>
+                    <Select
+                      name="city"
+                      options={cities.map(c => ({ value: c.name, label: c.name, id: c.id }))}
+                      value={cities.find(c => c.name === orgDetails.city) ?
+                        { value: orgDetails.city, label: orgDetails.city, id: cities.find(c => c.name === orgDetails.city)?.id } : null}
+                      onChange={(selectedOption) => {
+                        const cityName = selectedOption ? selectedOption.value : "";
+                        setOrgDetails(prev => ({
+                          ...prev,
+                          city: cityName
+                        }));
+                      }}
+                      placeholder="City"
+                  className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  classNamePrefix="react-select"
+                      isSearchable
+                      isClearable
+                      isDisabled={!orgDetails.state}
+                    />
+                  </div>
 
               {/* Pincode */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Pincode
-                </label>
-                <input
-                  name="pincode"
-                  type="text"
-                  placeholder="Pincode"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                  value={orgDetails.pincode}
-                  onChange={handleInputChange}
-                  onBlur={(e) => validateWithFeedback('pincode', e.target.value, true)}
-                  pattern="^[1-9][0-9]{5}$"
-                  title="Enter a valid 6-digit pincode"
-                  minLength={6}
-                  maxLength={6}
-                />
-              </div>
+              <div>
+                    <input
+                      name="pincode"
+                      type="text"
+                      placeholder="Pincode"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                      value={orgDetails.pincode}
+                      onChange={handleInputChange}
+                      onBlur={(e) => validateWithFeedback('pincode', e.target.value, true)}
+                      pattern="^[1-9][0-9]{5}$"
+                      title="Enter a valid 6-digit pincode"
+                      minLength={6}
+                      maxLength={6}
+                    />
+                  </div>
 
-              {/* Organization Name Field */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Organization Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Inspire Edge"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+              {/* Organization Name (Read-only) */}
+              <div>
+                  <input
+                    type="text"
+                  placeholder="Organization Name"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-700"
                   value={orgDetails.name}
                   readOnly
                 />
+                </div>
               </div>
-            </div>
           </CollapsibleSection>
-        )}
+          )}
 
         {/* Contact Person Section */}
-        {selectedType && (
+          {selectedType && (
           <CollapsibleSection title="Contact Person" defaultOpen={true}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Contact Person Name */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
+              <div>
+                    <input
+                      type="text"
+                      name="name"
                   placeholder="Name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                  value={orgDetails.contactPerson.name}
-                  onChange={handleContactPersonChange}
-                  required
-                />
-              </div>
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                      value={orgDetails.contactPerson.name}
+                      onChange={handleContactPersonChange}
+                      required
+                    />
+                  </div>
 
               {/* Gender */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Gender
-                </label>
-                <input
-                  type="text"
-                  name="gender"
-                  placeholder="Gender"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                  value={orgDetails.contactPerson.gender}
-                  onChange={handleContactPersonChange}
-                />
-              </div>
+              <div>
+                    <select
+                      name="gender"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700 bg-white"
+                      value={orgDetails.contactPerson.gender}
+                      onChange={handleContactPersonChange}
+                    >
+                      <option value="" disabled>Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="transgender">Transgender</option>
+                    </select>
+                  </div>
 
               {/* Designation */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Designation
-                </label>
-                <Select
-                  isMulti
-                  options={designations}
-                  value={designations.filter(opt =>
-                    orgDetails.contactPerson.designation.includes(opt.value)
-                  )}
-                  onChange={handleContactPersonDesignationChange}
-                  placeholder="Designation"
-                  className="custom-select"
-                />
-              </div>
+              <div>
+                    <Select
+                      isMulti
+                      options={designations}
+                      value={designations.filter(opt =>
+                        orgDetails.contactPerson.designation.includes(opt.value)
+                      )}
+                      onChange={handleContactPersonDesignationChange}
+                      placeholder="Designation"
+                  className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
+                  classNamePrefix="react-select"
+                    />
+                  </div>
 
               {/* Mobile Number with Verification */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Mobile Number
-                </label>
+              <div>
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    name="phone1"
+                      <input
+                        type="text"
+                        name="phone1"
                     placeholder="Mobile Number"
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
-                    value={orgDetails.contactPerson.phone1}
-                    onChange={handleContactPersonChange}
-                    onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
-                    maxLength="10"
-                    required
-                    disabled={phoneVerified}
-                  />
-                  {phoneVerified ? (
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                        value={orgDetails.contactPerson.phone1}
+                        onChange={handleContactPersonChange}
+                        onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
+                        maxLength="10"
+                        required
+                        disabled={phoneVerified}
+                      />
+                      {phoneVerified ? (
                     <FaCheckCircle className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <button
-                      type="button"
-                      className="px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                      onClick={sendPhoneOtp}
-                      disabled={isPhoneVerifying}
-                    >
-                      {isPhoneVerifying ? "Sending..." : "Verify"}
-                    </button>
+                      ) : (
+                        <button
+                          type="button"
+                      className="px-4 py-3 bg-gradient-brand text-white rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium"
+                          onClick={sendPhoneOtp}
+                          disabled={isPhoneVerifying}
+                        >
+                          {isPhoneVerifying ? "Sending..." : "Verify"}
+                        </button>
+                      )}
+                  </div>
+                  {showPhoneOtpInput && !phoneVerified && (
+                  <div className="flex items-center space-x-2 mt-2">
+                      <input
+                        type="text"
+                        placeholder="Enter Phone OTP"
+                        value={phoneOtp}
+                        onChange={(e) => setPhoneOtp(e.target.value)}
+                        maxLength="6"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300"
+                      />
+                      <button
+                        type="button"
+                      className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium"
+                        onClick={verifyPhoneOtp}
+                        disabled={isPhoneVerifying}
+                      >
+                        {isPhoneVerifying ? "Verifying..." : "Submit"}
+                      </button>
+                    </div>
                   )}
                 </div>
-                {showPhoneOtpInput && !phoneVerified && (
-                  <div className="flex items-center space-x-2 mt-2">
-                    <input
-                      type="text"
-                      placeholder="Enter Phone OTP"
-                      value={phoneOtp}
-                      onChange={(e) => setPhoneOtp(e.target.value)}
-                      maxLength="6"
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <button
-                      type="button"
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                      onClick={verifyPhoneOtp}
-                      disabled={isPhoneVerifying}
-                    >
-                      {isPhoneVerifying ? "Verifying..." : "Submit"}
-                    </button>
-                  </div>
-                )}
-              </div>
 
               {/* Email Address with Verification */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Email Address
-                </label>
+              <div>
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="email"
-                    name="email"
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                      <input
+                        type="email"
+                        name="email"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
                     placeholder="Email Address"
-                    value={orgDetails.contactPerson.email}
-                    onChange={handleContactPersonChange}
-                    onBlur={(e) => validateWithFeedback('email', e.target.value, true)}
-                    required
-                    disabled={isGoogleAccount || emailVerified}
-                  />
-                  {(isGoogleAccount || emailVerified) ? (
+                        value={orgDetails.contactPerson.email}
+                        onChange={handleContactPersonChange}
+                        onBlur={(e) => validateWithFeedback('email', e.target.value, true)}
+                        required
+                        disabled={isGoogleAccount || emailVerified}
+                      />
+                      {(isGoogleAccount || emailVerified) ? (
                     <FaCheckCircle className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <button
-                      type="button"
-                      className="px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                      onClick={sendEmailOtp}
-                      disabled={isVerifying}
-                    >
-                      {isVerifying ? "Sending…" : "Verify"}
-                    </button>
+                      ) : (
+                        <button
+                          type="button"
+                      className="px-4 py-3 bg-gradient-brand text-white rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium"
+                          onClick={sendEmailOtp}
+                          disabled={isVerifying}
+                        >
+                      {isVerifying ? "Sendingâ€¦" : "Verify"}
+                        </button>
+                      )}
+                  </div>
+                  {showOtpInput && !emailVerified && !isGoogleAccount && (
+                  <div className="flex items-center space-x-2 mt-2">
+                      <input
+                        type="text"
+                        placeholder="Enter OTP"
+                        value={emailOtp}
+                        onChange={e => setEmailOtp(e.target.value)}
+                        maxLength="6"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300"
+                      />
+                      <button
+                        type="button"
+                      className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium"
+                        onClick={verifyEmailOtp}
+                        disabled={isVerifying}
+                      >
+                      {isVerifying ? "Verifyingâ€¦" : "Submit"}
+                      </button>
+                    </div>
                   )}
                 </div>
-                {showOtpInput && !emailVerified && !isGoogleAccount && (
-                  <div className="flex items-center space-x-2 mt-2">
-                    <input
-                      type="text"
-                      placeholder="Enter OTP"
-                      value={emailOtp}
-                      onChange={e => setEmailOtp(e.target.value)}
-                      maxLength="6"
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <button
-                      type="button"
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                      onClick={verifyEmailOtp}
-                      disabled={isVerifying}
-                    >
-                      {isVerifying ? "Verifying…" : "Submit"}
-                    </button>
-                  </div>
-                )}
-              </div>
 
-              {/* WhatsApp Number */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Whats app Number
-                </label>
+              {/* WhatsApp Number with Checkbox */}
+              <div>
                 <input
                   type="text"
                   name="phone2"
-                  placeholder="Whats app Number"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+                  placeholder="Whatsapp Number"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
                   value={orgDetails.contactPerson.phone2}
                   onChange={handleContactPersonChange}
                   onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
                   maxLength="10"
                   disabled={sameAsCallingNumber}
                 />
-              </div>
-
-              {/* Checkboxes */}
-              <div className="col-span-2 space-y-4">
-                <label className="flex items-center space-x-3">
+                <label className="flex items-center space-x-3 mt-2">
                   <input
                     type="checkbox"
                     checked={sameAsCallingNumber}
                     onChange={(e) => setSameAsCallingNumber(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-200"
                   />
                   <span className="text-sm text-gray-700">Whatsapp Number same as Mobile Number</span>
                 </label>
-
-                {isNonParent() && (
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={isOwner === "yes"}
-                      onChange={(e) => setIsOwner(e.target.checked ? "yes" : "no")}
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <span className="text-sm text-gray-700">Are you the owner or the main head of the organization?</span>
-                  </label>
-                )}
               </div>
+
+              {/* Are you the owner - Radio Buttons */}
+              {isNonParent() && (
+                <div className="col-span-2">
+                  <div className="flex items-center space-x-6">
+                    <span className="text-sm font-medium text-gray-700">Are you the owner or the main head of the organization?</span>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="isOwner"
+                        value="yes"
+                        checked={isOwner === "yes"}
+                        onChange={(e) => setIsOwner(e.target.value)}
+                        className="w-4 h-4 text-pink-600 border-gray-300 focus:ring-pink-200"
+                      />
+                      <span className="text-sm text-gray-700">Yes</span>
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="isOwner"
+                        value="no"
+                        checked={isOwner === "no"}
+                        onChange={(e) => setIsOwner(e.target.value)}
+                        className="w-4 h-4 text-pink-600 border-gray-300 focus:ring-pink-200"
+                      />
+                      <span className="text-sm text-gray-700">No</span>
+                    </label>
+                  </div>
+                </div>
+              )}
             </div>
           </CollapsibleSection>
         )}
 
-        {/* Submit Button */}
-        {selectedType && (
-          <div className="mt-8 text-center">
-            <button 
-              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium"
-              type="submit"
-              disabled={isSaving}
-            >
-              {isSaving ? "Saving..." : "Save details"}
-            </button>
-          </div>
+        {/* Reporting Authority Section - Shows when user is NOT the owner */}
+        {selectedType && isNonParent() && isOwner === "no" && (
+          <CollapsibleSection title="Reporting Authority" defaultOpen={true}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Reporting Authority Name */}
+              <div>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Name"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                    value={reportingAuthority.name}
+                    onChange={handleReportingAuthorityChange}
+                  required
+                  />
+                </div>
+
+              {/* Gender */}
+              <div>
+                  <select
+                    name="gender"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700 bg-white"
+                    value={reportingAuthority.gender}
+                    onChange={handleReportingAuthorityChange}
+                  >
+                    <option value="" disabled>Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="transgender">Transgender</option>
+                  </select>
+                </div>
+
+              {/* Designation */}
+              <div>
+                  <Select
+                    isMulti
+                    options={designations}
+                    value={designations.filter(opt =>
+                      reportingAuthority.designation.includes(opt.value)
+                    )}
+                    onChange={handleReportingAuthorityDesignationChange}
+                    placeholder="Designation"
+                  className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
+                  classNamePrefix="react-select"
+                  />
+                </div>
+
+              {/* Mobile Number */}
+              <div>
+                  <input
+                    type="text"
+                    name="phone1"
+                  placeholder="Mobile Number"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                    value={reportingAuthority.phone1}
+                    onChange={handleReportingAuthorityChange}
+                    onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
+                    maxLength="10"
+                  required
+                />
+                </div>
+
+              {/* Email Address */}
+              <div>
+                  <input
+                  type="email"
+                  name="email"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                  placeholder="Email Address"
+                  value={reportingAuthority.email}
+                  onChange={handleReportingAuthorityChange}
+                  onBlur={(e) => validateWithFeedback('email', e.target.value, true)}
+                  required
+                />
+              </div>
+
+              {/* WhatsApp Number */}
+              <div>
+                  <input
+                    type="text"
+                    name="phone2"
+                  placeholder="WhatsApp Number"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                    value={reportingAuthority.phone2}
+                    onChange={handleReportingAuthorityChange}
+                    onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
+                    maxLength="10"
+                    disabled={reportingAuthoritySameNumber}
+                  />
+                </div>
+
+              {/* Checkbox for WhatsApp same as Mobile */}
+              <div className="col-span-2 space-y-4">
+                <label className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    checked={reportingAuthoritySameNumber}
+                    onChange={(e) => setReportingAuthoritySameNumber(e.target.checked)}
+                    className="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-200"
+                  />
+                  <span className="text-sm text-gray-700">WhatsApp Number same as Mobile Number</span>
+                </label>
+                </div>
+              </div>
+          </CollapsibleSection>
         )}
+
+        {/* Submit Button */}
+          {selectedType && (
+          <div className="mt-8 text-center">
+              <button 
+              className="px-8 py-3 bg-gradient-brand text-white rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium"
+                type="submit"
+                disabled={isSaving}
+              >
+                {isSaving ? "Saving..." : "Save details"}
+              </button>
+            </div>
+          )}
       </form>
     </div>
   );

@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import ImageUpload from "../../../../services/ImageUpload";
-import "./profileStyles.css";
 import Tesseract from "tesseract.js";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
 // Worker for pdfjs (works with Vite/CRA)
@@ -316,152 +315,104 @@ const LogoCoverUploader = () => {
   if (loading || isLoading) return <p>Loading...</p>;
 
   return (
-    <div className="form-group">
-      {/* Logo upload */}
-      <div className="logo-upload-container">
-        {imageUrl ? (
-          <div className="logo-preview-section">
-            <img
-              src={imageUrl}
-              alt="Uploaded preview"
-              className="logo-preview-image"
-            />
-          </div>
-        ) : (
-          <div
-            className="logo-upload-placeholder"
-            title="Upload Institution Logo"
-          >
-            <div className="logo-upload-content">
-              <div className="logo-upload-icon">📷</div>
-              <div className="logo-upload-text">Upload Institution Logo</div>
-            </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Address Proof Type Dropdown */}
+      <div className="relative">
+        <select
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed appearance-none pr-10"
+          value={addressProofType}
+          onChange={e => setAddressProofType(e.target.value)}
+          disabled={addressUploading}
+        >
+          <option value="" disabled>Select Address Proof University</option>
+          <option value="Bank Account Statement">Bank Account Statement</option>
+          <option value="Credit Card Statement">Credit Card Statement</option>
+          <option value="Service Tax / Sales Tax/ TAN">Service Tax / Sales Tax/ TAN</option>
+          <option value="Govt. Registration Certificate">Govt. Registration Certificate</option>
+          <option value="Rent Agreement / Lease Proof">Rent Agreement / Lease Proof</option>
+          <option value="Certificate of Incorporation">Certificate of Incorporation</option>
+          <option value="Shop and Establishment certificate">Shop and Establishment certificate</option>
+          <option value="Telephone Bill">Telephone Bill</option>
+          <option value="Electricity Bill">Electricity Bill</option>
+          <option value="Water Bill">Water Bill</option>
+          <option value="Aadhar Card / Passport/Driver's License">Aadhar Card / Passport/Driver's License</option>
+        </select>
+        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+          <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Address Proof Upload */}
+      <div className="relative">
+        <input
+          type="file"
+          id="address-proof-upload"
+          className="hidden"
+          accept="image/*,application/pdf"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) setAddressProofFile(file);
+          }}
+          disabled={addressUploading || !addressProofType}
+        />
+        <label
+          htmlFor="address-proof-upload"
+          className={`flex items-center gap-3 w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors ${
+            addressUploading || !addressProofType ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        >
+          <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          <span>{addressProofFile ? addressProofFile.name : 'Upload Address Proof'}</span>
+        </label>
+        {addressUploading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-lg">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-500"></div>
           </div>
         )}
-        <div className="logo-controls-section">
-          <div className="logo-upload-field">
-            <input
-              type="file"
-              id="file-upload"
-              className="logo-file-input"
-              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-              onChange={handleFileChange}
-              disabled={uploading || !user}
-            />
-            <label
-              htmlFor="file-upload"
-              className="logo-upload-button-custom"
-              style={{
-                padding: '6px 12px',
-                fontSize: '11px',
-                minWidth: '70px',
-                height: '26px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#3498db',
-                color: 'white',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                border: 'none',
-                fontWeight: '500',
-                textAlign: 'center',
-                boxSizing: 'border-box',
-                lineHeight: '1'
-              }}
-            >
-              {imageUrl ? "Change Logo" : "Upload Logo"}
-            </label>
-            {selectedFile && <span style={{ marginLeft: "10px" }}>{selectedFile.name}</span>}
-          </div>
-          <div className="logo-upload-help">
-            <small>
-              Max file size is 1MB, Minimum dimension: 330x300.<br />
-              Suitable files are <b>.jpg</b> &amp; <b>.png</b> only.
-            </small>
-          </div>
-          {uploading && <p className="uploading-text">Uploading image...</p>}
-        </div>
+        {!addressProofType && (
+          <p className="text-xs text-amber-600 mt-1">
+            Please select document type first
+          </p>
+        )}
       </div>
-      {/* PAN Card Image/PDF Upload */}
-      <div className="document-upload-section">
-        <div className="document-upload-row">
-          <div className="document-upload-inline">
-            <div className="document-input-wrapper">
-              <ImageUpload
-                imageFile={panCardImage}
-                onImageSelect={setPanCardImage}
-                placeholder="Upload PAN Card (Image or PDF)"
-                accept="image/*,application/pdf"
-                id="pan-card-upload"
-                className="flex-grow-1"
-                title="Upload PAN Card (Image or PDF)"
-                disabled={panUploading}
-              />
-              <span className="custom-tooltip">PAN Card Image / PDF</span>
-            </div>
-            <span className="info-tooltip-container">
-              <span className="info-icon">ℹ️</span>
-              <span className="custom-tooltip tooltip-small">
-                Accepted formats: JPG, PNG, PDF. Max size: 2MB.<br />
-                <b>
-                  If uploading image, only original PAN card images allowed.<br />
-                  If uploading PDF (e-PAN), system validates PDF content.
-                </b>
-              </span>
-            </span>
+
+      {/* Upload PAN card */}
+      <div className="relative">
+        <input
+          type="file"
+          id="pan-card-upload"
+          className="hidden"
+          accept="image/*,application/pdf"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) setPanCardImage(file);
+          }}
+          disabled={panUploading}
+        />
+        <label
+          htmlFor="pan-card-upload"
+          className={`flex items-center gap-3 w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors ${
+            panUploading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        >
+          <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          <span>{panCardImage ? panCardImage.name : 'Upload PAN card'}</span>
+        </label>
+        {panUploading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-lg">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-500"></div>
           </div>
-          {panUploading && <span className="upload-status">Uploading...</span>}
-        </div>
+        )}
       </div>
-      {/* Address Proof Dropdown + Upload */}
-      <div className="document-upload-section">
-        <div className="document-upload-row">
-          <div className="document-select-wrapper">
-            <select
-              className="document-select"
-              value={addressProofType}
-              onChange={e => setAddressProofType(e.target.value)}
-              disabled={addressUploading}
-            >
-              <option value="" disabled>Select Address Proof Document</option>
-              <option value="Bank Account Statement">Bank Account Statement</option>
-              <option value="Credit Card Statement">Credit Card Statement</option>
-              <option value="Service Tax / Sales Tax/ TAN">Service Tax / Sales Tax/ TAN</option>
-              <option value="Govt. Registration Certificate">Govt. Registration Certificate</option>
-              <option value="Rent Agreement / Lease Proof">Rent Agreement / Lease Proof</option>
-              <option value="Certificate of Incorporation">Certificate of Incorporation</option>
-              <option value="Shop and Establishment certificate">Shop and Establishment certificate</option>
-              <option value="Telephone Bill">Telephone Bill</option>
-              <option value="Electricity Bill">Electricity Bill</option>
-              <option value="Water Bill">Water Bill</option>
-              <option value="Aadhar Card / Passport/Driver's License">Aadhar Card / Passport/Driver's License</option>
-            </select>
-            <span className="custom-tooltip">Address Proof Type</span>
-          </div>
-          <div className="document-upload-inline">
-            <div className="document-input-wrapper">
-              <ImageUpload
-                imageFile={addressProofFile}
-                onImageSelect={setAddressProofFile}
-                placeholder="Upload Address Proof Document"
-                accept="image/*,application/pdf"
-                id="address-proof-upload"
-                className="flex-grow-1"
-                disabled={addressUploading}
-              />
-              <span className="custom-tooltip">Address Proof Document</span>
-            </div>
-            <span className="info-tooltip-container">
-              <span className="info-icon">ℹ️</span>
-              <span className="custom-tooltip tooltip-large">
-                Address Proof should be in the name of company. Any 1 of the following proofs need to be submitted. Utility bills etc. should not be older than 3 months.
-              </span>
-            </span>
-          </div>
-          {addressUploading && <span className="upload-status">Uploading...</span>}
-        </div>
-      </div>
+
+      {/* PAN Number - Empty placeholder to maintain grid */}
+      <div></div>
     </div>
   );
 };
