@@ -1,10 +1,50 @@
 import { useState, useEffect, forwardRef, useImperativeHandle, useRef, useCallback } from 'react';
 import Select from 'react-select';
-import csc from 'countries-states-cities';
+import { GetCountries, GetState, GetCity } from 'react-country-state-city';
 import axios from 'axios';
 import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+//------------------------------------------------
+// Helper functions: map countries/states/cities by ID
+//------------------------------------------------
+const mapAllCountries = async () => {
+  const countries = await GetCountries();
+  return countries.map((country) => ({
+    value: country.id,
+    label: country.name
+  }));
+};
+
+// Find India in the countries list
+const findIndiaOption = async () => {
+  const countries = await GetCountries();
+  const countriesOptions = countries.map((country) => ({
+    value: country.id,
+    label: country.name
+  }));
+  const india = countriesOptions.find(country => country.label === "India");
+  return india || null;
+};
+
+const mapStatesOfCountry = async (countryId) => {
+  if (!countryId) return [];
+  const states = await GetState(countryId);
+  return states.map((state) => ({
+    value: state.id,
+    label: state.name
+  }));
+};
+
+const mapCitiesOfState = async (countryId, stateId) => {
+  if (!countryId || !stateId) return [];
+  const cities = await GetCity(countryId, stateId);
+  return cities.map((city) => ({
+    value: city.name,
+    label: city.name
+  }));
+};
 
 const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
   const { user } = useAuth();
@@ -13,13 +53,10 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
   const [isSaving, setIsSaving] = useState(false);
 
   // For country/state/city
-  const countries = csc.getAllCountries().map((country) => ({
-    value: country.id,
-    label: country.name,
-  }));
-  
-  // Find India in the countries list
-  const indiaOption = countries.find(country => country.label === "India") || null;
+  const [countries, setCountries] = useState([]);
+  const [indiaOption, setIndiaOption] = useState(null);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
 
   const getInitialState = () => {
     const defaultPreferences = {
@@ -89,15 +126,69 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
   const [jobSearchStatus, setJobSearchStatus] = useState(initialStateRef.current.jobSearchStatus);
   const [jobDetails, setJobDetails] = useState(initialStateRef.current.jobDetails);
 
-  // Set India as the default country if preferred_country is not set
+  // Load countries on component mount
   useEffect(() => {
-    if (!jobDetails.preferred_country && indiaOption) {
-      setJobDetails(prev => ({
-        ...prev,
-        preferred_country: indiaOption
-      }));
-    }
+    const loadCountries = async () => {
+      try {
+        const [countriesData, indiaData] = await Promise.all([
+          mapAllCountries(),
+          findIndiaOption()
+        ]);
+        setCountries(countriesData);
+        setIndiaOption(indiaData);
+        
+        // Set India as the default country if preferred_country is not set
+        if (indiaData && !jobDetails.preferred_country) {
+          setJobDetails(prev => ({
+            ...prev,
+            preferred_country: indiaData
+          }));
+        }
+      } catch (error) {
+        console.error("Error loading countries:", error);
+      }
+    };
+    
+    loadCountries();
   }, []);
+
+  // Load states when country changes
+  useEffect(() => {
+    const loadStates = async () => {
+      if (jobDetails.preferred_country?.value) {
+        try {
+          const statesData = await mapStatesOfCountry(jobDetails.preferred_country.value);
+          setStates(statesData);
+        } catch (error) {
+          console.error("Error loading states:", error);
+          setStates([]);
+        }
+      } else {
+        setStates([]);
+      }
+    };
+    
+    loadStates();
+  }, [jobDetails.preferred_country]);
+
+  // Load cities when state changes
+  useEffect(() => {
+    const loadCities = async () => {
+      if (jobDetails.preferred_country?.value && jobDetails.preferred_state?.value) {
+        try {
+          const citiesData = await mapCitiesOfState(jobDetails.preferred_country.value, jobDetails.preferred_state.value);
+          setCities(citiesData);
+        } catch (error) {
+          console.error("Error loading cities:", error);
+          setCities([]);
+        }
+      } else {
+        setCities([]);
+      }
+    };
+    
+    loadCities();
+  }, [jobDetails.preferred_country, jobDetails.preferred_state]);
 
   // Update state when formData changes
   useEffect(() => {
@@ -137,18 +228,6 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
     { value: "more_than_200k", label: "More than 2 lakh" }
   ];
 
-  const states = jobDetails.preferred_country
-    ? csc.getStatesOfCountry(jobDetails.preferred_country.value).map((state) => ({
-        value: state.id,
-        label: state.name,
-      }))
-    : [];
-  const cities = jobDetails.preferred_state
-    ? csc.getCitiesOfState(jobDetails.preferred_state.value).map((city) => ({
-        value: city.id,
-        label: city.name,
-      }))
-    : [];
 
   // Add validation function
   const validateJobPreferences = () => {
@@ -510,14 +589,14 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
                 ? record.teaching_administrative_coreExpertise || []
                 : [],
             preferred_country: record.preferred_country
-              ? { label: record.preferred_country, value: record.preferred_country }
-              : "",
+              ? countries.find(c => c.label === record.preferred_country) || null
+              : null,
             preferred_state: record.preferred_state
-              ? { label: record.preferred_state, value: record.preferred_state }
-              : "",
+              ? states.find(s => s.label === record.preferred_state) || null
+              : null,
             preferred_city: record.preferred_city
-              ? { label: record.preferred_city, value: record.preferred_city }
-              : "",
+              ? cities.find(c => c.label === record.preferred_city) || null
+              : null,
             notice_period: record.notice_period || "",
           };
 

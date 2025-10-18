@@ -1,10 +1,50 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import axios from "axios";
 import Select from "react-select";
-import csc from "countries-states-cities";
+import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+//------------------------------------------------
+// Helper functions: map countries/states/cities by ID
+//------------------------------------------------
+const mapAllCountries = async () => {
+  const countries = await GetCountries();
+  return countries.map((country) => ({
+    value: country.id,
+    label: country.name
+  }));
+};
+
+// Find India in the countries list
+const findIndiaOption = async () => {
+  const countries = await GetCountries();
+  const countriesOptions = countries.map((country) => ({
+    value: country.id,
+    label: country.name
+  }));
+  const india = countriesOptions.find(country => country.label === "India");
+  return india || null;
+};
+
+const mapStatesOfCountry = async (countryId) => {
+  if (!countryId) return [];
+  const states = await GetState(countryId);
+  return states.map((state) => ({
+    value: state.id,
+    label: state.name
+  }));
+};
+
+const mapCitiesOfState = async (countryId, stateId) => {
+  if (!countryId || !stateId) return [];
+  const cities = await GetCity(countryId, stateId);
+  return cities.map((city) => ({
+    value: city.name,
+    label: city.name
+  }));
+};
 
 const Experience = forwardRef(({
   excludeAdditionalDetails,
@@ -108,13 +148,8 @@ const Experience = forwardRef(({
   });
 
   // Countries for location
-  const allCountries = csc.getAllCountries().map((c) => ({
-    value: c.id,
-    label: c.name
-  }));
-
-  // Find India in the countries list
-  const indiaOption = allCountries.find(country => country.label === "India") || null;
+  const [allCountries, setAllCountries] = useState([]);
+  const [indiaOption, setIndiaOption] = useState(null);
 
   // Subject/designation/grades/coreExpertise/curriculum
   const [subjectsOptions, setSubjectsOptions] = useState([]);
@@ -188,10 +223,28 @@ const Experience = forwardRef(({
     fetchDesignations();
   }, []);
 
+  // Load countries on component mount
+  useEffect(() => {
+    const loadCountries = async () => {
+      try {
+        const [countriesData, indiaData] = await Promise.all([
+          mapAllCountries(),
+          findIndiaOption()
+        ]);
+        setAllCountries(countriesData);
+        setIndiaOption(indiaData);
+      } catch (error) {
+        console.error("Error loading countries:", error);
+      }
+    };
+    
+    loadCountries();
+  }, []);
+
   // ---------------------------
   // Revert location strings to {value, label} objects for react-select
   // ---------------------------
-  const revertLocation = (entry) => {
+  const revertLocation = async (entry) => {
     if (!entry.country && !entry.state && !entry.city) {
       return entry; // no location stored, return as is
     }
@@ -203,20 +256,18 @@ const Experience = forwardRef(({
     let cityObj = null;
 
     if (countryObj) {
-      const possibleStates = csc.getStatesOfCountry(countryObj.value).map((st) => ({
-        value: st.id,
-        label: st.name
-      }));
-      // 2) Find matching state object by label
-      stateObj = possibleStates.find((s) => s.label === entry.state) || null;
+      try {
+        const possibleStates = await mapStatesOfCountry(countryObj.value);
+        // 2) Find matching state object by label
+        stateObj = possibleStates.find((s) => s.label === entry.state) || null;
 
-      if (stateObj) {
-        const possibleCities = csc.getCitiesOfState(stateObj.value).map((ct) => ({
-          value: ct.id,
-          label: ct.name
-        }));
-        // 3) Find matching city object by label
-        cityObj = possibleCities.find((c) => c.label === entry.city) || null;
+        if (stateObj) {
+          const possibleCities = await mapCitiesOfState(countryObj.value, stateObj.value);
+          // 3) Find matching city object by label
+          cityObj = possibleCities.find((c) => c.label === entry.city) || null;
+        }
+      } catch (error) {
+        console.error("Error reverting location:", error);
       }
     }
 
@@ -337,7 +388,9 @@ const Experience = forwardRef(({
           // Ensure we actually have experienceEntries
           if (dynamoData && Array.isArray(dynamoData.experienceEntries)) {
             // Convert stored string-locations back to {value, label} objects
-            const reverted = dynamoData.experienceEntries.map((exp) => revertLocation(exp));
+            const reverted = await Promise.all(
+              dynamoData.experienceEntries.map((exp) => revertLocation(exp))
+            );
             setExperienceEntries(reverted);
             // Initialize date validation errors array
             setDateValidationErrors(new Array(reverted.length).fill(false));
@@ -1059,18 +1112,46 @@ const Experience = forwardRef(({
 
       {/* Experience entries */}
       {experienceEntries.map((experience, index) => {
-        const statesInCountry = experience.country
-          ? csc.getStatesOfCountry(experience.country.value).map((st) => ({
-              value: st.id,
-              label: st.name
-            }))
-          : [];
-        const citiesInState = experience.state
-          ? csc.getCitiesOfState(experience.state.value).map((ct) => ({
-              value: ct.id,
-              label: ct.name
-            }))
-          : [];
+        const [statesInCountry, setStatesInCountry] = useState([]);
+        const [citiesInState, setCitiesInState] = useState([]);
+
+        // Load states when country changes
+        useEffect(() => {
+          const loadStates = async () => {
+            if (experience.country?.value) {
+              try {
+                const statesData = await mapStatesOfCountry(experience.country.value);
+                setStatesInCountry(statesData);
+              } catch (error) {
+                console.error("Error loading states:", error);
+                setStatesInCountry([]);
+              }
+            } else {
+              setStatesInCountry([]);
+            }
+          };
+          
+          loadStates();
+        }, [experience.country]);
+
+        // Load cities when state changes
+        useEffect(() => {
+          const loadCities = async () => {
+            if (experience.country?.value && experience.state?.value) {
+              try {
+                const citiesData = await mapCitiesOfState(experience.country.value, experience.state.value);
+                setCitiesInState(citiesData);
+              } catch (error) {
+                console.error("Error loading cities:", error);
+                setCitiesInState([]);
+              }
+            } else {
+              setCitiesInState([]);
+            }
+          };
+          
+          loadCities();
+        }, [experience.country, experience.state]);
 
         return (
           <div key={index} className="experience-entry">

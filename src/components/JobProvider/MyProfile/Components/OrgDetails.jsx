@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from "react";
 import Select from "react-select";
-import csc from "countries-states-cities"; // For countries, states, cities
+import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
@@ -21,6 +21,46 @@ const authHeaders = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${localStorage.getItem("token")}`,
   },
+};
+
+//------------------------------------------------
+// Helper functions: map countries/states/cities by ID
+//------------------------------------------------
+const mapAllCountries = async () => {
+  const countries = await GetCountries();
+  return countries.map((country) => ({
+    value: country.id,
+    label: country.name
+  }));
+};
+
+// Find India in the countries list
+const findIndiaOption = async () => {
+  const countries = await GetCountries();
+  const countriesOptions = countries.map((country) => ({
+    value: country.id,
+    label: country.name
+  }));
+  const india = countriesOptions.find(country => country.label === "India");
+  return india || null;
+};
+
+const mapStatesOfCountry = async (countryId) => {
+  if (!countryId) return [];
+  const states = await GetState(countryId);
+  return states.map((state) => ({
+    value: state.id,
+    label: state.name
+  }));
+};
+
+const mapCitiesOfState = async (countryId, stateId) => {
+  if (!countryId || !stateId) return [];
+  const cities = await GetCity(countryId, stateId);
+  return cities.map((city) => ({
+    value: city.name,
+    label: city.name
+  }));
 };
 
 const OrgDetails = () => {
@@ -105,16 +145,30 @@ const OrgDetails = () => {
   const [parentStates, setParentStates] = useState([]);
   const [parentCities, setParentCities] = useState([]);
   const [isFetched, setIsFetched] = useState(false);
+  const [indiaOption, setIndiaOption] = useState(null);
 
   useEffect(() => {
-    const allCountries = csc.getAllCountries();
-    setCountries(allCountries);
-    const indiaCountry = allCountries.find(c => c.name === "India");
-    if (indiaCountry) {
-      const indiaStates = csc.getStatesOfCountry(indiaCountry.id);
-      setStates(indiaStates);
-      setParentStates(indiaStates);
-    }
+    const loadCountries = async () => {
+      try {
+        const [countriesData, indiaData] = await Promise.all([
+          mapAllCountries(),
+          findIndiaOption()
+        ]);
+        setCountries(countriesData);
+        setIndiaOption(indiaData);
+        
+        // Load India states by default
+        if (indiaData) {
+          const indiaStates = await mapStatesOfCountry(indiaData.value);
+          setStates(indiaStates);
+          setParentStates(indiaStates);
+        }
+      } catch (error) {
+        console.error("Error loading countries:", error);
+      }
+    };
+    
+    loadCountries();
   }, []);
 
   useEffect(() => {
@@ -186,36 +240,53 @@ const OrgDetails = () => {
 
   useEffect(() => {
     if (!isFetched || !countries.length) return;
-    const orgCountry = orgDetails.country || "India";
-    const countryObj = countries.find(c => c.name === orgCountry);
-    if (countryObj) {
-      const newStates = csc.getStatesOfCountry(countryObj.id);
-      setStates(newStates);
-      if (orgDetails.state) {
-        const stateObj = newStates.find(s => s.name === orgDetails.state);
-        if (stateObj) {
-          const newCities = csc.getCitiesOfState(stateObj.id);
-          setCities(newCities);
+    
+    const loadOrgLocationData = async () => {
+      const orgCountry = orgDetails.country || "India";
+      const countryObj = countries.find(c => c.label === orgCountry);
+      if (countryObj) {
+        try {
+          const newStates = await mapStatesOfCountry(countryObj.value);
+          setStates(newStates);
+          if (orgDetails.state) {
+            const stateObj = newStates.find(s => s.label === orgDetails.state);
+            if (stateObj) {
+              const newCities = await mapCitiesOfState(countryObj.value, stateObj.value);
+              setCities(newCities);
+            }
+          } else {
+            setCities([]);
+          }
+        } catch (error) {
+          console.error("Error loading org location data:", error);
         }
-      } else {
-        setCities([]);
       }
-    }
-    const parentCountry = parentDetails.country || "India";
-    const parentCountryObj = countries.find(c => c.name === parentCountry);
-    if (parentCountryObj) {
-      const newParentStates = csc.getStatesOfCountry(parentCountryObj.id);
-      setParentStates(newParentStates);
-      if (parentDetails.state) {
-        const stateObj = newParentStates.find(s => s.name === parentDetails.state);
-        if (stateObj) {
-          const newCities = csc.getCitiesOfState(stateObj.id);
-          setParentCities(newCities);
+    };
+
+    const loadParentLocationData = async () => {
+      const parentCountry = parentDetails.country || "India";
+      const parentCountryObj = countries.find(c => c.label === parentCountry);
+      if (parentCountryObj) {
+        try {
+          const newParentStates = await mapStatesOfCountry(parentCountryObj.value);
+          setParentStates(newParentStates);
+          if (parentDetails.state) {
+            const stateObj = newParentStates.find(s => s.label === parentDetails.state);
+            if (stateObj) {
+              const newCities = await mapCitiesOfState(parentCountryObj.value, stateObj.value);
+              setParentCities(newCities);
+            }
+          } else {
+            setParentCities([]);
+          }
+        } catch (error) {
+          console.error("Error loading parent location data:", error);
         }
-      } else {
-        setParentCities([]);
       }
-    }
+    };
+
+    loadOrgLocationData();
+    loadParentLocationData();
   }, [isFetched, countries, orgDetails.country, orgDetails.state, parentDetails.country, parentDetails.state]);
 
   useEffect(() => {
@@ -936,12 +1007,11 @@ const OrgDetails = () => {
               <div>
                     <Select
                       name="country"
-                    options={countries.map(c => ({ value: c.name, label: c.name, id: c.id }))}
-                  value={countries.find(c => c.name === orgDetails.country) ?
-                    { value: orgDetails.country, label: orgDetails.country, id: countries.find(c => c.name === orgDetails.country)?.id } : null}
-                    onChange={(selectedOption) => {
-                      const countryName = selectedOption ? selectedOption.value : "";
-                      const countryId = selectedOption ? selectedOption.id : "";
+                    options={countries}
+                  value={countries.find(c => c.label === orgDetails.country) || null}
+                    onChange={async (selectedOption) => {
+                      const countryName = selectedOption ? selectedOption.label : "";
+                      const countryId = selectedOption ? selectedOption.value : "";
                       
                       
                       setOrgDetails(prev => ({
@@ -952,8 +1022,13 @@ const OrgDetails = () => {
                       }));
                       
                       if (countryId) {
-                        const newStates = csc.getStatesOfCountry(countryId);
-                        setStates(newStates);
+                        try {
+                          const newStates = await mapStatesOfCountry(countryId);
+                          setStates(newStates);
+                        } catch (error) {
+                          console.error("Error loading states:", error);
+                          setStates([]);
+                        }
                       } else {
                         setStates([]);
                       }
@@ -971,20 +1046,27 @@ const OrgDetails = () => {
               <div>
                     <Select
                       name="state"
-                      options={states.map(s => ({ value: s.name, label: s.name, id: s.id }))}
-                      value={states.find(s => s.name === orgDetails.state) ?
-                        { value: orgDetails.state, label: orgDetails.state, id: states.find(s => s.name === orgDetails.state)?.id } : null}
-                      onChange={(selectedOption) => {
-                        const stateName = selectedOption ? selectedOption.value : "";
-                        const stateId = selectedOption ? selectedOption.id : "";
+                      options={states}
+                      value={states.find(s => s.label === orgDetails.state) || null}
+                      onChange={async (selectedOption) => {
+                        const stateName = selectedOption ? selectedOption.label : "";
+                        const stateId = selectedOption ? selectedOption.value : "";
+                        const countryId = countries.find(c => c.label === orgDetails.country)?.value;
+                        
                         setOrgDetails(prev => ({
                           ...prev,
                           state: stateName,
                           city: ""
                         }));
-                        if (stateId) {
-                          const newCities = csc.getCitiesOfState(stateId);
-                          setCities(newCities);
+                        
+                        if (stateId && countryId) {
+                          try {
+                            const newCities = await mapCitiesOfState(countryId, stateId);
+                            setCities(newCities);
+                          } catch (error) {
+                            console.error("Error loading cities:", error);
+                            setCities([]);
+                          }
                         } else {
                           setCities([]);
                         }
@@ -1002,11 +1084,10 @@ const OrgDetails = () => {
               <div>
                     <Select
                       name="city"
-                      options={cities.map(c => ({ value: c.name, label: c.name, id: c.id }))}
-                      value={cities.find(c => c.name === orgDetails.city) ?
-                        { value: orgDetails.city, label: orgDetails.city, id: cities.find(c => c.name === orgDetails.city)?.id } : null}
+                      options={cities}
+                      value={cities.find(c => c.label === orgDetails.city) || null}
                       onChange={(selectedOption) => {
-                        const cityName = selectedOption ? selectedOption.value : "";
+                        const cityName = selectedOption ? selectedOption.label : "";
                         setOrgDetails(prev => ({
                           ...prev,
                           city: cityName

@@ -1,32 +1,67 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import axios from "axios";
 import Select from "react-select";
-import csc from "countries-states-cities"; // For countries, states, cities
+import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+//------------------------------------------------
+// Helper functions: map countries/states/cities by ID
+//------------------------------------------------
+const mapAllCountries = async () => {
+  const countries = await GetCountries();
+  return countries.map((country) => ({
+    value: country.id,
+    label: country.name
+  }));
+};
+
+// Find India in the countries list
+const findIndiaOption = async () => {
+  const countries = await GetCountries();
+  const countriesOptions = countries.map((country) => ({
+    value: country.id,
+    label: country.name
+  }));
+  const india = countriesOptions.find(country => country.label === "India");
+  return india || null;
+};
+
+const mapStatesOfCountry = async (countryId) => {
+  if (!countryId) return [];
+  const states = await GetState(countryId);
+  return states.map((state) => ({
+    value: state.id,
+    label: state.name
+  }));
+};
+
+const mapCitiesOfState = async (countryId, stateId) => {
+  if (!countryId || !stateId) return [];
+  const cities = await GetCity(countryId, stateId);
+  return cities.map((city) => ({
+    value: city.name,
+    label: city.name
+  }));
+};
 
 const Address = forwardRef(({ className, permanentCity, presentCity, formData: parentFormData, setFormData: setParentFormData }, ref) => {
   const { user } = useAuth();
 
   // ========== CSC Data ==========
-  const countries = csc.getAllCountries().map(country => ({
-    value: country.id,
-    label: country.name,
-  }));
-
-  // Find India in the countries list
-  const indiaOption = countries.find(country => country.label === "India");
+  const [countries, setCountries] = useState([]);
+  const [indiaOption, setIndiaOption] = useState(null);
 
   // ========== Form State ==========
   const [localFormData, setLocalFormData] = useState({
     permanentAddress: parentFormData?.permanentAddress || {
-      country: indiaOption || null,
+      country: null,
       state: null,
       city: null,
     },
     presentAddress: parentFormData?.presentAddress || {
-      country: indiaOption || null,
+      country: null,
       state: null,
       city: null,
       sameAsPermanent: false,
@@ -34,22 +69,71 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  const getStates = (countryId) => {
-    if (!countryId) return [];
-    const states = csc.getStatesOfCountry(countryId);
-    return states.map(state => ({
-      value: state.id,
-      label: state.name,
-    }));
+  // ========== Load Countries on Component Mount ==========
+  useEffect(() => {
+    const loadCountries = async () => {
+      try {
+        const [countriesData, indiaData] = await Promise.all([
+          mapAllCountries(),
+          findIndiaOption()
+        ]);
+        setCountries(countriesData);
+        setIndiaOption(indiaData);
+        
+        // Update form data with India option if not already set
+        if (indiaData && !localFormData.permanentAddress.country && !localFormData.presentAddress.country) {
+          setLocalFormData(prev => ({
+            permanentAddress: {
+              ...prev.permanentAddress,
+              country: indiaData
+            },
+            presentAddress: {
+              ...prev.presentAddress,
+              country: indiaData
+            }
+          }));
+        }
+      } catch (error) {
+        console.error("Error loading countries:", error);
+      }
+    };
+    
+    loadCountries();
+  }, []);
+
+  const [states, setStates] = useState({ permanent: [], present: [] });
+  const [cities, setCities] = useState({ permanent: [], present: [] });
+
+  const getStates = async (countryId, addressType = 'permanent') => {
+    if (!countryId) {
+      setStates(prev => ({ ...prev, [addressType]: [] }));
+      return [];
+    }
+    try {
+      const statesData = await mapStatesOfCountry(countryId);
+      setStates(prev => ({ ...prev, [addressType]: statesData }));
+      return statesData;
+    } catch (error) {
+      console.error("Error loading states:", error);
+      setStates(prev => ({ ...prev, [addressType]: [] }));
+      return [];
+    }
   };
 
-  const getCities = (stateId) => {
-    if (!stateId) return [];
-    const cities = csc.getCitiesOfState(stateId);
-    return cities.map(city => ({
-      value: city.id,
-      label: city.name,
-    }));
+  const getCities = async (countryId, stateId, addressType = 'permanent') => {
+    if (!countryId || !stateId) {
+      setCities(prev => ({ ...prev, [addressType]: [] }));
+      return [];
+    }
+    try {
+      const citiesData = await mapCitiesOfState(countryId, stateId);
+      setCities(prev => ({ ...prev, [addressType]: citiesData }));
+      return citiesData;
+    } catch (error) {
+      console.error("Error loading cities:", error);
+      setCities(prev => ({ ...prev, [addressType]: [] }));
+      return [];
+    }
   };
 
   // ========== Validation Errors ==========
@@ -59,7 +143,7 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
   });
 
   // ========== Handle Form Changes ==========
-  const handleAddressChange = (addressType, field, value) => {
+  const handleAddressChange = async (addressType, field, value) => {
     //console.log('Handling address change:', { addressType, field, value });
     
     const newLocalFormData = {
@@ -70,12 +154,24 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
       },
     };
 
-    // Clear dependent fields
+    // Clear dependent fields and load new data
     if (field === "country") {
       newLocalFormData[addressType].state = null;
       newLocalFormData[addressType].city = null;
+      // Load states for the selected country
+      if (value?.value) {
+        await getStates(value.value, addressType === 'permanentAddress' ? 'permanent' : 'present');
+      }
     } else if (field === "state") {
       newLocalFormData[addressType].city = null;
+      // Load cities for the selected state
+      if (value?.value && newLocalFormData[addressType].country?.value) {
+        await getCities(
+          newLocalFormData[addressType].country.value, 
+          value.value, 
+          addressType === 'permanentAddress' ? 'permanent' : 'present'
+        );
+      }
     }
 
     setLocalFormData(newLocalFormData);
@@ -151,14 +247,14 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
           );
           
           if (country) {
-            const states = getStates(country.value);
-            const state = states.find(s =>
+            const statesData = await getStates(country.value, 'permanent');
+            const state = statesData.find(s =>
               s.label.toLowerCase() === addr.state_name?.toLowerCase()
             );
             
             if (state) {
-              const cities = getCities(state.value);
-              const city = cities.find(c =>
+              const citiesData = await getCities(country.value, state.value, 'permanent');
+              const city = citiesData.find(c =>
                 c.label.toLowerCase() === addr.city_name?.toLowerCase()
               );
 
@@ -179,14 +275,14 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
           );
           
           if (country) {
-            const states = getStates(country.value);
-            const state = states.find(s =>
+            const statesData = await getStates(country.value, 'present');
+            const state = statesData.find(s =>
               s.label.toLowerCase() === addr.state_name?.toLowerCase()
             );
             
             if (state) {
-              const cities = getCities(state.value);
-              const city = cities.find(c =>
+              const citiesData = await getCities(country.value, state.value, 'present');
+              const city = citiesData.find(c =>
                 c.label.toLowerCase() === addr.city_name?.toLowerCase()
               );
 
@@ -410,7 +506,7 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
             placeholder="Permanent State"
             className="react-select-container"
             classNamePrefix="react-select"
-            options={getStates(localFormData.permanentAddress.country?.value)}
+            options={states.permanent}
             value={localFormData.permanentAddress.state}
             onChange={(option) => handleAddressChange("permanentAddress", "state", option)}
             isDisabled={!localFormData.permanentAddress.country}
@@ -441,7 +537,7 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
               placeholder="Permanent City"
               className="react-select-container"
               classNamePrefix="react-select"
-              options={getCities(localFormData.permanentAddress.state?.value)}
+              options={cities.permanent}
               value={localFormData.permanentAddress.city}
               onChange={(option) => handleAddressChange("permanentAddress", "city", option)}
               isDisabled={!localFormData.permanentAddress.state}
@@ -521,7 +617,7 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
                 placeholder="Present State"
                 className="react-select-container"
                 classNamePrefix="react-select"
-                options={getStates(localFormData.presentAddress.country?.value)}
+                options={states.present}
                 value={localFormData.presentAddress.state}
                 onChange={(option) => handleAddressChange("presentAddress", "state", option)}
                 isDisabled={!localFormData.presentAddress.country}
@@ -552,7 +648,7 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
                   placeholder="Present City"
                   className="react-select-container"
                   classNamePrefix="react-select"
-                  options={getCities(localFormData.presentAddress.state?.value)}
+                  options={cities.present}
                   value={localFormData.presentAddress.city}
                   onChange={(option) => handleAddressChange("presentAddress", "city", option)}
                   isDisabled={!localFormData.presentAddress.state}

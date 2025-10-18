@@ -3,8 +3,28 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../../../Context/AuthContext";
-import csc from "countries-states-cities"; // For countries, states, cities
+import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import { FaBuilding, FaUser, FaPhone, FaEnvelope, FaMapMarkerAlt, FaGlobe, FaIdCard, FaFacebook, FaTwitter, FaLinkedin, FaInstagram, FaWhatsapp } from 'react-icons/fa';
+
+//------------------------------------------------
+// Helper functions: map countries/states/cities by ID
+//------------------------------------------------
+const mapAllCountries = async () => {
+  const countries = await GetCountries();
+  return countries.map((country) => ({
+    value: country.id,
+    label: country.name
+  }));
+};
+
+const mapStatesOfCountry = async (countryId) => {
+  if (!countryId) return [];
+  const states = await GetState(countryId);
+  return states.map((state) => ({
+    value: state.id,
+    label: state.name
+  }));
+};
 
 const Field = ({ label, value, isUrl = false }) => {
   if (!value) return null;
@@ -30,6 +50,48 @@ const Field = ({ label, value, isUrl = false }) => {
           ) : (
             <span className="text-gray-900 text-sm block">{displayValue}</span>
           )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const StateField = ({ label, countryCode, stateCode }) => {
+  const [stateName, setStateName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const loadStateName = async () => {
+      if (!countryCode || !stateCode) {
+        setStateName("");
+        return;
+      }
+      
+      setIsLoading(true);
+      try {
+        const states = await mapStatesOfCountry(countryCode);
+        const state = states.find(s => s.value === stateCode);
+        setStateName(state ? state.label : stateCode);
+      } catch (error) {
+        setStateName(stateCode);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadStateName();
+  }, [countryCode, stateCode]);
+
+  if (!countryCode || !stateCode) return null;
+
+  return (
+    <div className="col-12">
+      <div className="flex items-start mb-2.5">
+        <div className="w-32 min-w-32 text-gray-500 text-sm pr-2.5">{label}:</div>
+        <div className="flex-1">
+          <span className="text-gray-900 text-sm block">
+            {isLoading ? "Loading..." : stateName}
+          </span>
         </div>
       </div>
     </div>
@@ -82,10 +144,25 @@ const ViewProfile = () => {
   const [orgData, setOrgData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [profileImage, setProfileImage] = useState(null);
+  const [countries, setCountries] = useState([]);
 
   const API_URL = "https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation";
   const IMAGE_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image";
   const PARENT_TYPE = "Parent/ Guardian looking for Tuitions";
+
+  // Load countries on component mount
+  useEffect(() => {
+    const loadCountries = async () => {
+      try {
+        const countriesData = await mapAllCountries();
+        setCountries(countriesData);
+      } catch (error) {
+        console.error("Error loading countries:", error);
+      }
+    };
+    
+    loadCountries();
+  }, []);
 
   // Get organization data and profile image
   useEffect(() => {
@@ -147,19 +224,20 @@ const ViewProfile = () => {
   const getCountryName = (countryCode) => {
     if (!countryCode) return "";
     try {
-      const country = csc.getCountryById(countryCode);
-      return country ? country.name : countryCode;
+      const country = countries.find(c => c.value === countryCode);
+      return country ? country.label : countryCode;
     } catch (error) {
       return countryCode;
     }
   };
 
   // Helper function to get state name from code
-  const getStateName = (countryCode, stateCode) => {
+  const getStateName = async (countryCode, stateCode) => {
     if (!countryCode || !stateCode) return "";
     try {
-      const state = csc.getStateById(stateCode, countryCode);
-      return state ? state.name : stateCode;
+      const states = await mapStatesOfCountry(countryCode);
+      const state = states.find(s => s.value === stateCode);
+      return state ? state.label : stateCode;
     } catch (error) {
       return stateCode;
     }
@@ -361,10 +439,10 @@ const ViewProfile = () => {
               <Section title="Parent Details" icon={FaMapMarkerAlt}>
                 <Field label="Address" value={orgData?.parent_address} />
                 <Field label="Country" value={orgData?.parent_country ? getCountryName(orgData.parent_country) : null} />
-                <Field 
+                <StateField 
                   label="State" 
-                  value={orgData?.parent_country && orgData?.parent_state ? 
-                    getStateName(orgData.parent_country, orgData.parent_state) : null} 
+                  countryCode={orgData?.parent_country}
+                  stateCode={orgData?.parent_state}
                 />
                 <Field label="City" value={orgData?.parent_city} />
                 <Field label="Pincode" value={orgData?.parent_pincode} />
