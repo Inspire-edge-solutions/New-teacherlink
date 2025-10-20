@@ -1,8 +1,11 @@
-import React from 'react'
+import React from 'react';
+import TabDisplay from './Components/TabDisplay';
 
 const AllCandidatesComponent = () => {
   return (
-    <div>This is all candidates</div>
+    <div>
+      <TabDisplay />
+    </div>
   )
 }
 

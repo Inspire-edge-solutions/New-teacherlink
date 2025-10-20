@@ -1,6 +1,6 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import axios from "axios";
-import Select from "react-select";
+import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
@@ -461,7 +461,7 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
   };
 
   return (
-    <form onSubmit={handleSubmit} className={`rounded-lg p-6 ${className}`} style={{backgroundColor: '#F0D8D9'}}>
+    <form onSubmit={handleSubmit} className={`rounded-lg p-6 bg-rose-100 ${className}`}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* PERMANENT ADDRESS */}
         <div className="w-full md:col-span-2">
@@ -469,95 +469,120 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
         </div>
         
         <div className="w-full">
-          <Select
-            required
-            id="permanentCountry"
-            name="permanentCountry"
-            placeholder="Permanent Country"
-            className="react-select-container"
-            classNamePrefix="react-select"
-            options={countries}
-            value={localFormData.permanentAddress.country}
-            onChange={(option) => handleAddressChange("permanentAddress", "country", option)}
-            isClearable={false}
-            styles={{
-              control: (base, state) => ({
-                ...base,
-                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                '&:hover': { borderColor: '#FDA4AF' },
-                borderRadius: '0.5rem',
-                padding: '0.25rem',
-                backgroundColor: 'white'
-              }),
-              dropdownIndicator: (base) => ({
-                ...base,
-                color: '#EF4444'
-              })
-            }}
-          />
+          <FormControl fullWidth required>
+            <InputLabel id="permanent-country-label" required>Permanent Country</InputLabel>
+            <Select
+              labelId="permanent-country-label"
+              id="permanentCountry"
+              label="Permanent Country"
+              value={localFormData.permanentAddress.country?.value || ''}
+              onChange={(e) => {
+                const selectedCountry = countries.find(c => c.value === e.target.value);
+                handleAddressChange("permanentAddress", "country", selectedCountry);
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '0.5rem',
+                  height: '48px',
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#FDA4AF',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#FDA4AF',
+                    borderWidth: 2,
+                  },
+                },
+                '& .MuiSelect-select': {
+                  padding: '12px 14px',
+                },
+              }}
+            >
+              {countries.map((country) => (
+                <MenuItem key={country.value} value={country.value}>
+                  {country.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </div>
 
         <div className="w-full">
-          <Select
-            required
-            id="permanentState"
-            name="permanentState"
-            placeholder="Permanent State"
-            className="react-select-container"
-            classNamePrefix="react-select"
-            options={states.permanent}
-            value={localFormData.permanentAddress.state}
-            onChange={(option) => handleAddressChange("permanentAddress", "state", option)}
-            isDisabled={!localFormData.permanentAddress.country}
-            isClearable={false}
-            styles={{
-              control: (base, state) => ({
-                ...base,
-                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                '&:hover': { borderColor: '#FDA4AF' },
-                borderRadius: '0.5rem',
-                padding: '0.25rem',
-                backgroundColor: 'white'
-              }),
-              dropdownIndicator: (base) => ({
-                ...base,
-                color: '#EF4444'
-              })
-            }}
-          />
+          <FormControl fullWidth required>
+            <InputLabel id="permanent-state-label" required>Permanent State</InputLabel>
+            <Select
+              labelId="permanent-state-label"
+              id="permanentState"
+              label="Permanent State"
+              value={localFormData.permanentAddress.state?.value || ''}
+              onChange={(e) => {
+                const selectedState = states.permanent.find(s => s.value === e.target.value);
+                handleAddressChange("permanentAddress", "state", selectedState);
+              }}
+              disabled={!localFormData.permanentAddress.country}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '0.5rem',
+                  height: '48px',
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#FDA4AF',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#FDA4AF',
+                    borderWidth: 2,
+                  },
+                },
+                '& .MuiSelect-select': {
+                  padding: '12px 14px',
+                },
+              }}
+            >
+              {states.permanent.map((state) => (
+                <MenuItem key={state.value} value={state.value}>
+                  {state.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </div>
 
         {permanentCity && (
           <div className="w-full">
-            <Select
-              id="permanentCity"
-              name="permanentCity"
-              placeholder="Permanent City"
-              className="react-select-container"
-              classNamePrefix="react-select"
-              options={cities.permanent}
-              value={localFormData.permanentAddress.city}
-              onChange={(option) => handleAddressChange("permanentAddress", "city", option)}
-              isDisabled={!localFormData.permanentAddress.state}
-              isClearable={false}
-              styles={{
-                control: (base, state) => ({
-                  ...base,
-                  borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                  boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                  '&:hover': { borderColor: '#FDA4AF' },
-                  borderRadius: '0.5rem',
-                  padding: '0.25rem',
-                  backgroundColor: 'white'
-                }),
-                dropdownIndicator: (base) => ({
-                  ...base,
-                  color: '#EF4444'
-                })
-              }}
-            />
+            <FormControl fullWidth>
+              <InputLabel id="permanent-city-label">Permanent City</InputLabel>
+              <Select
+                labelId="permanent-city-label"
+                id="permanentCity"
+                label="Permanent City"
+                value={localFormData.permanentAddress.city?.value || ''}
+                onChange={(e) => {
+                  const selectedCity = cities.permanent.find(c => c.value === e.target.value);
+                  handleAddressChange("permanentAddress", "city", selectedCity);
+                }}
+                disabled={!localFormData.permanentAddress.state}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '0.5rem',
+                    height: '48px',
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#FDA4AF',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#FDA4AF',
+                      borderWidth: 2,
+                    },
+                  },
+                  '& .MuiSelect-select': {
+                    padding: '12px 14px',
+                  },
+                }}
+              >
+                {cities.permanent.map((city) => (
+                  <MenuItem key={city.value} value={city.value}>
+                    {city.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </div>
         )}
 
@@ -580,95 +605,120 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
         {!localFormData.presentAddress.sameAsPermanent && (
           <>
             <div className="w-full">
-              <Select
-                required
-                id="presentCountry"
-                name="presentCountry"
-                placeholder="Present Country"
-                className="react-select-container"
-                classNamePrefix="react-select"
-                options={countries}
-                value={localFormData.presentAddress.country}
-                onChange={(option) => handleAddressChange("presentAddress", "country", option)}
-                isClearable={false}
-                styles={{
-                  control: (base, state) => ({
-                    ...base,
-                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                    '&:hover': { borderColor: '#FDA4AF' },
-                    borderRadius: '0.5rem',
-                    padding: '0.25rem',
-                    backgroundColor: 'white'
-                  }),
-                  dropdownIndicator: (base) => ({
-                    ...base,
-                    color: '#EF4444'
-                  })
-                }}
-              />
+              <FormControl fullWidth>
+                <InputLabel id="present-country-label">Present Country</InputLabel>
+                <Select
+                  labelId="present-country-label"
+                  id="presentCountry"
+                  label="Present Country"
+                  value={localFormData.presentAddress.country?.value || ''}
+                  onChange={(e) => {
+                    const selectedCountry = countries.find(c => c.value === e.target.value);
+                    handleAddressChange("presentAddress", "country", selectedCountry);
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '0.5rem',
+                      height: '48px',
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#FDA4AF',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#FDA4AF',
+                        borderWidth: 2,
+                      },
+                    },
+                    '& .MuiSelect-select': {
+                      padding: '12px 14px',
+                    },
+                  }}
+                >
+                  {countries.map((country) => (
+                    <MenuItem key={country.value} value={country.value}>
+                      {country.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </div>
 
             <div className="w-full">
-              <Select
-                required
-                id="presentState"
-                name="presentState"
-                placeholder="Present State"
-                className="react-select-container"
-                classNamePrefix="react-select"
-                options={states.present}
-                value={localFormData.presentAddress.state}
-                onChange={(option) => handleAddressChange("presentAddress", "state", option)}
-                isDisabled={!localFormData.presentAddress.country}
-                isClearable={false}
-                styles={{
-                  control: (base, state) => ({
-                    ...base,
-                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                    '&:hover': { borderColor: '#FDA4AF' },
-                    borderRadius: '0.5rem',
-                    padding: '0.25rem',
-                    backgroundColor: 'white'
-                  }),
-                  dropdownIndicator: (base) => ({
-                    ...base,
-                    color: '#EF4444'
-                  })
-                }}
-              />
+              <FormControl fullWidth>
+                <InputLabel id="present-state-label">Present State</InputLabel>
+                <Select
+                  labelId="present-state-label"
+                  id="presentState"
+                  label="Present State"
+                  value={localFormData.presentAddress.state?.value || ''}
+                  onChange={(e) => {
+                    const selectedState = states.present.find(s => s.value === e.target.value);
+                    handleAddressChange("presentAddress", "state", selectedState);
+                  }}
+                  disabled={!localFormData.presentAddress.country}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '0.5rem',
+                      height: '48px',
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#FDA4AF',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#FDA4AF',
+                        borderWidth: 2,
+                      },
+                    },
+                    '& .MuiSelect-select': {
+                      padding: '12px 14px',
+                    },
+                  }}
+                >
+                  {states.present.map((state) => (
+                    <MenuItem key={state.value} value={state.value}>
+                      {state.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </div>
 
             {presentCity && (
               <div className="w-full">
-                <Select
-                  id="presentCity"
-                  name="presentCity"
-                  placeholder="Present City"
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                  options={cities.present}
-                  value={localFormData.presentAddress.city}
-                  onChange={(option) => handleAddressChange("presentAddress", "city", option)}
-                  isDisabled={!localFormData.presentAddress.state}
-                  isClearable={false}
-                  styles={{
-                    control: (base, state) => ({
-                      ...base,
-                      borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                      boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                      '&:hover': { borderColor: '#FDA4AF' },
-                      borderRadius: '0.5rem',
-                      padding: '0.25rem',
-                      backgroundColor: 'white'
-                    }),
-                    dropdownIndicator: (base) => ({
-                      ...base,
-                      color: '#EF4444'
-                    })
-                  }}
-                />
+                <FormControl fullWidth>
+                  <InputLabel id="present-city-label">Present City</InputLabel>
+                  <Select
+                    labelId="present-city-label"
+                    id="presentCity"
+                    label="Present City"
+                    value={localFormData.presentAddress.city?.value || ''}
+                    onChange={(e) => {
+                      const selectedCity = cities.present.find(c => c.value === e.target.value);
+                      handleAddressChange("presentAddress", "city", selectedCity);
+                    }}
+                    disabled={!localFormData.presentAddress.state}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '0.5rem',
+                        height: '48px',
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#FDA4AF',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#FDA4AF',
+                          borderWidth: 2,
+                        },
+                      },
+                      '& .MuiSelect-select': {
+                        padding: '12px 14px',
+                      },
+                    }}
+                  >
+                    {cities.present.map((city) => (
+                      <MenuItem key={city.value} value={city.value}>
+                        {city.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </div>
             )}
           </>

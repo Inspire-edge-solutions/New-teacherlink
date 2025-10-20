@@ -1,0 +1,184 @@
+.card {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 6px 15px rgba(64, 79, 104, 0.05);
+  border: none;
+  padding: 20px;
+}
+
+.row {
+  margin: 0;
+}
+
+
+/* Form control styles */
+.form-control {
+  height: 45px;
+  padding: 10px 15px;
+  font-size: 15px;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  color: #696969;
+}
+
+.form-control:focus {
+  border-color: #e6e6e6;
+  box-shadow: none;
+}
+
+.form-select {
+  height: 45px;
+  padding: 10px 15px;
+  font-size: 15px;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  color: #696969;
+  background-position: right 15px center;
+}
+
+.form-select:focus {
+  border-color: #e6e6e6;
+  box-shadow: none;
+}
+
+/* Button styles */
+.btn {
+  height: 45px;
+  padding: 10px 30px;
+  font-size: 15px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #1967d2;
+  border-color: #1967d2;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #1557b0;
+  border-color: #1557b0;
+}
+
+.btn-secondary {
+  background-color: #f5f7fc;
+  border-color: #e6e6e6;
+  color: #696969;
+}
+
+.btn-secondary:hover {
+  background-color: #e9ecf6;
+  border-color: #d9d9d9;
+  color: #696969;
+}
+
+ .input-wrapper .custom-tooltip {
+  visibility: hidden !important;
+  position: absolute !important;
+  background-color: orchid !important;
+  color: white !important;
+  text-align: center !important;
+  padding: 5px 10px !important;
+  border-radius: 4px !important;
+  font-size: 14px !important;
+  bottom: 100% !important;
+  left: 40% !important;
+  transform: translateX(-50%) !important;
+  margin-bottom: 5px !important;
+  white-space: nowrap !important;
+  z-index: 1000 !important;
+  opacity: 1 !important;
+  display: block !important;
+  top: auto !important;
+}
+
+.input-wrapper:hover .custom-tooltip {
+  visibility: visible !important;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .card {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .form-select,
+  .form-control {
+    height: 40px;
+  }
+
+  .btn {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .d-flex {
+    flex-direction: column;
+  }
+
+  /* Reduce gaps between filter form fields in mobile */
+  .filter-form .row.g-3 {
+    gap: 2px !important;
+  }
+
+  .filter-form .row.g-3 > [class*="col-"] {
+    margin-bottom: 2px !important;
+  }
+
+  /* Override Bootstrap g-3 class for mobile */
+  .filter-form .g-3 {
+    --bs-gutter-y: 0.125rem !important;
+    --bs-gutter-x: 0.125rem !important;
+  }
+
+  /* Additional spacing reduction for form groups */
+  .filter-form .form-group {
+    margin-bottom: 2px !important;
+  }
+
+  /* Reduce padding in filter section for mobile */
+  .filter-section {
+    padding: 8px !important;
+  }
+
+  .filter-section .row {
+    margin-bottom: 2px !important;
+  }
+
+  /* Reduce spacing between filter sections */
+  .filter-section h4 {
+    margin-bottom: 8px !important;
+  }
+
+  /* Reduce spacing for filter actions */
+  .filter-actions {
+    margin-top: 8px !important;
+  }
+
+  .filter-actions .btn {
+    margin-bottom: 4px !important;
+  }
+
+  /* Reduce form control height for more compact look */
+  .filter-form .form-control,
+  .filter-form .form-select {
+    height: 36px !important;
+    padding: 6px 12px !important;
+  }
+
+  /* Reduce input wrapper spacing */
+  .filter-form .input-wrapper {
+    margin-bottom: 2px !important;
+  }
+}
+
+/* Reduce margin-bottom for desktop view */
+.filter-form .form-group {
+  margin-bottom: 0.5px;
+}
+
+.filter-form .row.g-3 > [class*="col-"] {
+  margin-bottom: 0.5px;
+} 

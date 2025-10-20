@@ -1,5 +1,5 @@
 import { useState, useEffect, forwardRef, useImperativeHandle, useRef } from 'react';
-import Select from 'react-select';
+import { Select, MenuItem, FormControl, InputLabel, Chip, Box } from '@mui/material';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -201,42 +201,62 @@ const AdditionalInfo = forwardRef(({ formData, updateFormData }, ref) => {
   }));
 
   return (
-    <div className="rounded-lg p-6" style={{backgroundColor: '#F0D8D9'}}>
+    <div className="rounded-lg p-6 bg-rose-100">
       <div className="w-full space-y-6">
         {/* Computer Skills */}
         <div className="w-full">
-          <label htmlFor="computerSkills" className="block text-sm font-medium text-gray-700 mb-2">Computer Skills</label>
-          <Select
-            isMulti
-            name="computerSkills"
-            options={skillOptions}
-            placeholder="Computer Skills"
-            value={skillOptions.filter(option => 
-              Array.isArray(localFormData.computerSkills) && 
-              localFormData.computerSkills.includes(option.value)
-            )}
-            onChange={(selectedOptions) => {
-              const values = selectedOptions ? selectedOptions.map(option => option.value) : [];
-              handleChange('computerSkills', values);
-            }}
-            className="basic-multi-select"
-            classNamePrefix="select"
-            styles={{
-              control: (base, state) => ({
-                ...base,
-                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                '&:hover': { borderColor: '#FDA4AF' },
-                borderRadius: '0.5rem',
-                padding: '0.25rem',
-                backgroundColor: 'white'
-              }),
-              dropdownIndicator: (base) => ({
-                ...base,
-                color: '#EF4444'
-              })
-            }}
-          />
+          <FormControl fullWidth>
+            <InputLabel id="computer-skills-label">Computer Skills</InputLabel>
+            <Select
+              labelId="computer-skills-label"
+              id="computerSkills"
+              label="Computer Skills"
+              multiple
+              value={localFormData.computerSkills || []}
+              onChange={(e) => handleChange('computerSkills', e.target.value)}
+              renderValue={(selected) => {
+                if (selected.length === 0) {
+                  return <em>Computer Skills</em>;
+                }
+                return (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((value) => (
+                      <Chip key={value} label={value} size="small" />
+                    ))}
+                  </Box>
+                );
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '0.5rem',
+                  height: '48px',
+                  backgroundColor: '#F3F4F6',
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#FDA4AF' }
+                },
+                // Gradient focus border
+                '& .MuiOutlinedInput-root.Mui-focused': {
+                  background:
+                    'linear-gradient(#F3F4F6, #F3F4F6) padding-box, linear-gradient(90deg, #FA5357 0%, #A2035D 100%) border-box'
+                },
+                '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  border: '2px solid transparent'
+                },
+                // Gradient focus label color (text)
+                '& .MuiInputLabel-root.Mui-focused': {
+                  background: 'linear-gradient(90deg, #FA5357 0%, #A2035D 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                },
+                '& .MuiSelect-select': { padding: '12px 14px' }
+              }}
+            >
+              {skillOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -316,7 +336,6 @@ const AdditionalInfo = forwardRef(({ formData, updateFormData }, ref) => {
             <select 
               id="religion"
               className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-              style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
               value={localFormData.religion || ''}
               onChange={(e) => handleChange('religion', e.target.value)}
             >
@@ -335,7 +354,6 @@ const AdditionalInfo = forwardRef(({ formData, updateFormData }, ref) => {
             <select 
               id="differentlyAbled"
               className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-              style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
               value={localFormData.differentlyAbled || ''}
               onChange={(e) => handleChange('differentlyAbled', e.target.value)}
             >

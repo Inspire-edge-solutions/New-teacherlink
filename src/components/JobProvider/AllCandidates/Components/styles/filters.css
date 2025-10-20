@@ -1,0 +1,929 @@
+/* Filter styles */
+
+
+.filter-section-title {
+  font-size: 1rem;
+  color: #333;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 5px;
+  margin-bottom: 15px;
+}
+
+.active-filters-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.25rem;
+  border-left: 3px solid #1967d2;
+}
+
+.filter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.filter-tag {
+  background-color: #ebf4ff;
+  color: #2d69f0;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  border: 1px solid #d0e1fd;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== INLINE FILTERS FOR SEARCH CANDIDATES PAGE ===== */
+
+/* Inline filter container - not a drawer */
+.search-candidates-container .filter-drawer {
+  position: static !important;
+  width: 100% !important;
+  height: auto !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 8px !important;
+  margin-bottom: 20px !important;
+  z-index: auto !important;
+  display: block !important;
+  flex-direction: column;
+}
+
+/* Inline filter header */
+.search-candidates-container .filter-header {
+  padding: 16px 20px !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  background-color: #f8f9fa !important;
+  border-radius: 8px 8px 0 0 !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: static !important;
+}
+
+.search-candidates-container .filter-header h3 {
+  margin: 0 !important;
+  font-size: 18px !important;
+  color: #1f2937 !important;
+  font-weight: 600;
+}
+
+/* Hide close button for inline filters */
+.search-candidates-container .filter-header .btn-close {
+  display: none !important;
+}
+
+/* Inline filter content */
+.search-candidates-container .filter-content {
+  padding: 20px !important;
+  overflow-y: visible !important;
+  max-height: none !important;
+  flex: none !important;
+  position: static !important;
+}
+
+/* Inline filter footer */
+.search-candidates-container .filter-footer {
+  padding: 16px 20px !important;
+  border-top: 1px solid #e5e7eb !important;
+  background-color: #f8f9fa !important;
+  border-radius: 0 0 8px 8px !important;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  position: static !important;
+}
+
+.search-candidates-container .filter-footer button {
+  padding: 8px 20px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  min-width: 100px;
+  height: auto !important;
+}
+
+/* Card styling */
+.card {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 6px 15px rgba(64, 79, 104, 0.05);
+  border: none;
+  padding: 20px;
+}
+
+.row {
+  margin: 0;
+}
+
+/* Form control styles */
+.form-control {
+  height: 45px;
+  padding: 10px 15px;
+  font-size: 15px;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  color: #696969;
+}
+
+.form-control:focus {
+  border-color: #e6e6e6;
+  box-shadow: none;
+}
+
+.form-select {
+  height: 45px;
+  padding: 10px 15px;
+  font-size: 15px;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  color: #696969;
+  background-position: right 15px center;
+}
+
+.form-select:focus {
+  border-color: #e6e6e6;
+  box-shadow: none;
+}
+
+/* Button styles */
+.btn {
+  height: 45px;
+  padding: 10px 30px;
+  font-size: 15px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #1967d2;
+  border-color: #1967d2;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #1557b0;
+  border-color: #1557b0;
+}
+
+.btn-secondary {
+  background-color: #f5f7fc;
+  border-color: #e6e6e6;
+  color: #696969;
+}
+
+.btn-secondary:hover {
+  background-color: #e9ecf6;
+  border-color: #d9d9d9;
+  color: #696969;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .card {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* Make form elements more touch-friendly */
+  .form-select,
+  .form-control {
+    height: 44px !important;
+    font-size: 16px !important;
+    padding: 12px 15px !important;
+  }
+
+  .btn {
+    height: 44px !important;
+    padding: 12px 24px !important;
+    font-size: 16px !important;
+    margin-bottom: 8px;
+  }
+
+  .d-flex {
+    flex-direction: column;
+  }
+
+  /* Inline filters on tablet */
+  .search-candidates-container .filter-drawer {
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    margin-bottom: 16px !important;
+  }
+
+  .search-candidates-container .filter-header {
+    padding: 14px 16px !important;
+    border-radius: 0 !important;
+  }
+
+  .search-candidates-container .filter-content {
+    padding: 16px !important;
+  }
+
+  .search-candidates-container .filter-footer {
+    padding: 12px 16px !important;
+    border-radius: 0 !important;
+  }
+}
+
+@media (max-width: 576px) {
+  /* Mobile - keep drawer behavior for small screens */
+  .search-candidates-container .filter-drawer {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    margin: 0 !important;
+  }
+  
+  .search-candidates-container .filter-header {
+    padding: 16px !important;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-radius: 0 !important;
+  }
+  
+  .search-candidates-container .filter-header h3 {
+    font-size: 18px !important;
+    font-weight: 600;
+  }
+  
+  /* Show close button on mobile */
+  .search-candidates-container .filter-header .btn-close {
+    display: block !important;
+    font-size: 24px !important;
+    padding: 8px !important;
+    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .search-candidates-container .filter-content {
+    padding: 16px !important;
+    overflow-y: auto !important;
+    max-height: calc(100vh - 140px) !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .filter-section {
+    margin-bottom: 24px !important;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .filter-section h4 {
+    font-size: 16px !important;
+    font-weight: 600;
+    margin-bottom: 12px !important;
+    color: #1f2937;
+  }
+  
+  /* Enhanced touch-friendly form elements */
+  .form-control,
+  .form-select,
+  .filter-select {
+    height: 48px !important;
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    background-color: #fff !important;
+    color: #374151 !important;
+    margin-bottom: 2px !important;
+    min-height: 48px !important;
+    touch-action: manipulation !important;
+  }
+  
+  .form-control:focus,
+  .form-select:focus,
+  .filter-select:focus {
+    border-color: #1967d2 !important;
+    box-shadow: 0 0 0 3px rgba(25, 103, 210, 0.1) !important;
+    outline: none !important;
+  }
+  
+  /* Reduce spacing for form groups and rows */
+  .form-group {
+    margin-bottom: 2px !important;
+  }
+  
+  .row {
+    margin-bottom: 2px !important;
+  }
+  
+  .row > [class*="col-"] {
+    margin-bottom: 2px !important;
+  }
+  
+  /* Reduce filter section spacing */
+  .filter-section {
+    margin-bottom: 8px !important;
+    padding: 8px !important;
+  }
+  
+  .filter-section h4 {
+    margin-bottom: 8px !important;
+  }
+  
+  /* Reduce spacing for filter content */
+  .filter-content {
+    padding: 8px !important;
+  }
+  
+  /* Reduce spacing for filter options */
+  .filter-options {
+    gap: 2px !important;
+  }
+  
+  /* Checkbox improvements */
+  .checkbox-label {
+    padding: 12px !important;
+    margin-bottom: 8px !important;
+    border-radius: 6px;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    font-size: 16px !important;
+    gap: 12px !important;
+    min-height: 48px !important;
+    align-items: center !important;
+    touch-action: manipulation !important;
+  }
+  
+  .checkbox-label:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .checkbox-label input[type="checkbox"] {
+    width: 20px !important;
+    height: 20px !important;
+    border: 2px solid #9ca3af !important;
+    border-radius: 4px !important;
+    margin: 0 !important;
+  }
+  
+  .checkbox-label input[type="checkbox"]:checked {
+    background-color: #1967d2 !important;
+    border-color: #1967d2 !important;
+  }
+  
+  /* Filter tags improvements */
+  .filter-tags {
+    gap: 8px !important;
+    margin-top: 8px !important;
+  }
+  
+  .filter-tag {
+    font-size: 14px !important;
+    padding: 8px 12px !important;
+    border-radius: 20px !important;
+    margin-bottom: 4px;
+    min-height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    touch-action: manipulation !important;
+  }
+  
+  .remove-filter {
+    font-size: 16px !important;
+    padding: 4px !important;
+    margin-left: 4px;
+    color: #6b7280 !important;
+  }
+  
+  /* Footer improvements */
+  .search-candidates-container .filter-footer {
+    padding: 16px !important;
+    background-color: #f8f9fa;
+    border-top: 2px solid #e9ecef !important;
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
+    gap: 12px !important;
+    border-radius: 0 !important;
+  }
+  
+  .search-candidates-container .filter-footer button {
+    height: 48px !important;
+    padding: 14px 20px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    min-height: 48px !important;
+    touch-action: manipulation !important;
+  }
+  
+  .btn-outline-secondary {
+    background: #fff !important;
+    border: 2px solid #d1d5db !important;
+    color: #374151 !important;
+  }
+  
+  .btn-outline-secondary:hover,
+  .btn-outline-secondary:active {
+    background: #f9fafb !important;
+    border-color: #9ca3af !important;
+  }
+  
+  .btn-primary {
+    background: #1967d2 !important;
+    border: 2px solid #1967d2 !important;
+    color: white !important;
+  }
+  
+  .btn-primary:hover,
+  .btn-primary:active {
+    background: #1557b0 !important;
+    border-color: #1557b0 !important;
+  }
+  
+  /* Active filters summary */
+  .active-filters-summary {
+    margin-bottom: 16px !important;
+    padding: 12px 16px !important;
+    border-radius: 8px !important;
+    border-left: 4px solid #1967d2 !important;
+  }
+  
+  /* Range slider improvements */
+  .range-slider {
+    margin: 20px 0 !important;
+    padding: 8px;
+  }
+  
+  .range-values {
+    font-size: 14px !important;
+    margin-top: 12px !important;
+    gap: 8px;
+  }
+}
+
+/* Filter Drawer */
+.filter-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 320px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Filter Header */
+.filter-header {
+  padding: 20px;
+  border-bottom: 1px solid #ecedf2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #202124;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #696969;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.btn-close:hover {
+  color: #202124;
+}
+
+/* Filter Content */
+.filter-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Filter Section */
+.filter-section {
+  margin-bottom: 25px;
+}
+
+.filter-section h4 {
+  font-size: 16px;
+  color: #202124;
+  margin-bottom: 15px;
+}
+
+/* Filter Options */
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Checkbox Styles */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #696969;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ecedf2;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Range Slider */
+.range-slider {
+  margin: 20px 0;
+}
+
+.range-slider .slider {
+  width: 100%;
+  height: 4px;
+  background: #ecedf2;
+  border-radius: 2px;
+}
+
+.range-values {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #696969;
+}
+
+/* Select Styles */
+.filter-select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ecedf2;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #696969;
+  background: #fff;
+}
+
+/* Active Filters */
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.filter-tag {
+  background: #f5f7fc;
+  border: 1px solid #ecedf2;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 13px;
+  color: #696969;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.remove-filter {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #696969;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.remove-filter:hover {
+  color: #ea4335;
+}
+
+/* Filter Footer */
+.filter-footer {
+  padding: 20px;
+  border-top: 1px solid #ecedf2;
+  display: flex;
+  gap: 10px;
+}
+
+.filter-footer button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-secondary {
+  background: transparent;
+  border: 1px solid #ecedf2;
+  color: #696969;
+}
+
+.btn-primary {
+  background: #1967d2;
+  border: none;
+  color: white;
+}
+
+.btn-outline-secondary:hover {
+  background: #f5f7fc;
+}
+
+.btn-primary:hover {
+  background: #0d47a1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .filter-drawer {
+    width: 100%;
+  }
+  
+  .filter-footer {
+    padding: 15px;
+  }
+  
+  .filter-content {
+    padding: 15px;
+  }
+  
+  /* Make form elements more touch-friendly */
+  .form-select,
+  .form-control {
+    height: 44px !important;
+    font-size: 16px !important;
+    padding: 12px 15px !important;
+  }
+  
+  .btn {
+    height: 44px !important;
+    padding: 12px 24px !important;
+    font-size: 16px !important;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .filter-drawer {
+    width: 100% !important;
+    height: 100vh !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 9999 !important;
+  }
+  
+  .filter-header {
+    padding: 16px !important;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  
+  .filter-header h3 {
+    font-size: 18px !important;
+    font-weight: 600;
+  }
+  
+  .btn-close {
+    font-size: 24px !important;
+    padding: 8px !important;
+    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .filter-content {
+    padding: 16px !important;
+    overflow-y: auto !important;
+    max-height: calc(100vh - 140px) !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .filter-section {
+    margin-bottom: 24px !important;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .filter-section h4 {
+    font-size: 16px !important;
+    font-weight: 600;
+    margin-bottom: 12px !important;
+    color: #1f2937;
+  }
+  
+  /* Enhanced touch-friendly form elements */
+  .form-control,
+  .form-select,
+  .filter-select {
+    height: 48px !important;
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    background-color: #fff !important;
+    color: #374151 !important;
+    margin-bottom: 2px !important;
+    min-height: 48px !important;
+    touch-action: manipulation !important;
+  }
+  
+  .form-control:focus,
+  .form-select:focus,
+  .filter-select:focus {
+    border-color: #1967d2 !important;
+    box-shadow: 0 0 0 3px rgba(25, 103, 210, 0.1) !important;
+    outline: none !important;
+  }
+  
+  /* Reduce spacing for form groups and rows */
+  .form-group {
+    margin-bottom: 2px !important;
+  }
+  
+  .row {
+    margin-bottom: 2px !important;
+  }
+  
+  .row > [class*="col-"] {
+    margin-bottom: 2px !important;
+  }
+  
+  /* Reduce filter section spacing */
+  .filter-section {
+    margin-bottom: 8px !important;
+    padding: 8px !important;
+  }
+  
+  .filter-section h4 {
+    margin-bottom: 8px !important;
+  }
+  
+  /* Reduce spacing for filter content */
+  .filter-content {
+    padding: 8px !important;
+  }
+  
+  /* Reduce spacing for filter options */
+  .filter-options {
+    gap: 2px !important;
+  }
+  
+  /* Checkbox improvements */
+  .checkbox-label {
+    padding: 12px !important;
+    margin-bottom: 8px !important;
+    border-radius: 6px;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    font-size: 16px !important;
+    gap: 12px !important;
+    min-height: 48px !important;
+    align-items: center !important;
+    touch-action: manipulation !important;
+  }
+  
+  .checkbox-label:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .checkbox-label input[type="checkbox"] {
+    width: 20px !important;
+    height: 20px !important;
+    border: 2px solid #9ca3af !important;
+    border-radius: 4px !important;
+    margin: 0 !important;
+  }
+  
+  .checkbox-label input[type="checkbox"]:checked {
+    background-color: #1967d2 !important;
+    border-color: #1967d2 !important;
+  }
+  
+  /* Filter tags improvements */
+  .filter-tags {
+    gap: 8px !important;
+    margin-top: 8px !important;
+  }
+  
+  .filter-tag {
+    font-size: 14px !important;
+    padding: 8px 12px !important;
+    border-radius: 20px !important;
+    margin-bottom: 4px;
+    min-height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    touch-action: manipulation !important;
+  }
+  
+  .remove-filter {
+    font-size: 16px !important;
+    padding: 4px !important;
+    margin-left: 4px;
+    color: #6b7280 !important;
+  }
+  
+  /* Footer improvements */
+  .filter-footer {
+    padding: 16px !important;
+    background-color: #f8f9fa;
+    border-top: 2px solid #e9ecef !important;
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
+    gap: 12px !important;
+  }
+  
+  .filter-footer button {
+    height: 48px !important;
+    padding: 14px 20px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    min-height: 48px !important;
+    touch-action: manipulation !important;
+  }
+  
+  .btn-outline-secondary {
+    background: #fff !important;
+    border: 2px solid #d1d5db !important;
+    color: #374151 !important;
+  }
+  
+  .btn-outline-secondary:hover,
+  .btn-outline-secondary:active {
+    background: #f9fafb !important;
+    border-color: #9ca3af !important;
+  }
+  
+  .btn-primary {
+    background: #1967d2 !important;
+    border: 2px solid #1967d2 !important;
+    color: white !important;
+  }
+  
+  .btn-primary:hover,
+  .btn-primary:active {
+    background: #1557b0 !important;
+    border-color: #1557b0 !important;
+  }
+  
+  /* Active filters summary */
+  .active-filters-summary {
+    margin-bottom: 16px !important;
+    padding: 12px 16px !important;
+    border-radius: 8px !important;
+    border-left: 4px solid #1967d2 !important;
+  }
+  
+  /* Range slider improvements */
+  .range-slider {
+    margin: 20px 0 !important;
+    padding: 8px;
+  }
+  
+  .range-values {
+    font-size: 14px !important;
+    margin-top: 12px !important;
+    gap: 8px;
+  }
+} 

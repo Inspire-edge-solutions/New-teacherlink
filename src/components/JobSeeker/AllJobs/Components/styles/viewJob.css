@@ -1,0 +1,686 @@
+.job-view-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Top Navigation Bar */
+.view-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.job-view-title {
+  font-size: 24px;
+  color: #333;
+  margin: 0;
+}
+
+.btn-back-jobs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: transparent;
+  color: #333;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.btn-back-jobs:hover {
+  background-color: #f5f5f5;
+  border-color: #bbb;
+  transform: translateX(-3px);
+}
+.btn-back-jobs svg {
+  font-size: 18px;
+}
+
+.navigation-buttons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.navigation-buttons button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.job-counter {
+  font-weight: 500;
+  color: #666;
+}
+
+/* Main Content Grid */
+.job-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 30px;
+  align-items: start;
+}
+
+/* Main Content Column */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.main-content::-webkit-scrollbar {
+  width: 6px;
+}
+.main-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+.main-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+/* Job Header Section */
+.job-header-section {
+  padding: 0 0 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+.job-title-section {
+  margin-bottom: 24px;
+}
+.job-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #283593;
+  margin-bottom: 8px;
+}
+.institute-name {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+/* Job Meta Information Styles */
+.job-meta-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.meta-item {
+  display: grid;
+  grid-template-columns: 24px 120px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+.meta-item .meta-icon {
+  font-size: 16px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.meta-item .meta-label {
+  font-weight: 500;
+  color: #666;
+  font-size: 0.9rem;
+}
+.meta-item .meta-value {
+  color: #333;
+  font-size: 0.9rem;
+}
+
+/* Content Sections */
+.content-section {
+  padding: 24px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  margin-bottom: 15px;
+  letter-spacing: 0.5px;
+}
+.content-box {
+  color: #333;
+}
+.content-box.description {
+  line-height: 1.6;
+  white-space: pre-line;
+  color: #333;
+}
+
+/* Subjects Section */
+.subjects-section {
+  margin-bottom: 24px;
+}
+.subjects-section:last-child {
+  margin-bottom: 0;
+}
+.subjects-section h4 {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+/* Expertise Tags */
+.expertise-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.expertise-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.expertise-tag.primary {
+  background: #e8f0fe;
+  color: #1967d2;
+}
+.expertise-tag.secondary {
+  background: #f1f3f4;
+  color: #3c4043;
+}
+.expertise-tag i {
+  font-size: 12px;
+}
+
+/* Job Requirements Styles */
+.sidebar-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.requirements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.requirement-item {
+  display: grid;
+  grid-template-columns: 24px 120px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+.requirement-item .req-icon {
+  font-size: 16px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.requirement-item .req-label {
+  font-weight: 500;
+  color: #666;
+  font-size: 0.9rem;
+}
+.requirement-item .req-value {
+  color: #333;
+  font-size: 0.9rem;
+}
+
+/* Institute Information Styles */
+.institute-info {
+  margin-bottom: 20px;
+}
+.institute-info .institute-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+}
+.institute-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.institute-details .info-item {
+  display: grid;
+  grid-template-columns: 24px 100px 1fr;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  box-shadow: none;
+  margin: 0;
+  padding: 0;
+}
+.institute-details .info-item:hover {
+  background: none;
+}
+.institute-details .info-item svg {
+  font-size: 16px;
+  color: #666;
+}
+.institute-details .info-label {
+  font-weight: 500;
+  color: #666;
+  font-size: 0.9rem;
+}
+.institute-details .info-value {
+  color: #333;
+  font-size: 0.9rem;
+  background: none;
+  border: none;
+  padding: 0;
+  position: relative;
+  transition: filter 0.4s cubic-bezier(.4,2,.3,1), color 0.2s;
+}
+
+/* --- BLUR/MASKING FOR PROTECTED FIELDS --- */
+.blurred-contact, .institute-details .info-value.blurred-contact, .info-value.masked {
+  filter: blur(9px);
+  pointer-events: none !important;
+  user-select: none !important;
+  color: #666 !important;
+  background: #f4f4f4;
+  border-radius: 4px;
+  transition: filter 0.4s cubic-bezier(.4,2,.3,1);
+}
+.institute-details .info-value.unmasked {
+  filter: blur(0);
+  pointer-events: auto;
+  user-select: text;
+}
+
+.info-value-mask-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* View Details Button (inline) */
+.view-details-btn {
+  margin-left: 8px;
+  padding: 4px 10px;
+  font-size: 0.83rem;
+  color: #fff;
+  background: linear-gradient(90deg, #ffe278 0%, #ffb400 100%);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.25s, color 0.2s;
+  box-shadow: 0 2px 6px 0 rgba(255,180,0,0.05);
+  outline: none;
+}
+.view-details-btn:hover, .view-details-btn:focus {
+  background: linear-gradient(90deg, #ffd84a 0%, #ffa000 100%);
+  color: #444;
+  outline: none;
+}
+
+/* Unmasked text selection color */
+.institute-details .info-value.unmasked::selection {
+  background: #ffe082;
+}
+
+/* Animate reveal of masked field */
+.institute-details .info-value {
+  transition: filter 0.4s cubic-bezier(.4,2,.3,1);
+}
+
+/* Links inside info-value */
+.institute-details .info-value.link {
+  color: #2196F3;
+  text-decoration: none;
+  transition: color 0.2s;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+.institute-details .info-value.link:hover {
+  color: #1976D2;
+  text-decoration: underline;
+  background: none;
+}
+
+/* About Institute */
+.institute-description {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  background: none;
+}
+.institute-description h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+.institute-description .description-text {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.5;
+  background: none;
+  padding: 0;
+}
+
+/* Override any global styles that might affect info items */
+.info-item,
+.info-item:hover,
+.info-item:focus {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Deadline Card */
+.deadline-card {
+  color: #d32f2f;
+}
+.deadline-date {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Loading and Error States */
+.loading-spinner-small {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+}
+.error-message {
+  text-align: center;
+  color: #d32f2f;
+  padding: 16px;
+}
+.error-message p {
+  margin-bottom: 12px;
+}
+.no-info {
+  color: #666;
+  font-style: italic;
+  margin: 0;
+}
+
+/* --- MODAL POPUP FOR UNLOCK & APPLY--- */
+.unlock-popup-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: transparent;
+}
+
+.unlock-popup-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 320px;
+  margin-left: -160px;
+  margin-top: -120px;
+  background: linear-gradient(135deg, #e0f2f1 0%, #e8f5e9 50%, #fff3e0 100%);
+  border-radius: 18px;
+  padding: 28px 18px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #e0e0e0;
+  z-index: 10000;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px; right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #888;
+  cursor: pointer;
+  padding: 0 2px;
+  z-index: 1;
+  transition: color 0.18s;
+}
+.close-btn:hover, .close-btn:focus { color: #d72660; }
+
+/* Coin anim */
+.coins-anim {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 6px 0 16px 0;
+  animation: bounceY 1s 2;
+}
+.coin-bounce {
+  vertical-align: middle;
+  animation: coinJump 1.3s infinite cubic-bezier(.5,2.2,.5,1);
+}
+@keyframes coinJump {
+  0% { transform: translateY(0);}
+  20%{ transform: translateY(-10px);}
+  40%{ transform: translateY(0);}
+  60%{ transform: translateY(-4px);}
+  80%,100%{ transform: translateY(0);}
+}
+@keyframes bounceY {
+  0%{ transform:translateY(0);}
+  35%{ transform:translateY(-8px);}
+  60%{ transform:translateY(2px);}
+  80%,100%{ transform:translateY(0);}
+}
+
+.unlock-success-text {
+  color: #36b037;
+  font-size: 1.12rem;
+  font-weight: 600;
+  margin-bottom: 7px;
+}
+.unlock-error-text {
+  color: #d72660;
+  font-size: 1.08rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.unlock-btn-top {
+  background: linear-gradient(135deg, #1967d2 0%, #1557b0 100%);
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+  padding: 10px 0;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 1rem;
+  box-shadow: 0 2px 6px 0 rgba(255,180,0,0.06);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto;
+  margin-top: 6px;
+  width: 90%;
+  justify-content: center;
+  transition: background 0.2s, color 0.17s;
+}
+.unlock-btn-top[disabled], .unlock-btn-top:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #eee;
+  color: #aaa;
+}
+.unlock-btn-top:hover, .unlock-btn-top:focus {
+  background: linear-gradient(135deg, #1557b0 0%, #1967d2 100%);
+  color: #ffffff;
+}
+
+/* Coin icon inside unlock buttons */
+.coin-icon {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.2em;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .job-content-grid {
+    grid-template-columns: 1fr 300px;
+    gap: 24px;
+  }
+}
+@media (max-width: 992px) {
+  .job-content-grid {
+    grid-template-columns: 1fr;
+  }
+  .job-sidebar {
+    position: static;
+  }
+}
+@media (max-width: 768px) {
+  .job-view-container {
+    padding: 16px;
+  }
+  .view-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    margin-bottom: 16px;
+    flex-wrap: nowrap;
+  }
+  .job-view-title {
+    font-size: 20px;
+    flex: 1;
+    margin-right: 10px;
+  }
+  .btn-back-jobs {
+    padding: 6px 12px;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .navigation-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .job-meta-grid {
+    grid-template-columns: 1fr;
+  }
+  .requirements-list {
+    grid-template-columns: 1fr;
+  }
+  .meta-item, .requirement-item {
+    padding: 8px 0;
+  }
+}
+@media (max-width: 480px) {
+  .view-header-bar {
+    padding: 6px 0;
+    margin-bottom: 12px;
+  }
+  .job-view-title {
+    font-size: 18px;
+    margin-right: 8px;
+  }
+  .btn-back-jobs {
+    padding: 5px 10px;
+    font-size: 13px;
+    gap: 4px;
+  }
+  .btn-back-jobs svg {
+    font-size: 16px;
+  }
+  .job-title {
+    font-size: 24px;
+  }
+  .institute-name {
+    font-size: 16px;
+  }
+  .meta-item, .requirement-item {
+    flex-wrap: wrap;
+  }
+  .meta-label, .requirement-label {
+    min-width: 100px;
+  }
+}
+
+/* Remove the old requirements grid styles */
+.requirements-grid {
+  display: none;
+}
+
+/* Apply Job Button Styles */
+.apply-job-section {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 30px 0;
+  margin-top: 20px;
+  background: #fff;
+}
+.apply-job-button {
+  padding: 12px 30px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+  background-color: #2196F3;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 200px;
+  justify-content: center;
+}
+.apply-job-button:hover {
+  background-color: #1976D2;
+  transform: translateY(-1px);
+}
+.apply-job-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+.apply-job-button.applied {
+  background-color: #4CAF50;
+}
+.apply-job-button .applying {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.apply-job-button .dot-animation {
+  position: relative;
+}
+.apply-job-button .dot-animation::after {
+  content: "...";
+  animation: dots 1.5s steps(4, end) infinite;
+}
+@keyframes dots {
+  0%, 20% { content: ""; }
+  40% { content: "."; }
+  60% { content: ".."; }
+  80%, 100% { content: "..."; }
+}
+/* Remove the institute-card specific styles if they exist */
+.institute-card {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+}
+.institute-section {
+  margin-bottom: 20px;
+}
+.institute-section .section-title { 
+  margin-bottom: 15px;
+  padding: 0;
+}

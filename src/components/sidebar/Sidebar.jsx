@@ -73,7 +73,7 @@ export default function Sidebar({
 
   return (
     <div
-      className={`flex flex-col fixed left-0 top-0 h-screen bg-white/80 backdrop-blur-sm border-r transition-all duration-300 ease-in-out z-40 ${
+      className={`flex flex-col fixed left-0 top-0 h-screen bg-white/80 border-r transition-all duration-300 ease-in-out z-40 ${
         isCollapsed ? "w-20" : "w-64"
       } ${className}`}
     >
@@ -122,11 +122,11 @@ export default function Sidebar({
             const active = isItemActive(item.path);
 
             return (
-              <li key={item.path} className="px-2">
+              <li key={item.path} className="px-3 my-3">
                 <NavLink
                   to={item.path || "#"}
                   // keep NavLink for navigation, but compute active manually for styling
-                  className={`flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium group ${
+                  className={`flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200 text-sm font-medium group ${
                     isCollapsed ? "justify-center" : ""
                   } ${
                     active
