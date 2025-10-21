@@ -2,25 +2,18 @@ import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 import { GetCountries, GetState, GetCity } from 'react-country-state-city';
 import axios from 'axios';
-import '../styles/filters.css';
-import '../styles/jobs.css';
-import '../styles/modal.css';
 import { IoLocationOutline } from "react-icons/io5";
 import { BsBriefcase, BsCash, BsMortarboard, BsClock } from "react-icons/bs";
 import { AiOutlineEye, AiOutlineSave, AiOutlineHeart, AiFillHeart } from "react-icons/ai";
 import ApplyModal from '../shared/ApplyModal';
+import JobCard from '../shared/JobCard';
+import JobApiService from '../shared/JobApiService';
+import Pagination from '../shared/Pagination';
+import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import { toast } from "react-toastify";
 import { useAuth } from "../../../../../Context/AuthContext";
 
-const FAV_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteJobs";
-const APPLY_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate";
-const REDEEM_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral";
-const PERSONAL_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal";
-const LOGIN_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login";
-const ORG_API = "https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation";
-const WHATSAPP_API = "https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp";
-const RCS_API = "https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/rcsMessage";
-const COIN_HISTORY_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history";
+// Additional API endpoints for specific functionality
 const JOB_PREFERENCES_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference";
 
 
@@ -78,7 +71,6 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [jobsPerPage, setJobsPerPage] = useState(10);
-  const recordsPerPageOptions = [10, 20, 30, 50];
 
   // API-loaded options state
   const [apiOptions, setApiOptions] = useState({
@@ -275,24 +267,14 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const response = await fetch("https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes");
-      const data = await response.json();
-      // Sort by recency (fallback to id)
-      const parse = (v) => { try { return v ? new Date(v).getTime() : 0; } catch { return 0; } };
-      const sorted = [...data].sort((a, b) => {
-        const tb = parse(b.posted_at || b.created_at || b.updated_at || b.published_at || b.timestamp || b.createdAt || b.updatedAt);
-        const ta = parse(a.posted_at || a.created_at || a.updated_at || a.published_at || a.timestamp || a.createdAt || a.updatedAt);
-        if (tb !== ta) return tb - ta;
-        const ib = Number(b.id || b.job_id) || 0;
-        const ia = Number(a.id || a.job_id) || 0;
-        return ib - ia;
-      });
-      setJobs(sorted);
-      setFilteredJobs(sorted);
-      setLoading(false);
+      const data = await JobApiService.fetchJobs();
+      setJobs(data);
+      setFilteredJobs(data);
     } catch (error) {
       console.error("Error fetching jobs:", error);
+      setJobs([]);
       setFilteredJobs([]);
+    } finally {
       setLoading(false);
     }
   };
@@ -345,18 +327,11 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
 
   // Fetch applied jobs for current user
   const fetchAppliedJobs = async () => {
-    if (!user) {
-      setAppliedJobs(new Set());
-      return;
-    }
     try {
-      const res = await fetch(APPLY_API + `?user_id=${user.firebase_uid || user.uid}`);
-      const data = await res.json();
-      const appliedIds = Array.isArray(data)
-        ? data.filter(j => j.is_applied === 1).map(j => Number(j.job_id))
-        : [];
-      setAppliedJobs(new Set(appliedIds));
-    } catch (err) {
+      const { appliedJobs } = await JobApiService.fetchUserJobPreferences(user);
+      setAppliedJobs(new Set(appliedJobs));
+    } catch (error) {
+      console.error('Error fetching applied jobs:', error);
       setAppliedJobs(new Set());
     }
   };
@@ -1052,11 +1027,6 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
   const pageNumbers = getPageNumbers();
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const handleRecordsPerPageChange = (e) => {
-    const newJobsPerPage = parseInt(e.target.value);
-    setJobsPerPage(newJobsPerPage);
-    setCurrentPage(1);
-  };
 
   // Handle save/unsave job
   const handleSaveJob = (jobId) => {
@@ -1268,131 +1238,33 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
     setApplyLoading(true);
     setApplyError("");
     setApplyStatus("");
-    const job = selectedJob;
-    if (!job || !user) return;
     
-    // 1. Get coins again (to avoid concurrency issues)
     try {
-      const coinRes = await fetch(REDEEM_API);
-      const coinData = await coinRes.json();
-      const found = Array.isArray(coinData)
-        ? coinData.find(d => d.firebase_uid === (user.firebase_uid || user.uid))
-        : null;
-      const coins = found?.coin_value ?? 0;
-      setCoinValue(coins);
-
-      if (coins < 100) {
-        setApplyStatus("error");
-        setApplyError("You do not have enough coins to apply for this job.");
-        setApplyLoading(false);
-        return;
-      }
-    } catch {
-      setApplyStatus("error");
-      setApplyError("Could not verify your coins. Try again.");
-      setApplyLoading(false);
-      return;
-    }
-
-    // 2. Check if already applied
-    try {
-      const res = await fetch(APPLY_API + `?job_id=${job.id}&user_id=${user.firebase_uid || user.uid}`);
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        setApplyStatus("already");
-        setApplyLoading(false);
-        return;
-      }
-    } catch { }
-
-    // 3. Get personal details for fullName
-    let fullName = "";
-    try {
-      const res = await fetch(PERSONAL_API + `?firebase_uid=${user.firebase_uid || user.uid}`);
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        fullName = data[0].fullName || "";
-      }
-    } catch { fullName = ""; }
-
-    // 4. Deduct coins by 100
-    try {
-      await fetch(REDEEM_API, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firebase_uid: user.firebase_uid || user.uid,
-          coin_value: coinValue - 100
-        })
-      });
-    } catch {
-      setApplyStatus("error");
-      setApplyError("Failed to deduct coins. Try again.");
-      setApplyLoading(false);
-      return;
-    }
-
-    // 5. Store apply job record
-    try {
-      await fetch(APPLY_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          job_id: Number(job.id),
-          firebase_uid: job.firebase_uid,
-          job_name: job.job_title,
-          user_id: user.firebase_uid || user.uid,
-          fullName,
-          is_applied: 1
-        })
-      });
-      setApplyStatus("success");
-      setApplyLoading(false);
-      sendWhatsAppApply(job);
-
-      // === Coin History Logic ===
-      try {
-        let candidateId = null;
-        const personalRes = await fetch(`${PERSONAL_API}?firebase_uid=${user.firebase_uid || user.uid}`);
-        if (personalRes.ok) {
-          const personalData = await personalRes.json();
-          if (Array.isArray(personalData) && personalData.length > 0) {
-            candidateId = personalData[0].id;
-          }
+      const result = await JobApiService.applyForJob(selectedJob, user, 100);
+      
+      if (result.status === "success") {
+        setApplyStatus("success");
+        setCoinValue(await JobApiService.getUserCoins(user));
+        
+        // Send WhatsApp notification
+        await JobApiService.sendWhatsAppToInstitution(selectedJob, user);
+        
+        // Record coin history
+        const personalDetails = await JobApiService.getUserPersonalDetails(user);
+        if (personalDetails?.id) {
+          await JobApiService.recordCoinHistory(selectedJob, user, 100, personalDetails.id);
         }
-        
-        let unblocked_candidate_id = job.firebase_uid;
-        let unblocked_candidate_name = null;
-        try {
-          const orgRes = await fetch(`${ORG_API}?firebase_uid=${job.firebase_uid}`);
-          if (orgRes.ok) {
-            const orgData = await orgRes.json();
-            if (Array.isArray(orgData) && orgData.length > 0) {
-              unblocked_candidate_name = orgData[0].name;
-            }
-          }
-        } catch {}
-        
-        await fetch(COIN_HISTORY_API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            firebase_uid: user.firebase_uid || user.uid,
-            candidate_id: candidateId,
-            job_id: Number(job.id),
-            coin_value: coinValue - 100,
-            reduction: 100,
-            reason: "Applied for the job",
-            unblocked_candidate_id,
-            unblocked_candidate_name
-          })
-        });
-      } catch (coinHistoryError) {
-        console.error("Error recording coin history:", coinHistoryError);
+      } else if (result.status === "already") {
+        setApplyStatus("already");
+      } else {
+      setApplyStatus("error");
+        setApplyError(result.message);
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Error applying for job:', error);
       setApplyStatus("error");
       setApplyError("Failed to apply for this job.");
+    } finally {
       setApplyLoading(false);
     }
   };
@@ -1700,21 +1572,12 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
 
       {/* Results Section */}
       <div className="results-section">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h5>Search Results ({filteredJobs.length} jobs found)</h5>
-                    <div className="d-flex align-items-center gap-2">
-            <select
-              className="form-select"
-              style={{ width: '140px', minWidth: '140px' }}
-              value={jobsPerPage}
-              onChange={handleRecordsPerPageChange}
-              disabled={filteredJobs.length === 0}
-            >
-              {recordsPerPageOptions.map(option => (
-                <option key={option} value={option}>{option} per page</option>
-              ))}
-            </select>
-          </div>
+        <div className="flex justify-between items-center mb-3">
+          <h5 className="text-2xl font-semibold text-gray-800 m-0">Search Results ({filteredJobs.length} jobs found)</h5>
+          <RecordsPerPageDropdown 
+            itemsPerPage={jobsPerPage}
+            onItemsPerPageChange={setJobsPerPage}
+          />
         </div>
 
                         {/* Job Results */}
@@ -1736,132 +1599,18 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
                         const isFavourite = favouriteJobs.has(jobId);
                 
                 return (
-                  <div key={jobId} className="job-item compact" data-job-id={jobId}>
-                    <div className="job-row">
-                      <div className="job-info-section">
-                        <div className="job-header">
-                          <div className="job-title-section">
-                            <h5 className="job-title">{job.job_title || 'Position not specified'}</h5>
-                            {job.institute_name && (
-                              <span className="company-name">{job.institute_name}</span>
-                            )}
-                            
-                            {/* Relevance score and matching filters - COMMENTED OUT */}
-                            {/* {activeFilters.size > 0 && (
-                              <div className="matching-filters-container">
-                                <div className="relevance-score">
-                                  <span className="relevance-label">Match:</span>
-                                  <span className="relevance-value">
-                                    {isNaN(job.relevanceScore) || !isFinite(job.relevanceScore) 
-                                      ? '0%' 
-                                      : `${Math.round(job.relevanceScore)}%`}
-                                  </span>
-                                </div>
-                                <div className="matching-filters">
-                                  {job.matchedFilters && job.matchedFilters
-                                    .filter(filter => {
-                                      // Only show country tag if job actually has a country value
-                                      if (filter === 'country' && (!job.country && !job.country_name)) return false;
-                                      // Only show state tag if job actually has a state value
-                                      if (filter === 'state' && (!job.state_ut && !job.state && !job.state_name)) return false;
-                                      // Only show city tag if job actually has a city value
-                                      if (filter === 'city' && (!job.city && !job.city_name)) return false;
-                                      return true;
-                                    })
-                                    .map((filter, idx) => (
-                                      <span key={idx} className="matching-filter-tag">
-                                        {filter === 'job_category' ? 'Job Type' : 
-                                         filter === 'job_shifts' ? 'Shifts' :
-                                         filter === 'job_process' ? 'Process' :
-                                         filter === 'salary' ? 'Salary' :
-                                         filter.charAt(0).toUpperCase() + filter.slice(1)}
-                                      </span>
-                                    ))}
-                                </div>
-                              </div>
-                            )} */}
-                          </div>
-                          
-                          <div className="action-icons">
-                              <button
-                              className="action-icon-btn view-btn"
-                              onClick={() => handleViewJob(job)}
-                              title="View Job Details"
-                            >
-                              <AiOutlineEye />
-                            </button>
-                            <button 
-                              className={`action-icon-btn save-btn ${isSaved ? 'saved' : ''}`}
-                              onClick={() => handleSaveJob(jobId)}
-                              title={isSaved ? 'Remove from saved' : 'Save job'}
-                            >
-                              <AiOutlineSave />
-                            </button>
-                            <button 
-                              className={`action-icon-btn favourite-btn ${isFavourite ? 'favourited' : ''}`}
-                              onClick={() => handleFavouriteJob(jobId)}
-                              title={isFavourite ? 'Remove from favourites' : 'Add to favourites'}
-                            >
-                              {isFavourite ? <AiFillHeart /> : <AiOutlineHeart />}
-                            </button>
-                            {job.is_closed === 1 ? (
-                              <button className="btn btn-danger apply-btn" disabled>
-                                Closed
-                              </button>
-                            ) : appliedJobs.has(generateJobId(job)) ? (
-                              <button className="btn btn-success apply-btn" disabled>
-                                Applied ✓
-                              </button>
-                            ) : (
-                              <button 
-                                className="btn btn-primary apply-btn"
-                                onClick={() => handleApplyClick(job)}
-                                disabled={loading}
-                              >
-                                Apply Now
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="job-details-compact">
-                          <div className="details-row">
-                            <div className="detail-item">
-                              <IoLocationOutline />
-                              <span>
-                                {job.city && job.state_ut ? 
-                                  `${job.city}, ${job.state_ut}` : 
-                                  job.state_ut ? 
-                                    `${job.state_ut}` :
-                                    job.country ? 
-                                      `${job.country}` : 
-                                      'Location not specified'}
-                              </span>
-                            </div>
-                            <div className="detail-item">
-                              <BsBriefcase />
-                              <span>{job.job_type || 'Type not specified'}</span>
-                            </div>
-                            <div className="detail-item">
-                              <BsCash />
-                              <span>{job.min_salary && job.max_salary ? `₹${job.min_salary} - ₹${job.max_salary}` : 'Salary not specified'}</span>
-                            </div>
-                            <div className="detail-item">
-                              <BsMortarboard />
-                              <span>{job.qualification || 'Qualification not specified'}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* {job.job_description && (
-                          <div className="job-description-compact">
-                            {job.job_description.substring(0, 150)}
-                            {job.job_description.length > 150 && '...'}
-                          </div>
-                        )} */}
-                      </div>
-                    </div>
-                  </div>
+                  <JobCard
+                    key={jobId}
+                    job={job}
+                    isSaved={isSaved}
+                    isFavourite={isFavourite}
+                    isApplied={appliedJobs.has(generateJobId(job))}
+                    loading={loading}
+                    onViewJob={handleViewJob}
+                    onSaveJob={() => handleSaveJob(jobId)}
+                    onFavouriteJob={() => handleFavouriteJob(jobId)}
+                    onApplyClick={handleApplyClick}
+                  />
                 );
               })}
             </div>
@@ -1873,56 +1622,15 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="pagination-container mt-4">
-            <nav>
-              <ul className="pagination justify-content-center">
-                <li className={`page-item prev-button ${currentPage === 1 ? 'disabled' : ''}`}>
-                  <button 
-                    className="page-link" 
-                    onClick={() => paginate(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </button>
-                </li>
-                
-                {pageNumbers.map((number, index) => {
-                  if (number === '...') {
-                    return (
-                      <li key={`dots-${index}`} className="page-item disabled">
-                        <span className="page-link">...</span>
-                      </li>
-                    );
-                  }
-                  return (
-                    <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
-                      <button 
-                        className="page-link" 
-                        onClick={() => paginate(number)}
-                      >
-                        {number}
-                      </button>
-                    </li>
-                  );
-                })}
-                
-                <li className={`page-item next-button ${currentPage === totalPages ? 'disabled' : ''}`}>
-                  <button 
-                    className="page-link" 
-                    onClick={() => paginate(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </button>
-                </li>
-              </ul>
-            </nav>
-            <div className="pagination-info mt-2">
-              Showing {indexOfFirstJob + 1} to {Math.min(indexOfLastJob, filteredJobs.length)} of {filteredJobs.length} jobs
-            </div>
-          </div>
-        )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={paginate}
+          totalItems={filteredJobs.length}
+          itemsPerPage={jobsPerPage}
+          currentPageStart={indexOfFirstJob + 1}
+          currentPageEnd={Math.min(indexOfLastJob, filteredJobs.length)}
+        />
 
         {/* Apply Job Modal */}
         <ApplyModal

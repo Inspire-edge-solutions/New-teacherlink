@@ -230,24 +230,17 @@ const AdditionalInfo = forwardRef(({ formData, updateFormData }, ref) => {
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '0.5rem',
                   height: '48px',
-                  backgroundColor: '#F3F4F6',
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#FDA4AF' }
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#FDA4AF',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#FDA4AF',
+                    borderWidth: 2,
+                  },
                 },
-                // Gradient focus border
-                '& .MuiOutlinedInput-root.Mui-focused': {
-                  background:
-                    'linear-gradient(#F3F4F6, #F3F4F6) padding-box, linear-gradient(90deg, #FA5357 0%, #A2035D 100%) border-box'
+                '& .MuiSelect-select': {
+                  padding: '12px 14px',
                 },
-                '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  border: '2px solid transparent'
-                },
-                // Gradient focus label color (text)
-                '& .MuiInputLabel-root.Mui-focused': {
-                  background: 'linear-gradient(90deg, #FA5357 0%, #A2035D 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                },
-                '& .MuiSelect-select': { padding: '12px 14px' }
               }}
             >
               {skillOptions.map((option) => (

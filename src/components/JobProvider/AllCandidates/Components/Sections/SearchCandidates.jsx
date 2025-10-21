@@ -6,7 +6,6 @@ import CandidateDetail from '../shared/ViewFull';
 import { default as ViewShort } from '../shared/ViewShort';
 import SearchBar from '../shared/SearchBar';
 import { searchCandidates } from '../../utils/searchUtils';
-import { decodeCandidatesData } from '../../../../../utils/dataDecoder';
 import { useAuth } from "../../../../../Context/AuthContext";
 import '../styles/search.css';
 

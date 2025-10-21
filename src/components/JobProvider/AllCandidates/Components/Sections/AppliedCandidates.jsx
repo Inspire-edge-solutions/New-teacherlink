@@ -9,7 +9,6 @@ import CandidateDetail from '../shared/ViewFull';
 import { default as ViewShort } from '../shared/ViewShort';
 import { AvatarImage } from '../utils/avatarUtils.jsx';
 import { generatePDFfromHTML, generatePrintHTML, cleanContentForPrint, processProfileImage } from '../../Components/utils/printPdfUtils.jsx';
-import { decodeCandidatesData } from '../../../../../utils/dataDecoder';
 import '../styles/search.css';
 import '../styles/candidates.css';
 
@@ -558,11 +557,11 @@ const AppliedCandidates = () => {
           (a, b) => new Date(b.applied_at) - new Date(a.applied_at)
         );
         
-        // Decode the candidates data
-        const decodedCandidates = decodeCandidatesData(sortedCandidates);
-        setAppliedCandidates(decodedCandidates);
-        setFilteredCandidates(decodedCandidates);
-        setEnrichedCandidates(sortedCandidates);
+        // // Decode the candidates data
+        // const decodedCandidates = decodeCandidatesData(sortedCandidates);
+        // setAppliedCandidates(decodedCandidates);
+        // setFilteredCandidates(decodedCandidates);
+        // setEnrichedCandidates(sortedCandidates);
       } else {
         setAppliedCandidates([]);
         setFilteredCandidates([]);

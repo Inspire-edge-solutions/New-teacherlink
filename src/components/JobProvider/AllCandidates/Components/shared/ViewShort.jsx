@@ -98,7 +98,7 @@ const ViewShort = ({
   const [isLoading, setIsLoading] = useState(true);
   
   // Decode the candidate data to ensure we have real firebase_uid for API calls
-  const decodedCandidate = decodeCandidateData(candidate);
+  //const decodedCandidate = decodeCandidateData(candidate);
   const [error, setError] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [educationData, setEducationData] = useState([]);

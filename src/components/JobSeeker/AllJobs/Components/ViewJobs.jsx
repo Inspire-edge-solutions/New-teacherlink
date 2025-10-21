@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
 import { toast } from "react-toastify";
-import './styles/viewJob.css';
-import './styles/modal.css';
 import { BsArrowLeft, BsBriefcase, BsClock, BsCash, BsMortarboard } from 'react-icons/bs';
 import { IoLocationOutline, IoMailOutline, IoGlobeOutline, IoCallOutline } from 'react-icons/io5';
 import { FaUsers, FaCalendarAlt, FaStar, FaPlus, FaTasks, FaBook, FaChalkboard, FaCheck } from 'react-icons/fa';
 import { useAuth } from "../../../../Context/AuthContext";
 import { formatQualification } from '../utils/formatUtils';
+import ApplyModal from './shared/ApplyModal';
 
 // === Add your new API endpoints for WhatsApp, login/org, RCS ===
 const REDEEM_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral';
@@ -19,177 +18,119 @@ const LOGIN_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/l
 const ORG_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation';
 const WHATSAPP_API = "https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp";
 
-// Format phone number correctly with +91 prefix
-const formatPhone = (phone) => {
-  if (!phone) return "";
-  let clean = phone.replace(/[^\d+]/g, ""); // remove hidden chars
-  if (!clean.startsWith("+")) clean = `+91${clean}`;
-  return clean;
-};
 const RCS_API = "https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/rcsMessage";
 const COIN_HISTORY_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history";
 const EDUCATION_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails";
 const PROFILE_APPROVED_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved";
 
-function CoinModal({ isOpen, onClose, onConfirm, loading, coinValue, minCoins, status, errorMsg }) {
-  
+// Consolidated helper functions
+const formatPhone = (phone) => {
+  if (!phone) return "";
+  let clean = phone.replace(/[^\d+]/g, "");
+  if (!clean.startsWith("+")) clean = `+91${clean}`;
+  return clean;
+};
 
-  if (!isOpen) return null;
+const formatDate = (dateString) => {
+  if (!dateString) return 'Not specified';
+  return new Date(dateString).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+};
 
-  // Portal modal content
-  const modalContent = (
-    <div className="portal-modal-backdrop" onClick={onClose}>
-      <div className="portal-modal-container" onClick={(e) => e.stopPropagation()}>
-        <button className="portal-modal-close-btn" onClick={onClose}>
-          &times;
-        </button>
-        
-        {status === "success" ? (
-          <>
-            <div className="coins-anim">
-              <span role="img" aria-label="coin">🪙</span>
-              <span style={{ color: "#36b037", fontWeight: "bold", fontSize: "20px", marginLeft: 6 }}>-100</span>
-            </div>
-            <div className="unlock-success-text">Application Submitted! <span role="img" aria-label="applied">✅</span></div>
-            <div style={{ color: '#888', fontSize: 14, textAlign: "center" }}>You have successfully applied for this job.</div>
-          </>
-        ) : status === "already" ? (
-          <>
-            <div className="coins-anim" style={{ animation: "none", opacity: 0.85, filter: "grayscale(1)" }}>
-              <span role="img" aria-label="coin">🪙</span>
-              <span style={{ color: "#1976D2", fontWeight: "bold", fontSize: "20px", marginLeft: 6 }}>✓</span>
-            </div>
-            <div className="unlock-error-text" style={{ color: "#1976D2" }}>You already applied for this job.</div>
-          </>
-        ) : status === "error" ? (
-          <>
-            <div className="coins-anim" style={{ animation: "none", opacity: 0.85, filter: "grayscale(1)" }}>
-              <span role="img" aria-label="coin">🪙</span>
-              <span style={{ color: "#d72660", fontWeight: "bold", fontSize: "20px", marginLeft: 6 }}>×</span>
-            </div>
-            <div className="unlock-error-text">{errorMsg || "Could not apply for this job."}</div>
-          </>
-        ) : (
-          <>
-            <div style={{ marginBottom: 15, marginTop: 2 }}>
-              <span style={{ fontWeight: 600, fontSize: 17 }}>Apply for this job?</span>
-            </div>
-            <div style={{ color: "#888", fontSize: 15, marginBottom: 15 }}>
-              Available Coins: <b>{coinValue === null ? "..." : coinValue}</b>
-            </div>
-            <div style={{ color: "#333", fontSize: "15px", marginBottom: 10 }}>
-              <span>Use <b>100 Coins</b> to apply for this job.</span>
-            </div>
-           
-            {coinValue !== null && coinValue < minCoins ? (
-              <div style={{ color: "#d72660", fontWeight: 500, marginBottom: 10 }}>
-                You don't have enough coins to apply for this job.
-              </div>
-            ) : null}
-            <button
-              className="unlock-btn-top"
-              style={{ width: "100%", justifyContent: "center", marginBottom: 6, fontSize: 16 }}
-              disabled={loading || (coinValue !== null && coinValue < minCoins)}
-              onClick={onConfirm}
-            >
-              {loading ? "Applying..." : <>Apply <span className="coin-icon"><span role="img" aria-label="coin">🪙</span></span> 100</>}
-            </button>
-          </>
-        )}
-      </div>
-    </div>
-  );
-
-  // Render modal using Portal
-  return ReactDOM.createPortal(modalContent, document.body);
-}
+const formatSubjects = (subjects) => {
+  if (!subjects) return [];
+  if (Array.isArray(subjects)) return subjects;
+  if (typeof subjects === 'string') {
+    return subjects.split(/[,;]/).map(subject => subject.trim()).filter(Boolean);
+  }
+  return [String(subjects)];
+};
 
 const BlurWrapper = ({ isUnlocked, children }) => {
   return isUnlocked
     ? children
-    : <span className="blurred-contact" tabIndex={-1}>{children}</span>;
+    : <span className="blurred-contact text-gray-400 select-none" tabIndex={-1}>🔒 Contact details locked</span>;
 };
 
 const BlurredOrLink = ({ isUnlocked, type, value, href, children }) => {
   if (!isUnlocked) {
-    return <span className="blurred-contact" tabIndex={-1}>{value}</span>;
+    return (
+      <span className="blurred-contact text-gray-400 select-none" tabIndex={-1}>
+        🔒 Contact details locked
+      </span>
+    );
   }
   if (type === 'email') {
-    return <a href={`mailto:${value}`} className="info-value link">{value}</a>;
+    return <a href={`mailto:${value}`} className="info-value link text-blue-600 hover:text-blue-800">{value}</a>;
   }
   if (type === 'phone') {
-    return <a href={`tel:${value}`} className="info-value link">{value}</a>;
+    return <a href={`tel:${value}`} className="info-value link text-blue-600 hover:text-blue-800">{value}</a>;
   }
   if (type === 'website') {
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="info-value link">
+      <a href={href} target="_blank" rel="noopener noreferrer" className="info-value link text-blue-600 hover:text-blue-800">
         {children}
       </a>
     );
   }
-  return <span className="info-value">{value}</span>;
+  return <span className="info-value text-gray-800">{value}</span>;
 };
 
+// Simplified UnlockModal with Tailwind CSS
 function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, unlockStatus, error }) {
-  
-
   if (!isOpen) return null;
 
-  // Portal modal content
   const modalContent = (
-    <div className="portal-modal-backdrop" onClick={onClose}>
-      <div className="portal-modal-container" onClick={(e) => e.stopPropagation()}>
-        <button className="portal-modal-close-btn" onClick={onClose}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+        <button 
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl"
+          onClick={onClose}
+        >
           &times;
         </button>
         
         {unlockStatus === "success" ? (
-          <>
-            <div className="coins-anim">
-              <span role="img" aria-label="coin">🪙</span>
-              <span style={{ color: "#f7b901", fontWeight: "bold", fontSize: "20px", marginLeft: 6 }}>-50</span>
-            </div>
-            <div className="unlock-success-text">Unlocked! <span role="img" aria-label="unlocked">🔓</span></div>
-            <div style={{ color: '#888', fontSize: 14 }}>Details unlocked successfully.</div>
-          </>
+          <div className="text-center">
+            <div className="text-4xl mb-4">🪙</div>
+            <div className="text-green-600 font-semibold text-lg mb-2">Unlocked! 🔓</div>
+            <div className="text-gray-600 text-sm">Details unlocked successfully.</div>
+          </div>
         ) : unlockStatus === "error" ? (
-          <>
-            <div className="coins-anim" style={{ animation: "none", opacity: 0.85, filter: "grayscale(1)" }}>
-              <span role="img" aria-label="coin">🪙</span>
-              <span style={{ color: "#d72660", fontWeight: "bold", fontSize: "20px", marginLeft: 6 }}>×</span>
-            </div>
-            <div className="unlock-error-text">{error || "Could not unlock details."}</div>
-          </>
+          <div className="text-center">
+            <div className="text-4xl mb-4 opacity-50">🪙</div>
+            <div className="text-red-600 font-semibold text-lg">{error || "Could not unlock details."}</div>
+          </div>
         ) : (
-          <>
-            <div style={{ marginBottom: 15, marginTop: 2 }}>
-              <span style={{ fontWeight: 600, fontSize: 17 }}>Unlock institute details?</span>
-            </div>
-            <div style={{ color: "#888", fontSize: 15, marginBottom: 6 }}>
-              Available Coins: <b>{coinValue === null ? "..." : coinValue}</b>
-            </div>
-            <div style={{ color: "#333", fontSize: "15px", marginBottom: 10 }}>
-              <span>Use <b>50 Coins</b> to view address, contact, email, phone, and website details.</span>
-            </div>
-          
-            <div style={{ color: "red", fontSize: 15,textAlign: "center", marginBottom: 15 }}>
-              <i>Unlocked details remain visible for <b>30 days.</b></i>
+          <div>
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Unlock institute details?</h3>
+              <div className="text-gray-600 text-sm mb-2">
+                Available Coins: <span className="font-semibold">{coinValue === null ? "..." : coinValue}</span>
+              </div>
+              <div className="text-gray-700 text-sm mb-4">
+                Use <span className="font-semibold">50 Coins</span> to view address, contact, email, phone, and website details.
+              </div>
+              <div className="text-red-600 text-sm text-center italic mb-4">
+                Unlocked details remain visible for <span className="font-semibold">30 days.</span>
+              </div>
             </div>
             <button
-              className="unlock-btn-top"
-              style={{ width: "100%", justifyContent: "center", marginBottom: 6, fontSize: 16 }}
+              className="w-full bg-gradient-brand text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
               onClick={onUnlock}
             >
-              {loading ? "Unlocking..." : <>Unlock <span className="coin-icon"><span role="img" aria-label="coin">🪙</span></span> 50</>}
+              {loading ? "Unlocking..." : "🪙 Unlock 50"}
             </button>
-          </>
+          </div>
         )}
       </div>
     </div>
   );
 
-  // Render modal using Portal
   return ReactDOM.createPortal(modalContent, document.body);
 }
 
@@ -424,67 +365,31 @@ const ViewJobs = ({ job, onBack }) => {
     openApplyModal();
   };
 
-  // --- RCS sending function (called after WhatsApp) ---
-  const sendRcsApply = async ({ phone, userName, orgName }) => {
+  // Consolidated WhatsApp and RCS functions
+  const sendNotifications = async () => {
     try {
-      const contactId = phone.startsWith("91") ? phone : `91${phone}`;
-      await axios.post(RCS_API, {
-        contactId: contactId,
-        templateName: "job_apply",
-        customParam: {
-          NAME: userName,
-          SCHOOL: orgName
-        },
-        sent_by: "suhas",
-        sent_email: "suhas75@gmail.com"
-      });
-    } catch (err) {}
-  };
+      // Get user data
+      const [loginRes, orgRes] = await Promise.all([
+        axios.get(`${LOGIN_API}?firebase_uid=${userId}`),
+        axios.get(`${ORG_API}?firebase_uid=${job.firebase_uid}`)
+      ]);
 
-  // --- WhatsApp sending function after apply success ---
-  const sendWhatsAppApply = async () => {
-    let phone = "";
-    let userName = "";
-    let orgName = "";
-    let errors = [];
+      const userData = Array.isArray(loginRes.data) ? loginRes.data[0] : {};
+      const orgData = Array.isArray(orgRes.data) ? orgRes.data[0] : {};
 
-    try {
-      const loginRes = await axios.get(`${LOGIN_API}?firebase_uid=${userId}`);
-      const loginData = loginRes.data;
-      if (Array.isArray(loginData) && loginData.length > 0) {
-        phone = loginData[0].phone_number || "";
-        userName = loginData[0].name || "";
+      const phone = userData.phone_number || "";
+      const userName = userData.name || "";
+      const orgName = orgData.name || job.institute_name || "";
+
+      if (!phone || !userName || !orgName) {
+        console.warn('Missing data for notifications:', { phone: !!phone, userName: !!userName, orgName: !!orgName });
+        return;
       }
-      if (!phone) errors.push("Phone number not found for WhatsApp.");
-      if (!userName) errors.push("Name not found for WhatsApp.");
-    } catch (err) {
-      errors.push("Failed to fetch user phone/name.");
-    }
 
-    try {
-      if (job.firebase_uid) {
-        const orgRes = await axios.get(`${ORG_API}?firebase_uid=${job.firebase_uid}`);
-        const orgData = orgRes.data;
-        if (Array.isArray(orgData) && orgData.length > 0) {
-          orgName = orgData[0].name || "";
-        }
-      }
-      if (!orgName) orgName = job.institute_name || "";
-      if (!orgName) errors.push("Organisation name not found for WhatsApp.");
-    } catch (err) {
-      if (!orgName) errors.push("Failed to fetch organisation name.");
-    }
-
-    if (errors.length) return;
-
-    try {
-      console.log('📤 Sending WhatsApp confirmation to candidate...');
-      console.log('📱 Candidate Phone:', phone);
-      console.log('📋 Template: applied_job');
-
+      // Send WhatsApp to candidate
       await axios.post(WHATSAPP_API, {
         phone: formatPhone(phone),
-        templateName: "applied_1_thing", // Use working template first
+        templateName: "applied_1_thing",
         language: "en",
         bodyParams: [
           { type: "text", text: "0" },
@@ -494,11 +399,19 @@ const ViewJobs = ({ job, onBack }) => {
         sent_email: "suhas@teacherlink.in"
       });
 
-      console.log('✅ WhatsApp confirmation sent to candidate successfully');
-      // --- After WhatsApp, send RCS also ---
-      await sendRcsApply({ phone, userName, orgName });
+      // Send RCS
+      const contactId = phone.startsWith("91") ? phone : `91${phone}`;
+      await axios.post(RCS_API, {
+        contactId: contactId,
+        templateName: "job_apply",
+        customParam: { NAME: userName, SCHOOL: orgName },
+        sent_by: "suhas",
+        sent_email: "suhas75@gmail.com"
+      });
+
+      console.log('✅ Notifications sent successfully');
     } catch (err) {
-      console.error('❌ Failed to send WhatsApp confirmation:', err);
+      console.error('❌ Failed to send notifications:', err);
     }
   };
 
@@ -972,332 +885,381 @@ const ViewJobs = ({ job, onBack }) => {
     }
   };
 
-  const formatSubjects = (subjects) => {
-    if (!subjects) return [];
-    if (Array.isArray(subjects)) return subjects;
-    if (typeof subjects === 'string') {
-      return subjects.split(/[,;]/).map(subject => subject.trim()).filter(Boolean);
-    }
-    return [String(subjects)];
-  };
-
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Not specified';
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-  };
 
   const coreSubjects = formatSubjects(job.core_subjects);
   const otherSubjects = formatSubjects(job.other_subjects);
 
   if (!job) {
     return (
-      <div className="no-job-selected">
-        <p>No job selected</p>
-        <button className="btn btn-primary" onClick={onBack}>Back to Jobs</button>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 text-lg mb-4">No job selected</p>
+          <button 
+            className="px-6 py-3 bg-gradient-brand text-white rounded-lg hover:opacity-90 transition-opacity"
+            onClick={onBack}
+          >
+            Back to Jobs
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="job-view-container">
+    <div className="min-h-screen bg-gray-50">
       {/* Top Navigation Bar */}
-      <div className="view-header-bar">
-        <h1 className="job-view-title">Job Details</h1>
-        <button className="btn-back-jobs" onClick={() => onBack('list')}>
-          Back to Jobs <BsArrowLeft />
-        </button>
+      <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-2 pt-0">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-orange-500">Job Details</h1>
+          <button 
+            className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
+            onClick={() => onBack('list')}
+          >
+            Back to Jobs
+          </button>
+        </div>
       </div>
 
-      <div className="job-content-grid">
-        {/* Main Content Column */}
-        <div className="main-content">
-          {/* Job Title and Highlights */}
-          <div className="job-header-section">
-            <div className="job-title-section">
-              <h1 className="job-title">{job.job_title || 'Position not specified'}</h1>
-              {job.institute_name && (
-                <h2 className="institute-name">{job.institute_name}</h2>
-              )}
+      <div className="max-w-7xl mx-auto px-6 py-2">
+        {/* Job Header Section */}
+        <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6 mb-6">
+          <div className="text-center mb-4">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">{job.job_title || 'Position not specified'}</h1>
+            {job.institute_name && (
+              <h2 className="text-xl text-gray-600">{job.institute_name}</h2>
+            )}
+          </div>
+          
+          {/* Key Job Information Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <BsBriefcase className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                <span className="text-base font-medium text-gray-500">Job Type:</span>
+              </div>
+              <span className="text-base font-semibold text-gray-800">{(job.job_type && job.job_type.toString().trim()) || 'Not specified'}</span>
             </div>
-            <div className="job-meta-grid">
-              <div className="meta-item">
-                <BsBriefcase className="meta-icon" />
-                <div className="meta-label"><strong>Job Type</strong></div>
-                <div className="meta-value">{(job.job_type && job.job_type.toString().trim()) || 'Not specified'}</div>
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <IoLocationOutline className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                <span className="text-base font-medium text-gray-500">Location:</span>
               </div>
-              <div className="meta-item">
-                <IoLocationOutline className="meta-icon" />
-                <div className="meta-label"><strong>Location</strong></div>
-                <div className="meta-value">{job.city && job.state_ut ? `${job.city}, ${job.state_ut}` : 'Not specified'}</div>
+              <span className="text-base font-semibold text-gray-800">{job.city && job.state_ut ? `${job.city}, ${job.state_ut}` : 'Not specified'}</span>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <BsCash className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                <span className="text-base font-medium text-gray-500">Salary Range:</span>
               </div>
-              <div className="meta-item">
-                <FaCalendarAlt className="meta-icon" />
-                <div className="meta-label"><strong>Joining Date</strong></div>
-                <div className="meta-value">{formatDate(job.joining_date)}</div>
+              <span className="text-base font-semibold text-gray-800">{job.min_salary && job.max_salary ? `₹${job.min_salary} - ₹${job.max_salary}` : 'Not specified'}</span>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <BsClock className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                <span className="text-base font-medium text-gray-500">Experience:</span>
               </div>
-              <div className="meta-item">
-                <FaUsers className="meta-icon" />
-                <div className="meta-label"><strong>Openings</strong></div>
-                <div className="meta-value">{(job.no_of_opening && job.no_of_opening.toString().trim()) || 'Not specified'}</div>
+              <span className="text-base font-semibold text-gray-800">{job.experience_required ? `${job.experience_required} years` : 'Not specified'}</span>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <FaUsers className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                <span className="text-base font-medium text-gray-500">Openings:</span>
               </div>
-              <div className="meta-item">
-                <BsCash className="meta-icon" />
-                <div className="meta-label"><strong>Salary Range</strong></div>
-                <div className="meta-value">{job.min_salary && job.max_salary ? `₹${job.min_salary} - ₹${job.max_salary}` : 'Not specified'}</div>
+              <span className="text-base font-semibold text-gray-800">{(job.no_of_opening && job.no_of_opening.toString().trim()) || 'Not specified'}</span>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <FaCalendarAlt className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                <span className="text-base font-medium text-gray-500">Joining Date:</span>
               </div>
-              <div className="meta-item">
-                <BsClock className="meta-icon" />
-                <div className="meta-label"><strong>Experience</strong></div>
-                <div className="meta-value">{job.experience_required ? `${job.experience_required} years` : 'Not specified'}</div>
-              </div>
+              <span className="text-base font-semibold text-gray-800">{formatDate(job.joining_date)}</span>
             </div>
           </div>
-
-          {/* Subjects Required */}
-          {(coreSubjects.length > 0 || otherSubjects.length > 0) && (
-            <div className="content-section">
-              <h3 className="section-title"><strong>Subject Requirements</strong></h3>
-              <div className="content-box">
-                {coreSubjects.length > 0 && (
-                  <div className="subjects-section">
-                    <h4><strong>Core Subjects</strong></h4>
-                    <div className="expertise-tags">
-                      {coreSubjects.map((subject, index) => (
-                        <span key={index} className="expertise-tag primary">
-                          <FaStar />
-                          {subject}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {otherSubjects.length > 0 && (
-                  <div className="subjects-section">
-                    <h4><strong>Additional Subjects</strong></h4>
-                    <div className="expertise-tags">
-                      {otherSubjects.map((subject, index) => (
-                        <span key={index} className="expertise-tag secondary">
-                          <FaPlus />
-                          {subject}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Job Description */}
-          {job.job_description && (
-            <div className="content-section">
-              <h3 className="section-title"><strong>Job Description</strong></h3>
-              <div className="content-box description">
-                {job.job_description}
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Sidebar */}
-        <div className="job-sidebar">
-          {/* Job Requirements Card */}
-          <div className="sidebar-card">
-            <h3 className="section-title"><strong>JOB REQUIREMENTS</strong></h3>
-            <div className="requirements-list">
-              <div className="requirement-item">
-                <BsMortarboard className="req-icon" />
-                <div className="req-label"><strong>Qualification</strong></div>
-                <div className="req-value">{formatQualification(job.qualification)}</div>
-              </div>
-              <div className="requirement-item">
-                <FaTasks className="req-icon" />
-                <div className="req-label"><strong>Selection Process</strong></div>
-                <div className="req-value">{(job.job_process && job.job_process.toString().trim()) || 'Not specified'}</div>
-              </div>
-              <div className="requirement-item">
-                <BsClock className="req-icon" />
-                <div className="req-label"><strong>Working Shifts</strong></div>
-                <div className="req-value">{(job.job_shifts && job.job_shifts.toString().trim()) || 'Not specified'}</div>
-              </div>
-              <div className="requirement-item">
-                <FaBook className="req-icon" />
-                <div className="req-label"><strong>Curriculum</strong></div>
-                <div className="req-value">{(job.curriculum && job.curriculum.toString().trim()) || 'Not specified'}</div>
-              </div>
-              <div className="requirement-item">
-                <FaChalkboard className="req-icon" />
-                <div className="req-label"><strong>Board</strong></div>
-                <div className="req-value">{(job.board && job.board.toString().trim()) || 'Not specified'}</div>
+        {/* Main Content Grid - Balanced Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Left Column - Job Details */}
+          <div className="space-y-6">
+            {/* Job Requirements */}
+            <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+              <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200">JOB REQUIREMENTS</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <BsMortarboard className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                    <span className="text-base font-medium text-gray-500">Qualification:</span>
+                  </div>
+                  <span className="text-base font-semibold text-gray-800">{formatQualification(job.qualification)}</span>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <FaTasks className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                    <span className="text-base font-medium text-gray-500">Selection Process:</span>
+                  </div>
+                  <span className="text-base font-semibold text-gray-800">{(job.job_process && job.job_process.toString().trim()) || 'Not specified'}</span>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <BsClock className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                    <span className="text-base font-medium text-gray-500">Working Shifts:</span>
+                  </div>
+                  <span className="text-base font-semibold text-gray-800">{(job.job_shifts && job.job_shifts.toString().trim()) || 'Not specified'}</span>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <FaBook className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                    <span className="text-base font-medium text-gray-500">Curriculum:</span>
+                  </div>
+                  <span className="text-base font-semibold text-gray-800">{(job.curriculum && job.curriculum.toString().trim()) || 'Not specified'}</span>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <FaChalkboard className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                    <span className="text-base font-medium text-gray-500">Board:</span>
+                  </div>
+                  <span className="text-base font-semibold text-gray-800">{(job.board && job.board.toString().trim()) || 'Not specified'}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Institute Info Section */}
-          <div>
-            <h3 className="section-title"><strong>INSTITUTE INFORMATION</strong></h3>
-            {instituteLoading ? (
-              <div className="loading-spinner-small"></div>
-            ) : error ? (
-              <div className="error-message">
-                <p>{error}</p>
-                <button
-                  onClick={() => fetchInstituteData(job.firebase_uid)}
-                  className="btn btn-sm btn-outline-primary"
-                >
-                  Retry
-                </button>
-              </div>
-            ) : instituteData ? (
-              <div className="institute-info">
-                <h4 className="institute-name">
-                  <BlurWrapper isUnlocked={isUnlocked}>
-                    {instituteData.name}
-                  </BlurWrapper>
-                </h4>
-                <div className="institute-details">
-                  {instituteData.address && (
-                    <div className="info-item">
-                      <IoLocationOutline />
-                      <span className="info-label"><strong>Address:</strong></span>
-                      <BlurredOrLink
-                        isUnlocked={isUnlocked}
-                        value={instituteData.address}
-                        type="text"
-                      />
+            {/* Subjects Required */}
+            {(coreSubjects.length > 0 || otherSubjects.length > 0) && (
+              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+                <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200">Subject Requirements</h3>
+                <div className="space-y-4">
+                  {coreSubjects.length > 0 && (
+                    <div>
+                      <h4 className="text-base font-medium text-gray-700 mb-3">Core Subjects</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {coreSubjects.map((subject, index) => (
+                          <span key={index} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                            <FaStar className="w-4 h-4" />
+                            {subject}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   )}
-                  {instituteData.contact_person_name && (
-                    <div className="info-item">
-                      <FaUsers />
-                      <span className="info-label"><strong>Contact Person:</strong></span>
-                      <BlurredOrLink
-                        isUnlocked={isUnlocked}
-                        value={instituteData.contact_person_name}
-                        type="text"
-                      />
-                    </div>
-                  )}
-                  {instituteData.contact_person_email && (
-                    <div className="info-item">
-                      <IoMailOutline />
-                      <span className="info-label"><strong>Email:</strong></span>
-                      <BlurredOrLink
-                        isUnlocked={isUnlocked}
-                        value={instituteData.contact_person_email}
-                        type="email"
-                      />
-                    </div>
-                  )}
-                  {instituteData.contact_person_phone1 && (
-                    <div className="info-item">
-                      <IoCallOutline />
-                      <span className="info-label"><strong>Phone:</strong></span>
-                      <BlurredOrLink
-                        isUnlocked={isUnlocked}
-                        value={instituteData.contact_person_phone1}
-                        type="phone"
-                      />
-                    </div>
-                  )}
-                  {instituteData.website_url && (
-                    <div className="info-item">
-                      <IoGlobeOutline />
-                      <span className="info-label"><strong>Website:</strong></span>
-                      <BlurredOrLink
-                        isUnlocked={isUnlocked}
-                        value={instituteData.website_url}
-                        type="website"
-                        href={instituteData.website_url}
-                      >
-                        Visit Website
-                      </BlurredOrLink>
-                    </div>
-                  )}
-                  {/* === View Institution Details BUTTON BELOW WEBSITE === */}
-                  {!isUnlocked && (
-                    <div style={{ marginTop: 18 }}>
-                      <button
-                        className="unlock-btn-top"
-                        style={{ width: '100%' }}
-                        onClick={handleUnlockClick}
-                      >
-                        <span role="img" aria-label="coin" className="coin-icon">💰</span>
-                        View Institution Details
-                      </button>
+                  {otherSubjects.length > 0 && (
+                    <div>
+                      <h4 className="text-base font-medium text-gray-700 mb-3">Additional Subjects</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {otherSubjects.map((subject, index) => (
+                          <span key={index} className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                            <FaPlus className="w-4 h-4" />
+                            {subject}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
-                {instituteData.description && (
-                  <div className="institute-description">
-                    <h4><strong>About the Institute</strong></h4>
-                    <p className="description-text">{instituteData.description}</p>
-                  </div>
-                )}
               </div>
-            ) : (
-              <p className="no-info">Institute details not available</p>
             )}
           </div>
 
-          {/* Unlock Popup Modal */}
-          <UnlockModal
-            isOpen={showUnlockModal}
-            onClose={() => setShowUnlockModal(false)}
-            userId={userId}
-            onUnlock={handleConfirmUnlock}
-            coinValue={coinValue}
-            loading={unlockLoading}
-            unlockStatus={unlockStatus}
-            error={unlockError}
-          />
-
-          {/* Application Deadline Card */}
-          {job.application_deadline && (
-            <div className="sidebar-card deadline-card">
-              <h3 className="card-title">
-                <i className="fas fa-hourglass-end"></i>
-                Application Deadline
-              </h3>
-              <p className="deadline-date">{formatDate(job.application_deadline)}</p>
+          {/* Right Column - Institute Info & Job Description */}
+          <div className="space-y-6">
+            {/* Institute Info Section */}
+            <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+              <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200">INSTITUTE INFORMATION</h3>
+              {instituteLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+              ) : error ? (
+                <div className="text-center py-4">
+                  <p className="text-red-600 mb-3">{error}</p>
+                  <button
+                    onClick={() => fetchInstituteData(job.firebase_uid)}
+                    className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : instituteData ? (
+                <div>
+                  <div className="text-center mb-6">
+                    <h4 className="text-lg font-medium text-gray-800 mb-2">
+                      <BlurWrapper isUnlocked={isUnlocked}>
+                        {instituteData.name}
+                      </BlurWrapper>
+                    </h4>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {instituteData.address && (
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <IoLocationOutline className="w-5 h-5 text-blue-500" />
+                          <span className="text-base font-medium text-gray-500">Address:</span>
+                        </div>
+                        <div className="text-base font-semibold text-gray-800">
+                          <BlurredOrLink
+                            isUnlocked={isUnlocked}
+                            value={instituteData.address}
+                            type="text"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {instituteData.contact_person_name && (
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <FaUsers className="w-5 h-5 text-blue-500" />
+                          <span className="text-base font-medium text-gray-500">Contact Person:</span>
+                        </div>
+                        <div className="text-base font-semibold text-gray-800">
+                          <BlurredOrLink
+                            isUnlocked={isUnlocked}
+                            value={instituteData.contact_person_name}
+                            type="text"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {instituteData.contact_person_email && (
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <IoMailOutline className="w-5 h-5 text-blue-500" />
+                          <span className="text-base font-medium text-gray-500">Email:</span>
+                        </div>
+                        <div className="text-base font-semibold text-gray-800">
+                          <BlurredOrLink
+                            isUnlocked={isUnlocked}
+                            value={instituteData.contact_person_email}
+                            type="email"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {instituteData.contact_person_phone1 && (
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <IoCallOutline className="w-5 h-5 text-blue-500" />
+                          <span className="text-base font-medium text-gray-500">Phone:</span>
+                        </div>
+                        <div className="text-base font-semibold text-gray-800">
+                          <BlurredOrLink
+                            isUnlocked={isUnlocked}
+                            value={instituteData.contact_person_phone1}
+                            type="phone"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {instituteData.website_url && (
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <IoGlobeOutline className="w-5 h-5 text-blue-500" />
+                          <span className="text-base font-medium text-gray-500">Website:</span>
+                        </div>
+                        <div className="text-base font-semibold text-gray-800">
+                          <BlurredOrLink
+                            isUnlocked={isUnlocked}
+                            value={instituteData.website_url}
+                            type="website"
+                            href={instituteData.website_url}
+                          >
+                            Visit Website
+                          </BlurredOrLink>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {!isUnlocked && (
+                    <div className="mt-6">
+                      <button
+                        className="w-full bg-gradient-brand text-white py-4 px-6 rounded-lg font-semibold text-base hover:opacity-90 transition-opacity flex items-center justify-center gap-3"
+                        onClick={handleUnlockClick}
+                      >
+                        <span>💰</span>
+                        Unlock Institution Details (50 Coins)
+                      </button>
+                    </div>
+                  )}
+                  {instituteData.description && (
+                    <div className="mt-6 pt-6 border-t border-gray-200">
+                      <h4 className="text-lg font-medium text-gray-800 mb-3">About the Institute</h4>
+                      <p className="text-gray-700 leading-relaxed">{instituteData.description}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">Institute details not available</p>
+              )}
             </div>
-          )}
+
+            {/* Job Description */}
+            {job.job_description && (
+              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+                <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200">Job Description</h3>
+                <div className="prose max-w-none text-gray-700 leading-relaxed text-sm" style={{ fontSize: '14px', lineHeight: '1.4', padding: '8px 12px' }}>
+                  {job.job_description}
+                </div>
+              </div>
+            )}
+
+            {/* Application Deadline Card */}
+            {job.application_deadline && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-red-800 mb-3 flex items-center justify-center gap-2">
+                  <i className="fas fa-hourglass-end"></i>
+                  Application Deadline
+                </h3>
+                <p className="text-red-700 font-bold text-center text-lg">{formatDate(job.application_deadline)}</p>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Apply Job Button */}
-      <div className="apply-job-section">
-        <button
-          className={`apply-job-button ${isApplied ? 'applied' : ''}`}
-          onClick={handleApplyJob}
-          disabled={isApplied}
-        >
-          {isApplied ? (
-            <>
-              <FaCheck /> Applied
-            </>
-          ) : (
-            'Apply for this Job'
-          )}
-        </button>
-      </div>
+        {/* Unlock Popup Modal */}
+        <UnlockModal
+          isOpen={showUnlockModal}
+          onClose={() => setShowUnlockModal(false)}
+          userId={userId}
+          onUnlock={handleConfirmUnlock}
+          coinValue={coinValue}
+          loading={unlockLoading}
+          unlockStatus={unlockStatus}
+          error={unlockError}
+        />
 
-      {/* Apply Modal */}
-      <CoinModal
-        isOpen={applyModalOpen}
-        onClose={() => setApplyModalOpen(false)}
-        onConfirm={handleConfirmApply}
-        loading={applyLoading}
-        coinValue={applyCoin}
-        minCoins={100}
-        status={applyStatus}
-        errorMsg={applyError}
-      />
+        {/* Apply Job Button */}
+        <div className="flex justify-center mt-6 mb-4">
+          <button
+            className={`px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 ${
+              isApplied 
+                ? 'bg-gray-300 text-gray-700 cursor-not-allowed' 
+                : 'bg-gradient-brand text-white hover:opacity-90 shadow-lg hover:shadow-xl'
+            }`}
+            onClick={handleApplyJob}
+            disabled={isApplied}
+          >
+            {isApplied ? (
+              <>
+                <FaCheck className="w-5 h-5" />
+                Applied
+              </>
+            ) : (
+              'Apply for this Job'
+            )}
+          </button>
+        </div>
+
+        {/* Apply Modal */}
+        <ApplyModal
+          isOpen={applyModalOpen}
+          onClose={() => setApplyModalOpen(false)}
+          onApply={handleConfirmApply}
+          coinValue={applyCoin}
+          loading={applyLoading}
+          applyStatus={applyStatus}
+          error={applyError}
+        />
+      </div>
     </div>
   );
 };

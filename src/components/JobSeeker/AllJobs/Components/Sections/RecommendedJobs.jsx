@@ -3,25 +3,18 @@ import { IoLocationOutline } from "react-icons/io5";
 import { BsBriefcase, BsCash, BsMortarboard } from "react-icons/bs";
 import { AiOutlineEye, AiOutlineSave, AiOutlineHeart, AiFillHeart } from "react-icons/ai";
 import ApplyModal from '../shared/ApplyModal';
+import JobCard from '../shared/JobCard';
+import JobApiService from '../shared/JobApiService';
+import Pagination from '../shared/Pagination';
+import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import { toast } from "react-toastify";
 import SearchBar from '../shared/SearchBar';
 import { searchJobs } from '../../utils/searchUtils';
 import { formatQualification } from '../../utils/formatUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
-import '../styles/jobs.css';
-import '../styles/modal.css';
 
-const FAV_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteJobs";
-const JOBS_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes";
+// Additional API endpoints for specific functionality
 const JOB_PREFERENCE_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference";
-const APPLY_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate";
-const REDEEM_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral";
-const PERSONAL_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal";
-const LOGIN_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login";
-const ORG_API = "https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation";
-const WHATSAPP_API = "https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp";
-const RCS_API = "https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/rcsMessage";
-const COIN_HISTORY_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history";
 const PRESENT_ADDRESS_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/presentAddress";
 
 
@@ -48,7 +41,6 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
   const [applyError, setApplyError] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
 
-  const recordsPerPageOptions = [10, 20, 30, 50];
 
   // Fetch user job preferences
   const fetchUserJobPreferences = useCallback(async () => {
@@ -339,8 +331,7 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
   const fetchJobs = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(JOBS_API);
-      const data = await response.json();
+      const data = await JobApiService.fetchJobs();
       
       // Keep all jobs including closed ones
       const allJobs = await getAppliedJobs(data);
@@ -358,7 +349,7 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
       setJobs(filteredJobsByPreferences);
       setFilteredJobs(filteredJobsByPreferences);
     } catch (error) {
-      toast.error("Could not load job list. Please refresh.");
+      console.error("Error fetching jobs:", error);
       setJobs([]);
       setFilteredJobs([]);
     } finally {
@@ -368,22 +359,12 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
 
   // Fetch saved/fav jobs from backend for current user
   const fetchSavedAndFavJobs = useCallback(async () => {
-    if (!user) {
-      setSavedJobs([]);
-      setFavouriteJobs([]);
-      return;
-    }
     try {
-      const added_by = user.firebase_uid || user.uid || user.id;
-      const res = await fetch(FAV_API);
-      const data = await res.json();
-      const userRows = Array.isArray(data)
-        ? data.filter(row => String(row.added_by) === String(added_by))
-        : [];
-      setSavedJobs(userRows.filter(j => j.saved_jobs === 1 || j.saved_jobs === true).map(j => Number(j.id)));
-      setFavouriteJobs(userRows.filter(j => j.favroute_jobs === 1 || j.favroute_jobs === true).map(j => Number(j.id)));
-    } catch (err) {
-      toast.error("Could not load your job preferences. Please refresh.");
+      const { savedJobs, favouriteJobs } = await JobApiService.fetchUserJobPreferences(user);
+      setSavedJobs(savedJobs);
+      setFavouriteJobs(favouriteJobs);
+    } catch (error) {
+      console.error('Error fetching user job preferences:', error);
       setSavedJobs([]);
       setFavouriteJobs([]);
     }
@@ -478,7 +459,7 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
     const jobId = getJobId(job);
     const isSaved = savedJobs.includes(jobId);
     try {
-      await upsertJobAction(job, { saved_jobs: isSaved ? 0 : 1 });
+      await JobApiService.toggleSaveJob(job, user, !isSaved);
       await fetchSavedAndFavJobs();
       toast.success(
         isSaved
@@ -486,6 +467,7 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
           : `Saved "${job.job_title}" to your jobs!`
       );
     } catch (error) {
+      console.error('Error saving job:', error);
       toast.error(
         isSaved
           ? `Failed to remove "${job.job_title}" from saved. Please try again.`
@@ -502,7 +484,7 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
     const jobId = getJobId(job);
     const isFav = favouriteJobs.includes(jobId);
     try {
-      await upsertJobAction(job, { favroute_jobs: isFav ? 0 : 1 });
+      await JobApiService.toggleFavouriteJob(job, user, !isFav);
       await fetchSavedAndFavJobs();
       toast.success(
         isFav
@@ -510,6 +492,7 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
           : `Marked "${job.job_title}" as favourite!`
       );
     } catch (error) {
+      console.error('Error favouriting job:', error);
       toast.error(
         isFav
           ? `Failed to remove from favourites. Please try again.`
@@ -696,135 +679,37 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
     setApplyLoading(true);
     setApplyError("");
     setApplyStatus("");
-    const job = selectedJob;
-    if (!job || !user) return;
-    // 1. Get coins again (to avoid concurrency issues)
+    
     try {
-      const coinRes = await fetch(REDEEM_API);
-      const coinData = await coinRes.json();
-      const found = Array.isArray(coinData)
-        ? coinData.find(d => d.firebase_uid === (user.firebase_uid || user.uid))
-        : null;
-      const coins = found?.coin_value ?? 0;
-      setCoinValue(coins);
-
-      if (coins < 100) {
-        setApplyStatus("error");
-        setApplyError("You do not have enough coins to apply for this job.");
-        setApplyLoading(false);
-        return;
-      }
-    } catch {
-      setApplyStatus("error");
-      setApplyError("Could not verify your coins. Try again.");
-      setApplyLoading(false);
-      return;
-    }
-
-    // 2. Check if already applied
-    try {
-      const res = await fetch(APPLY_API + `?job_id=${job.id}&user_id=${user.firebase_uid || user.uid}`);
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        setApplyStatus("already");
-        setApplyLoading(false);
+      const result = await JobApiService.applyForJob(selectedJob, user, 100);
+      
+      if (result.status === "success") {
+        setApplyStatus("success");
+        setCoinValue(await JobApiService.getUserCoins(user));
+        
+        // Refresh jobs
         await fetchJobs();
-        return;
-      }
-    } catch { }
-
-    // 3. Get personal details for fullName
-    let fullName = "";
-    try {
-      const res = await fetch(PERSONAL_API + `?firebase_uid=${user.firebase_uid || user.uid}`);
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        fullName = data[0].fullName || "";
-      }
-    } catch { fullName = ""; }
-
-    // 4. Deduct coins by 100
-    try {
-      await fetch(REDEEM_API, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firebase_uid: user.firebase_uid || user.uid,
-          coin_value: coinValue - 100
-        })
-      });
-    } catch {
-      setApplyStatus("error");
-      setApplyError("Failed to deduct coins. Try again.");
-      setApplyLoading(false);
-      return;
-    }
-
-    // 5. Store apply job record
-    try {
-      await fetch(APPLY_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          job_id: Number(job.id),
-          firebase_uid: job.firebase_uid,
-          job_name: job.job_title,
-          user_id: user.firebase_uid || user.uid,
-          fullName,
-          is_applied: 1
-        })
-      });
-      setApplyStatus("success");
-      setApplyLoading(false);
-      await fetchJobs();
-      // === Trigger WhatsApp message ===
-      sendWhatsAppApply(job);
-
-      // === Coin History Logic ===
-      try {
-        // 1. Get candidate_id from /personal
-        let candidateId = null;
-        const personalRes = await fetch(`${PERSONAL_API}?firebase_uid=${user.firebase_uid || user.uid}`);
-        if (personalRes.ok) {
-          const personalData = await personalRes.json();
-          if (Array.isArray(personalData) && personalData.length > 0) {
-            candidateId = personalData[0].id;
-          }
+        
+        // Send WhatsApp notification
+        await JobApiService.sendWhatsAppToInstitution(selectedJob, user);
+        
+        // Record coin history
+        const personalDetails = await JobApiService.getUserPersonalDetails(user);
+        if (personalDetails?.id) {
+          await JobApiService.recordCoinHistory(selectedJob, user, 100, personalDetails.id);
         }
-        // 2. Get unblocked_candidate_id and name from /organisation
-        let unblocked_candidate_id = job.firebase_uid;
-        let unblocked_candidate_name = null;
-        try {
-          const orgRes = await fetch(`${ORG_API}?firebase_uid=${job.firebase_uid}`);
-          if (orgRes.ok) {
-            const orgData = await orgRes.json();
-            if (Array.isArray(orgData) && orgData.length > 0) {
-              unblocked_candidate_name = orgData[0].name;
-            }
-          }
-        } catch {}
-        // 3. POST to /coin_history
-        await fetch(COIN_HISTORY_API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            firebase_uid: user.firebase_uid || user.uid,
-            candidate_id: candidateId,
-            job_id: Number(job.id),
-            coin_value: coinValue - 100,
-            reduction: 100,
-            reason: "Applied for the job",
-            unblocked_candidate_id,
-            unblocked_candidate_name
-          })
-        });
-      } catch (coinHistoryError) {
-        // Log but do not block application
-        console.error("Error recording coin history:", coinHistoryError);
+      } else if (result.status === "already") {
+        setApplyStatus("already");
+      await fetchJobs();
+      } else {
+        setApplyStatus("error");
+        setApplyError(result.message);
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Error applying for job:', error);
       setApplyStatus("error");
       setApplyError("Failed to apply for this job.");
+    } finally {
       setApplyLoading(false);
     }
   };
@@ -859,11 +744,6 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const handleRecordsPerPageChange = (e) => {
-    const newJobsPerPage = parseInt(e.target.value);
-    setJobsPerPage(newJobsPerPage);
-    setCurrentPage(1);
-  };
 
   const formatSalary = (minSalary, maxSalary) => {
     if (!minSalary && !maxSalary) return 'Salary not specified';
@@ -902,30 +782,22 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
             <SearchBar onSearch={handleSearch} placeholder="Search jobs..." />
           </div>
           <div style={{ flex: '1', minWidth: '120px', maxWidth: '150px' }} className="flex-shrink-0">
-            <select
-              className="form-select form-select-sm"
-              value={jobsPerPage}
-              onChange={handleRecordsPerPageChange}
-              aria-label="Records per page"
-            >
-              {recordsPerPageOptions.map(option => (
-                <option key={option} value={option}>
-                  {option} per page
-                </option>
-              ))}
-            </select>
           </div>
         </div>
       </div>
 
       <div className="job-listing">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h5>
+        <div className="flex justify-between items-center mb-3">
+          <h5 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
             {isSearching
               ? `Found ${filteredJobs.length} job${filteredJobs.length !== 1 ? 's' : ''}`
-              : `Recommended Jobs (${jobs.length} total)`
+              : `${jobs.length} Jobs Recommended`
             }
           </h5>
+          <RecordsPerPageDropdown 
+            itemsPerPage={jobsPerPage}
+            onItemsPerPageChange={setJobsPerPage}
+          />
         </div>
 
         {currentJobs.length > 0 ? (
@@ -935,90 +807,21 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
               const jobId = getJobId(job);
               const isSaved = savedJobs.includes(jobId);
               const isFavourite = favouriteJobs.includes(jobId);
-              const isApplied = appliedJobs.includes(jobId); // Check if job is applied
+              const isApplied = appliedJobs.includes(jobId);
+              
               return (
-                  <div key={jobId} className="job-item compact" data-job-id={jobId}>
-                    <div className="job-row">
-                      <div className="job-info-section">
-                        <div className="job-header">
-                          <div className="job-title-section">
-                            <h5 className="job-title">{job.job_title || 'Position not specified'}</h5>
-                            {job.institute_name && (
-                              <span className="company-name">{job.institute_name}</span>
-                            )}
-                          </div>
-                          <div className="action-icons">
-                            <button
-                              className="action-icon-btn view-btn"
-                              onClick={() => handleViewJob(job)}
-                              title="View Job Details"
-                            >
-                              <AiOutlineEye />
-                            </button>
-                            <button
-                              className={`action-icon-btn save-btn ${isSaved ? 'saved' : ''}`}
-                              onClick={() => handleSaveJob(job)}
-                              title={isSaved ? 'Remove from saved' : 'Save job'}
-                              disabled={loading}
-                            >
-                              <AiOutlineSave />
-                            </button>
-                            <button
-                              className={`action-icon-btn favourite-btn ${isFavourite ? 'favourited' : ''}`}
-                              onClick={() => handleFavouriteJob(job)}
-                              title={isFavourite ? 'Remove from favourites' : 'Add to favourites'}
-                              disabled={loading}
-                            >
-                              {isFavourite ? <AiFillHeart /> : <AiOutlineHeart />}
-                            </button>
-                            {job.is_closed === 1 ? (
-                              <button className="btn btn-danger apply-btn" disabled>
-                                Closed
-                              </button>
-                            ) : isApplied ? (
-                              <button className="btn btn-success apply-btn" disabled>
-                                Applied ✓
-                              </button>
-                            ) : (
-                              <button className="btn btn-primary apply-btn"
-                                disabled={loading}
-                                onClick={() => handleApplyClick(job)}>
-                                Apply Now
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="job-details-compact">
-                          <div className="details-row">
-                            <div className="detail-item">
-                              <IoLocationOutline />
-                              <span>{formatLocation(job.city, job.state_ut)}</span>
-                            </div>
-                            <div className="detail-item">
-                              <BsBriefcase />
-                              <span>{job.job_type || 'Type not specified'}</span>
-                            </div>
-                            <div className="detail-item">
-                              <BsCash />
-                              <span>{formatSalary(job.min_salary, job.max_salary)}</span>
-                            </div>
-                            <div className="detail-item">
-                              <BsMortarboard />
-                              <span>{formatQualification(job.qualification)}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* {job.job_description && (
-                          <div className="job-description-compact">
-                            {job.job_description.substring(0, 150)}
-                            {job.job_description.length > 150 && '...'}
-                          </div>
-                        )} */}
-                      </div>
-                    </div>
-                  </div>
+                <JobCard
+                  key={jobId}
+                  job={job}
+                  isSaved={isSaved}
+                  isFavourite={isFavourite}
+                  isApplied={isApplied}
+                  loading={loading}
+                  onViewJob={handleViewJob}
+                  onSaveJob={handleSaveJob}
+                  onFavouriteJob={handleFavouriteJob}
+                  onApplyClick={handleApplyClick}
+                />
                 );
               })}
             </div>
@@ -1026,61 +829,19 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
         ) : (
           <div className="no-results text-center py-5">
             <p>No jobs available at the moment.</p>
-            <button className="btn btn-outline-primary" onClick={fetchJobs}>
-              Refresh
-            </button>
           </div>
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="pagination-box">
-            <nav>
-              <ul className="pagination">
-                <li className={`page-item prev-btn ${currentPage === 1 ? 'disabled' : ''}`}>
-                  <button
-                    className="page-link"
-                    onClick={() => paginate(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </button>
-                </li>
-                {pageNumbers.map((number, index) => {
-                  if (number === '...') {
-                    return (
-                      <li key={`dots-${index}`} className="page-item disabled">
-                        <span className="page-link">...</span>
-                      </li>
-                    );
-                  }
-                  return (
-                    <li key={number} className={`page-item page-number ${currentPage === number ? 'active' : ''}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => paginate(number)}
-                      >
-                        {number}
-                      </button>
-                    </li>
-                  );
-                })}
-                <li className={`page-item next-btn ${currentPage === totalPages ? 'disabled' : ''}`}>
-                  <button
-                    className="page-link"
-                    onClick={() => paginate(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </button>
-                </li>
-              </ul>
-            </nav>
-            <div className="pagination-info mt-2">
-              Showing {indexOfFirstJob + 1} to {Math.min(indexOfLastJob, filteredJobs.length)} of {filteredJobs.length} jobs
-            </div>
-          </div>
-        )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={paginate}
+          totalItems={filteredJobs.length}
+          itemsPerPage={jobsPerPage}
+          currentPageStart={indexOfFirstJob + 1}
+          currentPageEnd={Math.min(indexOfLastJob, filteredJobs.length)}
+        />
 
         {/* Apply Job Modal */}
         <ApplyModal

@@ -2,16 +2,15 @@ import React, { useState, useEffect, useCallback } from "react";
 import { IoLocationOutline } from "react-icons/io5";
 import { BsBriefcase, BsCash, BsMortarboard } from "react-icons/bs";
 import { AiOutlineEye, AiOutlineSave, AiOutlineHeart, AiFillHeart } from "react-icons/ai";
+import ApplyModal from '../shared/ApplyModal';
+import JobCard from '../shared/JobCard';
+import JobApiService from '../shared/JobApiService';
+import Pagination from '../shared/Pagination';
+import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import { toast } from "react-toastify";
 import { useAuth } from "../../../../../Context/AuthContext";
 import { formatQualification } from '../../utils/formatUtils';
 import ViewJobs from "../ViewJobs";
-import "../styles/jobs.css";
-
-// API endpoints
-const JOBS_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes";
-const APPLY_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate";
-const FAV_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteJobs";
 
 const AppliedJobs = () => {
   const { user, loading: userLoading } = useAuth();
@@ -27,18 +26,16 @@ const AppliedJobs = () => {
   const [favouriteJobs, setFavouriteJobs] = useState([]);
   const [lastSelectedJobId, setLastSelectedJobId] = useState(null);
 
-  const recordsPerPageOptions = [10, 20, 30, 50];
 
   const getJobId = (job) => Number(job.id);
 
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const response = await fetch(JOBS_API);
-      const data = await response.json();
+      const data = await JobApiService.fetchJobs();
       setJobs(data);
     } catch (error) {
-      toast.error("Could not load job list. Please refresh.");
+      console.error('Error fetching jobs:', error);
       setJobs([]);
     } finally {
       setLoading(false);
@@ -122,23 +119,12 @@ const AppliedJobs = () => {
   };
 
   const fetchSavedAndFavJobs = useCallback(async () => {
-    if (!user) {
-      setSavedJobs([]);
-      setFavouriteJobs([]);
-      return;
-    }
     try {
-      const added_by = user.firebase_uid || user.uid || user.id;
-      const res = await fetch(FAV_API);
-      const data = await res.json();
-      const userRows = Array.isArray(data)
-        ? data.filter(row => String(row.added_by) === String(added_by))
-        : [];
-      setSavedJobs(userRows.filter(j => j.saved_jobs === 1 || j.saved_jobs === true).map(j => Number(j.id)));
-      setFavouriteJobs(userRows.filter(j => j.favroute_jobs === 1 || j.favroute_jobs === true).map(j => Number(j.id)));
-    } catch (err) {
-      console.error('Error fetching saved/fav jobs:', err);
-      toast.error("Could not load your job preferences. Please refresh.");
+      const { savedJobs, favouriteJobs } = await JobApiService.fetchUserJobPreferences(user);
+      setSavedJobs(savedJobs);
+      setFavouriteJobs(favouriteJobs);
+    } catch (error) {
+      console.error('Error fetching user job preferences:', error);
       setSavedJobs([]);
       setFavouriteJobs([]);
     }
@@ -209,19 +195,25 @@ const AppliedJobs = () => {
   const handleSaveJob = async (job) => {
     const jobId = getJobId(job);
     const isSaved = savedJobs.includes(jobId);
-    await upsertJobAction(job, {
-      favroute_jobs: favouriteJobs.includes(jobId) ? 1 : 0,
-      saved_jobs: isSaved ? 0 : 1
-    });
+    try {
+      await JobApiService.toggleSaveJob(job, user, !isSaved);
+      await fetchSavedAndFavJobs();
+    } catch (error) {
+      console.error('Error saving job:', error);
+      toast.error("Failed to update job preference. Please try again.");
+    }
   };
 
   const handleFavouriteJob = async (job) => {
     const jobId = getJobId(job);
     const isFavourite = favouriteJobs.includes(jobId);
-    await upsertJobAction(job, {
-      favroute_jobs: isFavourite ? 0 : 1,
-      saved_jobs: savedJobs.includes(jobId) ? 1 : 0
-    });
+    try {
+      await JobApiService.toggleFavouriteJob(job, user, !isFavourite);
+      await fetchSavedAndFavJobs();
+    } catch (error) {
+      console.error('Error favouriting job:', error);
+      toast.error("Failed to update job preference. Please try again.");
+    }
   };
 
   useEffect(() => {
@@ -298,11 +290,6 @@ const AppliedJobs = () => {
 
   const pageNumbers = totalPages <= 10 ? Array.from({ length: totalPages }, (_, i) => i + 1) : getVisiblePageNumbers();
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-  const handleRecordsPerPageChange = (e) => {
-    const newJobsPerPage = parseInt(e.target.value);
-    setJobsPerPage(newJobsPerPage);
-    setCurrentPage(1);
-  };
 
 
   const formatSalary = (minSalary, maxSalary) => {
@@ -395,26 +382,14 @@ const AppliedJobs = () => {
         <>
           <div className="job-listing">
             <div className="widget-title mb-3">
-              <div className="d-flex justify-content-between align-items-center w-100">
-                <div className="d-flex">
-                  <h5>
-                    {`Applied Jobs (${filteredJobs.length} total)`}
-                  </h5>
-                </div>
-                <div className="d-flex align-items-center">
-                  <select
-                    className="form-select form-select-sm"
-                    value={jobsPerPage}
-                    onChange={handleRecordsPerPageChange}
-                    aria-label="Records per page"
-                  >
-                    {recordsPerPageOptions.map(option => (
-                      <option key={option} value={option}>
-                        {option} per page
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div className="flex justify-between items-center w-full">
+                <h3 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
+                  {`${filteredJobs.length} Jobs Applied`}
+                </h3>
+                <RecordsPerPageDropdown 
+                  itemsPerPage={jobsPerPage}
+                  onItemsPerPageChange={setJobsPerPage}
+                />
               </div>
             </div>
 
@@ -425,79 +400,21 @@ const AppliedJobs = () => {
                     const jobId = getJobId(job);
                     const isSaved = savedJobs.includes(jobId);
                     const isFavourite = favouriteJobs.includes(jobId);
+                    
                     return (
-                      <div key={jobId} className="job-item compact" data-job-id={jobId}>
-                        <div className="job-row">
-                          <div className="job-info-section">
-                            <div className="job-header">
-                              <div className="job-title-section">
-                                <div className="job-title-line">
-                                  <h5 className="job-title">{job.job_title || 'Position not specified'}</h5>
-                                </div>
-                                {job.institute_name && (
-                                  <span className="company-name">{job.institute_name}</span>
-                                )}
-                              </div>
-                              <div className="action-icons">
-                                <span className={`status-pill status-${job.application_status_variant || 'sent'} status-inline`}>
-                                  {job.application_status_text || 'Profile sent'}
-                                </span>
-                                <button
-                                  className="action-icon-btn view-btn"
-                                  onClick={() => handleViewJob(job)}
-                                  title="View Job Details"
-                                >
-                                  <AiOutlineEye />
-                                </button>
-                                <button
-                                  className={`action-icon-btn save-btn ${isSaved ? 'saved' : ''}`}
-                                  onClick={() => handleSaveJob(job)}
-                                  title={isSaved ? 'Remove from saved' : 'Save job'}
-                                  disabled={loading}
-                                >
-                                  <AiOutlineSave />
-                                </button>
-                                <button
-                                  className={`action-icon-btn favourite-btn ${isFavourite ? 'favourited' : ''}`}
-                                  onClick={() => handleFavouriteJob(job)}
-                                  title={isFavourite ? 'Remove from favourites' : 'Add to favourites'}
-                                  disabled={loading}
-                                >
-                                  {isFavourite ? <AiFillHeart /> : <AiOutlineHeart />}
-                                </button>
-                              </div>
-                            </div>
-
-                            <div className="job-details-compact">
-                              <div className="details-row">
-                                <div className="detail-item">
-                                  <IoLocationOutline />
-                                  <span>{formatLocation(job.city, job.state_ut)}</span>
-                                </div>
-                                <div className="detail-item">
-                                  <BsBriefcase />
-                                  <span>{job.job_type || 'Type not specified'}</span>
-                                </div>
-                                <div className="detail-item">
-                                  <BsCash />
-                                  <span>{formatSalary(job.min_salary, job.max_salary)}</span>
-                                </div>
-                                <div className="detail-item">
-                                  <BsMortarboard />
-                                  <span>{formatQualification(job.qualification)}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* {job.job_description && (
-                              <div className="job-description-compact">
-                                {job.job_description.substring(0, 150)}
-                                {job.job_description.length > 150 && '...'}
-                              </div>
-                            )} */}
-                          </div>
-                        </div>
-                      </div>
+                      <JobCard
+                        key={jobId}
+                        job={job}
+                        isSaved={isSaved}
+                        isFavourite={isFavourite}
+                        isApplied={true} // Always true in AppliedJobs
+                        loading={loading}
+                        showApplicationStatus={true} // Show application status in AppliedJobs
+                        onViewJob={handleViewJob}
+                        onSaveJob={handleSaveJob}
+                        onFavouriteJob={handleFavouriteJob}
+                        onApplyClick={null} // No apply button in AppliedJobs
+                      />
                     );
                   })}
                 </div>
@@ -505,64 +422,20 @@ const AppliedJobs = () => {
             ) : (
               <div className="no-results text-center py-5">
                 <p>No applied jobs available.</p>
-                <button className="btn btn-outline-primary" onClick={fetchJobs}>
-                  Refresh
-                </button>
               </div>
             )}
           </div>
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="pagination-wrapper">
-              <div className="pagination-box">
-                <nav>
-                  <ul className="pagination">
-                    <li className={`page-item prev-btn ${currentPage === 1 ? 'disabled' : ''}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => paginate(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        Previous
-                      </button>
-                    </li>
-                    {pageNumbers.map((number, index) => {
-                      if (number === '...') {
-                        return (
-                          <li key={`dots-${index}`} className="page-item disabled">
-                            <span className="page-link">...</span>
-                          </li>
-                        );
-                      }
-                      return (
-                        <li key={number} className={`page-item page-number ${currentPage === number ? 'active' : ''}`}>
-                          <button
-                            className="page-link"
-                            onClick={() => paginate(number)}
-                          >
-                            {number}
-                          </button>
-                        </li>
-                      );
-                    })}
-                    <li className={`page-item next-btn ${currentPage === totalPages ? 'disabled' : ''}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => paginate(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                      >
-                        Next
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
-                <div className="pagination-info mt-2">
-                  Showing {indexOfFirstJob + 1} to {Math.min(indexOfLastJob, filteredJobs.length)} of {filteredJobs.length} jobs
-                </div>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={paginate}
+            totalItems={filteredJobs.length}
+            itemsPerPage={jobsPerPage}
+            currentPageStart={indexOfFirstJob + 1}
+            currentPageEnd={Math.min(indexOfLastJob, filteredJobs.length)}
+          />
         </>
       )}
     </div>
