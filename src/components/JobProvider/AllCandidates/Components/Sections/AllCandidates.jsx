@@ -1,317 +1,462 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
 import { toast } from 'react-toastify';
-import CandidateShort from '../shared/CandidateShort';
+import CandidateCard from '../shared/CandidateCard';
 import CandidateDetail from '../shared/ViewFull';
-import { default as ViewShort } from '../shared/ViewShort';
+import ViewShort from '../shared/ViewShort';
 import SearchBar from '../shared/SearchBar';
-import { searchCandidates } from '../../utils/searchUtils';
+import Pagination from '../shared/Pagination';
+import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
+import CandidateFilterPanel from '../shared/CandidateFilterPanel';
+import CandidateApiService from '../shared/CandidateApiService';
+import { parseLanguages, parseEducation } from '../../utils/candidateUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
-import '../styles/candidates.css';
-import '../styles/search.css';
 
-const API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/change';
-const FAV_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteUser';
-const PROFILE_APPROVED_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved';
+const AllCandidates = ({ 
+  onViewCandidate, 
+  onBackFromCandidateView,
+  selectedCandidate,
+  viewType,
+  viewMode,
+  onBackToList
+}) => {
+  const { user, loading: userLoading } = useAuth();
 
-const AllCandidates = () => {
-  const { user, loading } = useAuth();
-
-  const [all, setAll] = useState([]);
-  const [filtered, setFiltered] = useState([]);
-  const [dataLoading, setDataLoading] = useState(true);
-  const [selected, setSelected] = useState(null);
-  const [viewType, setViewType] = useState(null);
-  const [checkedProfiles, setCheckedProfiles] = useState(null);
-  const [lastSelectedCandidateId, setLastSelectedCandidateId] = useState(null);
-  const [hasNoResults, setHasNoResults] = useState(false);
+  // Candidates data state
+  const [candidates, setCandidates] = useState([]);
+  const [filteredCandidates, setFilteredCandidates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // User preferences state
+  const [savedCandidates, setSavedCandidates] = useState([]);
+  const [favouriteCandidates, setFavouriteCandidates] = useState([]);
+  const [downloadedCandidates, setDownloadedCandidates] = useState([]);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [candidatesPerPage, setCandidatesPerPage] = useState(() => {
+    const saved = localStorage.getItem('candidatesPerPage');
+    return saved ? parseInt(saved) : 10;
+  });
+  
+  // Search state
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  // User-specific candidate actions (for UI)
-  const [savedCandidateUids, setSavedCandidateUids] = useState([]);
-  const [favCandidateUids, setFavCandidateUids] = useState([]);
-  const [userFeatures, setUserFeatures] = useState([]);
+  // Filter state
+  const [showFilters, setShowFilters] = useState(false);
+  const [activeFilters, setActiveFilters] = useState(new Set());
+  const [filteredCandidatesByFilters, setFilteredCandidatesByFilters] = useState([]);
 
-  // Profile approval data
-  const [approvedCandidates, setApprovedCandidates] = useState([]);
+  // Candidate photos
+  const [candidatePhotos, setCandidatePhotos] = useState({});
 
-  // Blur logic state
-  const [canViewContactDetails, setCanViewContactDetails] = useState(true);
+  // Filter options state
+  const [filterOptions, setFilterOptions] = useState({
+    countries: [],
+    states: [],
+    cities: [],
+    languages: [],
+    education: [],
+    coreSubjects: [],
+    jobTypes: [
+      { value: 'administration', label: 'Administration' },
+      { value: 'teaching', label: 'Teaching' },
+      { value: 'teachingAndAdmin', label: 'Teaching & Administration' }
+    ],
+    grades: [],
+    curriculum: [],
+    designations: [],
+    expRange: [0, 30],
+    salRange: [0, 200000]
+  });
 
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [candidatesPerPage, setCandidatesPerPage] = useState(10);
-  const recordsPerPageOptions = [5, 10, 20, 30, 50];
-
-  // For dropdown state (if you need for filter or custom UI)
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (isDropdownOpen && event.target.closest('.custom-dropdown') === null) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [isDropdownOpen]);
-
-  useEffect(() => {
-    const savedCandidatesPerPage = localStorage.getItem('candidatesPerPage');
-    if (savedCandidatesPerPage) setCandidatesPerPage(parseInt(savedCandidatesPerPage));
+  // Fetch candidates
+  const fetchCandidates = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [allCandidates, approvedUids] = await Promise.all([
+        CandidateApiService.fetchCandidates(),
+        CandidateApiService.fetchApprovedCandidates()
+      ]);
+      
+      // Filter only approved candidates
+      const approvedCandidates = CandidateApiService.filterApprovedCandidates(
+        allCandidates,
+        approvedUids
+      );
+      
+      setCandidates(approvedCandidates);
+      setFilteredCandidates(approvedCandidates);
+      
+      // Extract filter options from candidates
+      extractFilterOptions(approvedCandidates);
+      
+      // Fetch photos for visible candidates
+      const photos = await CandidateApiService.fetchCandidatePhotos(approvedCandidates);
+      setCandidatePhotos(photos);
+    } catch (error) {
+      console.error('Error fetching candidates:', error);
+      setCandidates([]);
+      setFilteredCandidates([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const handleRecordsPerPageChange = (e) => {
-    const newCandidatesPerPage = parseInt(e.target.value);
-    setCandidatesPerPage(newCandidatesPerPage);
-    setCurrentPage(1);
-    localStorage.setItem('candidatesPerPage', newCandidatesPerPage.toString());
-  };
-
-  const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
-    window.scrollTo(0, 0);
-  };
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filtered]);
-
-  const indexOfLastCandidate = currentPage * candidatesPerPage;
-  const indexOfFirstCandidate = indexOfLastCandidate - candidatesPerPage;
-  const currentCandidates = filtered.slice(indexOfFirstCandidate, indexOfLastCandidate);
-
-  const totalPages = Math.ceil(filtered.length / candidatesPerPage);
-  
-  // Simplified pagination: just show page numbers, Previous/Next are separate
-  const getPageNumbers = () => {
-    if (totalPages <= 10) {
-      return Array.from({length: totalPages}, (_, i) => i + 1);
-    }
-
-    const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
-
-    // Always show first page
-    rangeWithDots.push(1);
-
-    // Calculate the range around current page
-    const startPage = Math.max(2, currentPage - delta);
-    const endPage = Math.min(totalPages - 1, currentPage + delta);
-
-    // Add dots after 1 if needed
-    if (startPage > 2) {
-      rangeWithDots.push('...');
-    }
-
-    // Add pages around current page (excluding 1 and last page)
-    for (let i = startPage; i <= endPage; i++) {
-      if (i !== 1 && i !== totalPages) {
-        rangeWithDots.push(i);
-      }
-    }
-
-    // Add dots before last page if needed
-    if (endPage < totalPages - 1) {
-      rangeWithDots.push('...');
-    }
-
-    // Always show last page (if different from first)
-    if (totalPages > 1) {
-      rangeWithDots.push(totalPages);
-    }
-
-    return rangeWithDots;
-  };
-
-  const pageNumbers = getPageNumbers();
-
-
-
-  useEffect(() => {
-    if (!user && !loading) {
-      toast.error("Please log in to view candidates.");
-      setDataLoading(false);
-    }
-  }, [user, loading]);
-
-  // Fetch all candidates (profile details) - only approved candidates
-  useEffect(() => {
-    if (!user) return;
-    const fetchCandidates = async () => {
-      try {
-        const { data } = await axios.get(API);
-        // Decode obfuscated data back to real data for application use
-        // const decodedData = decodeCandidatesData(data);
-        // const normalizedData = decodedData.map(candidate => ({
-        //   ...candidate,
-        //   permanent_country_name: candidate.permanent_country_name?.trim(),
-        //   permanent_state_name: candidate.permanent_state_name?.trim(),
-        //   permanent_city_name: candidate.permanent_city_name?.trim(),
-        //   Job_Type: candidate.Job_Type?.trim(),
-        //   languages: candidate.languages || '',
-        //   education_details_json: candidate.education_details_json || ''
-        // }));
-        const checkRes = data[0];
-        console.log(checkRes);
-        // Filter only approved candidates (if approvedCandidates is available)
-        const approvedOnly = approvedCandidates.length > 0 
-          ? checkRes.filter(candidate => 
-              approvedCandidates.includes(candidate.firebase_uid)
-            )
-          : []; // Show no candidates if no approved candidates yet
-        
-        setAll(approvedOnly); // This array will be used for search - contains only approved candidates
-        setFiltered(approvedOnly);
-      } catch (error) {
-        console.error('Error fetching candidates:', error);
-      } finally {
-        setDataLoading(false);
-      }
+  // Extract Filter Options from Data
+  const extractFilterOptions = (data) => {
+    const newOptions = {
+      countries: new Set(),
+      states: new Set(),
+      cities: new Set(),
+      languages: new Set(),
+      education: new Set(),
+      coreSubjects: new Set(),
+      grades: new Set(),
+      curriculum: new Set(),
+      designations: new Set(),
+      expRange: [0, 30],
+      salRange: [0, 200000]
     };
-    fetchCandidates();
-  }, [user, approvedCandidates]);
 
-  // Fetch all user actions (UserFeature) for current user only
-  useEffect(() => {
-    if (!user) return;
-    const fetchUserFeatures = async () => {
-      try {
-        const { data } = await axios.get(FAV_API);
-        const added_by = user.firebase_uid || user.uid;
-        const filteredForUser = Array.isArray(data)
-          ? data.filter(row => row.added_by === added_by)
-          : [];
-        setUserFeatures(filteredForUser);
-        setFavCandidateUids(filteredForUser.filter(f => f.favroute_candidate === 1 || f.favroute_candidate === true).map(f => f.firebase_uid));
-        setSavedCandidateUids(filteredForUser.filter(f => f.saved_candidate === 1 || f.saved_candidate === true).map(f => f.firebase_uid));
-      } catch (error) {
-        setUserFeatures([]);
-        setFavCandidateUids([]);
-        setSavedCandidateUids([]);
+    data.forEach(candidate => {
+      // Location data
+      if (candidate.permanent_country_name) {
+        newOptions.countries.add(candidate.permanent_country_name.trim());
       }
-    };
-    fetchUserFeatures();
+      if (candidate.permanent_state_name) {
+        newOptions.states.add(candidate.permanent_state_name.trim());
+      }
+      if (candidate.permanent_city_name) {
+        newOptions.cities.add(candidate.permanent_city_name.trim());
+      }
+      
+      // Languages
+      try {
+        if (candidate.languages) {
+          const languageList = parseLanguages(candidate.languages);
+          languageList.forEach(lang => {
+            if (lang) newOptions.languages.add(lang);
+          });
+        }
+      } catch (error) {
+        console.error('Error parsing languages for filter options:', error);
+      }
+      
+      // Education and subjects
+      if (candidate.education_details_json) {
+        try {
+          const { types, subjects } = parseEducation(candidate.education_details_json);
+          types.forEach(type => {
+            if (type) newOptions.education.add(type);
+          });
+          subjects.forEach(subject => {
+            if (subject) newOptions.coreSubjects.add(subject);
+          });
+      } catch (error) {
+          console.error('Error parsing education for filter options:', error);
+        }
+      }
+      
+      // Other fields
+      if (candidate.grades_taught?.trim()) {
+        newOptions.grades.add(candidate.grades_taught.trim());
+      }
+      if (candidate.curriculum_taught?.trim()) {
+        newOptions.curriculum.add(candidate.curriculum_taught.trim());
+      }
+      if (candidate.designation?.trim()) {
+        newOptions.designations.add(candidate.designation.trim());
+      }
+    });
+    
+    const formatOptions = (set) => Array.from(set).filter(Boolean).map(value => ({ value, label: value }));
+    setFilterOptions(prev => ({
+      ...prev,
+      countries: formatOptions(newOptions.countries),
+      states: formatOptions(newOptions.states),
+      cities: formatOptions(newOptions.cities),
+      languages: formatOptions(newOptions.languages),
+      education: formatOptions(newOptions.education),
+      coreSubjects: formatOptions(newOptions.coreSubjects),
+      grades: formatOptions(newOptions.grades),
+      curriculum: formatOptions(newOptions.curriculum),
+      designations: formatOptions(newOptions.designations),
+      expRange: newOptions.expRange,
+      salRange: newOptions.salRange
+    }));
+  };
+
+  // Fetch user preferences
+  const fetchUserPreferences = useCallback(async () => {
+    try {
+      const prefs = await CandidateApiService.fetchUserCandidatePreferences(user);
+      setSavedCandidates(prefs.savedCandidates);
+      setFavouriteCandidates(prefs.favouriteCandidates);
+      setDownloadedCandidates(prefs.downloadedCandidates);
+    } catch (error) {
+      console.error('Error fetching user preferences:', error);
+      setSavedCandidates([]);
+      setFavouriteCandidates([]);
+      setDownloadedCandidates([]);
+    }
   }, [user]);
 
-  // Fetch profile approval data
+  // Initial data fetch
   useEffect(() => {
-    const fetchApprovedCandidates = async () => {
-      try {
-        const { data } = await axios.get(PROFILE_APPROVED_API);
-        // Filter only approved candidates (isApproved === 1)
-        const approved = Array.isArray(data)
-          ? data.filter(candidate => candidate.isApproved === 1).map(candidate => candidate.firebase_uid)
-          : [];
-        setApprovedCandidates(approved);
-      } catch (error) {
-        console.error('Error fetching approved candidates:', error);
-        setApprovedCandidates([]);
-      }
-    };
-    fetchApprovedCandidates();
-  }, []);
+    if (!user && !userLoading) {
+      toast.error("Please log in to view candidates.");
+      setLoading(false);
+      return;
+    }
+    
+    if (user) {
+    fetchCandidates();
+      fetchUserPreferences();
+    }
+  }, [user, userLoading, fetchCandidates, fetchUserPreferences]);
 
-
-
-  // SEARCH - Only searches through approved candidates
+  // SEARCH functionality
   const handleSearch = useCallback((searchTerm) => {
     if (!searchTerm) {
       setSearchResults([]);
       setIsSearching(false);
-      // Show only approved candidates when search is cleared
-      setFiltered(all);
+      setFilteredCandidates(candidates);
+      setCurrentPage(1);
       return;
     }
+    
     setIsSearching(true);
-    // Search only through approved candidates (all array already contains only approved candidates)
-    const results = searchCandidates(all, searchTerm);
+    const results = CandidateApiService.searchCandidates(candidates, searchTerm);
     setSearchResults(results);
-    setFiltered(results);
+    setFilteredCandidates(results);
     setCurrentPage(1);
-  }, [all]);
+  }, [candidates]);
 
-  // Candidate select/view logic
-  const handleCandidateSelect = async (selection, type) => {
-    // Clear any existing highlights when selecting a new candidate
-    document.querySelectorAll('.highlighted-candidate').forEach(el => {
-      el.classList.remove('highlighted-candidate');
+  // FILTER functionality
+  const handleApplyFilters = useCallback((filters) => {
+    // Format filters - use LABELS for location (not IDs)
+    const formattedFilters = {
+      ...filters,
+      country: filters.country?.label,  // Use label (name) instead of value (ID)
+      state: filters.state?.label,      // Use label (name) instead of value (ID)
+      city: filters.city?.label || filters.city?.value,  // City uses name as value
+      languages: filters.languages?.map(l => l.value) || [],
+      education: filters.education?.map(e => e.value) || [],
+      coreSubjects: filters.coreSubjects?.map(s => s.value) || [],
+      jobTypes: filters.jobTypes?.map(j => j.value) || [],
+      grades: filters.grades?.map(g => g.value) || [],
+      curriculum: filters.curriculum?.map(c => c.value) || [],
+      designations: filters.designations?.map(d => d.value) || [],
+      gender: filters.gender?.map(g => g.value) || [],
+      noticePeriod: filters.noticePeriod?.map(n => n.value) || [],
+      jobSearchStatus: filters.jobSearchStatus?.map(j => j.value) || [],
+      jobShiftPreferences: filters.jobShiftPreferences?.map(j => j.value) || [],
+      tutionPreferences: filters.tutionPreferences?.map(t => t.value) || [],
+      otherTeachingExperience: filters.otherTeachingExperience?.map(t => t.value) || [],
+      online: filters.online?.value,
+      offline: filters.offline?.value
+    };
+
+    // Check if any filters are actually applied
+    const hasActiveFilters = Object.keys(formattedFilters).some(key => {
+      const value = formattedFilters[key];
+      if (Array.isArray(value)) return value.length > 0;
+      if (typeof value === 'string') return value.trim() !== '';
+      return value !== null && value !== undefined;
     });
 
-    if (selection.checkedIds) {
-      const checkedCandidates = filtered.filter(c => selection.checkedIds.includes(c.firebase_uid));
-      setCheckedProfiles({
-        candidates: checkedCandidates,
-        currentIndex: 0
-      });
-      setSelected(checkedCandidates[0]);
-      setViewType(type);
-    } else {
-      // firebase_uid is now kept as plain text, no decoding needed
-      const decodedCandidate = selection;
-      
-      setCheckedProfiles(null);
-      setSelected(decodedCandidate);
-      setViewType(type);
+    if (!hasActiveFilters) {
+      setFilteredCandidatesByFilters([]);
+      setActiveFilters(new Set());
+      setCurrentPage(1);
+      return;
     }
+    
+    let filtered = candidates.filter(candidate => {
+      // Location filters - use PRESENT location fields (present_country_name, present_state_name, present_city_name)
+      if (formattedFilters.country) {
+        const candidateCountry = String(candidate.present_country_name || candidate.permanent_country_name || '').toLowerCase().trim();
+        const filterCountry = String(formattedFilters.country).toLowerCase().trim();
+        
+        // If candidate has no country data, exclude them
+        if (!candidateCountry) return false;
+        // Must match exactly
+        if (candidateCountry !== filterCountry) return false;
+      }
+      
+      if (formattedFilters.state) {
+        const candidateState = String(candidate.present_state_name || candidate.permanent_state_name || '').toLowerCase().trim();
+        const filterState = String(formattedFilters.state).toLowerCase().trim();
+        
+        // If candidate has no state data, exclude them
+        if (!candidateState) return false;
+        // Must match exactly
+        if (candidateState !== filterState) return false;
+      }
+      
+      if (formattedFilters.city) {
+        const candidateCity = String(candidate.present_city_name || candidate.permanent_city_name || '').toLowerCase().trim();
+        const filterCity = String(formattedFilters.city).toLowerCase().trim();
+        // If candidate has no city data, exclude them
+        if (!candidateCity) return false;
+        // Must match exactly
+        if (candidateCity !== filterCity) return false;
+      }
 
-    // Coin check for contact details visibility
-    setCanViewContactDetails(false); // default: blur/hide
+      // Language filter
+      if (formattedFilters.languages.length > 0) {
+        const candidateLanguages = parseLanguages(candidate.languages);
+        const hasMatch = formattedFilters.languages.some(filterLang => {
+          const filterLangLower = filterLang.toLowerCase();
+          return candidateLanguages.some(candLang => {
+            const candLangLower = candLang.toLowerCase();
+            return candLangLower === filterLangLower || 
+                   candLangLower.includes(filterLangLower) || 
+                   filterLangLower.includes(candLangLower);
+          });
+        });
+        if (!hasMatch) return false;
+      }
+
+      // Education filter
+      if (formattedFilters.education.length > 0) {
+        const { types } = parseEducation(candidate.education_details_json);
+        const hasMatch = formattedFilters.education.some(filterEdu => {
+          const filterEduLower = filterEdu.toLowerCase();
+          return types.some(candEdu => {
+            const candEduLower = candEdu.toLowerCase();
+            return candEduLower === filterEduLower || 
+                   candEduLower.includes(filterEduLower) || 
+                   filterEduLower.includes(candEduLower);
+          });
+        });
+        if (!hasMatch) return false;
+      }
+
+      // Job Type filter
+      if (formattedFilters.jobTypes.length > 0) {
+        const candidateJobType = candidate.Job_Type?.trim() || '';
+        const hasMatch = formattedFilters.jobTypes.some(filterJobType => {
+          const normalizedFilter = filterJobType.toLowerCase().trim();
+          const normalizedCandidate = candidateJobType.toLowerCase();
+          return normalizedCandidate === normalizedFilter ||
+                 normalizedCandidate.includes(normalizedFilter) ||
+                 normalizedFilter.includes(normalizedCandidate);
+        });
+        if (!hasMatch) return false;
+      }
+
+      // Add more filters as needed...
+      return true;
+    });
+
+    setFilteredCandidatesByFilters(filtered);
+    
+    const activeFilterKeys = Object.keys(formattedFilters).filter(key => {
+      const value = formattedFilters[key];
+      if (Array.isArray(value)) return value.length > 0;
+      if (typeof value === 'string') return value.trim() !== '';
+      return value !== null && value !== undefined;
+    });
+    
+    setActiveFilters(new Set(activeFilterKeys));
+    setCurrentPage(1);
+  }, [candidates]);
+
+  const handleResetFilters = useCallback(() => {
+    setFilteredCandidatesByFilters([]);
+    setActiveFilters(new Set());
+    setCurrentPage(1);
+  }, []);
+
+  // Combine search and filter results (like AllJobs)
+  const getCombinedResults = useCallback(() => {
+    let baseCandidates = candidates;
+    
+    // Apply filters first if any are active
+    if (activeFilters.size > 0) {
+      baseCandidates = filteredCandidatesByFilters;
+    }
+    
+    // Then apply search if searching
+    if (isSearching) {
+      // If both search and filters are active, return intersection
+      if (activeFilters.size > 0) {
+        return searchResults.filter(candidate => 
+          filteredCandidatesByFilters.some(filteredCandidate => 
+            filteredCandidate.firebase_uid === candidate.firebase_uid
+          )
+        );
+      }
+      // If only search is active, return search results
+      return searchResults;
+    }
+    
+    return baseCandidates;
+  }, [candidates, activeFilters, filteredCandidatesByFilters, isSearching, searchResults]);
+
+  const finalFilteredCandidates = getCombinedResults();
+
+  // Handle save candidate
+  const handleSaveCandidate = async (candidate) => {
+    if (!user) {
+      toast.error("Please login to save candidates.");
+      return;
+    }
+    
+    const isSaved = savedCandidates.includes(candidate.firebase_uid);
     try {
-      const currentUid = user?.firebase_uid || user?.uid;
-      if (!currentUid) {
-        setCanViewContactDetails(false);
-        return;
-      }
-      // API call to check coin
-      const { data } = await axios.get(
-        `https://mgwnmhp62h.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral?firebase_uid=${currentUid}`
+      await CandidateApiService.toggleSaveCandidate(candidate, user, !isSaved);
+      await fetchUserPreferences();
+      toast[isSaved ? 'info' : 'success'](
+        `${candidate.fullName || candidate.name || 'Candidate'} ${
+          isSaved ? 'removed from saved list!' : 'has been saved successfully!'
+        }`
       );
-      console.log("RedeemGeneral data:", data);
-      
-      if (
-        Array.isArray(data) &&
-        data.length > 0 &&
-        data[0].coin_value &&
-        Number(data[0].coin_value) > 20
-      ) {
-        setCanViewContactDetails(true);
-      } else {
-        setCanViewContactDetails(false);
-      }
-      
-    } catch (err) {
-      setCanViewContactDetails(false); // on API error, blur as fallback
+    } catch (error) {
+      console.error('Error saving candidate:', error);
+      toast.error('Failed to save candidate. Please try again.');
     }
   };
-  const handlePrevious = () => {
-    if (checkedProfiles && checkedProfiles.currentIndex > 0) {
-      const prevIndex = checkedProfiles.currentIndex - 1;
-      setCheckedProfiles({
-        ...checkedProfiles,
-        currentIndex: prevIndex
-      });
-      setSelected(checkedProfiles.candidates[prevIndex]);
+
+  // Handle toggle favourite
+  const handleToggleFavourite = async (candidateId, candidate, isFavourite) => {
+    if (!user) {
+      toast.error("Please login to favourite candidates.");
+      return;
+    }
+    
+    try {
+      await CandidateApiService.toggleFavouriteCandidate(candidate, user, isFavourite);
+      await fetchUserPreferences();
+      toast[isFavourite ? 'success' : 'info'](
+        `${candidate.fullName || candidate.name || 'Candidate'} ${
+          isFavourite ? 'added to favourites!' : 'removed from favourites!'
+        }`
+      );
+    } catch (error) {
+      console.error('Error favouriting candidate:', error);
+      toast.error('Failed to update favourite status. Please try again.');
     }
   };
-  const handleNext = () => {
-    if (checkedProfiles && checkedProfiles.currentIndex < checkedProfiles.candidates.length - 1) {
-      const nextIndex = checkedProfiles.currentIndex + 1;
-      setCheckedProfiles({
-        ...checkedProfiles,
-        currentIndex: nextIndex
-      });
-      setSelected(checkedProfiles.candidates[nextIndex]);
-    }
+
+  // Handle view full profile
+  const handleViewFull = (candidate) => {
+    console.log('AllCandidates: Viewing full profile:', candidate.firebase_uid);
+    onViewCandidate && onViewCandidate(candidate, 'full');
   };
+
+  // Handle view short profile
+  const handleViewShort = (candidate) => {
+    console.log('AllCandidates: Viewing short profile:', candidate.firebase_uid);
+    onViewCandidate && onViewCandidate(candidate, 'short');
+  };
+
   // Function to scroll to a specific candidate
   const scrollToCandidate = (candidateId) => {
     if (!candidateId) return;
     
-    // Use setTimeout to ensure the DOM has updated after state change
     setTimeout(() => {
       const candidateElement = document.querySelector(`[data-candidate-id="${candidateId}"]`);
       if (candidateElement) {
@@ -325,221 +470,196 @@ const AllCandidates = () => {
           el.classList.remove('highlighted-candidate');
         });
         
-        // Add highlight effect - this will persist until new selection
+        // Add highlight effect
         candidateElement.classList.add('highlighted-candidate');
       }
     }, 100);
   };
 
-  const handleBack = () => {
-    // Store the selected candidate ID before clearing selection
-    if (selected) {
-      setLastSelectedCandidateId(selected.firebase_uid);
+  // Handle back from candidate view
+  const handleBackFromCandidateView = useCallback((candidateId) => {
+    console.log('AllCandidates handleBackFromCandidateView called, candidateId:', candidateId);
+    if (candidateId) {
+      setTimeout(() => {
+        scrollToCandidate(candidateId);
+      }, 300);
     }
-    
-    setSelected(null);
-    setViewType(null);
-    setCheckedProfiles(null);
-    
-    // Scroll to the previously selected candidate
-    if (selected) {
-      scrollToCandidate(selected.firebase_uid);
+  }, []);
+
+  // Register back handler with parent
+  useEffect(() => {
+    if (onBackFromCandidateView) {
+      console.log('AllCandidates: Registering handleBackFromCandidateView with parent');
+      onBackFromCandidateView(handleBackFromCandidateView);
     }
+  }, [onBackFromCandidateView, handleBackFromCandidateView]);
+
+  // Handle records per page change
+  const handleRecordsPerPageChange = (newValue) => {
+    setCandidatesPerPage(newValue);
+    setCurrentPage(1);
   };
 
-  // --- Corrected POST/PUT for (firebase_uid, added_by) only, never affect others
-  const postOrPutUserFeature = async (candidateId, updatePayload) => {
-    if (!user) return;
-    const added_by = user.firebase_uid || user.uid;
-    try {
-      // Check if the row for this (firebase_uid, added_by) exists
-      const { data: allFeatures } = await axios.get(FAV_API);
-      const existing = Array.isArray(allFeatures)
-        ? allFeatures.find(row => row.firebase_uid === candidateId && row.added_by === added_by)
-        : null;
+  // Pagination calculations
+  const indexOfLastCandidate = currentPage * candidatesPerPage;
+  const indexOfFirstCandidate = indexOfLastCandidate - candidatesPerPage;
+  const currentCandidates = finalFilteredCandidates.slice(indexOfFirstCandidate, indexOfLastCandidate);
+  const totalPages = Math.ceil(finalFilteredCandidates.length / candidatesPerPage);
 
-      if (existing) {
-        // Only update your own row
-        await axios.put(FAV_API, { ...updatePayload, firebase_uid: candidateId, added_by });
-      } else if (Object.values(updatePayload).some(val => val === 1)) {
-        // Only POST if not found AND you're marking (never create for unmark)
-        await axios.post(FAV_API, { ...updatePayload, firebase_uid: candidateId, added_by });
-      }
-      // Always refresh features for UI
-      const { data: afterUpdate } = await axios.get(FAV_API);
-      const filteredForUser = Array.isArray(afterUpdate)
-        ? afterUpdate.filter(row => row.added_by === added_by)
-        : [];
-      setUserFeatures(filteredForUser);
-      setFavCandidateUids(filteredForUser.filter(f => f.favroute_candidate === 1 || f.favroute_candidate === true).map(f => f.firebase_uid));
-      setSavedCandidateUids(filteredForUser.filter(f => f.saved_candidate === 1 || f.saved_candidate === true).map(f => f.firebase_uid));
-    } catch (err) {
-      toast.error('Error updating candidate status');
-    }
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Save/Unsave
-  const handleSaveCandidate = async (candidate) => {
-    const isCurrentlySaved = savedCandidateUids.includes(candidate.firebase_uid);
-    await postOrPutUserFeature(candidate.firebase_uid, { saved_candidate: isCurrentlySaved ? 0 : 1 });
-    toast[isCurrentlySaved ? 'info' : 'success'](`${candidate.fullName || 'Candidate'} ${isCurrentlySaved ? 'removed from saved list!' : 'has been saved successfully!'}`);
-  };
+  // Reset to page 1 when filtered candidates change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [finalFilteredCandidates]);
 
-  // Mark/unmark Favourite (heart) for current user only
-  const handleToggleFavourite = async (candidateId, candidate, isFavourite) => {
-    await postOrPutUserFeature(candidate.firebase_uid, { favroute_candidate: isFavourite ? 1 : 0 });
-    toast[isFavourite ? 'success' : 'info'](`${candidate.fullName || 'Candidate'} ${isFavourite ? 'added to favourites!' : 'removed from favourites!'}`);
-  };
-
-  // ===== RENDER LOGIC =====
-  if (loading || dataLoading) {
-    return <div className="loading-ring">Loading...</div>;
-  }
-  if (!user) {
+  // Loading state
+  if (loading || userLoading) {
     return (
-      <div className="no-results-message alert alert-danger">
-        Please log in to view candidates.
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+            <span className="sr-only">Loading...</span>
+          </div>
+          <p className="mt-2 text-gray-600">Loading candidates...</p>
+        </div>
       </div>
     );
   }
 
+  // Not logged in state
+  if (!user) {
+    return (
+      <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+        <p className="text-red-800 text-center">
+        Please log in to view candidates.
+        </p>
+      </div>
+    );
+  }
+
+  // If viewing a candidate detail, show the detail view
+  if (viewMode === 'detail' && selectedCandidate) {
+    if (viewType === 'full') {
+      return <CandidateDetail candidate={selectedCandidate} onBack={onBackToList} />;
+    } else if (viewType === 'short') {
+      return <ViewShort candidate={selectedCandidate} onBack={onBackToList} />;
+    }
+  }
+
   return (
-    <>
-      <div className="widget-title d-flex justify-content-between align-items-center">
-        <div className="title-area">
-          <h4>All Candidates</h4>
+    <div className="widget-content">
+      {/* Header with Search, Filter Button, and Records per Page */}
+      <div className="widget-title mb-3">
+        <div className="flex justify-between items-center w-full gap-4">
+          <div className="flex-1 max-w-[50%]">
+            <SearchBar 
+              onSearch={handleSearch} 
+              placeholder="Search candidates..." 
+            />
         </div>
-        <div className="chosen-outer d-flex align-items-center">
-          <SearchBar onSearch={handleSearch} />
-          <div className="records-per-page me-3">
-            <select
-              className="form-select records-dropdown"
-              value={candidatesPerPage}
-              onChange={handleRecordsPerPageChange}
-              aria-label="Records per page"
+          <div className="flex-shrink-0">
+            <button 
+              onClick={() => setShowFilters(true)}
+              className={`px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 ${
+                activeFilters.size > 0
+                  ? 'bg-gradient-brand text-white shadow-sm'
+                  : 'bg-gradient-brand text-white hover:opacity-90'
+              }`}
             >
-              {recordsPerPageOptions.map(option => (
-                <option key={option} value={option}>
-                  {option} per page
-                </option>
-              ))}
-            </select>
+              Apply Filters {activeFilters.size > 0 && `(${activeFilters.size})`}
+            </button>
           </div>
         </div>
       </div>
-      <div className="widget-content">
-        {selected ? (
-          viewType === 'full' ? (
-            <CandidateDetail
-              candidate={selected}
-              onBack={handleBack}
-              onNext={handleNext}
-              onPrevious={handlePrevious}
-              isFirstProfile={!checkedProfiles || checkedProfiles.currentIndex === 0}
-              isLastProfile={!checkedProfiles || checkedProfiles.currentIndex === checkedProfiles.candidates.length - 1}
-              checkedProfiles={checkedProfiles}
-              canViewContactDetails={canViewContactDetails}
-            />
-          ) : (
-            <ViewShort
-              candidate={selected}
-              onBack={handleBack}
-              onNext={handleNext}
-              onPrevious={handlePrevious}
-              isFirstProfile={!checkedProfiles || checkedProfiles.currentIndex === 0}
-              isLastProfile={!checkedProfiles || checkedProfiles.currentIndex === checkedProfiles.candidates.length - 1}
-              checkedProfiles={checkedProfiles}
-              canViewContactDetails={canViewContactDetails}
-            />
-          )
-        ) : hasNoResults ? (
-          <div className="no-results-message alert alert-info">
-            No candidates match the selected filters. Try adjusting your criteria.
+
+      {/* Candidates Count and Records per Page */}
+      <div className="candidate-listing">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
+            {isSearching || activeFilters.size > 0
+              ? `Found ${finalFilteredCandidates.length} candidate${finalFilteredCandidates.length !== 1 ? 's' : ''}`
+              : `${candidates.length} Candidates Available`
+            }
+          </h3>
+          <RecordsPerPageDropdown
+            itemsPerPage={candidatesPerPage}
+            onItemsPerPageChange={handleRecordsPerPageChange}
+          />
+        </div>
           </div>
-        ) : (
-          <>
-            <CandidateShort
-              candidates={currentCandidates}
-              onSelect={handleCandidateSelect}
-              showCheckboxes={false}
+
+      {/* Candidates List */}
+      {currentCandidates.length > 0 ? (
+        <div className="candidates-results">
+          <div className="candidates-list">
+            {currentCandidates.map((candidate) => {
+              const candidateId = candidate.firebase_uid;
+              const isSaved = savedCandidates.includes(candidateId);
+              const isFavourite = favouriteCandidates.includes(candidateId);
+              const isDownloaded = downloadedCandidates.includes(candidateId);
+              
+              return (
+                <CandidateCard
+                  key={candidateId}
+                  candidate={candidate}
+                  isSaved={isSaved}
+                  isFavourite={isFavourite}
+                  isDownloaded={isDownloaded}
+                  loading={loading}
+                  onViewFull={handleViewFull}
+                  onViewShort={handleViewShort}
               onSave={handleSaveCandidate}
               onToggleFavourite={handleToggleFavourite}
-              savedCandidateUids={savedCandidateUids}
-              favCandidateUids={favCandidateUids}
-            />
-            {/* Pagination */}
-            {filtered.length > candidatesPerPage && (
-              <div className="pagination-box">
-                <nav>
-                  <ul className="pagination">
-                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => paginate(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        Previous
-                      </button>
-                    </li>
-                    {pageNumbers.map(number => (
-                      <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
-                        <button
-                          className="page-link"
-                          onClick={() => paginate(number)}
-                        >
-                          {number}
-                        </button>
-                      </li>
-                    ))}
-                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => paginate(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                      >
-                        Next
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
-                <div className="pagination-info mt-2">
-                  Showing {indexOfFirstCandidate + 1} to {Math.min(indexOfLastCandidate, filtered.length)} of {filtered.length} candidates
+                  candidatePhoto={candidatePhotos[candidateId]}
+                />
+              );
+            })}
                 </div>
               </div>
+      ) : (
+        <div className="text-center py-12">
+          <p className="text-gray-600">
+            {isSearching 
+              ? 'No candidates found matching your search.'
+              : 'No candidates available at the moment.'
+            }
+          </p>
+              </div>
             )}
-          </>
-        )}
-      </div>
-      {/* Blur/overlay styles and enhanced highlight styles */}
+
+      {/* Pagination */}
+      {finalFilteredCandidates.length > candidatesPerPage && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          totalItems={finalFilteredCandidates.length}
+          itemsPerPage={candidatesPerPage}
+          currentPageStart={indexOfFirstCandidate + 1}
+          currentPageEnd={Math.min(indexOfLastCandidate, finalFilteredCandidates.length)}
+        />
+      )}
+
+      {/* Filter Panel Modal */}
+      <CandidateFilterPanel
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        onApplyFilters={handleApplyFilters}
+        onResetFilters={handleResetFilters}
+        activeFiltersCount={activeFilters.size}
+        initialOptions={filterOptions}
+      />
+
+      {/* Highlight styles for recently viewed candidate */}
       <style>{`
-        .blurred-contact {
-          filter: blur(5px);
-          pointer-events: none;
-          user-select: none;
-          opacity: 0.5;
-          position: relative;
-        }
-        .blurred-overlay {
-          filter: none;
-          position: absolute;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(255,255,255,0.8);
-          color: #d72660;
-          font-weight: bold;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          pointer-events: all;
-          z-index: 2;
-          border-radius: 6px;
-        }
-        
-        /* Enhanced highlight styles for recently viewed candidate */
-        .candidate-item.compact.highlighted-candidate {
+        .highlighted-candidate {
           border: 3px solid #2196f3 !important;
           background-color: #e3f2fd !important;
-          background: #e3f2fd !important;
-          border-radius: 8px !important;
           transform: scale(1.02) !important;
           transition: all 0.3s ease-in-out !important;
           position: relative !important;
@@ -561,12 +681,11 @@ const AllCandidates = () => {
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
-        /* Smooth transition for all candidate cards */
         [data-candidate-id] {
           transition: all 0.3s ease-in-out;
         }
       `}</style>
-    </>
+    </div>
   );
 };
 

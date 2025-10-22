@@ -20,6 +20,15 @@ import { useAuth } from "../../../../../Context/AuthContext";
 const EDUCATION_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails";
 const JOB_PREFERENCE_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference";
 const PROFILE_APPROVED_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved";
+const APPLY_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate';
+const FAV_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteJobs';
+const REDEEM_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral';
+const LOGIN_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login';
+const ORG_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation';
+const WHATSAPP_API = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp';
+const RCS_API = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/rcsMessage';
+const PERSONAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal';
+const COIN_HISTORY_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history';
 
 
 const AllJobs = ({ onViewJob }) => {
@@ -943,12 +952,12 @@ const AllJobs = ({ onViewJob }) => {
       const result = await JobApiService.applyForJob(selectedJob, user, 100);
       
       if (result.status === "success") {
-        setApplyStatus("success");
+      setApplyStatus("success");
         setCoinValue(await JobApiService.getUserCoins(user));
-        
+      
         // Refresh data
         await refreshAppliedJobs(false);
-        await fetchJobs();
+      await fetchJobs();
         
         // Send WhatsApp notification
         await JobApiService.sendWhatsAppToInstitution(selectedJob, user);
@@ -1048,7 +1057,7 @@ const AllJobs = ({ onViewJob }) => {
             <SearchBar onSearch={handleSearch} placeholder="Search jobs..." />
           </div>
           <div className="flex-shrink-0">
-            <button
+            <button 
               onClick={() => setShowFilters(true)}
               className={`px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 ${
                 activeFilters.size > 0
@@ -1098,8 +1107,8 @@ const AllJobs = ({ onViewJob }) => {
                   onFavouriteJob={handleFavouriteJob}
                   onApplyClick={handleApplyClick}
                 />
-              );
-            })}
+                );
+              })}
             </div>
           </div>
         ) : (

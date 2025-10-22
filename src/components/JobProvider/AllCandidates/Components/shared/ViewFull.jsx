@@ -159,9 +159,6 @@ const hasValidContent = (value1, value2) => {
 function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile, isLastProfile, checkedProfiles }) {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Decode the candidate data (firebase_uid stays as plain text)
-  //const decodedCandidate = decodeCandidateData(candidate);
   const [error, setError] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [educationData, setEducationData] = useState([]);
@@ -371,7 +368,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
       let unblocked_candidate_id = null;
       let unblocked_candidate_name = null;
       try {
-        const personalRes = await axios.get(PERSONAL_API, { params: { firebase_uid: firebase_uid } });
+        const personalRes = await axios.get(PERSONAL_API, { params: { firebase_uid: candidate.firebase_uid } });
         if (personalRes.status === 200 && Array.isArray(personalRes.data) && personalRes.data.length > 0) {
           unblocked_candidate_id = personalRes.data[0].id;
           unblocked_candidate_name = personalRes.data[0].fullName;
@@ -482,7 +479,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
   const fetchProfilePhoto = useCallback(async () => {
     try {
       
-      const params = { firebase_uid: firebase_uid, action: "view" };
+      const params = { firebase_uid: candidate.firebase_uid, action: "view" };
       const { data } = await axios.get(IMAGE_API_URL, { params });
       if (data?.url) {
         setPhotoUrl(data.url);
@@ -500,7 +497,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
     if (!candidate?.firebase_uid) return;
     try {
       const response = await axios.get(SOCIAL_API, {
-        params: { firebase_uid: firebase_uid }
+        params: { firebase_uid: candidate.firebase_uid }
       });
       if (response.status === 200 && response.data.length > 0) {
         const record = response.data[0];
@@ -517,10 +514,8 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
     try {
       const response = await axios.get(EDUCATION_API);
       if (response.status === 200 && Array.isArray(response.data)) {
-        const candidateEducation = response.data.filter(edu => edu.firebase_uid === firebase_uid);
-        // Decode the education data
-        // const decodedEducation = candidateEducation.map(edu => decodeCandidateData(edu));
-        // setEducationData(decodedEducation);
+        const candidateEducation = response.data.filter(edu => edu.firebase_uid === candidate.firebase_uid);
+        setEducationData(candidateEducation);
       }
     } catch (err) {}
   }, [candidate]);
@@ -532,18 +527,9 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
     try {
       const response = await axios.post(FULL_API, {
         firebase_uid: candidate.firebase_uid
-        // params: { firebase_uid: decodedCandidate.firebase_uid, t: Date.now() }
       });
-      // if (response.status === 200 && Array.isArray(response.data)) {
-      //   const candidateRecord = response.data.find(r => 
-      //     r.firebase_uid === decodedCandidate.firebase_uid || 
-      //     (r.email && r.email.toLowerCase() === candidate.email?.toLowerCase())
-      // );
-        console.log(response.data);
-        // Decode the profile data
-        // const decodedProfile = candidateRecord ? decodeCandidateData(candidateRecord) : null;
-        setProfileData(response.data);
-      //}
+      console.log(response.data);
+      setProfileData(response.data);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -558,31 +544,27 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
       if (response.status === 200) {
         const { mysqlData, dynamoData } = response.data;
         const candidateMysqlData = Array.isArray(mysqlData) 
-          ? mysqlData.find(exp => exp.firebase_uid === firebase_uid) 
+          ? mysqlData.find(exp => exp.firebase_uid === candidate.firebase_uid) 
           : null;
         let candidateDynamoData = null;
         if (Array.isArray(dynamoData)) {
-          candidateDynamoData = dynamoData.find(exp => exp.firebase_uid === decodedCandidate.firebase_uid);
+          candidateDynamoData = dynamoData.find(exp => exp.firebase_uid === candidate.firebase_uid);
         } else if (dynamoData && typeof dynamoData === 'object') {
-          if (dynamoData.firebase_uid === decodedCandidate.firebase_uid) {
+          if (dynamoData.firebase_uid === candidate.firebase_uid) {
             candidateDynamoData = dynamoData;
           }
         }
         
-        // Decode the experience data
-        const decodedMysqlData = candidateMysqlData ? decodeCandidateData(candidateMysqlData) : {
-          teaching_experience_years: 0,
-          teaching_experience_months: 0,
-          non_teaching_experience_years: 0,
-          non_teaching_experience_months: 0,
-          total_experience_years: 0,
-          total_experience_months: 0
-        };
-        const decodedDynamoData = candidateDynamoData ? decodeCandidateData(candidateDynamoData) : { experienceEntries: [] };
-        
         setExperienceData({
-          mysqlData: decodedMysqlData,
-          dynamoData: decodedDynamoData
+          mysqlData: candidateMysqlData || {
+            teaching_experience_years: 0,
+            teaching_experience_months: 0,
+            non_teaching_experience_years: 0,
+            non_teaching_experience_months: 0,
+            total_experience_years: 0,
+            total_experience_months: 0
+          },
+          dynamoData: candidateDynamoData || { experienceEntries: [] }
         });
       }
     } catch (err) {
@@ -605,10 +587,8 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
     try {
       const response = await axios.get(JOB_PREFERENCE_API);
       if (response.status === 200 && Array.isArray(response.data)) {
-        const candidatePreference = response.data.find(pref => pref.firebase_uid === decodedCandidate.firebase_uid);
-        // Decode the job preference data
-        const decodedPreference = candidatePreference ? decodeCandidateData(candidatePreference) : null;
-        setJobPreferenceData(decodedPreference);
+        const candidatePreference = response.data.find(pref => pref.firebase_uid === candidate.firebase_uid);
+        setJobPreferenceData(candidatePreference);
       }
     } catch (err) {}
   }, [candidate]);
@@ -621,7 +601,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
         axios.get(ADDITIONAL_INFO1_API)
       ]);
       if (response1.status === 200 && Array.isArray(response1.data)) {
-        const candidateInfo1 = response1.data.find(info => info.firebase_uid === decodedCandidate.firebase_uid);
+        const candidateInfo1 = response1.data.find(info => info.firebase_uid === candidate.firebase_uid);
         setAdditionalInfo1(candidateInfo1 || null);
       }
     } catch (err) {}
@@ -639,7 +619,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
         return;
       }
 
-      const params = { firebase_uid: decodedCandidate.firebase_uid, action: "view" };
+      const params = { firebase_uid: candidate.firebase_uid, action: "view" };
       const { data } = await axios.get(VIDEO_API_URL, { params });
       
       if (data?.url) {
@@ -664,7 +644,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
         return;
       }
 
-      const params = { firebase_uid: decodedCandidate.firebase_uid, action: "view" };
+      const params = { firebase_uid: candidate.firebase_uid, action: "view" };
       const { data } = await axios.get(RESUME_API_URL, { params });
       
       if (data?.url) {

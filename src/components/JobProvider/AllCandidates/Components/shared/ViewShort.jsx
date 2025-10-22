@@ -96,9 +96,6 @@ const ViewShort = ({
 }) => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Decode the candidate data to ensure we have real firebase_uid for API calls
-  //const decodedCandidate = decodeCandidateData(candidate);
   const [error, setError] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [educationData, setEducationData] = useState([]);
@@ -111,7 +108,7 @@ const ViewShort = ({
 
   // Unlock logic state
   const userId = user?.firebase_uid || user?.uid;
-  const candidateId = decodedCandidate?.firebase_uid;
+  const candidateId = candidate?.firebase_uid;
   const unlockKey = `unlocked_${userId}_${candidateId}`;
   // Always compute initial unlock from localStorage
   const [isUnlocked, setIsUnlocked] = useState(() => localStorage.getItem(unlockKey) === '1');
@@ -275,9 +272,7 @@ const ViewShort = ({
       const response = await axios.get(EDUCATION_API);
       if (response.status === 200 && Array.isArray(response.data)) {
         const candidateEducation = response.data.filter(edu => edu.firebase_uid === candidateId);
-        // Decode the education data
-        const decodedEducation = candidateEducation.map(edu => decodeCandidateData(edu));
-        setEducationData(decodedEducation);
+        setEducationData(candidateEducation);
       }
     } catch {}
   }, [candidateId]);
@@ -292,9 +287,7 @@ const ViewShort = ({
       });
       if (response.status === 200 && Array.isArray(response.data)) {
         const candidateRecord = response.data.find(r => r.firebase_uid === candidateId);
-        // Decode the profile data
-        const decodedProfile = candidateRecord ? decodeCandidateData(candidateRecord) : null;
-        setProfileData(decodedProfile);
+        setProfileData(candidateRecord);
       }
     } catch (err) {
       setError(err.message);
@@ -312,13 +305,9 @@ const ViewShort = ({
         const candidateMysqlData = mysqlData.find(exp => exp.firebase_uid === candidateId) || null;
         const candidateDynamoData = dynamoData.find(exp => exp.firebase_uid === candidateId) || null;
         
-        // Decode the experience data
-        const decodedMysqlData = candidateMysqlData ? decodeCandidateData(candidateMysqlData) : {};
-        const decodedDynamoData = candidateDynamoData ? decodeCandidateData(candidateDynamoData) : {};
-        
         setExperienceData({ 
-          mysqlData: decodedMysqlData,
-          dynamoData: decodedDynamoData
+          mysqlData: candidateMysqlData || {},
+          dynamoData: candidateDynamoData || {}
         });
       }
     } catch {}
@@ -330,9 +319,7 @@ const ViewShort = ({
       const response = await axios.get(JOB_PREFERENCE_API);
       if (response.status === 200 && Array.isArray(response.data)) {
         const candidatePreference = response.data.find(pref => pref.firebase_uid === candidateId);
-        // Decode the job preference data
-        const decodedPreference = candidatePreference ? decodeCandidateData(candidatePreference) : null;
-        setJobPreferenceData(decodedPreference);
+        setJobPreferenceData(candidatePreference);
       }
     } catch {}
   }, [candidateId]);

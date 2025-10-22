@@ -12,6 +12,11 @@ import { useAuth } from "../../../../../Context/AuthContext";
 import { formatQualification } from '../../utils/formatUtils';
 import ViewJobs from "../ViewJobs";
 
+// API Endpoints
+const APPLY_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate';
+const FAV_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteJobs';
+const REDEEM_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral';
+
 const AppliedJobs = () => {
   const { user, loading: userLoading } = useAuth();
   const [jobs, setJobs] = useState([]);

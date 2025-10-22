@@ -100,7 +100,7 @@ const TabDisplay = () => {
   return (
     <div>
       {/* Tab Navigation - Separate Container */}
-      <div className="rounded-lg shadow-sm border mb-4 bg-gray-100">
+      <div className="rounded-lg shadow-sm mb-4 border border-gray-500">
         <div className="p-6">
           <nav className="flex justify-between" aria-label="Tabs">
             {tabs.map((tab) => (
