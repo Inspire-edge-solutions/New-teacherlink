@@ -20,13 +20,20 @@ export default function Sidebar({
   setIsCollapsed,
   setActiveTab,
   className = "",
+  isMobile = false,
 }) {
   const [openItems, setOpenItems] = useState({});
   const location = useLocation();
   const userType = getUserProp("user", "user_type");
+  
+  console.log("Sidebar rendered with isMobile:", isMobile, "isCollapsed:", isCollapsed);
 
   const toggleItem = (item) => {
-    console.log("This shows the item :", item);
+    // Only auto-collapse on mobile devices when clicking menu items
+    if (isMobile) {
+      console.log("Mobile menu item clicked, closing sidebar");
+      setIsCollapsed(false); // Close the mobile sidebar (setIsCollapsed is actually setIsOpen from parent)
+    }
     setActiveTab(item);
     setOpenItems((prev) => ({ ...prev, [item]: !prev[item] }));
   };

@@ -1,6 +1,7 @@
 import React from 'react';
-
+import { useNavigate } from 'react-router-dom';
 const RegBanner = () => {
+  const navigate = useNavigate();
   return (
     <div className="bg-gradient-to-br from-gray-50 to-white">
       <div className="px-4 py-4">
@@ -25,6 +26,7 @@ const RegBanner = () => {
               </p>
               <button 
                 className="w-full text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-brand"
+                onClick={() => navigate('/register')}
               >
                 Register Account
               </button>
@@ -49,6 +51,7 @@ const RegBanner = () => {
               🏫Welcome to TeacherLink—a platform for institutions/parents to find right teaching professionals.Register now to post jobs & connect with top educators.
               </p>
               <button 
+              onClick={() => navigate('/register')}
                 className="w-full text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-brand"
               >
                 Register Account

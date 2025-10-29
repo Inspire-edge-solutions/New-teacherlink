@@ -2,7 +2,7 @@ import React from 'react';
 
 const TermsPrivacy = () => {
     return (
-        <div style={{ textAlign: 'justify' }}>
+        <div className='p-5' style={{ textAlign: 'justify' }}>
           {/* Terms and Conditions Section */}
           <div className="text-box">
             <h3 className="text-center text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent border-b-2 border-[#F34B58] pb-2.5 mb-5">

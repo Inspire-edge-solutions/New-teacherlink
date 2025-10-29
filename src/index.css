@@ -54,4 +54,25 @@
   a:hover .icon-gradient-wrapper.active svg {
     stroke: url(#icon-gradient-hover);
   }
+
+  /* Custom animations for blocked popup */
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-15px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  @keyframes gentlePulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.03);
+    }
+  }
 }

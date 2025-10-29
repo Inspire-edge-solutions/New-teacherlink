@@ -1,14 +1,18 @@
+// Import default avatar images from assets
+import defaultMaleAvatar from '../../../../../assets/default_male_avatar.jpg';
+import defaultFemaleAvatar from '../../../../../assets/default_female_avatar.jpg';
+
 // Gender-specific default avatars utility
 export const getDefaultAvatar = (gender) => {
   const normalizedGender = gender?.toLowerCase();
   
   if (normalizedGender === 'female' || normalizedGender === 'woman') {
-    return '/images/teacherlink_images/default_female_avatar.jpg';
+    return defaultFemaleAvatar;
   } else if (normalizedGender === 'male' || normalizedGender === 'man') {
-    return '/images/teacherlink_images/default_male_avatar.jpg';
+    return defaultMaleAvatar;
   } else {
     // For unknown/unspecified gender, use male as default
-    return '/images/teacherlink_images/default_male_avatar.jpg';
+    return defaultMaleAvatar;
   }
 };
 

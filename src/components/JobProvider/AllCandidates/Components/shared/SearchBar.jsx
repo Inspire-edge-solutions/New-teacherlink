@@ -33,38 +33,14 @@ const SearchBar = memo(({ onSearch, placeholder = "Search candidates..." }) => {
   }, [handleDebouncedSearch]);
 
   return (
-    <div style={{ 
-      position: 'relative', 
-      width: '100%', 
-      display: 'flex', 
-      alignItems: 'center',
-      border: '1px solid #ced4da',
-      borderRadius: '6px',
-      backgroundColor: '#fff'
-    }}>
-      <FaSearch 
-        style={{ 
-          position: 'absolute', 
-          left: '12px', 
-          color: '#6c757d', 
-          fontSize: '14px',
-          zIndex: 2
-        }} 
-      />
+    <div className="relative w-full flex items-center border border-gray-300 rounded-md bg-white">
+      <FaSearch className="absolute left-3 text-gray-600 text-sm z-[2]" />
       <input
         type="text"
         placeholder={placeholder}
         value={searchTerm}
         onChange={handleSearch}
-        style={{
-          width: '100%',
-          border: 'none',
-          outline: 'none',
-          padding: '8px 12px 8px 35px',
-          fontSize: '14px',
-          borderRadius: '6px',
-          backgroundColor: 'transparent'
-        }}
+        className="w-full border-none outline-none py-2 px-3 pl-9 text-sm rounded-md bg-transparent focus:ring-2 focus:ring-blue-500"
       />
     </div>
   );

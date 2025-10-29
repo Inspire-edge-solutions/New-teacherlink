@@ -1,9 +1,7 @@
-import React from 'react'
+import TabDisplay from "./Components/TabDisplay";
 
-const PostJobsComponent = () => {
-  return (
-    <div>This is post jobs</div>
-  )
-}
+const index = () => {
+  return <TabDisplay />;
+};
 
-export default PostJobsComponent
+export default index;

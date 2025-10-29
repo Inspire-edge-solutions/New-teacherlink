@@ -65,12 +65,13 @@ const FullLayout = () => {
               setIsCollapsed={setIsOpen}
               setActiveTab={setActiveTab}
               className="absolute left-0 top-0 h-full z-50"
+              isMobile={true}
             />
           </div>
         )
       ) : (
         // Desktop normal sidebar
-        <Sidebar isCollapsed={isOpen} setIsCollapsed={setIsOpen} setActiveTab={setActiveTab} />
+        <Sidebar isCollapsed={isOpen} setIsCollapsed={setIsOpen} setActiveTab={setActiveTab} isMobile={false} />
       )}
 
       {/* Page content */}

@@ -52,12 +52,28 @@ export default {
             transform: 'translateY(-4px)',
           },
         },
+        fadeIn: {
+          'from': { opacity: '0' },
+          'to': { opacity: '1' },
+        },
+        slideUp: {
+          'from': { transform: 'translateY(30px)', opacity: '0' },
+          'to': { transform: 'translateY(0)', opacity: '1' },
+        },
+        coinDrop: {
+          '0%': { transform: 'translateY(-50px)', opacity: '0' },
+          '60%': { transform: 'translateY(10px)' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
       },
       animation: {
         'slideIn': 'slideIn 0.3s ease-out',
         'gentlePulse': 'gentlePulse 3s infinite',
         'modalSlideIn': 'modalSlideIn 0.3s ease-out',
         'successBounce': 'successBounce 2s infinite',
+        'fadeIn': 'fadeIn 0.2s ease',
+        'slideUp': 'slideUp 0.3s ease',
+        'coinDrop': 'coinDrop 0.5s ease',
       },
     },
   },

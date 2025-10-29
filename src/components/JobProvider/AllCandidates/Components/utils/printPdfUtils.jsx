@@ -1,5 +1,7 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import defaultMaleAvatar from '../../../../../assets/default_male_avatar.jpg';
+import defaultFemaleAvatar from '../../../../../assets/default_female_avatar.jpg';
 
 /**
  * Common styling functions used by both print and PDF generation
@@ -650,9 +652,7 @@ export const generatePDF = async ({
       if (!success) {
         // Use default image
         const gender = profileData?.gender?.toLowerCase();
-        img.src = gender === 'female' ? 
-          '/images/teacherlink_images/default_female_avatar.jpg' : 
-          '/images/teacherlink_images/default_male_avatar.jpg';
+        img.src = gender === 'female' ? defaultFemaleAvatar : defaultMaleAvatar;
       }
     }
 

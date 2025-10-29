@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 import { FaMapMarkerAlt, FaPhone, FaWhatsapp, FaEnvelope } from 'react-icons/fa';
-import '../styles/cv-style.css';
 import '../styles/cv-pdf-print.css';
-import '../styles/view.css';
 import { AvatarImage } from '../utils/avatarUtils.jsx';
 import { 
   cleanContentForPrint, 
@@ -12,6 +11,7 @@ import {
   generatePDF
 } from '../utils/printPdfUtils.jsx';
 import { useAuth } from "../../../../../Context/AuthContext";
+import { decodeCandidateData } from '../../../../../utils/dataDecoder';
 
 const FULL_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/fullapi';
 const EDUCATION_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails';
@@ -31,50 +31,49 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
 
   // Portal modal content
   const modalContent = (
-    <div className="portal-modal-backdrop" onClick={onClose}>
-      <div className="portal-modal-container" onClick={(e) => e.stopPropagation()}>
-        <button className="portal-modal-close-btn" onClick={onClose}>
+    <div className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5" onClick={onClose}>
+      <div className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()}>
+        <button className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all" onClick={onClose}>
           &times;
         </button>
         
         {unlockStatus === "success" ? (
           <>
-            <div className="coins-anim">
+            <div className="flex items-center justify-center my-5 animate-coinDrop">
               <span role="img" aria-label="coin">🪙</span>
-              <span style={{ color: "#f7b901", fontWeight: "bold", fontSize: "20px", marginLeft: 6 }}>-50</span>
+              <span className="text-[#f7b901] font-bold text-xl ml-1.5">-50</span>
             </div>
-            <div className="unlock-success-text">Unlocked! <span role="img" aria-label="unlocked">🔓</span></div>
-            <div style={{ color: '#888', fontSize: 14, textAlign: "center" }}>Details unlocked successfully.</div>
+            <div className="text-[#2e7d32] text-xl font-semibold text-center my-4">Unlocked! <span role="img" aria-label="unlocked">🔓</span></div>
+            <div className="text-gray-500 text-sm text-center">Details unlocked successfully.</div>
           </>
         ) : unlockStatus === "error" ? (
           <>
-            <div className="coins-anim" style={{ animation: "none", opacity: 0.85, filter: "grayscale(1)" }}>
+            <div className="flex items-center justify-center my-5 opacity-85 grayscale">
               <span role="img" aria-label="coin">🪙</span>
-              <span style={{ color: "#d72660", fontWeight: "bold", fontSize: "20px", marginLeft: 6 }}>×</span>
+              <span className="text-[#d72660] font-bold text-xl ml-1.5">×</span>
             </div>
-            <div className="unlock-error-text">{error || "Could not unlock details."}</div>
+            <div className="text-[#d32f2f] text-base font-medium text-center my-4">{error || "Could not unlock details."}</div>
           </>
         ) : (
           <>
-            <div style={{ marginBottom: 15, marginTop: 2 }}>
-              <span style={{ fontWeight: 600, fontSize: 17 }}>Unlock candidate details?</span>
+            <div className="mb-4 mt-0.5">
+              <span className="font-semibold text-[17px]">Unlock candidate details?</span>
             </div>
-            <div style={{ color: "#888", fontSize: 15, marginBottom: 6, textAlign: "center" }}>
+            <div className="text-gray-500 text-[15px] mb-1.5 text-center">
               Available Coins: <b>{coinValue === null ? "..." : coinValue}</b>
             </div>
-            <div style={{ color: "#333", fontSize: "15px", marginBottom: 10, textAlign: "center" }}>
+            <div className="text-gray-800 text-[15px] mb-2.5 text-center">
               <span>Use <b>50 Coins</b> to view email, phone, WhatsApp, and social details.</span>
             </div>
-            <div style={{ color: "red", fontSize: 15, marginBottom: 15, textAlign: "center" }}>
+            <div className="text-red-600 text-[15px] mb-4 text-center">
               <i>Unlocked details remain visible for <b>30 days.</b></i>
             </div>
             <button 
-              className="unlock-btn-top"
-              style={{ width: "100%", justifyContent: "center", marginBottom: 6, fontSize: 16 }}
+              className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none w-full justify-center mb-1.5"
               disabled={loading}
               onClick={onUnlock}
             >
-              {loading ? "Unlocking..." : <>Unlock <span className="coin-icon"><span role="img" aria-label="coin">🪙</span></span> 50</>}
+              {loading ? "Unlocking..." : <>Unlock <span className="inline-flex items-center justify-center animate-bounce"><span role="img" aria-label="coin">🪙</span></span> 50</>}
             </button>
           </>
         )}
@@ -87,16 +86,14 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
 }
 
 const BlurWrapper = ({ children, isUnlocked }) => {
-  return isUnlocked ? children : <span className="blurred-contact">{children}</span>;
+  return isUnlocked ? children : <span className="blur-sm select-none cursor-not-allowed relative after:content-['🔒'] after:absolute after:-right-6 after:top-1/2 after:-translate-y-1/2 after:text-sm">{children}</span>;
 };
 
 const ViewShort = ({
-  candidate, onBack, onNext, onPrevious,
-  isFirstProfile, isLastProfile, checkedProfiles
+  candidate, onBack
 }) => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [educationData, setEducationData] = useState([]);
   const [experienceData, setExperienceData] = useState({ mysqlData: [], dynamoData: [] });
@@ -155,7 +152,9 @@ const ViewShort = ({
         ) : null;
         setCoinValue(found?.coin_value ?? null);
       } catch (e) {
-        setUnlockError('Could not check coins. Try again.');
+        const errorMsg = 'Could not check coins. Please try again.';
+        setUnlockError(errorMsg);
+        toast.error(errorMsg);
       }
     };
     if (userId && candidateId) checkUnlocked();
@@ -280,17 +279,19 @@ const ViewShort = ({
   const fetchProfileData = useCallback(async () => {
     if (!candidateId) return;
     setIsLoading(true);
-    setError(null);
     try {
       const response = await axios.get(FULL_API, {
         params: { firebase_uid: candidateId, t: Date.now() }
       });
       if (response.status === 200 && Array.isArray(response.data)) {
         const candidateRecord = response.data.find(r => r.firebase_uid === candidateId);
-        setProfileData(candidateRecord);
+        // Decode the data before setting it
+        const decodedRecord = decodeCandidateData(candidateRecord);
+        setProfileData(decodedRecord);
       }
     } catch (err) {
-      setError(err.message);
+      console.error('Error fetching profile data:', err.response?.data || err.message);
+      toast.error('Unable to load candidate profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -325,12 +326,14 @@ const ViewShort = ({
   }, [candidateId]);
 
   useEffect(() => {
+    if (candidateId) {
     fetchProfileData();
     fetchEducationData();
     fetchExperienceData();
     fetchJobPreferenceData();
     fetchProfilePhoto();
-  }, [fetchProfileData, fetchEducationData, fetchExperienceData, fetchJobPreferenceData, fetchProfilePhoto]);
+    }
+  }, [candidateId]); // Only depend on the ID, not the callback functions
 
   // Util for PDF/print image fetch
   const getFreshImageUrl = async (firebase_uid) => {
@@ -403,13 +406,6 @@ const ViewShort = ({
       </div>
     );
   }
-  if (error) {
-    return (
-      <div className="alert alert-danger">
-        Error loading profile: {error}
-      </div>
-    );
-  }
   if (!profileData) {
     return (
       <div className="alert alert-info">
@@ -436,16 +432,16 @@ const ViewShort = ({
 
   const renderEducationBlocks = () => {
     if (!educationData || educationData.length === 0) {
-      return <div>No education details available</div>;
+      return <div className="text-gray-600">No education details available</div>;
     }
     return educationData.map((education, index) => (
-      <div key={`${education.education_type}-${index}`} className="education-block">
-        <div className="education-title">{getEducationTypeTitle(education.education_type)}</div>
+      <div key={`${education.education_type}-${index}`} className="mb-5 p-4 bg-[#f5f7fc] rounded-lg">
+        <div className="text-base text-[#202124] mb-2.5 font-semibold">{getEducationTypeTitle(education.education_type)}</div>
         {education.yearOfPassing && (
-          <div className="education-detail">Year of Passing: {education.yearOfPassing}</div>
+          <div className="my-1.5 text-gray-600 text-sm">Year of Passing: {education.yearOfPassing}</div>
         )}
         {education.courseName && (
-          <div className="education-detail">Course Name: {education.courseName}</div>
+          <div className="my-1.5 text-gray-600 text-sm">Course Name: {education.courseName}</div>
         )}
       </div>
     ));
@@ -459,12 +455,12 @@ const ViewShort = ({
       return null;
     }
     return (
-      <div className="experience-summary">
+      <div className="mb-4 p-2.5 border-b border-gray-200">
         {total_experience_years !== undefined && total_experience_years !== null && (
-          <div>Total Experience: {total_experience_years} Years {total_experience_months || 0} Months</div>
+          <div><strong>Total Experience:</strong> {total_experience_years} Years {total_experience_months || 0} Months</div>
         )}
         {teaching_experience_years !== undefined && teaching_experience_years !== null && (
-          <div>Teaching Experience: {teaching_experience_years} Years {teaching_experience_months || 0} Months</div>
+          <div><strong>Teaching Experience:</strong> {teaching_experience_years} Years {teaching_experience_months || 0} Months</div>
         )}
       </div>
     );
@@ -519,34 +515,20 @@ const ViewShort = ({
       }
       const location = [exp.city, exp.state, exp.country].filter(Boolean).join(', ');
       return (
-        <div className="experience-block" key={index} style={{ 
-          marginBottom: '25px',
-          fontSize: '15px',
-          lineHeight: '1.5'
-        }}>
+        <div key={index} className="mb-6 text-base leading-relaxed">
           {/* Organization and date row */}
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            fontWeight: 'bold',
-            marginBottom: '4px'
-          }}>
-            <div style={{ fontSize: '16px' }}>{exp.organizationName}</div>
+          <div className="flex justify-between font-bold mb-1">
+            <div className="text-base">{exp.organizationName}</div>
             <div>
               {dateRange}
-              <span style={{ fontWeight: 'normal', color: '#555' }}>{durationText}</span>
+              <span className="font-normal text-gray-600">{durationText}</span>
             </div>
           </div>
-          <div style={{ marginBottom: '6px', color: '#555' }}>{location}</div>
-          <div style={{ marginBottom: '6px' }}>
+          <div className="mb-1.5 text-gray-600">{location}</div>
+          <div className="mb-1.5">
             {jobTypeText.join(' | ')}
           </div>
-          <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr',
-            columnGap: '20px',
-            rowGap: '5px'
-          }}>
+          <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-x-5 gap-y-1.5`}>
             <div>
               <strong>Designation:</strong> {designation}
             </div>
@@ -659,21 +641,20 @@ const ViewShort = ({
   return (
     <div>
       {/* PROFILE ACTIONS BAR - TOP */}
-      <div className="profile-actions">
+      <div className="flex justify-between items-center mb-6 w-full gap-4 flex-nowrap px-2">
         {/* SHOW Unlock button only if not unlocked */}
         {!isUnlocked && (
           <button 
-            className="unlock-btn-top"
-            style={{ minWidth: 170 }}
+            className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none min-w-[170px] flex-shrink-0"
             onClick={handleUnlockClick}
             disabled={isUnlocked}
           >
-            <span role="img" aria-label="coin" className="coin-icon">💰</span>
+            <span role="img" aria-label="coin" className="inline-flex items-center justify-center animate-bounce">💰</span>
             Unlock Details
           </button>
         )}
-        <div className="back-button">
-          <button className="btn btn-warning" onClick={onBack}>
+        <div className="ml-auto">
+          <button className="px-4 py-2.5 bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-colors whitespace-nowrap" onClick={onBack}>
             Back to List
           </button>
         </div>
@@ -692,27 +673,27 @@ const ViewShort = ({
       />
 
       {/* Actual card content */}
-      <div className="cv-container">
-        {checkedProfiles && checkedProfiles.candidates?.length > 1 && (
-          <div className="profile-counter">
-            Profile {checkedProfiles.currentIndex + 1} of {checkedProfiles.candidates.length}
-          </div>
-        )}
-
-        <div className="cv-header">
-          <div className="cv-profile-photo">
+      <div className="max-w-[1200px] mx-auto p-6 md:p-8 bg-white shadow-md rounded-lg overflow-hidden font-sans text-gray-800 relative">
+        <div className="grid grid-cols-1 lg:grid-cols-[auto,1fr] gap-8 mb-2.5 pb-5 border-b-2 border-gray-200 text-center lg:text-left">
+          <div className="w-[150px] h-[150px] flex-shrink-0 mx-auto lg:mx-0 rounded-full overflow-hidden">
             <AvatarImage
               src={photoUrl}
               alt={`${profileData.fullName || 'User'}'s profile photo`}
               gender={profileData.gender}
+              className="w-full h-full object-cover"
+              style={{ 
+                border: 'none',
+                transform: 'scale(1.4) translateY(7%)',
+                transformOrigin: 'center'
+              }}
             />
           </div>
-          <div className="header-content" style={{ flex: 1, paddingLeft: '20px' }}>
-            <h1 className="candidate-name">{profileData.fullName || 'Candidate Name'}</h1>
-            <div className="personal-meta" style={{ marginBottom: '8px' }}>
+          <div className="flex flex-col gap-2.5 flex-1 pl-0 lg:pl-5">
+            <h1 className="text-3xl text-[#202124] m-0">{profileData.fullName || 'Candidate Name'}</h1>
+            <div className="flex flex-wrap gap-2.5 text-gray-600 text-sm mb-2">
               {profileData.gender && <span>{profileData.gender}</span>}
               {profileData.dateOfBirth && (
-                <span style={{ marginLeft: '15px' }}>
+                <span className="ml-4">
                   DOB: {new Date(profileData.dateOfBirth).toLocaleDateString('en-US', { 
                     day: '2-digit', 
                     month: '2-digit', 
@@ -721,10 +702,10 @@ const ViewShort = ({
                 </span>
               )}
               {profileData.email && (
-                <div className="email-link" style={{ display: 'flex', alignItems: 'center', marginTop: '4px' }}>
-                  <FaEnvelope style={{ marginRight: '5px', color: '#A9A9A9' }} />
+                <div className="flex items-center mt-1">
+                  <FaEnvelope className="mr-1.5 text-gray-400" />
                   <BlurWrapper isUnlocked={isUnlocked}>
-                    <a href={isUnlocked ? `mailto:${profileData.email}` : undefined} style={{ pointerEvents: isUnlocked ? 'auto' : 'none', color: "#1766af" }}>
+                    <a href={isUnlocked ? `mailto:${profileData.email}` : undefined} className={`text-[#1766af] ${!isUnlocked ? 'pointer-events-none' : ''}`}>
                       {profileData.email}
                     </a>
                   </BlurWrapper>
@@ -733,50 +714,44 @@ const ViewShort = ({
             </div>
 
             {/* Contact Information - Optimized Layout */}
-            <div className="contact-grid" style={{ 
-              display: 'grid',
-              gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr',
-              gap: '15px',
-              fontFamily: 'Arial, sans-serif',
-              fontSize: '14px'
-            }}>
+            <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-4 font-sans text-sm`}>
               {/* Left Column - Addresses */}
-              <div className="address-column">
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                  <FaMapMarkerAlt style={{ marginRight: '8px', color: '#e74c3c', fontSize: '16px' }} /> 
+              <div>
+                <div className="flex items-center mb-2">
+                  <FaMapMarkerAlt className="mr-2 text-red-500 text-base" /> 
                   <span><strong>Present:</strong> {profileData.present_state_name || 'N/A'}</span>
                 </div>
                 {profileData.permanent_state_name && (
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <FaMapMarkerAlt style={{ marginRight: '8px', color: '#95a5a6', fontSize: '16px' }} />
+                  <div className="flex items-center">
+                    <FaMapMarkerAlt className="mr-2 text-gray-400 text-base" />
                     <span><strong>Permanent:</strong> {profileData.permanent_state_name}</span>
                   </div>
                 )}
               </div>
 
               {/* Right Column - Phone Numbers */}
-              <div className="phone-column">
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                  <FaPhone style={{ marginRight: '8px', color: '#1a73e8', fontSize: '16px' }} />
+              <div>
+                <div className="flex items-center mb-2">
+                  <FaPhone className="mr-2 text-blue-600 text-base" />
                   <span><strong>Phone:</strong>{" "}
                     <BlurWrapper isUnlocked={isUnlocked}>
                       {isUnlocked
                         ? profileData.callingNumber || "N/A"
                         : profileData.callingNumber
-                          ? <span style={{ letterSpacing: "1px" }}>{profileData.callingNumber.replace(/\d/g, "•")}</span>
+                          ? <span className="tracking-wide">{profileData.callingNumber.replace(/\d/g, "•")}</span>
                           : "N/A"
                       }
                     </BlurWrapper>
                   </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <FaWhatsapp style={{ marginRight: '8px', color: '#25D366', fontSize: '16px' }} />
+                <div className="flex items-center">
+                  <FaWhatsapp className="mr-2 text-green-500 text-base" />
                   <span><strong>WhatsApp:</strong>{" "}
                     <BlurWrapper isUnlocked={isUnlocked}>
                       {isUnlocked
                         ? profileData.whatsappNumber || "N/A"
                         : profileData.whatsappNumber
-                          ? <span style={{ letterSpacing: "1px" }}>{profileData.whatsappNumber.replace(/\d/g, "•")}</span>
+                          ? <span className="tracking-wide">{profileData.whatsappNumber.replace(/\d/g, "•")}</span>
                           : "N/A"
                       }
                     </BlurWrapper>
@@ -787,14 +762,7 @@ const ViewShort = ({
 
             {/* Additional Info Row */}
             {(profileData.aadharNumber || profileData.panNumber) && (
-              <div className="additional-info" style={{ 
-                marginTop: '10px',
-                display: 'grid',
-                gridTemplateColumns: windowWidth <= 768 ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '8px',
-                fontSize: '13px',
-                color: '#666'
-              }}>
+              <div className={`mt-2.5 grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-[repeat(auto-fit,minmax(200px,1fr))]'} gap-2 text-xs text-gray-600`}>
                 {profileData.aadharNumber && (
                   <div><strong>Aadhar:</strong> {profileData.aadharNumber}</div>
                 )}
@@ -806,57 +774,27 @@ const ViewShort = ({
           </div>
         </div>
 
-        <div className="cv-body">
-          <div className="cv-sidebar">
-            <div className="cv-section education-section">
-              <h2 className="section-title" style={{ 
-                fontSize: '18px',
-                borderBottom: '2px solid #1967d2',
-                paddingBottom: '8px',
-                marginBottom: '15px',
-                fontWeight: '700',
-                color: '#1967d2',
-                textTransform: 'uppercase',
-                textAlign: 'left'
-              }}>EDUCATION</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-8 mt-0">
+          <div className="bg-gray-100 p-5 lg:w-auto">
+            <div className="mb-8">
+              <h2 className="text-lg border-b-2 border-[#1967d2] pb-2 mb-4 font-bold text-[#1967d2] uppercase text-left">EDUCATION</h2>
               {renderEducationBlocks()}
             </div>
           </div>
-          <div className="cv-main">
-            <div className="cv-section experience-section">
-              <h2 className="section-title" style={{ 
-                textAlign: 'center',
-                borderBottom: '1px solid #000',
-                marginBottom: '15px',
-                paddingBottom: '5px',
-                textTransform: 'uppercase',
-                fontWeight: 'bold',
-                fontSize: '18px',
-                color: '#1967d2'
-              }}>
+          <div className="p-5">
+            <div className="mb-8">
+              <h2 className="text-center border-b border-black mb-4 pb-1.5 uppercase font-bold text-lg text-[#1967d2]">
                 WORK EXPERIENCE
               </h2>
               {getExperienceText()}
               {renderExperienceBlocks()}
             </div>
             {jobPreferenceData && hasJobPreferencesData() && (
-              <div className="cv-section job-preferences">
-                <h2 className="section-title">Job Preferences</h2>
-                <div className="job-preferences-block" style={{ 
-                  marginBottom: '25px',
-                  padding: '20px',
-                  background: '#f5f7fc',
-                  borderRadius: '8px',
-                  fontSize: '15px',
-                  lineHeight: '1.5'
-                }}>
+              <div className="mb-8">
+                <h2 className="text-xl text-[#202124] mb-5 pb-2.5 border-b-2 border-[#1967d2]">Job Preferences</h2>
+                <div className="mb-6 p-5 bg-[#f5f7fc] rounded-lg text-base leading-relaxed">
                   {/* Two-column details grid */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr',
-                    columnGap: '20px',
-                    rowGap: '5px'
-                  }}>
+                  <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-x-5 gap-y-1.5`}>
                     {/* Basic Job Information */}
                     {jobPreferenceData.Job_Type && (
                       <div>
@@ -972,37 +910,12 @@ const ViewShort = ({
           </div>
         </div>
 
-        <div className="navigation-buttons mt-4 text-center">
-          <div className="btn-group" role="group" aria-label="Profile navigation">
-            {!isFirstProfile && (
-              <button 
-                onClick={onPrevious}
-                className="theme-btn btn-style-one"
-                type="button"
-              >
-                <i className="fas fa-arrow-left me-2"></i>
-                Previous Profile
-              </button>
-            )}
-            {!isLastProfile && (
-              <button 
-                onClick={onNext}
-                className="theme-btn btn-style-two ms-3"
-                type="button"
-              >
-                Next Profile
-                <i className="fas fa-arrow-right ms-2"></i>
-              </button>
-            )}
-          </div>
-        </div>
-
         {/* Download and Print Section */}
-        <div className="download-section">
+        <div className="flex justify-center gap-4 mt-10 pt-5 border-t border-gray-200 flex-wrap">
           <button 
             onClick={downloadPDF} 
             disabled={isDownloading}
-            className="btn btn-primary"
+            className="inline-flex items-center gap-2 px-6 py-3 text-base min-w-[200px] justify-center bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             title={isDownloading ? "Generating PDF..." : "Download CV as PDF file"}
           >
             {isDownloading ? (
@@ -1022,7 +935,7 @@ const ViewShort = ({
           
           <button 
             onClick={handlePrint}
-            className="btn btn-outline-secondary"
+            className="inline-flex items-center gap-2 px-6 py-3 text-base min-w-[200px] justify-center bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all"
             title="Open browser print dialog"
           >
             <i className="fas fa-print"></i>

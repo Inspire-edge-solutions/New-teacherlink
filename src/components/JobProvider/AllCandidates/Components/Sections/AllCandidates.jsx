@@ -94,8 +94,9 @@ const AllCandidates = ({
       // Fetch photos for visible candidates
       const photos = await CandidateApiService.fetchCandidatePhotos(approvedCandidates);
       setCandidatePhotos(photos);
-    } catch (error) {
-      console.error('Error fetching candidates:', error);
+    } catch (err) {
+      console.error('Error fetching candidates:', err);
+      toast.error('Failed to load candidates. Please try again later.');
       setCandidates([]);
       setFilteredCandidates([]);
     } finally {
@@ -141,6 +142,7 @@ const AllCandidates = ({
         }
       } catch (error) {
         console.error('Error parsing languages for filter options:', error);
+        // Silent error - don't disrupt user experience for filter option parsing
       }
       
       // Education and subjects
@@ -155,6 +157,7 @@ const AllCandidates = ({
           });
       } catch (error) {
           console.error('Error parsing education for filter options:', error);
+          // Silent error - don't disrupt user experience for filter option parsing
         }
       }
       
@@ -196,6 +199,7 @@ const AllCandidates = ({
       setDownloadedCandidates(prefs.downloadedCandidates);
     } catch (error) {
       console.error('Error fetching user preferences:', error);
+      toast.warning('Could not load your saved preferences. You can still browse candidates.');
       setSavedCandidates([]);
       setFavouriteCandidates([]);
       setDownloadedCandidates([]);

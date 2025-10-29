@@ -56,12 +56,19 @@ const CandidateCard = ({
         )}
 
         {/* Avatar Section */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 w-16 h-16 rounded-full overflow-hidden bg-transparent">
           <AvatarImage
             src={candidatePhoto || candidate.profile_picture}
             alt={candidate.fullName || candidate.name || 'Candidate'}
             gender={candidate.gender}
-            className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+            className="w-full h-full object-cover"
+            style={{ 
+              border: 'none', 
+              outline: 'none', 
+              display: 'block',
+              transform: 'scale(1.4) translateY(7%)',
+              transformOrigin: 'center'
+            }}
           />
         </div>
 
@@ -144,7 +151,7 @@ const CandidateCard = ({
               {/* Experience */}
               <div className="flex items-center gap-1.5 text-gray-600">
                 <i className="icon-briefcase text-gray-500 flex-shrink-0"></i>
-                <span className="truncate">Exp: {getExperience(candidate.full_time_offline)}</span>
+                <span className="truncate">Exp: {getExperience(candidate.total_experience_years)}</span>
               </div>
               {/* Salary */}
               <div className="flex items-center gap-1.5 text-gray-600">

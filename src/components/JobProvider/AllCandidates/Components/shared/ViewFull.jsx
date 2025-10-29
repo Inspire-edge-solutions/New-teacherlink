@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
-import '../styles/cv-style.css';
+import { toast } from 'react-toastify';
 import '../styles/cv-pdf-print.css';
-import '../styles/view.css';
 import { FaMapMarkerAlt, FaPhone, FaWhatsapp, FaFacebook, FaLinkedin, FaEnvelope } from 'react-icons/fa';
 import { AvatarImage } from '../utils/avatarUtils.jsx';
 import { cleanContentForPrint, generatePrintHTML, generatePDF } from '../utils/printPdfUtils.jsx';
 import { useAuth } from "../../../../../Context/AuthContext";
+import { decodeCandidateData } from '../../../../../utils/dataDecoder';
 
 const IMAGE_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image";
 const FULL_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/candidate_details_byid';
@@ -30,51 +30,50 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
 
   // Portal modal content
   const modalContent = (
-    <div className="portal-modal-backdrop" onClick={onClose}>
-      <div className="portal-modal-container" onClick={(e) => e.stopPropagation()}>
-        <button className="portal-modal-close-btn" onClick={onClose}>
+    <div className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5" onClick={onClose}>
+      <div className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()}>
+        <button className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all" onClick={onClose}>
           &times;
         </button>
         
         {unlockStatus === "success" ? (
           <>
-            <div className="coins-anim">
+            <div className="flex items-center justify-center my-5 animate-coinDrop">
               <span role="img" aria-label="coin">🪙</span>
-              <span style={{ color: "#f7b901", fontWeight: "bold", fontSize: "20px", marginLeft: 6 }}>-50</span>
+              <span className="text-[#f7b901] font-bold text-xl ml-1.5">-50</span>
             </div>
-            <div className="unlock-success-text">Unlocked! <span role="img" aria-label="unlocked">🔓</span></div>
-            <div style={{ color: '#888', fontSize: 14, textAlign: "center" }}>Details unlocked successfully.</div>
+            <div className="text-[#2e7d32] text-xl font-semibold text-center my-4">Unlocked! <span role="img" aria-label="unlocked">🔓</span></div>
+            <div className="text-gray-500 text-sm text-center">Details unlocked successfully.</div>
           </>
         ) : unlockStatus === "error" ? (
           <>
-            <div className="coins-anim" style={{ animation: "none", opacity: 0.85, filter: "grayscale(1)" }}>
+            <div className="flex items-center justify-center my-5 opacity-85 grayscale">
               <span role="img" aria-label="coin">🪙</span>
-              <span style={{ color: "#d72660", fontWeight: "bold", fontSize: "20px", marginLeft: 6 }}>×</span>
+              <span className="text-[#d72660] font-bold text-xl ml-1.5">×</span>
             </div>
-            <div className="unlock-error-text">{error || "Could not unlock details."}</div>
+            <div className="text-[#d32f2f] text-base font-medium text-center my-4">{error || "Could not unlock details."}</div>
           </>
         ) : (
           <>
-            <div style={{ marginBottom: 15, marginTop: 2 }}>
-              <span style={{ fontWeight: 600, fontSize: 17 }}>Unlock candidate details?</span>
+            <div className="mb-4 mt-0.5">
+              <span className="font-semibold text-[17px]">Unlock candidate details?</span>
             </div>
-            <div style={{ color: "#888", fontSize: 15, marginBottom: 6, textAlign: "center" }}>
+            <div className="text-gray-500 text-[15px] mb-1.5 text-center">
               Available Coins: <b>{coinValue === null ? "..." : coinValue}</b>
             </div>
-            <div style={{ color: "#333", fontSize: "15px", marginBottom: 10, textAlign: "center" }}>
+            <div className="text-gray-800 text-[15px] mb-2.5 text-center">
               <span>Use <b>50 Coins</b> to view email, phone, WhatsApp, and social details.</span>
             </div>
             
-            <div style={{ color: "red", fontSize: 15, marginBottom: 15, textAlign: "center" }}>
+            <div className="text-red-600 text-[15px] mb-4 text-center">
               <i>Unlocked details remain visible for <b>30 days.</b></i>
             </div>
             <button 
-              className="unlock-btn-top"
-              style={{ width: "100%", justifyContent: "center", marginBottom: 6, fontSize: 16 }}
+              className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none w-full justify-center mb-1.5"
               disabled={loading}
               onClick={onUnlock}
             >
-              {loading ? "Unlocking..." : <>Unlock <span className="coin-icon"><span role="img" aria-label="coin">🪙</span></span> 50</>}
+              {loading ? "Unlocking..." : <>Unlock <span className="inline-flex items-center justify-center animate-bounce"><span role="img" aria-label="coin">🪙</span></span> 50</>}
             </button>
           </>
         )}
@@ -87,7 +86,7 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
 }
 
 const BlurWrapper = ({ children, isUnlocked }) => {
-  return isUnlocked ? children : <span className="blurred-contact">{children}</span>;
+  return isUnlocked ? children : <span className="blur-sm select-none cursor-not-allowed relative after:content-['🔒'] after:absolute after:-right-6 after:top-1/2 after:-translate-y-1/2 after:text-sm">{children}</span>;
 };
 
   
@@ -156,10 +155,9 @@ const hasValidContent = (value1, value2) => {
   return checkArray(value1) || checkArray(value2) || checkString(value1) || checkString(value2);
 };
 
-function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile, isLastProfile, checkedProfiles }) {
+function CandidateDetail({ candidate, onBack }) {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [educationData, setEducationData] = useState([]);
   const [experienceData, setExperienceData] = useState({ mysqlData: {}, dynamoData: [] });
@@ -237,7 +235,9 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
         setCoinValue(found?.coin_value ?? null);
         setShowUnlock(true);
       } catch (e) {
-        setUnlockError('Could not check coins. Try again.');
+      const errorMsg = 'Could not check coins. Please try again.';
+      setUnlockError(errorMsg);
+      toast.error(errorMsg);
         setShowUnlock(true);
       } finally {
         if (!cancelled) setCheckingCoins(false);
@@ -287,9 +287,9 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
       }, 2000);
     } catch (e) {
       setUnlockStatus("error");
-      let msg = "Something went wrong.";
+      let msg = "Failed to unlock candidate details.";
       if (e?.response?.status === 500) {
-        msg = "Internal server error. Please try again.";
+        msg = "Server error. Please try again later.";
       }
       setUnlockError(msg);
       setUnlockLoading(false);
@@ -445,7 +445,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
     cleanContentForPrint(clonedContent, isUnlocked);
     const printContent = generatePrintHTML(
       clonedContent.outerHTML,
-      profileData?.fullName || 'Candidate',
+      candidate?.fullName || candidate?.name || 'Candidate',
       isUnlocked
     );
     printWindow.document.write(printContent);
@@ -523,15 +523,24 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
   const fetchProfileData = useCallback(async () => {
     if (!candidate?.firebase_uid) return;
     setIsLoading(true);
-    setError(null);
     try {
       const response = await axios.post(FULL_API, {
         firebase_uid: candidate.firebase_uid
       });
-      console.log(response.data);
-      setProfileData(response.data);
+      
+      // Decode the data before setting it
+      if (Array.isArray(response.data)) {
+        // Find the matching candidate record from array
+        const candidateRecord = response.data.find(r => r.firebase_uid === candidate.firebase_uid) || response.data[0];
+        const decodedData = decodeCandidateData(candidateRecord);
+        setProfileData(decodedData);
+      } else {
+        const decodedData = decodeCandidateData(response.data);
+        setProfileData(decodedData);
+      }
     } catch (err) {
-      setError(err.message);
+      console.error('Error fetching profile data:', err.response?.data || err.message);
+      toast.error('Unable to load candidate profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -557,12 +566,12 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
         
         setExperienceData({
           mysqlData: candidateMysqlData || {
-            teaching_experience_years: 0,
-            teaching_experience_months: 0,
-            non_teaching_experience_years: 0,
-            non_teaching_experience_months: 0,
-            total_experience_years: 0,
-            total_experience_months: 0
+          teaching_experience_years: 0,
+          teaching_experience_months: 0,
+          non_teaching_experience_years: 0,
+          non_teaching_experience_months: 0,
+          total_experience_years: 0,
+          total_experience_months: 0
           },
           dynamoData: candidateDynamoData || { experienceEntries: [] }
         });
@@ -671,16 +680,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
       fetchProfilePhoto();
       fetchSocialLinks();
     }
-  }, [
-    fetchProfileData,
-    fetchEducationData,
-    fetchExperienceData,
-    fetchJobPreferenceData,
-    fetchAdditionalInfo,
-    fetchProfilePhoto,
-    fetchSocialLinks,
-    candidate
-  ]);
+  }, [candidate?.firebase_uid]); // Only depend on the ID, not the entire candidate object or callbacks
   if (!candidate?.firebase_uid) {
     return (
       <div className="alert alert-warning text-center">
@@ -695,14 +695,6 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="alert alert-danger">
-        Error loading profile: {error}
       </div>
     );
   }
@@ -768,17 +760,17 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
       if (education.courseDuration) additionalInfo.push(`Duration: ${education.courseDuration}`);
       if (education.specialization) additionalInfo.push(`${education.specialization}`);
       return (
-        <div className="education-block" key={index}>
-          <div className="education-title">{educationType}</div>
-          <div className="education-details">
+        <div className="mb-5 p-4 bg-[#f5f7fc] rounded-lg" key={index}>
+          <div className="text-base text-[#202124] mb-2.5 font-semibold">{educationType}</div>
+          <div>
             {details.map((detail, i) => (
-              <div key={i} className="education-detail">{detail}</div>
+              <div key={i} className="my-1.5 text-gray-600 text-sm">{detail}</div>
             ))}
-            <div className="education-meta">
+            <div className="text-sm text-gray-500 mt-1">
               {additionalInfo.join(' | ')}
             </div>
             {education.coreSubjects && (
-              <div className="core-subjects">
+              <div className="mt-2 text-sm">
                 <strong>Core Subjects:</strong> {
                   Array.isArray(education.coreSubjects) 
                     ? education.coreSubjects.join(', ') 
@@ -812,7 +804,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
   const getExperienceText = () => {
     if (!experienceData?.mysqlData) {
       return (
-        <div style={{ marginBottom: '15px', padding: '10px', borderBottom: '1px solid #eee' }}>
+        <div className="mb-4 p-2.5 border-b border-gray-200">
           <div><strong>Total Teaching Experience</strong>: Not specified</div>
           <div><strong>Total Experience (Teaching + Non-Teaching)</strong>: Not specified</div>
         </div>
@@ -831,7 +823,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
       totalYears = teachingYears + nonTeachingYears + extraYears;
     }
     return (
-      <div style={{ marginBottom: '15px', padding: '10px', borderBottom: '1px solid #eee' }}>
+      <div className="mb-4 p-2.5 border-b border-gray-200">
         <div><strong>Total Teaching Experience</strong>: {teachingYears} Years & {teachingMonths} months</div>
         <div><strong>Total Experience (Teaching + Non-Teaching)</strong>: {totalYears} Years & {totalMonths} months</div>
       </div>
@@ -843,14 +835,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
                          experienceData.dynamoData.experienceEntries.length > 0;
     if (!hasExperience) {
       return (
-        <div className="no-experience-message" style={{ 
-          padding: '15px', 
-          textAlign: 'center', 
-          color: '#555',
-          backgroundColor: '#f9f9f9',
-          borderRadius: '8px',
-          marginBottom: '20px'
-        }}>
+        <div className="p-4 text-center text-gray-600 bg-gray-50 rounded-lg mb-5">
           No work experience information available
         </div>
       );
@@ -896,33 +881,19 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
       }
       const location = [exp.city, exp.state, exp.country].filter(Boolean).join(', ');
       return (
-        <div className="experience-block" key={index} style={{ 
-          marginBottom: '25px',
-          fontSize: '15px',
-          lineHeight: '1.5'
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            fontWeight: 'bold',
-            marginBottom: '4px'
-          }}>
-            <div style={{ fontSize: '16px' }}>{exp.organizationName}</div>
+        <div key={index} className="mb-6 text-base leading-relaxed">
+          <div className="flex justify-between font-bold mb-1">
+            <div className="text-base">{exp.organizationName}</div>
             <div>
               {dateRange}
-              <span style={{ fontWeight: 'normal', color: '#555' }}>{durationText}</span>
+              <span className="font-normal text-gray-600">{durationText}</span>
             </div>
           </div>
-          <div style={{ marginBottom: '6px', color: '#555' }}>{location}</div>
-          <div style={{ marginBottom: '6px' }}>
+          <div className="mb-1.5 text-gray-600">{location}</div>
+          <div className="mb-1.5">
             {jobTypeText.join(' | ')}
           </div>
-          <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr',
-            columnGap: '20px',
-            rowGap: '5px'
-          }}>
+          <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-x-5 gap-y-1.5`}>
             <div>
               <strong>Designation:</strong> {designation}
             </div>
@@ -1001,31 +972,13 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
       return value === 1 || value === '1' || value === true || value === 'true' || value === 'yes' || value === 'Yes';
     };
     return (
-      <div className="work-exposure" style={{ marginBottom: '30px', padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-        <h6 className="work-exposure-title" style={{ marginBottom: '15px', color: '#1967d2', borderBottom: '1px solid #ddd', paddingBottom: '8px' }}>Work Exposure</h6>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+      <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+        <h6 className="mb-4 text-[#1967d2] border-b border-gray-300 pb-2">Work Exposure</h6>
+        <div className="flex flex-wrap gap-2.5">
           {workTypes.map(type => (
-            <div key={type.key} style={{ 
-              flex: `0 0 ${columnWidth}`,
-              backgroundColor: 'white', 
-              borderRadius: '6px',
-              padding: '10px', 
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <div style={{ fontSize: '14px', fontWeight: '500' }}>{type.label}</div>
-              <div style={{ 
-                width: '24px', 
-                height: '24px', 
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: isWorkTypeEnabled(type.key) ? '#e6f7ed' : '#fdf1f0',
-                color: isWorkTypeEnabled(type.key) ? '#34a853' : '#ea4335'
-              }}>
+            <div key={type.key} style={{ flex: `0 0 ${columnWidth}` }} className="bg-white rounded-md p-2.5 shadow-sm flex justify-between items-center">
+              <div className="text-sm font-medium">{type.label}</div>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${isWorkTypeEnabled(type.key) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
                 {isWorkTypeEnabled(type.key) ? '✓' : '×'}
               </div>
             </div>
@@ -1053,54 +1006,19 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
 
     return (
       <div>
-        <div style={{ 
-          borderBottom: '1px solid #ccc',
-          marginBottom: '10px'
-        }}></div>
+        <div className="border-b border-gray-300 mb-2.5"></div>
         <div>
-          <div style={{ 
-            display: 'flex',
-            marginBottom: '4px',
-            alignItems: 'center'
-          }}>
-            <span style={{ 
-              width: '80px',
-              color: '#202124'
-            }}>Speak</span>
-            <span style={{ 
-              flex: 1,
-              paddingLeft: '20px',
-              color: '#333'
-            }}>{displayLanguages(speakLanguages)}</span>
+          <div className="flex mb-1 items-center">
+            <span className="w-20 text-[#202124]">Speak</span>
+            <span className="flex-1 pl-5 text-gray-800">{displayLanguages(speakLanguages)}</span>
           </div>
-          <div style={{ 
-            display: 'flex',
-            marginBottom: '4px',
-            alignItems: 'center'
-          }}>
-            <span style={{ 
-              width: '80px',
-              color: '#202124'
-            }}>Read</span>
-            <span style={{ 
-              flex: 1,
-              paddingLeft: '20px',
-              color: '#333'
-            }}>{displayLanguages(readLanguages)}</span>
+          <div className="flex mb-1 items-center">
+            <span className="w-20 text-[#202124]">Read</span>
+            <span className="flex-1 pl-5 text-gray-800">{displayLanguages(readLanguages)}</span>
           </div>
-          <div style={{ 
-            display: 'flex',
-            alignItems: 'center'
-          }}>
-            <span style={{ 
-              width: '80px',
-              color: '#202124'
-            }}>Write</span>
-            <span style={{ 
-              flex: 1,
-              paddingLeft: '20px',
-              color: '#333'
-            }}>{displayLanguages(writeLanguages)}</span>
+          <div className="flex items-center">
+            <span className="w-20 text-[#202124]">Write</span>
+            <span className="flex-1 pl-5 text-gray-800">{displayLanguages(writeLanguages)}</span>
           </div>
         </div>
       </div>
@@ -1128,24 +1046,11 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
     const InfoItem = ({ label, value }) => {
       if (!value) return null;
       return (
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: windowWidth <= 576 ? 'column' : 'row',
-          marginBottom: '8px'
-        }}>
-          <span style={{ 
-            width: windowWidth <= 576 ? '100%' : '170px', 
-            fontWeight: 'bold',
-            marginBottom: windowWidth <= 576 ? '4px' : '0',
-            color: '#333'
-          }}>
+        <div className={`flex ${windowWidth <= 576 ? 'flex-col' : 'flex-row'} mb-2`}>
+          <span className={`${windowWidth <= 576 ? 'w-full mb-1' : 'w-[170px]'} font-bold text-gray-800`}>
             {label}
           </span>
-          <span style={{ 
-            display: 'flex',
-            flex: 1,
-            paddingLeft: windowWidth <= 576 ? '0' : '8px'
-          }}>
+          <span className={`flex flex-1 ${windowWidth <= 576 ? 'pl-0' : 'pl-2'}`}>
             {windowWidth > 576 ? ': ' : ''}{value}
           </span>
         </div>
@@ -1173,29 +1078,12 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
     };
 
     return (
-      <div className="additional-information" style={{ 
-        marginBottom: '30px', 
-        padding: '15px', 
-        backgroundColor: '#f9f9f9', 
-        borderRadius: '8px'
-      }}>
-        <h6 className="info-title" style={{ 
-          marginBottom: '15px', 
-          color: '#1967d2', 
-          borderBottom: '1px solid #ddd', 
-          paddingBottom: '8px' 
-        }}>
+      <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+        <h6 className="mb-4 text-[#1967d2] border-b border-gray-300 pb-2">
           Additional Information
         </h6>
-        <div style={{ 
-          display: 'flex', 
-          flexWrap: 'wrap', 
-          gap: '10px'
-        }}>
-          <div style={{ 
-            flex: '1 1 300px',
-            minWidth: windowWidth <= 768 ? '100%' : '0'
-          }}>
+        <div className="flex flex-wrap gap-2.5">
+          <div className={`flex-1 basis-[300px] ${windowWidth <= 768 ? 'min-w-full' : 'min-w-0'}`}>
             {additionalInfo1?.religion && (
               <InfoItem label="Religion" value={additionalInfo1.religion} />
             )}
@@ -1212,10 +1100,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
               />
             )}
           </div>
-          <div style={{ 
-            flex: '1 1 300px',
-            minWidth: windowWidth <= 768 ? '100%' : '0'
-          }}>
+          <div className={`flex-1 basis-[300px] ${windowWidth <= 768 ? 'min-w-full' : 'min-w-0'}`}>
             {additionalInfo1?.citizenship && (
               <InfoItem label="Citizenship" value={additionalInfo1.citizenship} />
             )}
@@ -1230,7 +1115,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
             )}
           </div>
         </div>
-        <div style={{ marginTop: windowWidth <= 768 ? '5px' : '15px' }}>
+        <div className={windowWidth <= 768 ? 'mt-1.5' : 'mt-4'}>
           {additionalInfo1?.projects && (
             <InfoItem label="Projects" value={additionalInfo1.projects} />
           )}
@@ -1334,7 +1219,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
 
   // ----- MAIN JSX -----
   return (
-    <div className="cv-container">
+    <div className="max-w-[1200px] mx-auto p-6 md:p-8 bg-white shadow-md rounded-lg overflow-hidden font-sans text-gray-800 relative">
       {/* Unlock Modal */}
       <UnlockModal
         isOpen={showUnlockModal}
@@ -1346,74 +1231,59 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
         unlockStatus={unlockStatus}
         error={unlockError}
       />
-      {/* Profile counter for navigation between multiple profiles */}
-      {checkedProfiles && checkedProfiles.candidates?.length > 1 && (
-        <div className="profile-counter">
-          Profile {checkedProfiles.currentIndex + 1} of {checkedProfiles.candidates.length}
-        </div>
-      )}
       {/* Navigation */}
-      <div className="profile-actions">
+      <div className="flex justify-between items-center mb-6 w-full gap-4 flex-nowrap px-2">
         {/* SHOW Unlock button only if not unlocked */}
         {!isUnlocked && (
           <button 
-            className="unlock-btn-top"
+            className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none w-[250px] flex-shrink-0"
             onClick={handleUnlockClick}
             disabled={isUnlocked}
           >
-            <span role="img" aria-label="coin" className="coin-icon">💰</span>
+            <span role="img" aria-label="coin" className="inline-flex items-center justify-center animate-bounce">💰</span>
             Unlock Details
           </button>
         )}
-        <div className="back-button">
-          <button onClick={handleBack} className="btn btn-warning">
+        <div className="ml-auto flex gap-2.5 items-center flex-nowrap">
+          <button onClick={handleBack} className="px-4 py-2.5 bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all whitespace-nowrap font-medium">
             Back to List
           </button>
-          {/* Navigation buttons for multiple profiles */}
-          {(onNext || onPrevious) && (
-            <div className="navigation-buttons" style={{ marginLeft: '10px', display: 'inline-flex', gap: '10px' }}>
-              {onPrevious && !isFirstProfile && (
-                <button onClick={onPrevious} className="btn btn-outline-secondary">
-                  <i className="fas fa-chevron-left me-1"></i>Previous
-                </button>
-              )}
-              {onNext && !isLastProfile && (
-                <button onClick={onNext} className="btn btn-outline-secondary">
-                  Next<i className="fas fa-chevron-right ms-1"></i>
-                </button>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
       {/* Header Section with Photo and Basic Info */}
-      <div className="cv-header">
-        <div className="cv-profile-photo">
+      <div className="grid grid-cols-1 lg:grid-cols-[auto,1fr] gap-8 mb-2.5 pb-5 border-b-2 border-gray-200 text-center lg:text-left">
+        <div className="w-[150px] h-[150px] flex-shrink-0 mx-auto lg:mx-0 rounded-full overflow-hidden">
           <AvatarImage
             src={photoUrl}
-            alt={`${profileData?.fullName || 'User'}'s profile photo`}
-            name={profileData?.fullName}
-            gender={profileData?.gender}
+            alt={`${candidate?.fullName || candidate?.name || 'User'}'s profile photo`}
+            name={candidate?.fullName || candidate?.name}
+            gender={profileData?.gender || candidate?.gender}
+            className="w-full h-full object-cover"
+            style={{ 
+              border: 'none',
+              transform: 'scale(1.4) translateY(7%)',
+              transformOrigin: 'center'
+            }}
           />
         </div>
         {/* Header Content */}
-        <div className="header-content" style={{ flex: 1, paddingLeft: '20px' }}>
-          <h1 className="candidate-name">{profileData?.fullName || 'Candidate Name'}</h1>
-          <div className="personal-meta" style={{ marginBottom: '8px' }}>
+        <div className="flex flex-col gap-2.5 flex-1 pl-5">
+          <h1 className="text-3xl text-[#202124] m-0">{candidate?.fullName || candidate?.name || 'Candidate Name'}</h1>
+          <div className="flex flex-wrap gap-2.5 text-gray-600 text-sm mb-2">
           {profileData?.gender && <span>{profileData.gender}</span>}
             {profileData?.dateOfBirth && (
-              <span style={{ marginLeft: '15px' }}>
+              <span className="ml-4">
                 DOB: {new Date(profileData.dateOfBirth).toLocaleDateString('en-US', { 
                   day: '2-digit', month: '2-digit', year: 'numeric' 
                 })}
               </span>
             )}
             {profileData?.email && (
-              <div className="email-link" style={{ display: 'flex', alignItems: 'center', marginTop: '4px' }}>
-                <FaEnvelope style={{ marginRight: '5px', color: '#A9A9A9' }} />
+              <div className="flex items-center mt-1">
+                <FaEnvelope className="mr-1.5 text-gray-400" />
                 <BlurWrapper isUnlocked={isUnlocked}>
-                  <a href={isUnlocked ? `mailto:${profileData.email}` : undefined} style={{ pointerEvents: isUnlocked ? 'auto' : 'none', color: "#1766af" }}>
+                  <a href={isUnlocked ? `mailto:${profileData.email}` : undefined} className={`text-[#1766af] ${!isUnlocked ? 'pointer-events-none' : ''}`}>
                     {profileData.email}
                   </a>
                 </BlurWrapper>
@@ -1421,47 +1291,47 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
             )}
           </div>
           {/* Contact Information - Optimized Layout */}
-          <div className="contact-grid" style={{ display: 'grid', gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr', gap: '15px', fontFamily: 'Arial, sans-serif', fontSize: '14px' }}>
+          <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-4 font-sans text-sm`}>
 
             {/* Left Column - Addresses */}
-            <div className="address-column">
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <FaMapMarkerAlt style={{ marginRight: '8px', color: '#e74c3c', fontSize: '16px' }} /> 
+            <div>
+              <div className="flex items-center mb-2">
+                <FaMapMarkerAlt className="mr-2 text-red-500 text-base" /> 
                 <span><strong>Present:</strong> {profileData.present_state_name || 'N/A'}</span>
               </div>
               {profileData.permanent_state_name && (
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <FaMapMarkerAlt style={{ marginRight: '8px', color: '#95a5a6', fontSize: '16px' }} />
+                <div className="flex items-center">
+                  <FaMapMarkerAlt className="mr-2 text-gray-400 text-base" />
                   <span><strong>Permanent:</strong> {profileData.permanent_state_name}</span>
                 </div>
               )}
             </div>
             {/* Right Column - Phone Numbers */}
-            <div className="phone-column">
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-            <FaPhone style={{ marginRight: '8px', color: '#1a73e8', fontSize: '16px' }} />
+            <div>
+            <div className="flex items-center mb-2">
+            <FaPhone className="mr-2 text-blue-600 text-base" />
   <span>
     <strong>Phone:</strong>{" "}
     <BlurWrapper isUnlocked={isUnlocked}>
   {isUnlocked
     ? profileData?.callingNumber || "N/A"
     : profileData?.callingNumber
-      ? <span style={{ letterSpacing: "1px" }}>{profileData.callingNumber.replace(/\d/g, "•")}</span>
+      ? <span className="tracking-wide">{profileData.callingNumber.replace(/\d/g, "•")}</span>
       : "N/A"
   }
 </BlurWrapper>
   </span>
 </div>
 
-  <div style={{ display: 'flex', alignItems: 'center' }}>
-    <FaWhatsapp style={{ marginRight: '8px', color: '#25D366', fontSize: '16px' }} />
+  <div className="flex items-center">
+    <FaWhatsapp className="mr-2 text-green-500 text-base" />
     <span>
     <strong>WhatsApp:</strong>{" "}
     <BlurWrapper isUnlocked={isUnlocked}>
       {isUnlocked
         ? profileData?.whatsappNumber || "N/A"
         : profileData?.whatsappNumber
-          ? <span style={{ letterSpacing: "1px" }}>{profileData.whatsappNumber.replace(/\d/g, "•")}</span>
+          ? <span className="tracking-wide">{profileData.whatsappNumber.replace(/\d/g, "•")}</span>
           : "N/A"
       }
     </BlurWrapper>
@@ -1472,14 +1342,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
           </div>
           {/* Additional Info Row */}
           {(profileData.aadharNumber || profileData.panNumber) && (
-            <div className="additional-info" style={{ 
-              marginTop: '10px',
-              display: 'grid',
-              gridTemplateColumns: windowWidth <= 768 ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '8px',
-              fontSize: '13px',
-              color: '#666'
-            }}>
+            <div className={`mt-2.5 grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-[repeat(auto-fit,minmax(200px,1fr))]'} gap-2 text-xs text-gray-600`}>
               {profileData.aadharNumber && (
                 <div><strong>Aadhar:</strong> {profileData.aadharNumber}</div>
               )}
@@ -1490,40 +1353,24 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
           )}
           {/* Social Links Row */}
           {(socialLinks.facebook || socialLinks.linkedin) && (
-            <div className="social-links" style={{ 
-              marginTop: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              flexWrap: 'wrap'
-            }}>
-              <span style={{ 
-                fontSize: '13px', 
-                fontWeight: 'bold', 
-                color: '#666',
-                marginRight: '4px'
-              }}>Social Links:</span>
-              <div style={{ 
-                display: 'flex', 
-                gap: '16px',
-                flexWrap: 'wrap',
-                flex: 1
-              }}>
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold text-gray-600 mr-1">Social Links:</span>
+              <div className="flex gap-4 flex-wrap flex-1">
               {socialLinks?.facebook && (
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-                  <FaFacebook style={{ marginRight: '7px', color: '#1877f2', fontSize: '16px' }} />
+                <div className="flex items-center mb-1">
+                  <FaFacebook className="mr-1.5 text-[#1877f2] text-base" />
                   <BlurWrapper isUnlocked={isUnlocked}>
-                    <a href={isUnlocked ? socialLinks.facebook : undefined} style={{ pointerEvents: isUnlocked ? 'auto' : 'none', color: "#1877f2" }}>
+                    <a href={isUnlocked ? socialLinks.facebook : undefined} className={`text-[#1877f2] ${!isUnlocked ? 'pointer-events-none' : ''}`}>
                       {socialLinks.facebook}
                     </a>
                   </BlurWrapper>
                 </div>
               )}
               {socialLinks?.linkedin && (
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <FaLinkedin style={{ marginRight: '7px', color: '#0077b5', fontSize: '16px' }} />
+                <div className="flex items-center">
+                  <FaLinkedin className="mr-1.5 text-[#0077b5] text-base" />
                   <BlurWrapper isUnlocked={isUnlocked}>
-                    <a href={isUnlocked ? socialLinks.linkedin : undefined} style={{ pointerEvents: isUnlocked ? 'auto' : 'none', color: "#0077b5" }}>
+                    <a href={isUnlocked ? socialLinks.linkedin : undefined} className={`text-[#0077b5] ${!isUnlocked ? 'pointer-events-none' : ''}`}>
                       {socialLinks.linkedin}
                     </a>
                   </BlurWrapper>
@@ -1535,38 +1382,13 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
 
           {/* Candidate Materials Icons - Only show when unlocked */}
           {isUnlocked && (
-            <div className="candidate-materials-icons" style={{
-              marginTop: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              flexWrap: 'wrap'
-            }}>
-              <span style={{ 
-                fontSize: '13px', 
-                fontWeight: 'bold', 
-                color: '#666',
-                marginRight: '4px'
-              }}>Demo & Resume:</span>
+            <div className="mt-3 flex items-center gap-3 flex-wrap">
+              <span className="text-xs font-bold text-gray-600 mr-1">Demo & Resume:</span>
               
               {/* Demo Video Icon */}
               <button 
                 onClick={handleViewVideo}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 10px',
-                  background: '#007bff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-brand hover:opacity-90 text-white border-none rounded text-xs cursor-pointer transition-colors"
                 title="View Demo Video"
               >
                 <span role="img" aria-label="video">🎥</span>
@@ -1576,21 +1398,7 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
               {/* Resume Icon */}
               <button 
                 onClick={handleViewResume}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 10px',
-                  background: '#28a745',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#1e7e34'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white border-none rounded text-xs cursor-pointer transition-colors"
                 title="View Resume/CV"
               >
                 <span role="img" aria-label="resume">📄</span>
@@ -1602,14 +1410,14 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
       </div>
 
       {/* Body Section - Two column layout */}
-      <div className="cv-body" style={{ marginTop: '0' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-8 mt-0">
         {/* Left Sidebar */}
-        <div className="cv-sidebar">
+        <div className="bg-gray-100 p-5 lg:w-auto">
           {/* Education Section */}
           {educationData && educationData.length > 0 && (
-            <div className="cv-section education-section">
-              <h2 className="section-title">Education</h2>
-              <div className="education-content">
+            <div className="mb-8">
+              <h2 className="text-xl text-[#202124] mb-5 pb-2.5 border-b-2 border-[#1967d2]">Education</h2>
+              <div>
                 {renderEducationBlocks()}
               </div>
             </div>
@@ -1617,11 +1425,11 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
         </div>
 
         {/* Right Main Content */}
-        <div className="cv-main">
+        <div className="p-5">
           {/* Experience Section */}
-          <div className="cv-section experience-section" style={{ marginTop: '0', paddingTop: '0' }}>
-            <h2 className="section-title" style={{ marginTop: '0' }}>Work Experience</h2>
-            <div className="experience-content">
+          <div className="mb-8 mt-0 pt-0">
+            <h2 className="text-xl text-[#202124] mb-5 pb-2.5 border-b-2 border-[#1967d2] mt-0">Work Experience</h2>
+            <div>
               {getExperienceText()}
               {renderExperienceBlocks()}
             </div>
@@ -1632,23 +1440,11 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
 
           {/* Job Preferences Section */}
           {hasJobPreferencesData() && (
-            <div className="cv-section job-preferences">
-              <h2 className="section-title">Job Preferences</h2>
-              <div className="job-preferences-block" style={{ 
-                marginBottom: '25px',
-                padding: '20px',
-                background: '#f5f7fc',
-                borderRadius: '8px',
-                fontSize: '15px',
-                lineHeight: '1.5'
-              }}>
+            <div className="mb-8">
+              <h2 className="text-xl text-[#202124] mb-5 pb-2.5 border-b-2 border-[#1967d2]">Job Preferences</h2>
+              <div className="mb-6 p-5 bg-[#f5f7fc] rounded-lg text-base leading-relaxed">
                 {/* Two-column details grid */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr',
-                  columnGap: '20px',
-                  rowGap: '5px'
-                }}>
+                <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-x-5 gap-y-1.5`}>
                   {/* Basic Job Information */}
                   {jobPreferenceData.Job_Type && (
                     <div>
@@ -1764,9 +1560,9 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
 
           {/* Language Proficiency */}
           {languages && languages.length > 0 && (
-            <div className="cv-section">
-              <h2 className="section-title">Language Proficiency</h2>
-              <div style={{ padding: '15px' }}>
+            <div className="mb-8">
+              <h2 className="text-xl text-[#202124] mb-5 pb-2.5 border-b-2 border-[#1967d2]">Language Proficiency</h2>
+              <div className="p-4">
                 {renderLanguageProficiency()}
               </div>
             </div>
@@ -1774,9 +1570,9 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
 
           {/* Additional Information */}
           {additionalInfo1 && (
-            <div className="cv-section">
-              <h2 className="section-title">Additional Information</h2>
-              <div style={{ padding: '15px' }}>
+            <div className="mb-8">
+              <h2 className="text-xl text-[#202124] mb-5 pb-2.5 border-b-2 border-[#1967d2]">Additional Information</h2>
+              <div className="p-4">
                 {renderAdditionalInfo()}
               </div>
             </div>
@@ -1785,11 +1581,11 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
       </div>
 
       {/* Download and Print Section */}
-      <div className="download-section">
+      <div className="flex justify-center gap-4 mt-10 pt-5 border-t border-gray-200 flex-wrap">
         <button 
           onClick={downloadPDF} 
           disabled={isDownloading}
-          className="btn btn-primary"
+            className="inline-flex items-center gap-2 px-6 py-3 text-base min-w-[200px] justify-center bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           title={isDownloading ? "Generating PDF..." : "Download CV as PDF file"}
         >
           {isDownloading ? (
@@ -1807,9 +1603,9 @@ function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile
           )}
         </button>
         
-        <button 
-          onClick={handlePrint}
-          className="btn btn-outline-secondary"
+          <button 
+            onClick={handlePrint}
+            className="inline-flex items-center gap-2 px-6 py-3 text-base min-w-[200px] justify-center bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all"
           title="Open browser print dialog"
         >
           <i className="fas fa-print"></i>

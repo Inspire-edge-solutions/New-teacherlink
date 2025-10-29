@@ -71,7 +71,7 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-4">
             <NavLink
               to="/login"
-              className="p-2 w-30 h-10 rounded text-white text-sm font-medium bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 transition-all duration-200 flex items-center justify-center"
+              className="p-2 w-30 h-10 rounded text-white text-sm font-medium bg-gradient-brand hover:bg-gradient-brand-hover transition-all duration-200 flex items-center justify-center"
             >
               Login/Register
             </NavLink>

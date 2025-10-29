@@ -1,6 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   return (
     <div className="relative min-h-screen overflow-hidden">
 
@@ -38,7 +40,9 @@ const HeroSection = () => {
 
             {/* Register Button */}
             <div className="pt-0 lg:pt-1">
-              <button className="text-white font-semibold px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-lg text-lg sm:text-xl transition-all duration-300 transform hover:scale-105 shadow-lg w-full sm:w-auto bg-gradient-brand">
+              <button
+              onClick={() => navigate('/register')}
+              className="text-white font-semibold px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-lg text-lg sm:text-xl transition-all duration-300 transform hover:scale-105 shadow-lg w-full sm:w-auto bg-gradient-brand">
                 Register
               </button>
             </div>

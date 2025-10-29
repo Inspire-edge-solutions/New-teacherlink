@@ -271,128 +271,26 @@ const FormContent = () => {
   // ----- Blocked popup -----
   if (blockedMsg) {
     return (
-      <div
-        style={{
-          position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-          backgroundColor: "rgba(0, 0, 0, 0.6)",
-          display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999,
-          backdropFilter: "blur(4px)",
-          padding: "1rem",
-        }}
-      >
-        <div
-          style={{
-            backgroundColor: "#fff", 
-            padding: "2.5rem 2rem 2rem 2rem", 
-            borderRadius: "16px", 
-            position: "relative",
-            zIndex: 10000, 
-            maxWidth: "480px", 
-            width: "100%",
-            textAlign: "center", 
-            boxShadow: "0 20px 40px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.1)",
-            animation: "slideIn 0.3s ease-out",
-          }}
-        >
+      <div className="fixed inset-0 w-full h-full bg-black bg-opacity-60 flex justify-center items-center z-[9999] backdrop-blur-sm p-4">
+        <div className="bg-white p-8 rounded-2xl relative z-[10000] max-w-[480px] w-full text-center shadow-2xl border border-white border-opacity-10 animate-[slideIn_0.3s_ease-out]">
           <button
             onClick={() => {
               setBlockedMsg("");
               setBlockedTitle("");
               navigate("/login");
             }}
-            style={{
-              position: "absolute", top: "1.2rem", right: "1.2rem",
-              border: "none", 
-              background: "linear-gradient(135deg, #f8f9fa, #e9ecef)",
-              fontSize: "1.3rem", 
-              cursor: "pointer",
-              color: "#6c757d", 
-              fontWeight: "bold",
-              width: "36px",
-              height: "36px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.2s ease",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            }}
-            onMouseOver={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #e9ecef, #dee2e6)";
-              e.target.style.transform = "scale(1.05)";
-            }}
-            onMouseOut={(e) => {
-              e.target.style.background = "linear-gradient(135deg, #f8f9fa, #e9ecef)";
-              e.target.style.transform = "scale(1)";
-            }}
+            className="absolute top-5 right-5 border-none bg-gradient-to-br from-gray-50 to-gray-200 text-xl cursor-pointer text-gray-500 font-bold w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 shadow-md hover:bg-gradient-to-br hover:from-gray-200 hover:to-gray-300 hover:scale-105"
           >×</button>
           
-          <div style={{ 
-            fontSize: "56px", 
-            color: "#dc3545", 
-            marginBottom: "1.5rem",
-            filter: "drop-shadow(0 3px 6px rgba(220, 53, 69, 0.2))",
-            animation: "gentlePulse 3s infinite"
-          }}>⚠</div>
+          <div className="text-6xl text-red-500 mb-6 drop-shadow-lg animate-[gentlePulse_3s_infinite]">⚠</div>
           
-          <h2 style={{ 
-            fontSize: "1.6rem", 
-            marginBottom: "1.2rem", 
-            color: "#212529", 
-            fontWeight: "700",
-            background: "linear-gradient(135deg, #dc3545, #c82333)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text"
-          }}>{blockedTitle}</h2>
+          <h2 className="text-2xl mb-5 text-gray-900 font-bold bg-gradient-to-br from-red-500 to-red-600 bg-clip-text text-transparent">
+            {blockedTitle}
+          </h2>
           
-          <div 
-            style={{ 
-              fontSize: "1.05rem", 
-              lineHeight: "1.7", 
-              color: "#495057",
-              whiteSpace: "pre-line",
-              textAlign: "left",
-              backgroundColor: "#f8f9fa",
-              padding: "1.5rem",
-              borderRadius: "12px",
-              border: "1px solid #e9ecef",
-              boxShadow: "inset 0 2px 4px rgba(0,0,0,0.04)",
-              marginTop: "0.5rem"
-            }}
-          >
+          <div className="text-lg leading-relaxed text-gray-600 whitespace-pre-line text-left bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-inner mt-2">
             {blockedMsg}
           </div>
-          
-          <style>{`
-            @keyframes slideIn {
-              from {
-                opacity: 0;
-                transform: translateY(-15px) scale(0.98);
-              }
-              to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-              }
-            }
-            
-            @keyframes gentlePulse {
-              0%, 100% {
-                transform: scale(1);
-              }
-              50% {
-                transform: scale(1.03);
-              }
-            }
-            
-            @media (max-width: 768px) {
-              .blocked-popup {
-                padding: 1rem;
-                margin: 1rem;
-                max-width: calc(100vw - 2rem);
-              }
-            }
-          `}</style>
         </div>
       </div>
     );
@@ -429,15 +327,7 @@ const FormContent = () => {
             />
             <span
               onClick={() => setShowPassword(!showPassword)}
-              style={{
-                position: 'absolute',
-                right: '10px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                cursor: 'pointer',
-                fontSize: '20px',
-                color: 'black'
-              }}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-xl text-black"
             >
               {showPassword ? <MdVisibility /> : <MdVisibilityOff />}
             </span>

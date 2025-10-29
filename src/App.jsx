@@ -6,6 +6,7 @@ import { ToastContainer } from "react-toastify";
 import { AuthProvider } from './Context/AuthContext';
 import ErrorBoundary from "./utils/Logger/ErrorBoundary";
 import ScrollToTop from "./components/common/ScrollTop";
+import ScrollTopBehaviour from "./components/common/ScrollTopBehaviour";
 
 function App() {
   const routing = useRoutes(Router);
@@ -13,6 +14,7 @@ function App() {
     <div className="App">
       <ErrorBoundary>
         <ScrollToTop />
+        <ScrollTopBehaviour />
       <AuthProvider>
       <ToastContainer
         position="top-right"
