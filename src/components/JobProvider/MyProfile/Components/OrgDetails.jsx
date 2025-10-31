@@ -10,6 +10,7 @@ import { getAuth, updateEmail, fetchSignInMethodsForEmail } from "firebase/auth"
 import { validateField, formatFieldValue, validateWithFeedback } from "../../../../utils/formValidation";
 import CollapsibleSection from "./CollapsibleSection";
 import LogoCoverUploader from "./LogoCoverUploader";
+import InputWithTooltip from "../../../../services/InputWithTooltip";
 
 const LOGIN_API_URL = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login";
 const API_URL = "https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation";
@@ -883,7 +884,7 @@ const OrgDetails = () => {
       <form onSubmit={handleSubmit} className="max-w-7xl mx-auto">
         {/* Organization Type Selection */}
         <div className="mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-[#F0D8D9] rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Organization/Entity Type
@@ -910,30 +911,34 @@ const OrgDetails = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* School / College / University Name */}
               <div>
-                    <input
-                      name="name"
-                      type="text"
-                  placeholder="School / College / University"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                      value={orgDetails.name}
-                      onChange={handleInputChange}
-                      required
-                      maxLength={50}
-                      minLength={10}
-                    />
+                    <InputWithTooltip label="School / College / University" required>
+                      <input
+                        name="name"
+                        type="text"
+                        placeholder="School / College / University"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                        value={orgDetails.name}
+                        onChange={handleInputChange}
+                        required
+                        maxLength={50}
+                        minLength={10}
+                      />
+                    </InputWithTooltip>
                   </div>
 
               {/* Website URL */}
               <div>
-                    <input
-                      name="websiteUrl"
-                      type="text"
-                  placeholder="Website URL"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                      value={orgDetails.websiteUrl}
-                      onChange={handleInputChange}
-                      onBlur={(e) => validateWithFeedback('websiteUrl', e.target.value, true)}
-                    />
+                    <InputWithTooltip label="Website URL">
+                      <input
+                        name="websiteUrl"
+                        type="text"
+                        placeholder="Website URL"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                        value={orgDetails.websiteUrl}
+                        onChange={handleInputChange}
+                        onBlur={(e) => validateWithFeedback('websiteUrl', e.target.value, true)}
+                      />
+                    </InputWithTooltip>
                   </div>
                 </div>
 
@@ -946,188 +951,206 @@ const OrgDetails = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
               {/* PAN Number */}
               <div>
-                    <input
-                      name="panNumber"
-                      type="text"
-                      placeholder="PAN Number"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                      value={orgDetails.panNumber}
-                      onChange={handleInputChange}
-                      onBlur={(e) => validateWithFeedback('panNumber', e.target.value, true)}
-                      pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
-                      title="Enter a valid 10-character PAN number (e.g., ABCDE1234F)"
-                      minLength={10}
-                      maxLength={10}
-                    />
+                    <InputWithTooltip label="PAN Number">
+                      <input
+                        name="panNumber"
+                        type="text"
+                        placeholder="PAN Number"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                        value={orgDetails.panNumber}
+                        onChange={handleInputChange}
+                        onBlur={(e) => validateWithFeedback('panNumber', e.target.value, true)}
+                        pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                        title="Enter a valid 10-character PAN number (e.g., ABCDE1234F)"
+                        minLength={10}
+                        maxLength={10}
+                      />
+                    </InputWithTooltip>
                   </div>
 
               {/* Name on PAN Number */}
               <div>
-                    <input
-                      name="panName"
-                      type="text"
-                  placeholder="Name on PAN Number"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                      value={orgDetails.panName}
-                      onChange={handleInputChange}
-                    />
+                    <InputWithTooltip label="Name on PAN Number">
+                      <input
+                        name="panName"
+                        type="text"
+                        placeholder="Name on PAN Number"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                        value={orgDetails.panName}
+                        onChange={handleInputChange}
+                      />
+                    </InputWithTooltip>
                   </div>
 
               {/* GSTIN */}
               <div>
-                    <input
-                      name="gstin"
-                      type="text"
-                      placeholder="GSTIN"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                      value={orgDetails.gstin}
-                      onChange={handleInputChange}
-                      onBlur={(e) => validateWithFeedback('gstin', e.target.value, true)}
-                      pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
-                      title="Enter a valid 15-character GSTIN (e.g., 27AAPFU0939F1Z5)"
-                      minLength={15}
-                      maxLength={15}
-                    />
+                    <InputWithTooltip label="GSTIN">
+                      <input
+                        name="gstin"
+                        type="text"
+                        placeholder="GSTIN"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                        value={orgDetails.gstin}
+                        onChange={handleInputChange}
+                        onBlur={(e) => validateWithFeedback('gstin', e.target.value, true)}
+                        pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
+                        title="Enter a valid 15-character GSTIN (e.g., 27AAPFU0939F1Z5)"
+                        minLength={15}
+                        maxLength={15}
+                      />
+                    </InputWithTooltip>
                   </div>
 
               {/* Street / Area */}
               <div>
-                    <input
-                      name="address"
-                      type="text"
-                  placeholder="Street / Area"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                      value={orgDetails.address}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <InputWithTooltip label="Street / Area" required>
+                      <input
+                        name="address"
+                        type="text"
+                        placeholder="Street / Area"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                        value={orgDetails.address}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </InputWithTooltip>
                   </div>
 
               {/* Country Dropdown */}
               <div>
-                    <Select
-                      name="country"
-                    options={countries}
-                  value={countries.find(c => c.label === orgDetails.country) || null}
-                    onChange={async (selectedOption) => {
-                      const countryName = selectedOption ? selectedOption.label : "";
-                      const countryId = selectedOption ? selectedOption.value : "";
-                      
-                      
-                      setOrgDetails(prev => ({
-                        ...prev,
-                        country: countryName,
-                        state: "",
-                        city: ""
-                      }));
-                      
-                      if (countryId) {
-                        try {
-                          const newStates = await mapStatesOfCountry(countryId);
-                          setStates(newStates);
-                        } catch (error) {
-                          console.error("Error loading states:", error);
-                          setStates([]);
-                        }
-                      } else {
-                        setStates([]);
-                      }
-                      setCities([]);
-                    }}
-                      placeholder="Country"
-                  className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
-                  classNamePrefix="react-select"
-                      isSearchable
-                    isClearable
-                  />
+                    <InputWithTooltip label="Country">
+                      <Select
+                        name="country"
+                        options={countries}
+                        value={countries.find(c => c.label === orgDetails.country) || null}
+                        onChange={async (selectedOption) => {
+                          const countryName = selectedOption ? selectedOption.label : "";
+                          const countryId = selectedOption ? selectedOption.value : "";
+                          
+                          
+                          setOrgDetails(prev => ({
+                            ...prev,
+                            country: countryName,
+                            state: "",
+                            city: ""
+                          }));
+                          
+                          if (countryId) {
+                            try {
+                              const newStates = await mapStatesOfCountry(countryId);
+                              setStates(newStates);
+                            } catch (error) {
+                              console.error("Error loading states:", error);
+                              setStates([]);
+                            }
+                          } else {
+                            setStates([]);
+                          }
+                          setCities([]);
+                        }}
+                        placeholder="Country"
+                        className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
+                        classNamePrefix="react-select"
+                        isSearchable
+                        isClearable
+                      />
+                    </InputWithTooltip>
                   </div>
 
               {/* State Dropdown */}
               <div>
-                    <Select
-                      name="state"
-                      options={states}
-                      value={states.find(s => s.label === orgDetails.state) || null}
-                      onChange={async (selectedOption) => {
-                        const stateName = selectedOption ? selectedOption.label : "";
-                        const stateId = selectedOption ? selectedOption.value : "";
-                        const countryId = countries.find(c => c.label === orgDetails.country)?.value;
-                        
-                        setOrgDetails(prev => ({
-                          ...prev,
-                          state: stateName,
-                          city: ""
-                        }));
-                        
-                        if (stateId && countryId) {
-                          try {
-                            const newCities = await mapCitiesOfState(countryId, stateId);
-                            setCities(newCities);
-                          } catch (error) {
-                            console.error("Error loading cities:", error);
+                    <InputWithTooltip label="State">
+                      <Select
+                        name="state"
+                        options={states}
+                        value={states.find(s => s.label === orgDetails.state) || null}
+                        onChange={async (selectedOption) => {
+                          const stateName = selectedOption ? selectedOption.label : "";
+                          const stateId = selectedOption ? selectedOption.value : "";
+                          const countryId = countries.find(c => c.label === orgDetails.country)?.value;
+                          
+                          setOrgDetails(prev => ({
+                            ...prev,
+                            state: stateName,
+                            city: ""
+                          }));
+                          
+                          if (stateId && countryId) {
+                            try {
+                              const newCities = await mapCitiesOfState(countryId, stateId);
+                              setCities(newCities);
+                            } catch (error) {
+                              console.error("Error loading cities:", error);
+                              setCities([]);
+                            }
+                          } else {
                             setCities([]);
                           }
-                        } else {
-                          setCities([]);
-                        }
-                      }}
-                      placeholder="State"
-                  className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  classNamePrefix="react-select"
-                      isSearchable
-                      isClearable
-                      isDisabled={!orgDetails.country}
-                    />
+                        }}
+                        placeholder="State"
+                        className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        classNamePrefix="react-select"
+                        isSearchable
+                        isClearable
+                        isDisabled={!orgDetails.country}
+                      />
+                    </InputWithTooltip>
                   </div>
 
               {/* City Dropdown */}
               <div>
-                    <Select
-                      name="city"
-                      options={cities}
-                      value={cities.find(c => c.label === orgDetails.city) || null}
-                      onChange={(selectedOption) => {
-                        const cityName = selectedOption ? selectedOption.label : "";
-                        setOrgDetails(prev => ({
-                          ...prev,
-                          city: cityName
-                        }));
-                      }}
-                      placeholder="City"
-                  className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  classNamePrefix="react-select"
-                      isSearchable
-                      isClearable
-                      isDisabled={!orgDetails.state}
-                    />
+                    <InputWithTooltip label="City">
+                      <Select
+                        name="city"
+                        options={cities}
+                        value={cities.find(c => c.label === orgDetails.city) || null}
+                        onChange={(selectedOption) => {
+                          const cityName = selectedOption ? selectedOption.label : "";
+                          setOrgDetails(prev => ({
+                            ...prev,
+                            city: cityName
+                          }));
+                        }}
+                        placeholder="City"
+                        className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        classNamePrefix="react-select"
+                        isSearchable
+                        isClearable
+                        isDisabled={!orgDetails.state}
+                      />
+                    </InputWithTooltip>
                   </div>
 
               {/* Pincode */}
               <div>
-                    <input
-                      name="pincode"
-                      type="text"
-                      placeholder="Pincode"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                      value={orgDetails.pincode}
-                      onChange={handleInputChange}
-                      onBlur={(e) => validateWithFeedback('pincode', e.target.value, true)}
-                      pattern="^[1-9][0-9]{5}$"
-                      title="Enter a valid 6-digit pincode"
-                      minLength={6}
-                      maxLength={6}
-                    />
+                    <InputWithTooltip label="Pincode">
+                      <input
+                        name="pincode"
+                        type="text"
+                        placeholder="Pincode"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                        value={orgDetails.pincode}
+                        onChange={handleInputChange}
+                        onBlur={(e) => validateWithFeedback('pincode', e.target.value, true)}
+                        pattern="^[1-9][0-9]{5}$"
+                        title="Enter a valid 6-digit pincode"
+                        minLength={6}
+                        maxLength={6}
+                      />
+                    </InputWithTooltip>
                   </div>
 
               {/* Organization Name (Read-only) */}
               <div>
-                  <input
-                    type="text"
-                  placeholder="Organization Name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-700"
-                  value={orgDetails.name}
-                  readOnly
-                />
+                  <InputWithTooltip label="Organization Name">
+                    <input
+                      type="text"
+                      placeholder="Organization Name"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-700"
+                      value={orgDetails.name}
+                      readOnly
+                    />
+                  </InputWithTooltip>
                 </div>
               </div>
           </CollapsibleSection>
@@ -1139,45 +1162,51 @@ const OrgDetails = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Contact Person Name */}
               <div>
-                    <input
-                      type="text"
-                      name="name"
-                  placeholder="Name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                      value={orgDetails.contactPerson.name}
-                      onChange={handleContactPersonChange}
-                      required
-                    />
+                    <InputWithTooltip label="Name" required>
+                      <input
+                        type="text"
+                        name="name"
+                        placeholder="Name"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                        value={orgDetails.contactPerson.name}
+                        onChange={handleContactPersonChange}
+                        required
+                      />
+                    </InputWithTooltip>
                   </div>
 
               {/* Gender */}
               <div>
-                    <select
-                      name="gender"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700 bg-white"
-                      value={orgDetails.contactPerson.gender}
-                      onChange={handleContactPersonChange}
-                    >
-                      <option value="" disabled>Gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="transgender">Transgender</option>
-                    </select>
+                    <InputWithTooltip label="Gender">
+                      <select
+                        name="gender"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700 bg-white"
+                        value={orgDetails.contactPerson.gender}
+                        onChange={handleContactPersonChange}
+                      >
+                        <option value="" disabled>Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="transgender">Transgender</option>
+                      </select>
+                    </InputWithTooltip>
                   </div>
 
               {/* Designation */}
               <div>
-                    <Select
-                      isMulti
-                      options={designations}
-                      value={designations.filter(opt =>
-                        orgDetails.contactPerson.designation.includes(opt.value)
-                      )}
-                      onChange={handleContactPersonDesignationChange}
-                      placeholder="Designation"
-                  className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
-                  classNamePrefix="react-select"
-                    />
+                    <InputWithTooltip label="Designation">
+                      <Select
+                        isMulti
+                        options={designations}
+                        value={designations.filter(opt =>
+                          orgDetails.contactPerson.designation.includes(opt.value)
+                        )}
+                        onChange={handleContactPersonDesignationChange}
+                        placeholder="Designation"
+                        className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
+                        classNamePrefix="react-select"
+                      />
+                    </InputWithTooltip>
                   </div>
 
               {/* Mobile Number with Verification */}
@@ -1281,17 +1310,19 @@ const OrgDetails = () => {
 
               {/* WhatsApp Number with Checkbox */}
               <div>
-                <input
-                  type="text"
-                  name="phone2"
-                  placeholder="Whatsapp Number"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                  value={orgDetails.contactPerson.phone2}
-                  onChange={handleContactPersonChange}
-                  onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
-                  maxLength="10"
-                  disabled={sameAsCallingNumber}
-                />
+                <InputWithTooltip label="Whatsapp Number">
+                  <input
+                    type="text"
+                    name="phone2"
+                    placeholder="Whatsapp Number"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                    value={orgDetails.contactPerson.phone2}
+                    onChange={handleContactPersonChange}
+                    onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
+                    maxLength="10"
+                    disabled={sameAsCallingNumber}
+                  />
+                </InputWithTooltip>
                 <label className="flex items-center space-x-3 mt-2">
                   <input
                     type="checkbox"
@@ -1343,89 +1374,101 @@ const OrgDetails = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Reporting Authority Name */}
               <div>
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                    value={reportingAuthority.name}
-                    onChange={handleReportingAuthorityChange}
-                  required
-                  />
+                  <InputWithTooltip label="Name" required>
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Name"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                      value={reportingAuthority.name}
+                      onChange={handleReportingAuthorityChange}
+                      required
+                    />
+                  </InputWithTooltip>
                 </div>
 
               {/* Gender */}
               <div>
-                  <select
-                    name="gender"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700 bg-white"
-                    value={reportingAuthority.gender}
-                    onChange={handleReportingAuthorityChange}
-                  >
-                    <option value="" disabled>Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="transgender">Transgender</option>
-                  </select>
+                  <InputWithTooltip label="Gender">
+                    <select
+                      name="gender"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700 bg-white"
+                      value={reportingAuthority.gender}
+                      onChange={handleReportingAuthorityChange}
+                    >
+                      <option value="" disabled>Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="transgender">Transgender</option>
+                    </select>
+                  </InputWithTooltip>
                 </div>
 
               {/* Designation */}
               <div>
-                  <Select
-                    isMulti
-                    options={designations}
-                    value={designations.filter(opt =>
-                      reportingAuthority.designation.includes(opt.value)
-                    )}
-                    onChange={handleReportingAuthorityDesignationChange}
-                    placeholder="Designation"
-                  className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
-                  classNamePrefix="react-select"
-                  />
+                  <InputWithTooltip label="Designation">
+                    <Select
+                      isMulti
+                      options={designations}
+                      value={designations.filter(opt =>
+                        reportingAuthority.designation.includes(opt.value)
+                      )}
+                      onChange={handleReportingAuthorityDesignationChange}
+                      placeholder="Designation"
+                      className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
+                      classNamePrefix="react-select"
+                    />
+                  </InputWithTooltip>
                 </div>
 
               {/* Mobile Number */}
               <div>
-                  <input
-                    type="text"
-                    name="phone1"
-                  placeholder="Mobile Number"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                    value={reportingAuthority.phone1}
-                    onChange={handleReportingAuthorityChange}
-                    onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
-                    maxLength="10"
-                  required
-                />
+                  <InputWithTooltip label="Mobile Number" required>
+                    <input
+                      type="text"
+                      name="phone1"
+                      placeholder="Mobile Number"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                      value={reportingAuthority.phone1}
+                      onChange={handleReportingAuthorityChange}
+                      onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
+                      maxLength="10"
+                      required
+                    />
+                  </InputWithTooltip>
                 </div>
 
               {/* Email Address */}
               <div>
-                  <input
-                  type="email"
-                  name="email"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                  placeholder="Email Address"
-                  value={reportingAuthority.email}
-                  onChange={handleReportingAuthorityChange}
-                  onBlur={(e) => validateWithFeedback('email', e.target.value, true)}
-                  required
-                />
+                  <InputWithTooltip label="Email Address" required>
+                    <input
+                      type="email"
+                      name="email"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                      placeholder="Email Address"
+                      value={reportingAuthority.email}
+                      onChange={handleReportingAuthorityChange}
+                      onBlur={(e) => validateWithFeedback('email', e.target.value, true)}
+                      required
+                    />
+                  </InputWithTooltip>
               </div>
 
               {/* WhatsApp Number */}
               <div>
-                  <input
-                    type="text"
-                    name="phone2"
-                  placeholder="WhatsApp Number"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                    value={reportingAuthority.phone2}
-                    onChange={handleReportingAuthorityChange}
-                    onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
-                    maxLength="10"
-                    disabled={reportingAuthoritySameNumber}
-                  />
+                  <InputWithTooltip label="WhatsApp Number">
+                    <input
+                      type="text"
+                      name="phone2"
+                      placeholder="WhatsApp Number"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                      value={reportingAuthority.phone2}
+                      onChange={handleReportingAuthorityChange}
+                      onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
+                      maxLength="10"
+                      disabled={reportingAuthoritySameNumber}
+                    />
+                  </InputWithTooltip>
                 </div>
 
               {/* Checkbox for WhatsApp same as Mobile */}

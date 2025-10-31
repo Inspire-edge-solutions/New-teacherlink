@@ -1,12 +1,13 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle, useRef } from "react";
 import Select from "react-select";
-import { TextField, MenuItem } from "@mui/material";
-import "./profile-styles.css";
+// Tailwind migration: removed profile-styles.css import and MUI TextField
 import axios from "axios";
 import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PropTypes from "prop-types";
+import { FaChevronDown } from "react-icons/fa";
+import InputWithTooltip from "../../../../services/InputWithTooltip";
 
 // Helper: Convert a value to an array if needed.
 const parseArray = (val) => {
@@ -96,49 +97,6 @@ const Education = forwardRef(({
   const { user } = useAuth();
 
   // ========== REUSABLE STYLES ==========
-  // MUI TextField styles (for all text inputs and selects)
-  const muiTextFieldStyles = {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    '& .MuiOutlinedInput-root': {
-      borderRadius: '8px',
-      '& fieldset': {
-        borderColor: '#D1D5DB',
-      },
-      '&:hover fieldset': {
-        borderColor: '#FDA4AF',
-      },
-      '&.Mui-focused fieldset': {
-        borderColor: '#FDA4AF',
-        borderWidth: '2px',
-      },
-    },
-    '& .MuiInputLabel-root': {
-      color: '#6B7280',
-      '&.Mui-focused': {
-        color: '#F43F5E',
-      },
-    },
-    '& .MuiInputLabel-asterisk': {
-      color: '#EF4444', // Red asterisk for required fields
-    },
-    '& .MuiOutlinedInput-input': {
-      padding: '14px',
-    },
-    '& .MuiSelect-icon': {
-      color: '#EF4444',
-    },
-  };
-
-  // MUI Select MenuProps (for z-index)
-  const muiSelectProps = {
-    MenuProps: {
-      sx: {
-        zIndex: 1400,
-      }
-    }
-  };
-
   // react-select styles
   const reactSelectStyles = {
     control: (base, state) => ({
@@ -542,13 +500,32 @@ const Education = forwardRef(({
   const fetchSubjects = async () => {
     try {
       const response = await axios.get(import.meta.env.VITE_DEV1_API + "/education-data");
-      const formattedSubjects = response.data.map((subject) => ({
-        value: subject.value,
-        label: subject.label
+      console.log("Education subjects API response:", response.data);
+      
+      // Handle different response formats
+      let dataArray = [];
+      if (Array.isArray(response.data)) {
+        dataArray = response.data;
+      } else if (response.data?.data && Array.isArray(response.data.data)) {
+        dataArray = response.data.data;
+      } else if (response.data?.subjects && Array.isArray(response.data.subjects)) {
+        dataArray = response.data.subjects;
+      }
+      
+      if (!Array.isArray(dataArray) || dataArray.length === 0) {
+        console.warn("No education subjects data found in response:", response.data);
+        return;
+      }
+      
+      const formattedSubjects = dataArray.map((subject) => ({
+        value: subject.value || subject.subject,
+        label: subject.label || subject.name || subject.subject
       }));
       setCoreSubjectsOptions(formattedSubjects);
+      console.log("Formatted subjects:", formattedSubjects);
     } catch (error) {
       console.error("Error fetching education subjects:", error);
+      toast.error("Failed to load education subjects. Please refresh the page.");
     }
   };
   useEffect(() => {
@@ -560,28 +537,144 @@ const Education = forwardRef(({
     const fetchDegrees = async () => {
       try {
         const response = await fetch(import.meta.env.VITE_DEV1_API + "/constants");
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
-        const transformedData = data.map((item) => ({
-          category: item.category,
-          value: item.value,
-          label: item.label
+        console.log("Constants API response:", data);
+        
+        // Handle different response formats
+        let dataArray = [];
+        if (Array.isArray(data)) {
+          dataArray = data;
+        } else if (data?.data && Array.isArray(data.data)) {
+          dataArray = data.data;
+        } else if (data?.constants && Array.isArray(data.constants)) {
+          dataArray = data.constants;
+        }
+        
+        if (!Array.isArray(dataArray) || dataArray.length === 0) {
+          console.warn("No constants data found in response:", data);
+          toast.warn("No dropdown options available. Please check if the API is working.");
+          return;
+        }
+        
+        const transformedData = dataArray.map((item) => ({
+          category: item.category || item.type,
+          value: item.value || item.id,
+          label: item.label || item.name || item.value
         }));
-        setDegrees(transformedData.filter((item) => item.category === "Degrees") || []);
-        setMasterDegrees(
-          transformedData.filter((item) => item.category === "MasterDegree") || []
-        );
-        setSyllabusOptions(
-          transformedData.filter((item) => item.category === "Curriculum") || []
-        );
+        
+        const degreesList = transformedData.filter((item) => 
+          item.category === "Degrees" || item.category === "Degree"
+        ) || [];
+        const masterDegreesList = transformedData.filter((item) => 
+          item.category === "MasterDegree" || item.category === "Master Degree"
+        ) || [];
+        const syllabusList = transformedData.filter((item) => 
+          item.category === "Curriculum" || item.category === "Syllabus"
+        ) || [];
+        
+        setDegrees(degreesList);
+        setMasterDegrees(masterDegreesList);
+        setSyllabusOptions(syllabusList);
+        
+        //console.log("Degrees:", degreesList);
+        //console.log("Master Degrees:", masterDegreesList);
+        //console.log("Syllabus Options:", syllabusList);
+        
+        if (degreesList.length === 0 && masterDegreesList.length === 0 && syllabusList.length === 0) {
+          console.warn("No matching categories found. Available categories:", 
+            [...new Set(transformedData.map(item => item.category))]
+          );
+        }
       } catch (error) {
         console.error("Error fetching degree constants:", error);
+        toast.error("Failed to load dropdown options. Please refresh the page.");
       }
     };
     fetchDegrees();
   }, []);
 
+  // Helper function to get minimum year based on previous education level
+  const getMinimumYearForLevel = (educationType, currentIndex = null) => {
+    // Grade 10 has no minimum (base level)
+    if (educationType === "grade10") {
+      return 1960;
+    }
+
+    // Grade 12 minimum = Grade 10 year (if exists)
+    if (educationType === "grade12") {
+      const grade10Year = parseInt(grade10Data.yearOfPassing);
+      return grade10Year && !isNaN(grade10Year) ? grade10Year : 1960;
+    }
+
+    // For other levels, find the maximum year from all previous levels
+    let maxPreviousYear = 1960;
+    
+    // Always check Grade 10 first
+    const grade10Year = parseInt(grade10Data.yearOfPassing);
+    if (grade10Year && !isNaN(grade10Year)) {
+      maxPreviousYear = Math.max(maxPreviousYear, grade10Year);
+    }
+
+    // Check all additional education entries (including Grade 12)
+    additionalEducation.forEach((entry, idx) => {
+      // Skip current entry if checking for same type
+      if (currentIndex !== null && idx >= currentIndex) return;
+      
+      // Skip if entry type doesn't exist or data doesn't exist
+      if (!entry.type || !entry.data) return;
+      
+      // Get year from either yearOfPassing or yearOfCompletion (doctorate uses yearOfCompletion)
+      // Note: year is stored in entry.data, not directly in entry
+      const entryYearStr = entry.data.yearOfPassing || entry.data.yearOfCompletion || "";
+      const entryYear = parseInt(entryYearStr);
+      
+      if (entryYearStr && !isNaN(entryYear)) {
+        // Determine hierarchy: grade12 < degree < masterDegree < doctorate
+        const currentLevel = getEducationLevelOrder(educationType);
+        const entryLevel = getEducationLevelOrder(entry.type);
+        
+        // Only consider entries that come BEFORE this level in hierarchy
+        // For example: 
+        // - If current is "degree" (level 3), consider "grade12" (level 2) and "grade10" (level 1)
+        // - If current is "nttMtt" (level 2), consider "grade10" (level 1) and "grade12" (level 2) if it exists
+        // - If current is "certificate" (level 3), consider "grade12" (level 2) and "grade10" (level 1)
+        // Use <= for same-level entries that come before in the array (e.g., multiple grade12 entries)
+        if (entryLevel < currentLevel || (entryLevel === currentLevel && idx < currentIndex)) {
+          maxPreviousYear = Math.max(maxPreviousYear, entryYear);
+        }
+      }
+    });
+
+    return maxPreviousYear;
+  };
+
+  // Helper to get numeric order for education levels (lower = earlier in sequence)
+  const getEducationLevelOrder = (type) => {
+    const order = {
+      "grade10": 1,
+      "grade12": 2,
+      "degree": 3,
+      "bEd": 4,
+      "masterDegree": 5,
+      "doctorate": 6,
+      "certificate": 3, // Certificates typically come after Grade 12, so treat as degree level
+      "dEd": 2, // D.Ed comes after Grade 10/12
+      "nttMtt": 2 // NTT/MTT comes after Grade 10/12
+    };
+    return order[type] || 99;
+  };
+
   // For Grade 10, Degree, Master's, etc. where you need year selection
-  const generateYearOptions = (startYear = 1960, endYear = new Date().getFullYear()) => {
+  const generateYearOptions = (minYear = null, educationType = null, currentIndex = null) => {
+    const calculatedMinYear = educationType ? getMinimumYearForLevel(educationType, currentIndex) : 1960;
+    const startYear = minYear !== null ? minYear : calculatedMinYear;
+    const endYear = new Date().getFullYear() + 1; // Allow future years for "Pursuing" status
+    
     const years = [];
     for (let year = endYear; year >= startYear; year--) {
       years.push(<option key={year} value={year}>{year}</option>);
@@ -597,147 +690,152 @@ const Education = forwardRef(({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {grade12courseStatus && (
             <div className="w-full relative">
-              <select
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                value={data.courseStatus || ""}
-                onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
-                required
-              >
-                <option value="" disabled>Course Status</option>
-                {courseStatusOptions.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-              <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              <InputWithTooltip label="Course Status" required>
+                <select
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                  value={data.courseStatus || ""}
+                  onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
+                  required
+                >
+                  <option value="" disabled>Course Status</option>
+                  {courseStatusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+                <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+              </InputWithTooltip>
             </div>
             )}
             {grade12syllabus && (
-              <div className="w-full">
-                <Select
-                  value={syllabusOptions.find(option => option.value === data.syllabus) || null}
-                  onChange={(selectedOption) => handleEducationDataChange(index, "syllabus", selectedOption ? selectedOption.value : "")}
-                  options={syllabusOptions}
-                  placeholder="Syllabus"
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                  isClearable={false}
-                  menuPortalTarget={document.body}
-                  styles={reactSelectStyles}
-                />
+              <div className="w-full relative">
+                <InputWithTooltip label="Syllabus">
+                  <select
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                    value={data.syllabus || ""}
+                    onChange={(e) => handleEducationDataChange(index, "syllabus", e.target.value)}
+                  >
+                    <option value="" disabled>Syllabus</option>
+                    {syllabusOptions.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </InputWithTooltip>
               </div>
             )}
             {grade12school && (
               <div className="w-full">
-                <input
-                  type="text"
-                  value={data.schoolName}
-                  onChange={(e) => handleEducationDataChange(index, "schoolName", e.target.value)}
-                  placeholder="School Name"
-                  pattern="[a-zA-Z0-9 ]*"
-                  maxLength={30}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                />
+                <InputWithTooltip label="School Name">
+                  <input
+                    type="text"
+                    value={data.schoolName}
+                    onChange={(e) => handleEducationDataChange(index, "schoolName", e.target.value)}
+                    placeholder="School Name"
+                    pattern="[a-zA-Z0-9 ]*"
+                    maxLength={30}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                  />
+                </InputWithTooltip>
               </div>
             )}
             {grade12year && (
             <div className="w-full relative">
-              <select
-                value={data.yearOfPassing}
-                onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
-                required={data.courseStatus !== "Pursuing"}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-              >
-                <option value="" disabled>
-                  {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
-                </option>
-                {generateYearOptions()}
-              </select>
-              <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              <InputWithTooltip label="Year of Passing" required={data.courseStatus !== "Pursuing"}>
+                <select
+                  value={data.yearOfPassing}
+                  onChange={(e) => {
+                    const selectedYear = parseInt(e.target.value);
+                    const minYear = getMinimumYearForLevel("grade12", index);
+                    if (selectedYear && selectedYear < minYear) {
+                      toast.error(`Grade 12 passing year must be ${minYear} or later (after Grade 10)`);
+                      return;
+                    }
+                    handleEducationDataChange(index, "yearOfPassing", e.target.value);
+                  }}
+                  required={data.courseStatus !== "Pursuing"}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                >
+                  <option value="" disabled>
+                    {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
+                  </option>
+                  {generateYearOptions(null, "grade12", index)}
+                </select>
+                <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+              </InputWithTooltip>
             </div>
             )}
             {grade12coreSubjects && (
             <div className="w-full">
-              <Select
-                isMulti
-                value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
-                onChange={(selected) => {
-                  const selectedValues = selected ? selected.map(option => option.value) : [];
-                  handleEducationDataChange(index, "coreSubjects", selectedValues);
-                }}
-                options={coreSubjectsOptions}
-                className="react-select-container"
-                classNamePrefix="react-select"
-                placeholder="Core Subjects"
-                required
-                isClearable={false}
-                styles={{
-                  control: (base, state) => ({
-                    ...base,
-                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                    '&:hover': { borderColor: '#FDA4AF' },
-                    borderRadius: '0.5rem',
-                    padding: '0.25rem',
-                    backgroundColor: 'white'
-                  }),
-                  dropdownIndicator: (base) => ({
-                    ...base,
-                    color: '#EF4444'
-                  })
-                }}
-              />
+              <InputWithTooltip label="Core Subjects" required>
+                <Select
+                  isMulti
+                  value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
+                  onChange={(selected) => {
+                    const selectedValues = selected ? selected.map(option => option.value) : [];
+                    handleEducationDataChange(index, "coreSubjects", selectedValues);
+                  }}
+                  options={coreSubjectsOptions}
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  placeholder="Core Subjects"
+                  required
+                  isClearable={false}
+                  styles={reactSelectStyles}
+                />
+              </InputWithTooltip>
             </div>
             )}
             {data.coreSubjects.includes("Others") && (
               <div className="w-full">
-                <input
-                  type="text"
-                  value={data.otherSubjects}
-                  onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
-                  placeholder="Specify other subjects"
-                  required
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                />
+                <InputWithTooltip label="Other Subjects" required>
+                  <input
+                    type="text"
+                    value={data.otherSubjects}
+                    onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
+                    placeholder="Specify other subjects"
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                  />
+                </InputWithTooltip>
               </div>
             )}
             {grade12percentage && (
               <div className="w-full">
-                <input
-                  type="text"
-                  value={data.percentage}
-                  onChange={(e) => handleEducationDataChange(index, "percentage", e.target.value)}
-                  placeholder={data.courseStatus === "Pursuing" ? "Current Grade / CGPA (Optional)" : "Grade / Percentage"}
-                  pattern="[a-zA-Z0-9+%]*"
-                  maxLength={5}
-                  minLength={data.courseStatus === "Pursuing" ? 0 : 2}
-                  required={data.courseStatus !== "Pursuing"}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                />
+                <InputWithTooltip label="Grade / Percentage" required={data.courseStatus !== "Pursuing"}>
+                  <input
+                    type="text"
+                    value={data.percentage}
+                    onChange={(e) => handleEducationDataChange(index, "percentage", e.target.value)}
+                    placeholder={data.courseStatus === "Pursuing" ? "Current Grade / CGPA (Optional)" : "Grade / Percentage"}
+                    pattern="[a-zA-Z0-9+%]*"
+                    maxLength={5}
+                    minLength={data.courseStatus === "Pursuing" ? 0 : 2}
+                    required={data.courseStatus !== "Pursuing"}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                  />
+                </InputWithTooltip>
               </div>
             )}
             {grade12mode && (
               <div className="w-full relative">
-                <select
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                  value={data.mode || ""}
-                  onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
-                  required
-                >
-                  <option value="" disabled>Mode of Study</option>
-                  {educationModeOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                <InputWithTooltip label="Mode of Study">
+                  <select
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                    value={data.mode || ""}
+                    onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Mode of Study</option>
+                    {educationModeOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </InputWithTooltip>
               </div>
             )}
           </div>
@@ -747,565 +845,169 @@ const Education = forwardRef(({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {degreeCourseStatus && (
               <div className="w-full relative">
-                <select
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                  value={data.courseStatus || ""}
-                  onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
-                  required
-                >
-                  <option value="" disabled>Course Status</option>
-                  {courseStatusOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                <InputWithTooltip label="Course Status" required>
+                  <select
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                    value={data.courseStatus || ""}
+                    onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Course Status</option>
+                    {courseStatusOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </InputWithTooltip>
               </div>
               )}
               {degreeName && (
-              <div className="w-full">
-                <Select
-                  value={degrees.find(d => d.value === data.courseName) || null}
-                  onChange={(selectedOption) => handleEducationDataChange(index, "courseName", selectedOption ? selectedOption.value : "")}
-                  options={degrees}
-                  placeholder="Degree Name"
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                  required
-                  isClearable={false}
-                  menuPortalTarget={document.body}
-                  styles={reactSelectStyles}
-                />
+              <div className="w-full relative">
+                <InputWithTooltip label="Degree Name">
+                  <select
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                    value={data.courseName || ""}
+                    onChange={(e) => handleEducationDataChange(index, "courseName", e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Degree Name</option>
+                    {degrees.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </InputWithTooltip>
               </div>
               )}
               {degreeCollege && (
                 <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.collegeName}
-                    onChange={(e) => handleEducationDataChange(index, "collegeName", e.target.value)}
-                    placeholder="College Name"
-                    pattern="[a-zA-Z0-9 ]*"
-                    maxLength={30}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
+                  <InputWithTooltip label="College Name">
+                    <input
+                      type="text"
+                      value={data.collegeName}
+                      onChange={(e) => handleEducationDataChange(index, "collegeName", e.target.value)}
+                      placeholder="College Name"
+                      pattern="[a-zA-Z0-9 ]*"
+                      maxLength={30}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    />
+                  </InputWithTooltip>
                 </div>
               )}
               {degreePlace && (
                 <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.placeOfStudy}
-                    onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
-                    placeholder="Place of Study"
-                    maxLength={30}
-                    pattern="[a-zA-Z0-9 ]*"
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {degreeUniversity && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.universityName}
-                    onChange={(e) => handleEducationDataChange(index, "universityName", e.target.value)}
-                    placeholder="University Name"
-                    maxLength={30}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {degreeYear && (
-              <div className="w-full relative">
-                <select
-                  value={data.yearOfPassing}
-                  onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
-                  required={data.courseStatus !== "Pursuing"}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                >
-                  <option value="" disabled>
-                    {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
-                  </option>
-                  {generateYearOptions()}
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-              )}
-              {degreeCoreSubjects && (
-              <div className="w-full">
-                <Select
-                  isMulti
-                  value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
-                  onChange={(selected) => {
-                    const selectedValues = selected ? selected.map(option => option.value) : [];
-                    handleEducationDataChange(index, "coreSubjects", selectedValues);
-                  }}
-                  options={coreSubjectsOptions}
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                  placeholder="Core Subjects"
-                  required
-                  isClearable={false}
-                  menuPortalTarget={document.body}
-                  styles={reactSelectStyles}
-                />
-              </div>
-              )}
-              {data.coreSubjects.includes("Others") && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.otherSubjects}
-                    onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
-                    placeholder="Specify other subjects"
-                    required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {degreePercentage && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.percentage}
-                    onChange={(e) => handleEducationDataChange(index, "percentage", e.target.value)}
-                    placeholder={data.courseStatus === "Pursuing" ? "Current CGPA / Grade (Optional)" : "Grade / Percentage"}
-                    pattern="[a-zA-Z0-9+%]*"
-                    maxLength={5}
-                    minLength={data.courseStatus === "Pursuing" ? 0 : 2}
-                    required={data.courseStatus !== "Pursuing"}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {degreeMode && (
-                <div className="w-full relative">
-                  <select
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                    value={data.mode || ""}
-                    onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
-                    required
-                  >
-                    <option value="" disabled>Mode of Study</option>
-                    {educationModeOptions.map(option => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
-                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              )}
-          </div>
-        );
-      case "masterDegree":
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {masterCourseStatus && (
-              <div className="w-full relative">
-                <select
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                  value={data.courseStatus || ""}
-                  onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
-                  required
-                >
-                  <option value="" disabled>Course Status</option>
-                  {courseStatusOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-              )}
-              {masterName && (
-              <div className="w-full">
-                <Select
-                  value={masterDegrees.find(d => d.value === data.courseName) || null}
-                  onChange={(selectedOption) => handleEducationDataChange(index, "courseName", selectedOption ? selectedOption.value : "")}
-                  options={masterDegrees}
-                  placeholder="Master Degree Name"
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                  required
-                  isClearable={false}
-                  menuPortalTarget={document.body}
-                  styles={reactSelectStyles}
-                />
-              </div>
-              )}
-              {masterCollege && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.collegeName}
-                    onChange={(e) => handleEducationDataChange(index, "collegeName", e.target.value)}
-                    placeholder="College Name"
-                    maxLength={30}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {masterPlace && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.placeOfStudy}
-                    onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
-                    placeholder="Place of Study"
-                    maxLength={30}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {masterUniversity && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.universityName}
-                    onChange={(e) => handleEducationDataChange(index, "universityName", e.target.value)}
-                    placeholder="University Name"
-                    maxLength={30}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {masterYear && (
-              <div className="w-full relative">
-                <select
-                  value={data.yearOfPassing}
-                  onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
-                  required={data.courseStatus !== "Pursuing"}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                >
-                  <option value="" disabled>
-                    {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
-                  </option>
-                  {generateYearOptions()}
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-              )}
-              {masterCoreSubjects && (
-              <div className="w-full">
-                <Select
-                  isMulti
-                  value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
-                  onChange={(selected) => {
-                    const selectedValues = selected ? selected.map(option => option.value) : [];
-                    handleEducationDataChange(index, "coreSubjects", selectedValues);
-                  }}
-                  options={coreSubjectsOptions}
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                  placeholder="Core Subjects"
-                  required
-                  isClearable={false}
-                  menuPortalTarget={document.body}
-                  styles={reactSelectStyles}
-                />
-              </div>
-              )}
-              {data.coreSubjects.includes("Others") && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.otherSubjects}
-                    onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
-                    placeholder="Specify other subjects"
-                    required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {masterPercentage && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.percentage}
-                    onChange={(e) => handleEducationDataChange(index, "percentage", e.target.value)}
-                    placeholder={data.courseStatus === "Pursuing" ? "Current CGPA / Grade (Optional)" : "Grade / Percentage"}
-                    pattern="[a-zA-Z0-9+%]*"
-                    maxLength={5}
-                    minLength={data.courseStatus === "Pursuing" ? 0 : 2}
-                    required={data.courseStatus !== "Pursuing"}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {masterMode && (
-                <div className="w-full relative">
-                  <select
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                    value={data.mode || ""}
-                    onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
-                    required
-                  >
-                    <option value="" disabled>Mode of Study</option>
-                    {educationModeOptions.map(option => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
-                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              )}
-          </div>
-        );
-      case "doctorate":
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {doctorateCourseStatus && (
-              <div className="w-full relative">
-                <select
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                  value={data.courseStatus || ""}
-                  onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
-                  required
-                >
-                  <option value="" disabled>Course Status</option>
-                  {courseStatusOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-              )}
-              {doctorateCollege && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.placeOfStudy}
-                    onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
-                    placeholder="Place of Study"
-                    maxLength={30}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {doctorateUniversity && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.universityName}
-                    onChange={(e) => handleEducationDataChange(index, "universityName", e.target.value)}
-                    placeholder="University Name"
-                    maxLength={30}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {doctorateYear && (
-              <div className="w-full relative">
-                <select
-                  value={data.yearOfCompletion}
-                  onChange={(e) => handleEducationDataChange(index, "yearOfCompletion", e.target.value)}
-                  required
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                >
-                  <option value="" disabled>Year of Completion</option>
-                  {generateYearOptions()}
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-              )}
-              {doctorateCoreSubjects && (
-              <div className="w-full">
-                <Select
-                  isMulti
-                  value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
-                  onChange={(selected) => {
-                    const selectedValues = selected ? selected.map(option => option.value) : [];
-                    handleEducationDataChange(index, "coreSubjects", selectedValues);
-                  }}
-                  options={coreSubjectsOptions}
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                  placeholder="Core Subjects"
-                  required
-                  isClearable={false}
-                  menuPortalTarget={document.body}
-                  styles={reactSelectStyles}
-                />
-              </div>
-              )}
-              {data.coreSubjects.includes("Others") && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.otherSubjects}
-                    onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
-                    placeholder="Specify other subjects"
-                    required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {doctorateMode && (
-                <div className="w-full relative">
-                  <select
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                    value={data.mode || ""}
-                    onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
-                    required
-                  >
-                    <option value="" disabled>Mode of Study</option>
-                    {educationModeOptions.map(option => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
-                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              )}
-          </div>
-        );
-      case "nttMtt":
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {isEasyMode ? (
-                <div className="w-full md:w-1/2 relative">
-                  <select
-                    value={data.yearOfPassing}
-                    onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
-                    required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                  >
-                    <option value="" disabled>Year of Passing</option>
-                    {generateYearOptions()}
-                  </select>
-                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              ) : (
-                <>
-                  <div className="w-full relative">
-                    <select
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                      value={data.courseStatus || ""}
-                      onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
-                      required
-                    >
-                      <option value="" disabled>Course Status</option>
-                      {courseStatusOptions.map(option => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      ))}
-                    </select>
-                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                  <div className="w-full">
-                    <input
-                      type="text"
-                      value={data.instituteName}
-                      onChange={(e) => handleEducationDataChange(index, "instituteName", e.target.value)}
-                      placeholder="Institute Name"
-                      maxLength={30}
-                      pattern="[a-zA-Z0-9 ]*"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                    />
-                  </div>
-                  <div className="w-full">
+                  <InputWithTooltip label="Place of Study">
                     <input
                       type="text"
                       value={data.placeOfStudy}
                       onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
                       placeholder="Place of Study"
                       maxLength={30}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                    />
-                  </div>
-                  <div className="w-full">
-                    <input
-                      type="text"
-                      value={data.affiliatedTo}
-                      onChange={(e) => handleEducationDataChange(index, "affiliatedTo", e.target.value)}
-                      placeholder="Affiliated to / recognized by"
-                      maxLength={30}
                       pattern="[a-zA-Z0-9 ]*"
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                  </div>
-                  <div className="w-full">
-                    <Select
-                      value={courseDurationOptions.find(option => option.value === data.courseDuration)}
-                      onChange={(selected) => handleEducationDataChange(index, "courseDuration", selected ? selected.value : "")}
-                      options={courseDurationOptions}
-                      placeholder="Course Duration"
-                      className="react-select-container"
-                      classNamePrefix="react-select"
-                      isClearable={false}
-                      styles={{
-                        control: (base, state) => ({
-                          ...base,
-                          borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                          boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                          '&:hover': { borderColor: '#FDA4AF' },
-                          borderRadius: '0.5rem',
-                          padding: '0.25rem',
-                          backgroundColor: 'white'
-                        }),
-                        dropdownIndicator: (base) => ({
-                          ...base,
-                          color: '#EF4444'
-                        })
-                      }}
+                  </InputWithTooltip>
+                </div>
+              )}
+              {degreeUniversity && (
+                <div className="w-full">
+                  <InputWithTooltip label="University Name">
+                    <input
+                      type="text"
+                      value={data.universityName}
+                      onChange={(e) => handleEducationDataChange(index, "universityName", e.target.value)}
+                      placeholder="University Name"
+                      maxLength={30}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                  </div>
-                  <div className="w-full relative">
-                    <select
-                      value={data.yearOfPassing}
-                      onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
+                  </InputWithTooltip>
+                </div>
+              )}
+              {degreeYear && (
+              <div className="w-full relative">
+                <InputWithTooltip label="Year of Passing" required={data.courseStatus !== "Pursuing"}>
+                  <select
+                    value={data.yearOfPassing}
+                    onChange={(e) => {
+                      const selectedYear = parseInt(e.target.value);
+                      const minYear = getMinimumYearForLevel("degree", index);
+                      if (selectedYear && selectedYear < minYear) {
+                        toast.error(`Degree passing year must be ${minYear} or later`);
+                        return;
+                      }
+                      handleEducationDataChange(index, "yearOfPassing", e.target.value);
+                    }}
+                    required={data.courseStatus !== "Pursuing"}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                  >
+                    <option value="" disabled>
+                      {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
+                    </option>
+                    {generateYearOptions(null, "degree", index)}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </InputWithTooltip>
+              </div>
+              )}
+              {degreeCoreSubjects && (
+              <div className="w-full">
+                <InputWithTooltip label="Core Subjects" required>
+                  <Select
+                    isMulti
+                    value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
+                    onChange={(selected) => {
+                      const selectedValues = selected ? selected.map(option => option.value) : [];
+                      handleEducationDataChange(index, "coreSubjects", selectedValues);
+                    }}
+                    options={coreSubjectsOptions}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    placeholder="Core Subjects"
+                    required
+                    isClearable={false}
+                    menuPortalTarget={document.body}
+                    styles={reactSelectStyles}
+                  />
+                </InputWithTooltip>
+              </div>
+              )}
+              {data.coreSubjects.includes("Others") && (
+                <div className="w-full">
+                  <InputWithTooltip label="Other Subjects" required>
+                    <input
+                      type="text"
+                      value={data.otherSubjects}
+                      onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
+                      placeholder="Specify other subjects"
                       required
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                    >
-                      <option value="" disabled>Year of Passing</option>
-                      {generateYearOptions()}
-                    </select>
-                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                  <div className="w-full">
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    />
+                  </InputWithTooltip>
+                </div>
+              )}
+              {degreePercentage && (
+                <div className="w-full">
+                  <InputWithTooltip label="Grade / Percentage" required={data.courseStatus !== "Pursuing"}>
                     <input
                       type="text"
                       value={data.percentage}
                       onChange={(e) => handleEducationDataChange(index, "percentage", e.target.value)}
-                      placeholder="Grade / Percentage"
+                      placeholder={data.courseStatus === "Pursuing" ? "Current CGPA / Grade (Optional)" : "Grade / Percentage"}
                       pattern="[a-zA-Z0-9+%]*"
                       maxLength={5}
-                      minLength={2}
+                      minLength={data.courseStatus === "Pursuing" ? 0 : 2}
+                      required={data.courseStatus !== "Pursuing"}
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                  </div>
-                  <div className="w-full relative">
+                  </InputWithTooltip>
+                </div>
+              )}
+              {degreeMode && (
+                <div className="w-full relative">
+                  <InputWithTooltip label="Mode of Study">
                     <select
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                       style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
@@ -1318,9 +1020,481 @@ const Education = forwardRef(({
                         <option key={option.value} value={option.value}>{option.label}</option>
                       ))}
                     </select>
-                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                  </InputWithTooltip>
+                </div>
+              )}
+          </div>
+        );
+      case "masterDegree":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {masterCourseStatus && (
+              <div className="w-full relative">
+                <InputWithTooltip label="Course Status" required>
+                  <select
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                    value={data.courseStatus || ""}
+                    onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Course Status</option>
+                    {courseStatusOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </InputWithTooltip>
+              </div>
+              )}
+              {masterName && (
+              <div className="w-full relative">
+                <InputWithTooltip label="Master Degree Name">
+                  <select
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                    value={data.courseName || ""}
+                    onChange={(e) => handleEducationDataChange(index, "courseName", e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Master Degree Name</option>
+                    {masterDegrees.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </InputWithTooltip>
+              </div>
+              )}
+              {masterCollege && (
+                <div className="w-full">
+                  <InputWithTooltip label="College Name">
+                    <input
+                      type="text"
+                      value={data.collegeName}
+                      onChange={(e) => handleEducationDataChange(index, "collegeName", e.target.value)}
+                      placeholder="College Name"
+                      maxLength={30}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    />
+                  </InputWithTooltip>
+                </div>
+              )}
+              {masterPlace && (
+                <div className="w-full">
+                  <InputWithTooltip label="Place of Study">
+                    <input
+                      type="text"
+                      value={data.placeOfStudy}
+                      onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
+                      placeholder="Place of Study"
+                      maxLength={30}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    />
+                  </InputWithTooltip>
+                </div>
+              )}
+              {masterUniversity && (
+                <div className="w-full">
+                  <InputWithTooltip label="University Name">
+                    <input
+                      type="text"
+                      value={data.universityName}
+                      onChange={(e) => handleEducationDataChange(index, "universityName", e.target.value)}
+                      placeholder="University Name"
+                      maxLength={30}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    />
+                  </InputWithTooltip>
+                </div>
+              )}
+              {masterYear && (
+              <div className="w-full relative">
+                <InputWithTooltip label="Year of Passing" required={data.courseStatus !== "Pursuing"}>
+                  <select
+                    value={data.yearOfPassing}
+                    onChange={(e) => {
+                      const selectedYear = parseInt(e.target.value);
+                      const minYear = getMinimumYearForLevel("masterDegree", index);
+                      if (selectedYear && selectedYear < minYear) {
+                        toast.error(`Master's passing year must be ${minYear} or later`);
+                        return;
+                      }
+                      handleEducationDataChange(index, "yearOfPassing", e.target.value);
+                    }}
+                    required={data.courseStatus !== "Pursuing"}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                  >
+                    <option value="" disabled>
+                      {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
+                    </option>
+                    {generateYearOptions(null, "masterDegree", index)}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </InputWithTooltip>
+              </div>
+              )}
+              {masterCoreSubjects && (
+              <div className="w-full">
+                <InputWithTooltip label="Core Subjects" required>
+                  <Select
+                    isMulti
+                    value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
+                    onChange={(selected) => {
+                      const selectedValues = selected ? selected.map(option => option.value) : [];
+                      handleEducationDataChange(index, "coreSubjects", selectedValues);
+                    }}
+                    options={coreSubjectsOptions}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    placeholder="Core Subjects"
+                    required
+                    isClearable={false}
+                    menuPortalTarget={document.body}
+                    styles={reactSelectStyles}
+                  />
+                </InputWithTooltip>
+              </div>
+              )}
+              {data.coreSubjects.includes("Others") && (
+                <div className="w-full">
+                  <InputWithTooltip label="Other Subjects" required>
+                    <input
+                      type="text"
+                      value={data.otherSubjects}
+                      onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
+                      placeholder="Specify other subjects"
+                      required
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    />
+                  </InputWithTooltip>
+                </div>
+              )}
+              {masterPercentage && (
+                <div className="w-full">
+                  <InputWithTooltip label="Grade / Percentage" required={data.courseStatus !== "Pursuing"}>
+                    <input
+                      type="text"
+                      value={data.percentage}
+                      onChange={(e) => handleEducationDataChange(index, "percentage", e.target.value)}
+                      placeholder={data.courseStatus === "Pursuing" ? "Current CGPA / Grade (Optional)" : "Grade / Percentage"}
+                      pattern="[a-zA-Z0-9+%]*"
+                      maxLength={5}
+                      minLength={data.courseStatus === "Pursuing" ? 0 : 2}
+                      required={data.courseStatus !== "Pursuing"}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    />
+                  </InputWithTooltip>
+                </div>
+              )}
+              {masterMode && (
+                <div className="w-full relative">
+                  <InputWithTooltip label="Mode of Study">
+                    <select
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                      value={data.mode || ""}
+                      onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
+                      required
+                    >
+                      <option value="" disabled>Mode of Study</option>
+                      {educationModeOptions.map(option => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                    <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                  </InputWithTooltip>
+                </div>
+              )}
+          </div>
+        );
+      case "doctorate":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {doctorateCourseStatus && (
+              <div className="w-full relative">
+                <InputWithTooltip label="Course Status" required>
+                  <select
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                    value={data.courseStatus || ""}
+                    onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Course Status</option>
+                    {courseStatusOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </InputWithTooltip>
+              </div>
+              )}
+              {doctorateCollege && (
+                <div className="w-full">
+                  <InputWithTooltip label="Place of Study">
+                    <input
+                      type="text"
+                      value={data.placeOfStudy}
+                      onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
+                      placeholder="Place of Study"
+                      maxLength={30}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    />
+                  </InputWithTooltip>
+                </div>
+              )}
+              {doctorateUniversity && (
+                <div className="w-full">
+                  <InputWithTooltip label="University Name">
+                    <input
+                      type="text"
+                      value={data.universityName}
+                      onChange={(e) => handleEducationDataChange(index, "universityName", e.target.value)}
+                      placeholder="University Name"
+                      maxLength={30}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    />
+                  </InputWithTooltip>
+                </div>
+              )}
+              {doctorateYear && (
+              <div className="w-full relative">
+                <InputWithTooltip label="Year of Completion" required>
+                  <select
+                    value={data.yearOfCompletion}
+                    onChange={(e) => {
+                      const selectedYear = parseInt(e.target.value);
+                      const minYear = getMinimumYearForLevel("doctorate", index);
+                      if (selectedYear && selectedYear < minYear) {
+                        toast.error(`Doctorate completion year must be ${minYear} or later`);
+                        return;
+                      }
+                      handleEducationDataChange(index, "yearOfCompletion", e.target.value);
+                    }}
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                  >
+                    <option value="" disabled>Year of Completion</option>
+                    {generateYearOptions(null, "doctorate", index)}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </InputWithTooltip>
+              </div>
+              )}
+              {doctorateCoreSubjects && (
+              <div className="w-full">
+                <InputWithTooltip label="Core Subjects" required>
+                  <Select
+                    isMulti
+                    value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
+                    onChange={(selected) => {
+                      const selectedValues = selected ? selected.map(option => option.value) : [];
+                      handleEducationDataChange(index, "coreSubjects", selectedValues);
+                    }}
+                    options={coreSubjectsOptions}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    placeholder="Core Subjects"
+                    required
+                    isClearable={false}
+                    menuPortalTarget={document.body}
+                    styles={reactSelectStyles}
+                  />
+                </InputWithTooltip>
+              </div>
+              )}
+              {data.coreSubjects.includes("Others") && (
+                <div className="w-full">
+                  <InputWithTooltip label="Other Subjects" required>
+                    <input
+                      type="text"
+                      value={data.otherSubjects}
+                      onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
+                      placeholder="Specify other subjects"
+                      required
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    />
+                  </InputWithTooltip>
+                </div>
+              )}
+              {doctorateMode && (
+                <div className="w-full relative">
+                  <InputWithTooltip label="Mode of Study">
+                    <select
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                      value={data.mode || ""}
+                      onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
+                      required
+                    >
+                      <option value="" disabled>Mode of Study</option>
+                      {educationModeOptions.map(option => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                    <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                  </InputWithTooltip>
+                </div>
+              )}
+          </div>
+        );
+      case "nttMtt":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {isEasyMode ? (
+                <div className="w-full md:w-1/2 relative">
+                  <InputWithTooltip label="Year of Passing" required>
+                    <select
+                      value={data.yearOfPassing}
+                      onChange={(e) => {
+                        const selectedYear = parseInt(e.target.value);
+                        const minYear = getMinimumYearForLevel("nttMtt", index);
+                        if (selectedYear && selectedYear < minYear) {
+                          toast.error(`NTT/MTT passing year must be ${minYear} or later`);
+                          return;
+                        }
+                        handleEducationDataChange(index, "yearOfPassing", e.target.value);
+                      }}
+                      required
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                    >
+                      <option value="" disabled>Year of Passing</option>
+                      {generateYearOptions(null, "nttMtt", index)}
+                    </select>
+                    <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                  </InputWithTooltip>
+                </div>
+              ) : (
+                <>
+                  <div className="w-full relative">
+                    <InputWithTooltip label="Course Status" required>
+                      <select
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                        style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                        value={data.courseStatus || ""}
+                        onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
+                        required
+                      >
+                        <option value="" disabled>Course Status</option>
+                        {courseStatusOptions.map(option => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                      <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                    </InputWithTooltip>
+                  </div>
+                  <div className="w-full">
+                    <InputWithTooltip label="Institute Name">
+                      <input
+                        type="text"
+                        value={data.instituteName}
+                        onChange={(e) => handleEducationDataChange(index, "instituteName", e.target.value)}
+                        placeholder="Institute Name"
+                        maxLength={30}
+                        pattern="[a-zA-Z0-9 ]*"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      />
+                    </InputWithTooltip>
+                  </div>
+                  <div className="w-full">
+                    <InputWithTooltip label="Place of Study">
+                      <input
+                        type="text"
+                        value={data.placeOfStudy}
+                        onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
+                        placeholder="Place of Study"
+                        maxLength={30}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      />
+                    </InputWithTooltip>
+                  </div>
+                  <div className="w-full">
+                    <InputWithTooltip label="Affiliated To">
+                      <input
+                        type="text"
+                        value={data.affiliatedTo}
+                        onChange={(e) => handleEducationDataChange(index, "affiliatedTo", e.target.value)}
+                        placeholder="Affiliated to / recognized by"
+                        maxLength={30}
+                        pattern="[a-zA-Z0-9 ]*"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      />
+                    </InputWithTooltip>
+                  </div>
+                  <div className="w-full relative">
+                    <InputWithTooltip label="Course Duration">
+                      <select
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                        style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                        value={data.courseDuration || ""}
+                        onChange={(e) => handleEducationDataChange(index, "courseDuration", e.target.value)}
+                      >
+                        <option value="" disabled>Course Duration</option>
+                        {courseDurationOptions.map((option) => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                      <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                    </InputWithTooltip>
+                  </div>
+                  <div className="w-full relative">
+                    <InputWithTooltip label="Year of Passing" required>
+                      <select
+                        value={data.yearOfPassing}
+                        onChange={(e) => {
+                          const selectedYear = parseInt(e.target.value);
+                          const minYear = getMinimumYearForLevel("nttMtt", index);
+                          if (selectedYear && selectedYear < minYear) {
+                            toast.error(`NTT/MTT passing year must be ${minYear} or later`);
+                            return;
+                          }
+                          handleEducationDataChange(index, "yearOfPassing", e.target.value);
+                        }}
+                        required
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                        style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                      >
+                        <option value="" disabled>Year of Passing</option>
+                        {generateYearOptions(null, "nttMtt", index)}
+                      </select>
+                      <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                    </InputWithTooltip>
+                  </div>
+                  <div className="w-full">
+                    <InputWithTooltip label="Grade / Percentage">
+                      <input
+                        type="text"
+                        value={data.percentage}
+                        onChange={(e) => handleEducationDataChange(index, "percentage", e.target.value)}
+                        placeholder="Grade / Percentage"
+                        pattern="[a-zA-Z0-9+%]*"
+                        maxLength={5}
+                        minLength={2}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      />
+                    </InputWithTooltip>
+                  </div>
+                  <div className="w-full relative">
+                    <InputWithTooltip label="Mode of Study">
+                      <select
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                        style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                        value={data.mode || ""}
+                        onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
+                        required
+                      >
+                        <option value="" disabled>Mode of Study</option>
+                        {educationModeOptions.map(option => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                      <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                    </InputWithTooltip>
                   </div>
                 </>
               )}
@@ -1331,340 +1505,26 @@ const Education = forwardRef(({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {bEdCourseStatus && (
               <div className="w-full relative">
-                <select
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                  value={data.courseStatus || ""}
-                  onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
-                  required
-                >
-                  <option value="" disabled>Course Status</option>
-                  {courseStatusOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                <InputWithTooltip label="Course Status" required>
+                  <select
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                    value={data.courseStatus || ""}
+                    onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Course Status</option>
+                    {courseStatusOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </InputWithTooltip>
               </div>
               )}
               {bEdCollege && (
                 <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.instituteName}
-                    onChange={(e) => handleEducationDataChange(index, "instituteName", e.target.value)}
-                    placeholder="Institute / College name"
-                    maxLength={30}
-                    pattern="[a-zA-Z0-9 ]*"
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-                )}
-              {bEdPlace && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.placeOfStudy}
-                    onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
-                    placeholder="Place of Study"
-                    maxLength={30}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {bEdAffiliated && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.affiliatedTo}
-                    onChange={(e) => handleEducationDataChange(index, "affiliatedTo", e.target.value)}
-                    placeholder="Affiliated to / recognized by"
-                    maxLength={30}
-                    pattern="[a-zA-Z0-9 ]*"
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {bEdCourseDuration && (
-                <div className="w-full">
-                  <Select
-                    value={bEdCourseDurationOptions.find(option => option.value === data.courseDuration)}
-                    onChange={(selected) => handleEducationDataChange(index, "courseDuration", selected ? selected.value : "")}
-                    options={bEdCourseDurationOptions}
-                    placeholder="Course Duration"
-                    className="react-select-container"
-                    classNamePrefix="react-select"
-                    isClearable={false}
-                    styles={{
-                      control: (base, state) => ({
-                        ...base,
-                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                        '&:hover': { borderColor: '#FDA4AF' },
-                        borderRadius: '0.5rem',
-                        padding: '0.25rem',
-                        backgroundColor: 'white'
-                      }),
-                      dropdownIndicator: (base) => ({
-                        ...base,
-                        color: '#EF4444'
-                      })
-                    }}
-                  />
-                </div>
-              )}
-              {bEdYear && (
-              <div className="w-full relative">
-                <select
-                  value={data.yearOfPassing}
-                  onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
-                  required={data.courseStatus !== "Pursuing"}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                >
-                  <option value="" disabled>
-                    {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
-                  </option>
-                  {generateYearOptions()}
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-              )}
-              {bEdCoreSubjects && (
-              <div className="w-full">
-                <Select
-                  isMulti
-                  value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
-                  onChange={(selected) => {
-                    const selectedValues = selected ? selected.map(option => option.value) : [];
-                    handleEducationDataChange(index, "coreSubjects", selectedValues);
-                  }}
-                  options={coreSubjectsOptions}
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                  placeholder="Core Subjects"
-                  required
-                  isClearable={false}
-                  menuPortalTarget={document.body}
-                  styles={reactSelectStyles}
-                />
-              </div>
-              )}
-              {data.coreSubjects.includes("Others") && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.otherSubjects}
-                    onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
-                    placeholder="Specify other subjects"
-                    required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {bEdPercentage && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.percentage}
-                    onChange={(e) => handleEducationDataChange(index, "percentage", e.target.value)}
-                    placeholder={data.courseStatus === "Pursuing" ? "Current CGPA / Grade (Optional)" : "Grade / Percentage"}
-                    pattern="[a-zA-Z0-9+%]*"
-                    maxLength={5}
-                    minLength={data.courseStatus === "Pursuing" ? 0 : 2}
-                    required={data.courseStatus !== "Pursuing"}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {bEdMode && (
-                <div className="w-full relative">
-                  <select
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                    value={data.mode || ""}
-                    onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
-                    required
-                  >
-                    <option value="" disabled>Mode of Study</option>
-                    {educationModeOptions.map(option => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
-                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              )}
-          </div>
-        );
-      case "certificate":
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {certificateCourseStatus && (
-              <div className="w-full relative">
-                <select
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                  value={data.courseStatus || ""}
-                  onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
-                  required
-                >
-                  <option value="" disabled>Course Status</option>
-                  {courseStatusOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-              )}
-              {certificateName && (
-              <div className="w-full">
-                <input
-                  type="text"
-                  value={data.courseName}
-                  onChange={(e) => handleEducationDataChange(index, "courseName", e.target.value)}
-                  placeholder="Course Name"
-                  maxLength={30}
-                  pattern="[a-zA-Z0-9 ]*"
-                  required
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                />
-              </div>
-              )}
-              {certificatePlace && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.placeOfStudy}
-                    onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
-                    placeholder="Place of Study"
-                    maxLength={30}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {certificateCourseDuration && (
-                <div className="w-full">
-                  <Select
-                    value={certificateCourseDurationOptions.find(option => option.value === data.courseDuration)}
-                    onChange={(selected) => handleEducationDataChange(index, "courseDuration", selected ? selected.value : "")}
-                    options={certificateCourseDurationOptions}
-                    placeholder="Course Duration"
-                    className="react-select-container"
-                    classNamePrefix="react-select"
-                    isClearable={false}
-                    styles={{
-                      control: (base, state) => ({
-                        ...base,
-                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                        '&:hover': { borderColor: '#FDA4AF' },
-                        borderRadius: '0.5rem',
-                        padding: '0.25rem',
-                        backgroundColor: 'white'
-                      }),
-                      dropdownIndicator: (base) => ({
-                        ...base,
-                        color: '#EF4444'
-                      })
-                    }}
-                  />
-                </div>
-              )}
-              <div className="w-full relative">
-                <select
-                  value={data.yearOfPassing}
-                  onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
-                  required
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                >
-                  <option value="" disabled>Year of Passing</option>
-                  {generateYearOptions()}
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-              {certificateSpecialization && (
-                <div className="w-full">
-                  <input
-                    type="text"
-                    value={data.specialization}
-                    onChange={(e) => handleEducationDataChange(index, "specialization", e.target.value)}
-                    placeholder="Specialization"
-                    maxLength={30}
-                    pattern="[a-zA-Z0-9 ]*"
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  />
-                </div>
-              )}
-              {certificateMode && (
-                <div className="w-full relative">
-                  <select
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                    value={data.mode || ""}
-                    onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
-                    required
-                  >
-                    <option value="" disabled>Mode of Study</option>
-                    {educationModeOptions.map(option => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
-                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              )}
-          </div>
-        );
-      case "dEd":
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {isEasyMode ? (
-                <div className="w-full md:w-1/2 relative">
-                  <select
-                    value={data.yearOfPassing}
-                    onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
-                    required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                  >
-                    <option value="">Year of Passing</option>
-                    {generateYearOptions()}
-                  </select>
-                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              ) : (
-                <>
-                  <div className="w-full relative">
-                    <select
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                      value={data.courseStatus || ""}
-                      onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
-                      required
-                    >
-                      <option value="" disabled>Course Status</option>
-                      {courseStatusOptions.map(option => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      ))}
-                    </select>
-                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                  <div className="w-full">
+                  <InputWithTooltip label="Institute / College Name">
                     <input
                       type="text"
                       value={data.instituteName}
@@ -1674,19 +1534,26 @@ const Education = forwardRef(({
                       pattern="[a-zA-Z0-9 ]*"
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                  </div>
-                  <div className="w-full">
+                  </InputWithTooltip>
+                </div>
+                )}
+              {bEdPlace && (
+                <div className="w-full">
+                  <InputWithTooltip label="Place of Study">
                     <input
                       type="text"
                       value={data.placeOfStudy}
                       onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
                       placeholder="Place of Study"
                       maxLength={30}
-                      pattern="[a-zA-Z0-9 ]*"
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                  </div>
-                  <div className="w-full">
+                  </InputWithTooltip>
+                </div>
+              )}
+              {bEdAffiliated && (
+                <div className="w-full">
+                  <InputWithTooltip label="Affiliated To">
                     <input
                       type="text"
                       value={data.affiliatedTo}
@@ -1696,103 +1563,110 @@ const Education = forwardRef(({
                       pattern="[a-zA-Z0-9 ]*"
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                  </div>
-                  <div className="w-full">
-                    <Select
-                      value={dEdCourseDurationOptions.find(option => option.value === data.courseDuration)}
-                      onChange={(selected) => handleEducationDataChange(index, "courseDuration", selected ? selected.value : "")}
-                      options={dEdCourseDurationOptions}
-                      placeholder="Course Duration"
-                      className="react-select-container"
-                      classNamePrefix="react-select"
-                      isClearable={false}
-                      styles={{
-                        control: (base, state) => ({
-                          ...base,
-                          borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                          boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                          '&:hover': { borderColor: '#FDA4AF' },
-                          borderRadius: '0.5rem',
-                          padding: '0.25rem',
-                          backgroundColor: 'white'
-                        }),
-                        dropdownIndicator: (base) => ({
-                          ...base,
-                          color: '#EF4444'
-                        })
-                      }}
-                    />
-                  </div>
-                  <div className="w-full relative">
+                  </InputWithTooltip>
+                </div>
+              )}
+              {bEdCourseDuration && (
+                <div className="w-full relative">
+                  <InputWithTooltip label="Course Duration">
                     <select
-                      value={data.yearOfPassing}
-                      onChange={(e) => handleEducationDataChange(index, "yearOfPassing", e.target.value)}
-                      required
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                       style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                      value={data.courseDuration || ""}
+                      onChange={(e) => handleEducationDataChange(index, "courseDuration", e.target.value)}
                     >
-                      <option value="" disabled>Year of Passing</option>
-                      {generateYearOptions()}
+                      <option value="" disabled>Course Duration</option>
+                      {bEdCourseDurationOptions.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
                     </select>
-                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                  <div className="w-full">
-                    <Select
-                      isMulti
-                      value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
-                      onChange={(selected) => {
-                        const selectedValues = selected ? selected.map(option => option.value) : [];
-                        handleEducationDataChange(index, "coreSubjects", selectedValues);
-                      }}
-                      options={coreSubjectsOptions}
-                      className="react-select-container"
-                      classNamePrefix="react-select"
-                      placeholder="Core Subjects"
+                    <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                  </InputWithTooltip>
+                </div>
+              )}
+              {bEdYear && (
+              <div className="w-full relative">
+                <InputWithTooltip label="Year of Passing" required={data.courseStatus !== "Pursuing"}>
+                  <select
+                    value={data.yearOfPassing}
+                    onChange={(e) => {
+                      const selectedYear = parseInt(e.target.value);
+                      const minYear = getMinimumYearForLevel("bEd", index);
+                      if (selectedYear && selectedYear < minYear) {
+                        toast.error(`B.Ed passing year must be ${minYear} or later`);
+                        return;
+                      }
+                      handleEducationDataChange(index, "yearOfPassing", e.target.value);
+                    }}
+                    required={data.courseStatus !== "Pursuing"}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                  >
+                    <option value="" disabled>
+                      {data.courseStatus === "Pursuing" ? "Expected Year of Completion (Optional)" : "Year of Passing"}
+                    </option>
+                    {generateYearOptions(null, "bEd", index)}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </InputWithTooltip>
+              </div>
+              )}
+              {bEdCoreSubjects && (
+              <div className="w-full">
+                <InputWithTooltip label="Core Subjects" required>
+                  <Select
+                    isMulti
+                    value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
+                    onChange={(selected) => {
+                      const selectedValues = selected ? selected.map(option => option.value) : [];
+                      handleEducationDataChange(index, "coreSubjects", selectedValues);
+                    }}
+                    options={coreSubjectsOptions}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    placeholder="Core Subjects"
+                    required
+                    isClearable={false}
+                    menuPortalTarget={document.body}
+                    styles={reactSelectStyles}
+                  />
+                </InputWithTooltip>
+              </div>
+              )}
+              {data.coreSubjects.includes("Others") && (
+                <div className="w-full">
+                  <InputWithTooltip label="Other Subjects" required>
+                    <input
+                      type="text"
+                      value={data.otherSubjects}
+                      onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
+                      placeholder="Specify other subjects"
                       required
-                      isClearable={false}
-                      styles={{
-                        control: (base, state) => ({
-                          ...base,
-                          borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                          boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                          '&:hover': { borderColor: '#FDA4AF' },
-                          borderRadius: '0.5rem',
-                          padding: '0.25rem',
-                          backgroundColor: 'white'
-                        }),
-                        dropdownIndicator: (base) => ({
-                          ...base,
-                          color: '#EF4444'
-                        })
-                      }}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                  </div>
-                  {data.coreSubjects.includes("Others") && (
-                    <div className="w-full">
-                      <input
-                        type="text"
-                        value={data.otherSubjects}
-                        onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
-                        placeholder="Specify other subjects"
-                        required
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                      />
-                    </div>
-                  )}
-                  <div className="w-full">
+                  </InputWithTooltip>
+                </div>
+              )}
+              {bEdPercentage && (
+                <div className="w-full">
+                  <InputWithTooltip label="Grade / Percentage" required={data.courseStatus !== "Pursuing"}>
                     <input
                       type="text"
                       value={data.percentage}
                       onChange={(e) => handleEducationDataChange(index, "percentage", e.target.value)}
-                      placeholder="Percentage"
+                      placeholder={data.courseStatus === "Pursuing" ? "Current CGPA / Grade (Optional)" : "Grade / Percentage"}
+                      pattern="[a-zA-Z0-9+%]*"
                       maxLength={5}
-                      minLength={2}
+                      minLength={data.courseStatus === "Pursuing" ? 0 : 2}
+                      required={data.courseStatus !== "Pursuing"}
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
                     />
-                  </div>
-                  <div className="w-full relative">
+                  </InputWithTooltip>
+                </div>
+              )}
+              {bEdMode && (
+                <div className="w-full relative">
+                  <InputWithTooltip label="Mode of Study">
                     <select
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                       style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
@@ -1805,9 +1679,327 @@ const Education = forwardRef(({
                         <option key={option.value} value={option.value}>{option.label}</option>
                       ))}
                     </select>
-                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                  </InputWithTooltip>
+                </div>
+              )}
+          </div>
+        );
+      case "certificate":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {certificateCourseStatus && (
+              <div className="w-full relative">
+                <InputWithTooltip label="Course Status" required>
+                  <select
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                    value={data.courseStatus || ""}
+                    onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Course Status</option>
+                    {courseStatusOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </InputWithTooltip>
+              </div>
+              )}
+              {certificateName && (
+              <div className="w-full">
+                <InputWithTooltip label="Course Name" required>
+                  <input
+                    type="text"
+                    value={data.courseName}
+                    onChange={(e) => handleEducationDataChange(index, "courseName", e.target.value)}
+                    placeholder="Course Name"
+                    maxLength={30}
+                    pattern="[a-zA-Z0-9 ]*"
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                  />
+                </InputWithTooltip>
+              </div>
+              )}
+              {certificatePlace && (
+                <div className="w-full">
+                  <InputWithTooltip label="Place of Study">
+                    <input
+                      type="text"
+                      value={data.placeOfStudy}
+                      onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
+                      placeholder="Place of Study"
+                      maxLength={30}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    />
+                  </InputWithTooltip>
+                </div>
+              )}
+              {certificateCourseDuration && (
+                <div className="w-full relative">
+                  <InputWithTooltip label="Course Duration">
+                    <select
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                      value={data.courseDuration || ""}
+                      onChange={(e) => handleEducationDataChange(index, "courseDuration", e.target.value)}
+                    >
+                      <option value="" disabled>Course Duration</option>
+                      {certificateCourseDurationOptions.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                    <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                  </InputWithTooltip>
+                </div>
+              )}
+              <div className="w-full relative">
+                <InputWithTooltip label="Year of Passing" required>
+                  <select
+                    value={data.yearOfPassing}
+                    onChange={(e) => {
+                      const selectedYear = parseInt(e.target.value);
+                      const minYear = getMinimumYearForLevel("certificate", index);
+                      if (selectedYear && selectedYear < minYear) {
+                        toast.error(`Certificate passing year must be ${minYear} or later`);
+                        return;
+                      }
+                      handleEducationDataChange(index, "yearOfPassing", e.target.value);
+                    }}
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                  >
+                    <option value="" disabled>Year of Passing</option>
+                    {generateYearOptions(null, "certificate", index)}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </InputWithTooltip>
+              </div>
+              {certificateSpecialization && (
+                <div className="w-full">
+                  <InputWithTooltip label="Specialization">
+                    <input
+                      type="text"
+                      value={data.specialization}
+                      onChange={(e) => handleEducationDataChange(index, "specialization", e.target.value)}
+                      placeholder="Specialization"
+                      maxLength={30}
+                      pattern="[a-zA-Z0-9 ]*"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    />
+                  </InputWithTooltip>
+                </div>
+              )}
+              {certificateMode && (
+                <div className="w-full relative">
+                  <InputWithTooltip label="Mode of Study">
+                    <select
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                      value={data.mode || ""}
+                      onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
+                      required
+                    >
+                      <option value="" disabled>Mode of Study</option>
+                      {educationModeOptions.map(option => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                    <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                  </InputWithTooltip>
+                </div>
+              )}
+          </div>
+        );
+      case "dEd":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {isEasyMode ? (
+                <div className="w-full md:w-1/2 relative">
+                  <InputWithTooltip label="Year of Passing" required>
+                    <select
+                      value={data.yearOfPassing}
+                      onChange={(e) => {
+                        const selectedYear = parseInt(e.target.value);
+                        const minYear = getMinimumYearForLevel("dEd", index);
+                        if (selectedYear && selectedYear < minYear) {
+                          toast.error(`D.Ed passing year must be ${minYear} or later`);
+                          return;
+                        }
+                        handleEducationDataChange(index, "yearOfPassing", e.target.value);
+                      }}
+                      required
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                    >
+                      <option value="">Year of Passing</option>
+                      {generateYearOptions(null, "dEd", index)}
+                    </select>
+                    <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                  </InputWithTooltip>
+                </div>
+              ) : (
+                <>
+                  <div className="w-full relative">
+                    <InputWithTooltip label="Course Status" required>
+                      <select
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                        style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                        value={data.courseStatus || ""}
+                        onChange={(e) => handleEducationDataChange(index, "courseStatus", e.target.value)}
+                        required
+                      >
+                        <option value="" disabled>Course Status</option>
+                        {courseStatusOptions.map(option => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                      <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                    </InputWithTooltip>
+                  </div>
+                  <div className="w-full">
+                    <InputWithTooltip label="Institute / College Name" required>
+                      <input
+                        type="text"
+                        value={data.instituteName}
+                        onChange={(e) => handleEducationDataChange(index, "instituteName", e.target.value)}
+                        placeholder="Institute / College name"
+                        maxLength={30}
+                        pattern="[a-zA-Z0-9 ]*"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      />
+                    </InputWithTooltip>
+                  </div>
+                  <div className="w-full">
+                    <InputWithTooltip label="Place of Study" required>
+                      <input
+                        type="text"
+                        value={data.placeOfStudy}
+                        onChange={(e) => handleEducationDataChange(index, "placeOfStudy", e.target.value)}
+                        placeholder="Place of Study"
+                        maxLength={30}
+                        pattern="[a-zA-Z0-9 ]*"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      />
+                    </InputWithTooltip>
+                  </div>
+                  <div className="w-full">
+                    <InputWithTooltip label="Affiliated To" required>
+                      <input
+                        type="text"
+                        value={data.affiliatedTo}
+                        onChange={(e) => handleEducationDataChange(index, "affiliatedTo", e.target.value)}
+                        placeholder="Affiliated to / recognized by"
+                        maxLength={30}
+                        pattern="[a-zA-Z0-9 ]*"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      />
+                    </InputWithTooltip>
+                  </div>
+                  <div className="w-full relative">
+                    <InputWithTooltip label="Course Duration">
+                      <select
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                        style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                        value={data.courseDuration || ""}
+                        onChange={(e) => handleEducationDataChange(index, "courseDuration", e.target.value)}
+                      >
+                        <option value="" disabled>Course Duration</option>
+                        {dEdCourseDurationOptions.map((option) => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                      <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                    </InputWithTooltip>
+                  </div>
+                  <div className="w-full relative">
+                    <InputWithTooltip label="Year of Passing" required>
+                      <select
+                        value={data.yearOfPassing}
+                        onChange={(e) => {
+                          const selectedYear = parseInt(e.target.value);
+                          const minYear = getMinimumYearForLevel("nttMtt", index);
+                          if (selectedYear && selectedYear < minYear) {
+                            toast.error(`NTT/MTT passing year must be ${minYear} or later`);
+                            return;
+                          }
+                          handleEducationDataChange(index, "yearOfPassing", e.target.value);
+                        }}
+                        required
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                        style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                      >
+                        <option value="" disabled>Year of Passing</option>
+                        {generateYearOptions(null, "nttMtt", index)}
+                      </select>
+                      <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                    </InputWithTooltip>
+                  </div>
+                  <div className="w-full">
+                    <InputWithTooltip label="Core Subjects" required>
+                      <Select
+                        isMulti
+                        value={data.coreSubjects.map(subject => ({ value: subject, label: subject }))}
+                        onChange={(selected) => {
+                          const selectedValues = selected ? selected.map(option => option.value) : [];
+                          handleEducationDataChange(index, "coreSubjects", selectedValues);
+                        }}
+                        options={coreSubjectsOptions}
+                        className="react-select-container"
+                        classNamePrefix="react-select"
+                        placeholder="Core Subjects"
+                        required
+                        isClearable={false}
+                        styles={reactSelectStyles}
+                      />
+                    </InputWithTooltip>
+                  </div>
+                  {data.coreSubjects.includes("Others") && (
+                    <div className="w-full">
+                      <InputWithTooltip label="Other Subjects" required>
+                        <input
+                          type="text"
+                          value={data.otherSubjects}
+                          onChange={(e) => handleEducationDataChange(index, "otherSubjects", e.target.value)}
+                          placeholder="Specify other subjects"
+                          required
+                          className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                        />
+                      </InputWithTooltip>
+                    </div>
+                  )}
+                  <div className="w-full">
+                    <InputWithTooltip label="Percentage">
+                      <input
+                        type="text"
+                        value={data.percentage}
+                        onChange={(e) => handleEducationDataChange(index, "percentage", e.target.value)}
+                        placeholder="Percentage"
+                        maxLength={5}
+                        minLength={2}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      />
+                    </InputWithTooltip>
+                  </div>
+                  <div className="w-full relative">
+                    <InputWithTooltip label="Mode of Study">
+                      <select
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                        style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                        value={data.mode || ""}
+                        onChange={(e) => handleEducationDataChange(index, "mode", e.target.value)}
+                        required
+                      >
+                        <option value="" disabled>Mode of Study</option>
+                        {educationModeOptions.map(option => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                      <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                    </InputWithTooltip>
                   </div>
                 </>
               )}
@@ -2154,119 +2346,122 @@ const Education = forwardRef(({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-lg p-6" style={{backgroundColor: '#F0D8D9'}}>
+    <form onSubmit={handleSubmit} className="rounded-lg pt-0 px-4 pb-4 md:pt-0 md:px-6 md:pb-6 bg-rose-100 overflow-x-hidden">
       <div className="w-full space-y-6">
         {/* Grade 10 Section (Mandatory) */}
         <div>
-          <h6 className="text-red-500 font-semibold mb-4">Grade 10</h6>
+          <h6 className="text-black font-semibold mb-4">Grade 10</h6>
           {isEasyMode ? (
             <div className="w-full md:w-1/2">
-              <TextField
-                select
-                label="Year of Passing"
-                value={grade10Data.yearOfPassing}
-                onChange={(e) => handleGrade10Change("yearOfPassing", e.target.value)}
-                required
-                fullWidth
-                SelectProps={muiSelectProps}
-                sx={muiTextFieldStyles}
-              >
-                {generateYearOptions().map((option) => (
-                  <MenuItem key={option.props.value} value={option.props.value}>
-                    {option.props.children}
-                  </MenuItem>
-                ))}
-              </TextField>
+              <InputWithTooltip label="Year of Passing" required>
+                <div className="relative">
+                  <select
+                    value={grade10Data.yearOfPassing}
+                    onChange={(e) => handleGrade10Change("yearOfPassing", e.target.value)}
+                    required
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                  >
+                    <option value="" disabled>Year of Passing</option>
+                    {generateYearOptions(null, "grade10", null).map((option) => (
+                      <option key={option.props.value} value={option.props.value}>
+                        {option.props.children}
+                      </option>
+                    ))}
+                  </select>
+                  <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                </div>
+              </InputWithTooltip>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="w-full">
-                <TextField
-                  select
-                  label="Syllabus"
-                  value={grade10Data.syllabus || ""}
-                  onChange={(e) => handleGrade10Change("syllabus", e.target.value)}
-                  fullWidth
-                  SelectProps={muiSelectProps}
-                  sx={muiTextFieldStyles}
-                >
-                  <MenuItem value="" disabled>
-                    Syllabus
-                  </MenuItem>
-                  {syllabusOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                <InputWithTooltip label="Syllabus">
+                  <div className="relative">
+                    <select
+                      value={grade10Data.syllabus || ""}
+                      onChange={(e) => handleGrade10Change("syllabus", e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                    >
+                      <option value="" disabled>Syllabus</option>
+                      {syllabusOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                  </div>
+                </InputWithTooltip>
               </div>
               <div className="w-full">
-                <TextField
-                  label="School Name"
-                  value={grade10Data.schoolName}
-                  onChange={(e) => handleGrade10Change("schoolName", e.target.value)}
-                  inputProps={{
-                    pattern: "[a-zA-Z0-9 ]*",
-                    maxLength: 30
-                  }}
-                  fullWidth
-                  sx={muiTextFieldStyles}
-                />
+                <InputWithTooltip label="School Name">
+                  <input
+                    type="text"
+                    value={grade10Data.schoolName}
+                    onChange={(e) => handleGrade10Change("schoolName", e.target.value)}
+                    placeholder="School Name"
+                    pattern="[a-zA-Z0-9 ]*"
+                    maxLength={30}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                  />
+                </InputWithTooltip>
               </div>
               <div className="w-full">
-                <TextField
-                  select
-                  label="Year of Passing"
-                  value={grade10Data.yearOfPassing}
-                  onChange={(e) => handleGrade10Change("yearOfPassing", e.target.value)}
-                  required
-                  fullWidth
-                  SelectProps={muiSelectProps}
-                  sx={muiTextFieldStyles}
-                >
-                  <MenuItem value="" disabled>
-                    Year of Passing
-                  </MenuItem>
-                  {generateYearOptions().map((option) => (
-                    <MenuItem key={option.props.value} value={option.props.value}>
-                      {option.props.children}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                <InputWithTooltip label="Year of Passing" required>
+                  <div className="relative">
+                    <select
+                      value={grade10Data.yearOfPassing}
+                      onChange={(e) => handleGrade10Change("yearOfPassing", e.target.value)}
+                      required
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                    >
+                      <option value="" disabled>Year of Passing</option>
+                      {generateYearOptions(null, "grade10", null).map((option) => (
+                        <option key={option.props.value} value={option.props.value}>
+                          {option.props.children}
+                        </option>
+                      ))}
+                    </select>
+                    <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                  </div>
+                </InputWithTooltip>
               </div>
               <div className="w-full">
-                <TextField
-                  label="Grade / Percentage"
-                  value={grade10Data.percentage}
-                  onChange={(e) => handleGrade10Change("percentage", e.target.value)}
-                  inputProps={{
-                    pattern: "[a-zA-Z0-9+%]*",
-                    maxLength: 5,
-                    minLength: 2
-                  }}
-                  fullWidth
-                  sx={muiTextFieldStyles}
-                />
+                <InputWithTooltip label="Grade / Percentage">
+                  <input
+                    type="text"
+                    value={grade10Data.percentage}
+                    onChange={(e) => handleGrade10Change("percentage", e.target.value)}
+                    placeholder="Grade / Percentage"
+                    pattern="[a-zA-Z0-9+%]*"
+                    maxLength={5}
+                    minLength={2}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                  />
+                </InputWithTooltip>
               </div>
               <div className="w-full">
-                <TextField
-                  select
-                  label="Mode of Study"
-                  value={grade10Data.mode || ""}
-                  onChange={(e) => handleGrade10Change("mode", e.target.value)}
-                  fullWidth
-                  SelectProps={muiSelectProps}
-                  sx={muiTextFieldStyles}
-                >
-                  <MenuItem value="" disabled>
-                    Mode of Study
-                  </MenuItem>
-                  {educationModeOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                <InputWithTooltip label="Mode of Study">
+                  <div className="relative">
+                    <select
+                      value={grade10Data.mode || ""}
+                      onChange={(e) => handleGrade10Change("mode", e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                      style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                    >
+                      <option value="" disabled>Mode of Study</option>
+                      {educationModeOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                  </div>
+                </InputWithTooltip>
               </div>
             </div>
           )}
@@ -2275,11 +2470,11 @@ const Education = forwardRef(({
         {additionalEducation.map((education, index) => (
           <div key={index}>
             <div className="flex justify-between items-center mb-4">
-              <h6 className="text-red-500 font-semibold">{educationTypes.find((type) => type.value === education.type)?.label}</h6>
+              <h6 className="text-black font-semibold">{educationTypes.find((type) => type.value === education.type)?.label}</h6>
               <button 
                 type="button" 
                 onClick={() => handleRemoveEducation(index)} 
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium"
+                className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-sm font-medium shadow-sm transition-opacity"
               >
                 Remove
               </button>
@@ -2289,55 +2484,55 @@ const Education = forwardRef(({
         ))}
         {/* Add More Education Section */}
         <div>
-          <h6 className="text-red-500 font-semibold mb-4">Add More Education</h6>
+          <h6 className="text-black font-semibold mb-4">Add More Education</h6>
           <div className="w-full md:w-1/2 relative">
-            <select
-              value=""
-              onChange={(e) => {
-                const selected = educationTypes.find((type) => type.value === e.target.value);
-                if (selected) {
-                  const newEducation = {
-                    type: selected.value,
-                    data: getInitialDataForType(selected.value)
-                  };
-                  const updatedAdditionalEducation = [...additionalEducation, newEducation];
-                  setAdditionalEducation(updatedAdditionalEducation);
-                  
-                  // Immediately update parent FormInfoBox to preserve the addition
-                  const newEducationData = {
-                    grade10: grade10Data,
-                    additional: updatedAdditionalEducation
-                  };
-                  
-                  if (updateEducationData) {
-                    updateEducationData(newEducationData);
-                  } else if (setFormData) {
-                    setFormData(prev => ({
-                      ...prev,
-                      education: newEducationData
-                    }));
+            <InputWithTooltip label="Select Course">
+              <select
+                value=""
+                onChange={(e) => {
+                  const selected = educationTypes.find((type) => type.value === e.target.value);
+                  if (selected) {
+                    const newEducation = {
+                      type: selected.value,
+                      data: getInitialDataForType(selected.value)
+                    };
+                    const updatedAdditionalEducation = [...additionalEducation, newEducation];
+                    setAdditionalEducation(updatedAdditionalEducation);
+                    
+                    // Immediately update parent FormInfoBox to preserve the addition
+                    const newEducationData = {
+                      grade10: grade10Data,
+                      additional: updatedAdditionalEducation
+                    };
+                    
+                    if (updateEducationData) {
+                      updateEducationData(newEducationData);
+                    } else if (setFormData) {
+                      setFormData(prev => ({
+                        ...prev,
+                        education: newEducationData
+                      }));
+                    }
                   }
-                }
-              }}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-              style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-            >
-              <option value="" disabled>Select Course</option>
-              {educationTypes.map((type) => {
-                const alreadySelected = additionalEducation.some((edu) => edu.type === type.value);
-                if (type.allowMultiple || !alreadySelected) {
-                  return (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  );
-                }
-                return null;
-              })}
-            </select>
-            <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+                }}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+              >
+                <option value="" disabled>Select Course</option>
+                {educationTypes.map((type) => {
+                  const alreadySelected = additionalEducation.some((edu) => edu.type === type.value);
+                  if (type.allowMultiple || !alreadySelected) {
+                    return (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    );
+                  }
+                  return null;
+                })}
+              </select>
+              <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+            </InputWithTooltip>
           </div>
         </div>
         {/* Save button hidden - auto-save handles saving when clicking Next */}

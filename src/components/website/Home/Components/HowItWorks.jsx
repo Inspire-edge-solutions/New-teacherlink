@@ -52,7 +52,7 @@ const HowItWorks = () => {
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold text-gray-800 mb-6">How It Works?</h1>
           <div className="text-lg text-gray-600 max-w-3xl mx-auto">
-            It's super easy! Just follow a few quick steps to land your dream job or find the perfect teacher — all on TeacherLink.
+            It's super easy! Just follow a few quick steps to land your dream job or find the perfect teacher - all on TeacherLink.
           </div>
         </div>
 
@@ -61,9 +61,9 @@ const HowItWorks = () => {
           {steps.map((step, index) => {
             const IconComponent = step.icon;
             return (
-              <div key={step.id} className="relative">
+              <div key={step.id} className="relative h-full">
                 {/* Card */}
-                <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+                <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300 p-8 text-center h-full flex flex-col">
                   {/* Icon - Inside the card */}
                   <div className="mb-6">
                     <div className="bg-red-500 w-16 h-16 rounded-full flex items-center justify-center shadow-lg mx-auto">
@@ -72,7 +72,7 @@ const HowItWorks = () => {
                   </div>
                   
                   {/* Content */}
-                  <div className="space-y-4">
+                  <div className="space-y-4 flex-1 flex flex-col justify-start">
                     <h3 className="text-xl font-semibold text-gray-800">
                       {step.title}
                     </h3>

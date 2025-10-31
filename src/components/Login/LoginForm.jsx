@@ -8,6 +8,7 @@ import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { cleanupModals } from "../../utils/modalCleanup";
 import Spinner from "../../utils/spinner/Spinner";
 import { Skeleton } from "@mui/material";
+import InputWithTooltip from "../../services/InputWithTooltip";
 
 const API_URL = "https://2u7ec1e22c.execute-api.ap-south-1.amazonaws.com/staging/users";
 const PERSONAL_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal";
@@ -299,7 +300,7 @@ const LoginForm = () => {
 
   // ----- Main login UI -----
   return (
-    <div className="flex flex-col lg:flex-row lg:min-h-screen">
+    <div className="flex flex-col lg:flex-row lg:min-h-screen bg-gradient-to-br from-red-50 to-red-100">
       {
         loading ? (
           <>
@@ -339,10 +340,14 @@ const LoginForm = () => {
             </div>
 
             {/* Right Section - Loading Spinner */}
-            <div className="w-full lg:w-1/2 bg-white flex items-center justify-center px-3 sm:px-6 md:px-8 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg lg:-ml-12">
-              <div className="flex flex-col items-center justify-center space-y-4">
-                <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-gray-600 text-lg font-medium">Logging you in...</p>
+            <div className="w-full lg:w-1/2 flex items-center justify-center px-3 sm:px-6 md:px-8 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg">
+              <div className="w-full max-w-xs sm:max-w-sm md:max-w-md space-y-5">
+                <p className="text-center text-red-600 font-large">Logging you in…</p>
+                <Skeleton variant="text" height={40} />
+                <Skeleton variant="rectangular" height={56} sx={{ borderRadius: 1 }} />
+                <Skeleton variant="rectangular" height={56} sx={{ borderRadius: 1 }} />
+                <Skeleton variant="rectangular" height={56} sx={{ borderRadius: 1 }} />
+                <Skeleton variant="rectangular" height={48} sx={{ borderRadius: 1 }} />
               </div>
             </div>
           </>
@@ -387,7 +392,7 @@ const LoginForm = () => {
       </div>
 
         {/* Right Section - Login Form */}
-        <div className="w-full lg:w-1/2 bg-white flex items-center justify-center px-3 sm:px-6 md:px-8 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg lg:-ml-12">
+        <div className="w-full lg:w-1/2 bg-white flex items-center justify-center px-3 sm:px-6 md:px-8 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg">
        
 
         <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
@@ -395,37 +400,41 @@ const LoginForm = () => {
           
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 md:space-y-8">
             {/* Email Field */}
-            <div className="relative">
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black"
-              />
-            </div>
+            <InputWithTooltip label="Email" required>
+              <div className="relative">
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black"
+                />
+              </div>
+            </InputWithTooltip>
 
             {/* Password Field */}
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 top-3 sm:top-4 md:top-5 text-gray-500 hover:text-gray-700 text-xl sm:text-2xl md:text-3xl"
-              >
-                {showPassword ? <MdVisibility /> : <MdVisibilityOff />}
-              </button>
-            </div>
+            <InputWithTooltip label="Password" required>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-0 top-3 sm:top-4 md:top-5 text-gray-500 hover:text-gray-700 text-xl sm:text-2xl md:text-3xl"
+                >
+                  {showPassword ? <MdVisibility /> : <MdVisibilityOff />}
+                </button>
+              </div>
+            </InputWithTooltip>
 
             {/* Login Button */}
             <button

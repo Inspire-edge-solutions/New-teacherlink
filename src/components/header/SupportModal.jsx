@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ModalPortal from '../common/ModalPortal';
 import { MdClose } from 'react-icons/md';
 import { useAuth } from '../../Context/AuthContext';
 import { toast } from 'react-toastify';
@@ -150,6 +151,7 @@ const SupportModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
+    <ModalPortal>
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
@@ -245,6 +247,7 @@ const SupportModal = ({ isOpen, onClose }) => {
         </form>
       </div>
     </div>
+    </ModalPortal>
   );
 };
 

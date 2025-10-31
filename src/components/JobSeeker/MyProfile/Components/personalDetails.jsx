@@ -4,11 +4,11 @@ import axios from "axios";
 import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle, FaChevronDown } from "react-icons/fa";
 import { getAuth, updateEmail } from "firebase/auth";
-import "./profile-styles.css";
 import ImageUpload from "../../../../services/ImageUpload";
 import WheelDatePicker from "../../../../utils/WheelDatePicker";
+import InputWithTooltip from "../../../../services/InputWithTooltip";
 
 const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
   PersonalDetails.displayName = 'PersonalDetails';
@@ -282,12 +282,6 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
       }
     }
   }, [currentUid, profilePicId]);
-
-  const imageFileHandler = (e) => setImageFile(e.target.files[0]);
-  const handleFileChange = (e) => {
-    const placeholder = document.querySelector(".file-placeholder");
-    placeholder && (placeholder.textContent = e.target.files[0]?.name || "Upload your profile image");
-  };
 
   const checkDuplicates = async () => {
     try {
@@ -840,84 +834,77 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
   };
 
   return (
-    <div className={`rounded-lg p-6 ${className}`} style={{backgroundColor: '#F0D8D9'}}>
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className={`rounded-lg p-4 md:p-6 bg-rose-100 ${className} overflow-x-hidden`}>
+      <form onSubmit={handleSubmit} className="overflow-x-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-full">
           {/* Full Name */}
-          <div className="w-full">
-            <input
-              type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleInputChange}
-              placeholder="Name"
-              required
-              maxLength={50}
-              className={`w-full px-4 py-3 rounded-lg border ${validationErrors.fullName ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300`}
-            />
+          <div className="w-full min-w-0">
+            <InputWithTooltip label="Full Name" required>
+              <input
+                type="text"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                placeholder="Full Name"
+                required
+                maxLength={50}
+                className={`w-full px-4 py-3 rounded-lg border ${validationErrors.fullName ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 max-w-full`}
+              />
+            </InputWithTooltip>
             {validationErrors.fullName && (
-              <span className="text-red-500 text-xs mt-1">{validationErrors.fullName}</span>
+              <span className="text-red-500 text-xs mt-1 block">{validationErrors.fullName}</span>
             )}
           </div>
-          {/* Gender */}
-          <div className="w-full relative">
-            <select
-              name="gender"
-              value={formData.gender}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-            >
-              <option value="" disabled>Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="transgender">Transgender</option>
-            </select>
-            <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-          {/* Date of Birth */}
-          {dateOfBirth && (
-            <div className="w-full relative">
-              <WheelDatePicker
-                value={formData.dateOfBirth}
-                onChange={(date) => setFormData(prev => ({ ...prev, dateOfBirth: date }))}
-                placeholder="Select Date of Birth"
-              />
+          {/* Profile Image */}
+          {photo && (
+            <div className="w-full min-w-0">
+              <InputWithTooltip label="Profile Image">
+                <ImageUpload
+                  imageFile={imageFile || profileImageName || ""}
+                  onImageSelect={(file) => {
+                    setImageFile(file);
+                    handlePhotoUpload(file);
+                  }}
+                  placeholder="Upload your profile image"
+                  id="upload-profile-image"
+                />
+              </InputWithTooltip>
             </div>
           )}
-
           {/* Email */}
-          <div className="w-full">
-            <div className="flex gap-2">
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="Email Id"
-                maxLength={50}
-                required
-                disabled={isGoogleAccount || emailVerified}
-                className={`flex-1 px-4 py-3 rounded-lg border ${validationErrors.email ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:bg-gray-100`}
-              />
-              {emailVerified ? (
-                <span className="flex items-center justify-center w-12">
-                  <FaCheckCircle color="green" size={20} />
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  className="px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 text-sm font-medium"
-                  onClick={sendEmailOtp}
-                  disabled={isEmailVerifying}
-                >
-                  {isEmailVerifying ? "Sending..." : "Verify"}
-                </button>
-              )}
-            </div>
+          <div className="w-full min-w-0">
+            <InputWithTooltip label="Email Id" required>
+              <div className="relative max-w-full">
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="Email address"
+                  maxLength={50}
+                  required
+                  disabled={isGoogleAccount || emailVerified}
+                  className={`w-full px-4 py-3 rounded-lg border ${validationErrors.email ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:bg-gray-100 max-w-full ${emailVerified ? 'pr-12' : 'pr-24 md:pr-28'}`}
+                />
+                {emailVerified ? (
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
+                    <FaCheckCircle className="text-green-500" size={20} />
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-xs md:text-sm font-medium shadow-sm transition-opacity whitespace-nowrap"
+                    onClick={sendEmailOtp}
+                    disabled={isEmailVerifying}
+                  >
+                    <span className="hidden md:inline">{isEmailVerifying ? "Sending..." : "Verify"}</span>
+                    <span className="md:hidden">{isEmailVerifying ? "..." : "Verify"}</span>
+                  </button>
+                )}
+              </div>
+            </InputWithTooltip>
             {validationErrors.email && (
-              <span className="text-red-500 text-xs mt-1">{validationErrors.email}</span>
+              <span className="text-red-500 text-xs mt-1 block">{validationErrors.email}</span>
             )}
             {showEmailOtpInput && !emailVerified && !isGoogleAccount && (
               <div className="flex gap-2 mt-2">
@@ -931,7 +918,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                 />
                 <button 
                   type="button" 
-                  className="px-4 py-2 bg-green-400 text-white rounded-lg hover:bg-green-500 text-sm font-medium" 
+                  className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-sm font-medium shadow-sm transition-opacity" 
                   onClick={verifyEmailOtp}
                 >
                   Submit
@@ -939,42 +926,76 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
               </div>
             )}
           </div>
-          {/* Mobile Number */}
-          <div className="w-full">
-            <div className="flex gap-2">
-              <div className="flex items-center px-4 py-3 bg-white rounded-lg border border-gray-300 w-12 justify-center">
-                <span className="text-gray-600">?</span>
-              </div>
-              <input
-                type="text"
-                name="callingNumber"
-                value={formData.callingNumber}
-                onChange={handleInputChange}
-                placeholder="Mobile Number"
-                onInput={(e) => (e.target.value = e.target.value.replace(/[^0-9]/g, ""))}
-                maxLength={10}
-                minLength={10}
-                required
-                disabled={phoneVerified}
-                className={`flex-1 px-4 py-3 rounded-lg border ${validationErrors.callingNumber ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:bg-gray-100`}
-              />
-              {phoneVerified ? (
-                <span className="flex items-center justify-center w-12">
-                  <FaCheckCircle color="green" size={20} />
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  className="px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 text-sm font-medium"
-                  onClick={sendPhoneOtp}
-                  disabled={isPhoneVerifying}
+          {/* Gender */}
+          <div className="w-full min-w-0">
+            <InputWithTooltip label="Gender">
+              <div className="relative max-w-full">
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none max-w-full"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                 >
-                  {isPhoneVerifying ? "Sending..." : "Verify"}
-                </button>
-              )}
+                  <option value="" disabled>
+                    Select Gender
+                  </option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="transgender">Transgender</option>
+                </select>
+                <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+              </div>
+            </InputWithTooltip>
+          </div>
+          {/* Date of Birth - Wheel Picker */}
+          {dateOfBirth && (
+            <div className="w-full min-w-0">
+              <InputWithTooltip label="Date of Birth">
+                <WheelDatePicker
+                  value={formData.dateOfBirth}
+                  onChange={(date) => setFormData(prev => ({ ...prev, dateOfBirth: date }))}
+                  placeholder="Select Date of Birth"
+                />
+              </InputWithTooltip>
             </div>
+          )}
+          {/* Calling Number */}
+          <div className="w-full min-w-0">
+            <InputWithTooltip label="Mobile Number" required>
+              <div className="relative max-w-full">
+                <input
+                  type="text"
+                  name="callingNumber"
+                  value={formData.callingNumber}
+                  onChange={handleInputChange}
+                  placeholder="Mobile Number"
+                  onInput={(e) => (e.target.value = e.target.value.replace(/[^0-9]/g, ""))}
+                  maxLength={10}
+                  minLength={10}
+                  required
+                  disabled={phoneVerified}
+                  className={`w-full px-4 py-3 rounded-lg border ${validationErrors.callingNumber ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:bg-gray-100 max-w-full ${phoneVerified ? 'pr-12' : 'pr-24 md:pr-28'}`}
+                />
+                {phoneVerified ? (
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
+                    <FaCheckCircle className="text-green-500" size={20} />
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-xs md:text-sm font-medium shadow-sm transition-opacity whitespace-nowrap"
+                    onClick={sendPhoneOtp}
+                    disabled={isPhoneVerifying}
+                  >
+                    <span className="hidden md:inline">{isPhoneVerifying ? "Sending..." : "Verify"}</span>
+                    <span className="md:hidden">{isPhoneVerifying ? "..." : "Verify"}</span>
+                  </button>
+                )}
+              </div>
+            </InputWithTooltip>
             {validationErrors.callingNumber && (
-              <span className="text-red-500 text-xs mt-1">{validationErrors.callingNumber}</span>
+              <span className="text-red-500 text-xs mt-1 block">{validationErrors.callingNumber}</span>
             )}
             {showPhoneOtpInput && !phoneVerified && (
               <div className="flex gap-2 mt-2">
@@ -988,14 +1009,14 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                 />
                 <button 
                   type="button" 
-                  className="px-4 py-2 bg-green-400 text-white rounded-lg hover:bg-green-500 text-sm font-medium" 
+                  className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-sm font-medium shadow-sm transition-opacity" 
                   onClick={verifyPhoneOtp}
                 >
                   Submit
                 </button>
                 <button 
                   type="button" 
-                  className="px-3 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500 text-xs font-medium" 
+                  className="px-3 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-xs font-medium shadow-sm transition-opacity" 
                   onClick={sendPhoneOtp}
                 >
                   Resend
@@ -1003,9 +1024,9 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
               </div>
             )}
           </div>
-          {/* WhatsApp Number */}
-          <div className="w-full md:col-span-2">
-            <label className="flex items-center gap-3 mb-3">
+          {/* Checkbox for same number */}
+          <div className="w-full md:col-span-2 mb-0">
+            <label className="flex items-center gap-3 mb-0">
               <input
                 type="checkbox"
                 checked={sameAsCallingNumber}
@@ -1015,29 +1036,32 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
               <span className="text-sm text-gray-700">WhatsApp Number same as Mobile Number</span>
             </label>
           </div>
-
-          {/* WhatsApp Number Input */}
-          <div className="w-full relative">
-            <input
-              type={whatsappType}
-              name="whatsappNumber"
-              value={formData.whatsappNumber}
-              onChange={handleInputChange}
-              onFocus={handleFocusWhatsapp}
-              onBlur={handleBlurWhatsapp}
-              placeholder="Whats app Number"
-              onInput={(e) => {
-                const v = e.target.value.replace(/[^0-9]/g, "");
-                e.target.value = v.length <= 10 ? v : v.slice(0, 10);
-              }}
-              required
-              disabled={sameAsCallingNumber}
-              className={`w-full px-4 py-3 rounded-lg border ${validationErrors.whatsappNumber ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:bg-gray-100`}
-            />
+          {/* WhatsApp Number */}
+          <div className="w-full min-w-0 -mt-2">
+            <InputWithTooltip label="WhatsApp Number" required>
+              <input
+                type={whatsappType}
+                name="whatsappNumber"
+                value={formData.whatsappNumber}
+                onChange={handleInputChange}
+                onFocus={handleFocusWhatsapp}
+                onBlur={handleBlurWhatsapp}
+                placeholder="WhatsApp Number"
+                onInput={(e) => {
+                  const v = e.target.value.replace(/[^0-9]/g, "");
+                  e.target.value = v.length <= 10 ? v : v.slice(0, 10);
+                }}
+                required
+                disabled={sameAsCallingNumber}
+                className={`w-full px-4 py-3 rounded-lg border ${validationErrors.whatsappNumber ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:bg-gray-100 max-w-full`}
+              />
+            </InputWithTooltip>
             {validationErrors.whatsappNumber && (
-              <span className="text-red-500 text-xs mt-1">{validationErrors.whatsappNumber}</span>
+              <span className="text-red-500 text-xs mt-1 block">{validationErrors.whatsappNumber}</span>
             )}
           </div>
+          {/* {showWhatsappHint && <small>Calling and WhatsApp numbers can be the same</small>} */}
+          {/* Save button hidden - auto-save handles saving when clicking Next */}
         </div>
       </form>
     </div>

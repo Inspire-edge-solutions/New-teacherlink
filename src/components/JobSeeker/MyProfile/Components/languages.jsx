@@ -4,7 +4,8 @@ import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PropTypes from "prop-types";
-import "./languages.css";
+import { FaChevronDown } from "react-icons/fa";
+import InputWithTooltip from "../../../../services/InputWithTooltip";
 
 const Languages = forwardRef(({ updateFormData, formData }, ref) => {
   const { user } = useAuth();
@@ -224,97 +225,99 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
   };
 
   if (isLoading) {
-    return <div className="languages-loading">Loading languages...</div>;
+    return <div className="text-sm text-gray-600">Loading languages...</div>;
   }
 
   return (
-    <div className="rounded-lg p-6" style={{backgroundColor: '#F0D8D9'}}>
-      <form onSubmit={handleSubmit}>
+    <div className="rounded-lg pt-0 px-2 pb-4 md:pt-0 md:px-6 md:pb-6 bg-rose-100 overflow-x-hidden">
+      <form onSubmit={handleSubmit} className="overflow-x-hidden">
         <div className="w-full">
           {/* Language table header */}
-          <div className="bg-white rounded-lg overflow-hidden shadow-sm">
-            <table className="w-full">
+          <div className="bg-white rounded-lg overflow-hidden shadow-sm overflow-x-auto">
+            <table className="w-full min-w-[600px] md:min-w-0">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left px-4 py-3 text-sm font-semibold text-red-500">Languages Known</th>
-                  <th className="text-center px-4 py-3 text-sm font-semibold text-red-500">Speak</th>
-                  <th className="text-center px-4 py-3 text-sm font-semibold text-red-500">Read</th>
-                  <th className="text-center px-4 py-3 text-sm font-semibold text-red-500">Write</th>
-                  <th className="text-center px-4 py-3 text-sm font-semibold text-red-500">Action</th>
+                  <th className="text-left px-2 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Languages Known</th>
+                  <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Speak</th>
+                  <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Read</th>
+                  <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Write</th>
+                  <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {languages.map((lang, index) => (
                   <tr key={index} className="border-b border-gray-100 last:border-0">
-                    <td className="px-4 py-3">
-                      <div className="relative">
-                        <select
-                          className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-8 text-sm"
-                          id={`language-${index}`}
-                          name={`language-${index}`}
-                          value={lang.language}
-                          onChange={(e) =>
-                            handleLanguageChange(index, "language", e.target.value)
-                          }
-                        >
-                          <option value="" disabled>Select Language</option>
-                          {availableLanguages
-                            .filter((availableLang) =>
-                              !languages.some(
-                                (l, i) =>
-                                  i !== index && l.language === availableLang.value
+                    <td className="px-2 py-2 md:px-4 md:py-3">
+                      <InputWithTooltip label="Language" required>
+                        <div className="relative">
+                          <select
+                            className="w-full px-2 py-2 md:px-4 md:py-3 text-xs md:text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-8 md:pr-10"
+                            style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
+                            id={`language-${index}`}
+                            name={`language-${index}`}
+                            value={lang.language}
+                            onChange={(e) =>
+                              handleLanguageChange(index, "language", e.target.value)
+                            }
+                          >
+                            <option value="" disabled>Select Language</option>
+                            {availableLanguages
+                              .filter((availableLang) =>
+                                !languages.some(
+                                  (l, i) =>
+                                    i !== index && l.language === availableLang.value
+                                )
                               )
-                            )
-                            .map((availableLang) => (
-                              <option key={availableLang.id} value={availableLang.value}>
-                                {availableLang.label}
-                              </option>
-                            ))}
-                        </select>
-                        <svg className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
+                              .map((availableLang) => (
+                                <option key={availableLang.id} value={availableLang.value}>
+                                  {availableLang.label}
+                                </option>
+                              ))}
+                          </select>
+                          <FaChevronDown className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={12} />
+                        </div>
+                      </InputWithTooltip>
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-1 py-2 md:px-4 md:py-3 text-center">
                       <input
                         type="checkbox"
                         checked={lang.speak}
                         onChange={(e) =>
                           handleLanguageChange(index, "speak", e.target.checked)
                         }
-                        className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
+                        className="w-3.5 h-3.5 md:w-4 md:h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
                       />
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-1 py-2 md:px-4 md:py-3 text-center">
                       <input
                         type="checkbox"
                         checked={lang.read}
                         onChange={(e) =>
                           handleLanguageChange(index, "read", e.target.checked)
                         }
-                        className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
+                        className="w-3.5 h-3.5 md:w-4 md:h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
                       />
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-1 py-2 md:px-4 md:py-3 text-center">
                       <input
                         type="checkbox"
                         checked={lang.write}
                         onChange={(e) =>
                           handleLanguageChange(index, "write", e.target.checked)
                         }
-                        className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
+                        className="w-3.5 h-3.5 md:w-4 md:h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
                       />
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-1 py-2 md:px-4 md:py-3 text-center">
                       <button
                         type="button"
-                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium"
+                        className="px-2 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed text-xs md:text-sm font-medium shadow-sm transition-opacity whitespace-nowrap"
                         onClick={() => removeLanguage(index)}
                         disabled={languages.length === 1}
                         title="Remove language"
                       >
-                        Remove
+                        <span className="hidden sm:inline">Remove</span>
+                        <span className="sm:hidden">✕</span>
                       </button>
                     </td>
                   </tr>
@@ -327,7 +330,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
           <div className="mt-4">
             <button
               type="button"
-              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium"
+              className="w-full sm:w-auto px-4 py-2 md:px-6 md:py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-sm font-medium shadow-sm transition-opacity"
               onClick={addLanguage}
             >
               Add Language +

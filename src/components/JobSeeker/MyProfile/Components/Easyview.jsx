@@ -2,9 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useAuth } from "../../../../Context/AuthContext";
-import './profile-styles.css';
-import './view.css';
-import './cv-style.css';
+// CSS imports removed - all styles converted to Tailwind CSS
 import { FaMapMarkerAlt, FaPhone, FaWhatsapp, FaEnvelope } from 'react-icons/fa';
 import { decodeCandidateData } from '../../../../utils/dataDecoder';
 
@@ -340,13 +338,13 @@ function EasyView({ onViewAttempt }) {
     }
 
     return educationData.map((education, index) => (
-      <div key={`${education.education_type}-${index}`} className="education-block">
-        <div className="education-title">{getEducationTypeTitle(education.education_type)}</div>
+      <div key={`${education.education_type}-${index}`} className="education-block mb-5 pb-[15px] border-b border-gray-300 last:border-b-0">
+        <div className="education-title font-bold text-gray-800 mb-1">{getEducationTypeTitle(education.education_type)}</div>
         {education.yearOfPassing && (
-          <div className="education-detail">Year of Passing: {education.yearOfPassing}</div>
+          <div className="education-detail text-sm mb-0.5">Year of Passing: {education.yearOfPassing}</div>
         )}
         {education.courseName && (
-          <div className="education-detail">Course Name: {education.courseName}</div>
+          <div className="education-detail text-sm mb-0.5">Course Name: {education.courseName}</div>
         )}
       </div>
     ));
@@ -363,7 +361,7 @@ function EasyView({ onViewAttempt }) {
     }
     
     return (
-      <div className="experience-summary">
+      <div className="experience-summary text-sm mb-[15px] p-2.5 bg-gray-50 border-l-[3px] border-[#1967d2] text-gray-800 whitespace-pre-line">
         {total_experience_years !== undefined && total_experience_years !== null && (
           <div>Total Experience: {total_experience_years} Years {total_experience_months || 0} Months</div>
         )}
@@ -432,40 +430,26 @@ function EasyView({ onViewAttempt }) {
       const location = [exp.city, exp.state, exp.country].filter(Boolean).join(', ');
       
       return (
-        <div className="experience-block" key={index} style={{ 
-          marginBottom: '25px',
-          fontSize: '15px',
-          lineHeight: '1.5'
-        }}>
+        <div className="experience-block mb-[25px] text-[15px] leading-[1.5]" key={index}>
           {/* Organization and date row */}
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            fontWeight: 'bold',
-            marginBottom: '4px'
-          }}>
-            <div style={{ fontSize: '16px' }}>{exp.organizationName}</div>
+          <div className="flex justify-between font-bold mb-1">
+            <div className="text-base">{exp.organizationName}</div>
             <div>
               {dateRange}
-              <span style={{ fontWeight: 'normal', color: '#555' }}>{durationText}</span>
+              <span className="font-normal text-gray-600">{durationText}</span>
             </div>
           </div>
           
           {/* Location row */}
-          <div style={{ marginBottom: '6px', color: '#555' }}>{location}</div>
+          <div className="mb-1.5 text-gray-600">{location}</div>
           
           {/* Job details row */}
-          <div style={{ marginBottom: '6px' }}>
+          <div className="mb-1.5">
             {jobTypeText.join(' | ')}
           </div>
           
           {/* Two-column details grid */}
-          <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr',
-            columnGap: '20px',
-            rowGap: '5px'
-          }}>
+          <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-x-5 gap-y-1`}>
             <div>
               <strong>Designation:</strong> {designation}
             </div>
@@ -542,70 +526,45 @@ function EasyView({ onViewAttempt }) {
   const isTablet = windowWidth > 768 && windowWidth <= 1024;
 
   return (
-    <div className="cv-container" style={{ 
-      margin: '0', 
-      padding: '10px 5px',
-      maxWidth: '100%'
-    }}>
+    <div className="cv-container max-w-[1000px] mx-auto bg-white shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-lg overflow-hidden font-sans text-gray-800 px-[5px] py-2.5">
       {/* Edit Profile Button - Top Level */}
-      <div style={{ 
-        display: 'flex',
-        justifyContent: 'flex-end',
-        marginBottom: '15px'
-      }}>
+      <div className="flex justify-end mb-[15px]">
         <button
           onClick={() => window.location.href = "/candidates-dashboard/my-profile"}
-          className={`btn btn-warning ${isMobile ? 'btn-mobile' : ''}`}
-          style={{
-            fontSize: isMobile ? '14px' : '16px',
-            padding: isMobile ? '8px 16px' : '10px 20px',
-            borderRadius: '6px',
-            fontWeight: '500'
-          }}
+          className={`btn btn-warning ${isMobile ? 'btn-mobile' : ''} ${isMobile ? 'text-sm px-4 py-2' : 'text-base px-5 py-2.5'} rounded-md font-medium`}
         >
           Edit Profile
         </button>
       </div>
 
-      <div className="cv-header" style={{ marginBottom: '10px' }}>
+      <div className={`cv-header flex ${isMobile ? 'flex-col items-center text-center p-2' : 'p-6'} bg-white border-b border-gray-200 mb-2.5`}>
         {/* First Row: Profile Picture + Basic Info */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '20px', 
-          marginBottom: '8px',
-          alignItems: 'center'
-        }}>
+        <div className={`flex ${isMobile ? 'flex-col' : ''} gap-5 mb-2 items-center`}>
           {/* Profile Picture */}
-          <div className="profile-photo" style={{ flexShrink: 0 }}>
+          <div className={`profile-photo ${isMobile ? 'w-[100px] h-[120px] mb-2.5' : 'w-[150px] h-[180px]'} rounded-full overflow-hidden border-[3px] border-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.1)] ${isMobile ? 'm-0' : 'mr-2.5'} shrink-0`}>
             {photoUrl ? (
               <img 
                 src={photoUrl} 
                 alt={`${profileData.fullName || 'User'}'s profile photo`}
+                className="w-full h-full object-cover"
                 onError={(e) => {
                   setPhotoError(true);
                   e.target.src = defaultAvatar;
                 }}
               />
             ) : (
-              <img src={defaultAvatar} alt={`${profileData.fullName || 'User'}'s default avatar`} />
+              <img src={defaultAvatar} alt={`${profileData.fullName || 'User'}'s default avatar`} className="w-full h-full object-cover" />
             )}
           </div>
           
           {/* Basic Information */}
-          <div style={{ flex: 1 }}>
-            <h1 className="candidate-name" style={{ 
-              marginBottom: '4px', 
-              fontSize: isMobile ? '20px' : '24px' 
-            }}>
+          <div className="flex-1">
+            <h1 className={`candidate-name mb-1 ${isMobile ? 'text-xl' : 'text-2xl'}`}>
               {profileData.fullName || 'Candidate Name'}
             </h1>
             
             {/* Personal Details */}
-            <div style={{ 
-              marginBottom: '4px', 
-              fontSize: isMobile ? '14px' : '15px',
-              color: '#555'
-            }}>
+            <div className={`mb-1 ${isMobile ? 'text-sm' : 'text-[15px]'} text-gray-600`}>
               {profileData.gender && <span>{profileData.gender}</span>}
               {profileData.dateOfBirth && (
                 <span> | {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
@@ -614,13 +573,9 @@ function EasyView({ onViewAttempt }) {
             
             {/* Email */}
             {profileData.email && (
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center',
-                fontSize: isMobile ? '14px' : '15px'
-              }}>
-                <FaEnvelope style={{ marginRight: '6px', color: '#A9A9A9' }} />
-                <a href={`mailto:${profileData.email}`} style={{ textDecoration: 'none', color: '#1967d2' }}>
+              <div className={`flex items-center ${isMobile ? 'text-sm' : 'text-[15px]'}`}>
+                <FaEnvelope className="mr-1.5 text-gray-400" />
+                <a href={`mailto:${profileData.email}`} className="no-underline text-[#1967d2]">
                   {profileData.email}
                 </a>
               </div>
@@ -629,32 +584,13 @@ function EasyView({ onViewAttempt }) {
         </div>
         
         {/* Contact Information Rows - Starting from left edge */}
-        <div style={{ 
-          fontFamily: 'Arial, sans-serif',
-          fontSize: isMobile ? '13px' : '14px',
-          lineHeight: '1.4'
-        }}>
+        <div className={`font-sans ${isMobile ? 'text-[13px]' : 'text-sm'} leading-[1.4]`}>
           {/* Row 2: Address Information */}
-          <div style={{ 
-            display: 'flex',
-            flexDirection: 'row',
-            gap: isMobile ? '15px' : '20px',
-            marginBottom: '6px',
-            flexWrap: 'wrap'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaMapMarkerAlt style={{ 
-                marginRight: '6px', 
-                color: '#e74c3c',
-                fontSize: '13px'
-              }} />
-              <span style={{ fontWeight: '600', marginRight: '6px' }}>Present:</span>
-              <span style={{ 
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: isMobile ? '280px' : '350px'
-              }}>
+          <div className={`flex flex-row ${isMobile ? 'gap-[15px]' : 'gap-5'} mb-1.5 flex-wrap`}>
+            <div className="flex items-center">
+              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px]" />
+              <span className="font-semibold mr-1.5">Present:</span>
+              <span className={`overflow-hidden text-ellipsis whitespace-nowrap ${isMobile ? 'max-w-[280px]' : 'max-w-[350px]'}`}>
                 {[
                   profileData.present_city_name,
                   profileData.present_state_name,
@@ -663,19 +599,10 @@ function EasyView({ onViewAttempt }) {
               </span>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaMapMarkerAlt style={{ 
-                marginRight: '6px', 
-                color: '#e74c3c',
-                fontSize: '13px'
-              }} />
-              <span style={{ fontWeight: '600', marginRight: '6px' }}>Permanent:</span>
-              <span style={{ 
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: isMobile ? '280px' : '350px'
-              }}>
+            <div className="flex items-center">
+              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px]" />
+              <span className="font-semibold mr-1.5">Permanent:</span>
+              <span className={`overflow-hidden text-ellipsis whitespace-nowrap ${isMobile ? 'max-w-[280px]' : 'max-w-[350px]'}`}>
                 {[
                   profileData.permanent_city_name,
                   profileData.permanent_state_name,
@@ -686,65 +613,35 @@ function EasyView({ onViewAttempt }) {
           </div>
           
           {/* Row 3: Phone Numbers */}
-          <div style={{ 
-            display: 'flex',
-            flexDirection: 'row',
-            gap: isMobile ? '15px' : '20px',
-            marginBottom: '6px',
-            flexWrap: 'wrap'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaPhone style={{ 
-                marginRight: '6px', 
-                color: '#1a73e8',
-                fontSize: '13px'
-              }} />
-              <span style={{ fontWeight: '600', marginRight: '6px' }}>Phone:</span>
+          <div className={`flex flex-row ${isMobile ? 'gap-[15px]' : 'gap-5'} mb-1.5 flex-wrap`}>
+            <div className="flex items-center">
+              <FaPhone className="mr-1.5 text-[#1a73e8] text-[13px]" />
+              <span className="font-semibold mr-1.5">Phone:</span>
               <span>{profileData.callingNumber || 'Not provided'}</span>
             </div>
              
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaWhatsapp style={{ 
-                marginRight: '6px', 
-                color: '#25D366',
-                fontSize: '13px'
-              }} />
-              <span style={{ fontWeight: '600', marginRight: '6px' }}>WhatsApp:</span>
+            <div className="flex items-center">
+              <FaWhatsapp className="mr-1.5 text-[#25D366] text-[13px]" />
+              <span className="font-semibold mr-1.5">WhatsApp:</span>
               <span>{profileData.whatsappNumber || 'Not provided'}</span>
             </div>
           </div>
         </div>
       </div>
       
-      <div className="cv-body">
-        <div className="cv-sidebar">
-          <div className="cv-section education-section">
-            <h2 className="section-title" style={{ 
-              fontSize: '18px',
-              borderBottom: '2px solid #1967d2',
-              paddingBottom: '8px',
-              marginBottom: '15px',
-              fontWeight: '700',
-              color: '#1967d2',
-              textTransform: 'uppercase',
-              textAlign: 'left'
-            }}>EDUCATION</h2>
+      <div className="cv-body flex flex-col md:flex-row p-0 bg-white">
+        <div className="cv-sidebar w-full md:w-[35%] bg-gray-100 p-2.5 md:p-5">
+          <div className="cv-section education-section mt-0 mb-2.5">
+            <h2 className="section-title text-lg border-b-2 border-[#1967d2] pb-2 mb-[15px] font-bold text-[#1967d2] uppercase text-left">
+              EDUCATION
+            </h2>
             {renderEducationBlocks()}
           </div>
         </div>
 
-        <div className="cv-main">
-          <div className="cv-section experience-section">
-            <h2 className="section-title" style={{ 
-              textAlign: 'center',
-              borderBottom: '1px solid #000',
-              marginBottom: '15px',
-              paddingBottom: '5px',
-              textTransform: 'uppercase',
-              fontWeight: 'bold',
-              fontSize: '18px',
-              color: '#1967d2'
-            }}>
+        <div className="cv-main w-full md:w-[65%] md:px-2">
+          <div className="cv-section experience-section mt-0 mb-2.5">
+            <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-lg text-[#1967d2]">
               WORK EXPERIENCE
             </h2>
             {getExperienceText()}
@@ -789,23 +686,11 @@ function EasyView({ onViewAttempt }) {
             if (!hasBasicData && !hasConditionalData) return null;
             
             return (
-              <div className="cv-section job-preferences">
-                <h2 className="section-title">Job Preferences</h2>
-                <div className="job-preferences-block" style={{ 
-                  marginBottom: '25px',
-                  padding: '20px',
-                  background: '#f5f7fc',
-                  borderRadius: '8px',
-                  fontSize: '15px',
-                  lineHeight: '1.5'
-                }}>
+              <div className="cv-section job-preferences mt-0 mb-2.5">
+                <h2 className="section-title text-lg border-b-2 border-[#1967d2] pb-2 mb-[15px] font-bold text-[#1967d2] uppercase">Job Preferences</h2>
+                <div className="job-preferences-block bg-[#f5f7fc] p-5 rounded-lg mb-[25px] text-[15px] leading-[1.5]">
                   {/* Two-column details grid */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr',
-                    columnGap: '20px',
-                    rowGap: '5px'
-                  }}>
+                  <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-x-5 gap-y-1`}>
                     {/* Basic Job Information */}
                     {jobPreferenceData.Job_Type && (
                       <div>

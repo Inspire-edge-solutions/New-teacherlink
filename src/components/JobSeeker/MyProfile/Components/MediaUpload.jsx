@@ -11,22 +11,6 @@ const MediaUpload = () => {
 const [showVideoTooltip, setShowVideoTooltip] = useState(false);
 const [showResumeTooltip, setShowResumeTooltip] = useState(false);
 
-// Reusable tooltip style
-const tooltipStyle = {
-  position: 'absolute',
-  top: '100%',
-  left: '0',
-  marginTop: '5px',
-  padding: '5px 10px',
-  backgroundColor: 'orchid',
-  color: 'white',
-  borderRadius: '4px',
-  fontSize: '14px',
-  whiteSpace: 'nowrap',
-  zIndex: 1000,
-  textAlign: 'center'
-};
-
 // Endpoints for video/resume operations
 const VIDEO_API_URL =
   "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-video";
@@ -301,81 +285,108 @@ const handleResumeView = async () => {
 };
 
 return (
-    <div>
-        <div className="video-resume">
-          {/* Demo Video Upload & View */}
-          <div style={{ position: 'relative' }}>
-            <label>My demo video - </label>
-            <div className="button-group">
-              <button 
-                className="theme-btn btn-style-three" 
-                onClick={handleDemoVideoUploadClick}
-                disabled={demoVideoUploading}
-                onMouseEnter={() => setShowVideoTooltip(true)}
-                onMouseLeave={() => setShowVideoTooltip(false)}
-                style={{ padding: '8px 12px' }}
-              >
-                {demoVideoUploading ? "Uploading..." : (videoFileName ? shortenFileName(videoFileName) : "Upload")}
-              </button>
-              <button 
-                className="theme-btn btn-style-three" 
-                onClick={handleDemoVideoView}
-                disabled={!videoFileName}
-                style={{ padding: '8px 12px', opacity: !videoFileName ? 0.6 : 1 }}
-              >
-                View
-              </button>
+    <div className="max-w-5xl mx-auto p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          {/* Demo Video Card */}
+          <div className=" rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col">
+            <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-center">My demo video</h3>
+            
+            <div className="mt-auto">
+              <div className="flex gap-3 relative">
+                <div className="flex-1 relative">
+                  <button 
+                    className="w-full bg-gradient-brand hover:opacity-90 text-white font-medium py-3 px-4 rounded-lg transition-opacity disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    onClick={handleDemoVideoUploadClick}
+                    disabled={demoVideoUploading}
+                    onMouseEnter={() => setShowVideoTooltip(true)}
+                    onMouseLeave={() => setShowVideoTooltip(false)}
+                  >
+                    {demoVideoUploading ? "Uploading..." : "Upload"}
+                  </button>
+                  {showVideoTooltip && !videoFileName && (
+                    <div className="absolute top-full left-0 mt-2 p-2 bg-gradient-brand text-white text-xs rounded z-10 whitespace-nowrap">
+                      Accepted formats: .mp4, .webm, .mov (Max: 10MB)
+                    </div>
+                  )}
+                </div>
+                <button 
+                  className="flex-1 bg-gradient-brand hover:opacity-90 text-white font-medium py-3 px-4 rounded-lg transition-opacity disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  onClick={handleDemoVideoView}
+                  disabled={!videoFileName}
+                >
+                  View
+                </button>
+              </div>
+              
+              {videoFileName && (
+                <p className="text-xs text-gray-600 mt-2 truncate" title={videoFileName}>
+                  {videoFileName}
+                </p>
+              )}
+              
+              {demoVideoError && (
+                <p className="text-red-500 text-xs mt-2">{demoVideoError}</p>
+              )}
             </div>
+            
             <input
               type="file"
               ref={demoVideoInputRef}
-              style={{ display: "none" }}
+              className="hidden"
               accept="video/mp4,video/webm,video/quicktime"
               onChange={handleDemoVideoSelect}
             />
-            {showVideoTooltip && (
-              <div style={tooltipStyle}>
-                {videoFileName ? videoFileName : "Accepted formats: .mp4, .webm, .mov (Max: 10MB)"}
-              </div>
-            )}
-            {demoVideoError && <p className="ui-danger mb-0">{demoVideoError}</p>}
           </div>
-          {/* Resume Upload & View */}
-          <div style={{ position: 'relative' }}>
-            <label>My resume/cv - </label>
-            <div className="button-group">
-              <button 
-                className="theme-btn btn-style-three" 
-                onClick={handleResumeUploadClick}
-                disabled={resumeUploading}
-                onMouseEnter={() => setShowResumeTooltip(true)}
-                onMouseLeave={() => setShowResumeTooltip(false)}
-                style={{ padding: '8px 12px' }}
-              >
-                {resumeUploading ? "Uploading..." : (resumeFileName ? shortenFileName(resumeFileName) : "Upload")}
-              </button>
-              <button 
-                className="theme-btn btn-style-three" 
-                onClick={handleResumeView}
-                disabled={!resumeFileName}
-                style={{ padding: '8px 12px', opacity: !resumeFileName ? 0.6 : 1 }}
-              >
-                View
-              </button>
+
+          {/* Resume Card */}
+          <div className="bg-gray-50 rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col">
+            <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-center">My resume/cv</h3>
+            
+            <div className="mt-auto">
+              <div className="flex gap-3 relative">
+                <div className="flex-1 relative">
+                  <button 
+                    className="w-full bg-gradient-brand hover:opacity-90 text-white font-medium py-3 px-4 rounded-lg transition-opacity disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    onClick={handleResumeUploadClick}
+                    disabled={resumeUploading}
+                    onMouseEnter={() => setShowResumeTooltip(true)}
+                    onMouseLeave={() => setShowResumeTooltip(false)}
+                  >
+                    {resumeUploading ? "Uploading..." : "Upload"}
+                  </button>
+                  {showResumeTooltip && !resumeFileName && (
+                    <div className="absolute top-full left-0 mt-2 p-2 bg-gradient-brand text-white text-xs rounded z-10 whitespace-nowrap">
+                      Accepted format: .pdf
+                    </div>
+                  )}
+                </div>
+                <button 
+                  className="flex-1 bg-gradient-brand hover:opacity-90 text-white font-medium py-3 px-4 rounded-lg transition-opacity disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  onClick={handleResumeView}
+                  disabled={!resumeFileName}
+                >
+                  View
+                </button>
+              </div>
+              
+              {resumeFileName && (
+                <p className="text-xs text-gray-600 mt-2 truncate" title={resumeFileName}>
+                  {resumeFileName}
+                </p>
+              )}
+              
+              {resumeError && (
+                <p className="text-red-500 text-xs mt-2">{resumeError}</p>
+              )}
             </div>
+            
             <input
               type="file"
               ref={resumeInputRef}
-              style={{ display: "none" }}
+              className="hidden"
               accept=".pdf"
               onChange={handleResumeSelect}
             />
-            {showResumeTooltip && (
-              <div style={tooltipStyle}>
-                {resumeFileName ? resumeFileName : "Accepted format: pdf"}
-              </div>
-            )}
-            {resumeError && <p className="ui-danger mb-0">{resumeError}</p>}
           </div>
         </div>
     </div>

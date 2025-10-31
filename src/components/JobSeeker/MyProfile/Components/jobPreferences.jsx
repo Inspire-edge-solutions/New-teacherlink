@@ -2,9 +2,33 @@ import { useState, useEffect, forwardRef, useImperativeHandle, useRef, useCallba
 import Select from 'react-select';
 import { GetCountries, GetState, GetCity } from 'react-country-state-city';
 import axios from 'axios';
-import { useAuth } from "../../../../Context/AuthContext";
+import { useAuth } from "../../../../Context/AuthContext.jsx";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import InputWithTooltip from '../../../../services/InputWithTooltip.jsx';
+import { FaChevronDown } from 'react-icons/fa';
+
+// ========== REUSABLE STYLES ==========
+// react-select styles
+const reactSelectStyles = {
+  control: (base, state) => ({
+    ...base,
+    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+    '&:hover': { borderColor: '#FDA4AF' },
+    borderRadius: '0.5rem',
+    padding: '0.25rem',
+    backgroundColor: 'white'
+  }),
+  dropdownIndicator: (base) => ({
+    ...base,
+    color: '#EF4444'
+  }),
+  menuPortal: (base) => ({
+    ...base,
+    zIndex: 9999
+  })
+};
 
 //------------------------------------------------
 // Helper functions: map countries/states/cities by ID
@@ -57,6 +81,13 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
   const [indiaOption, setIndiaOption] = useState(null);
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
+  
+  // Store saved location values from API to restore later
+  const savedLocationRef = useRef({
+    country: null,
+    state: null,
+    city: null
+  });
 
   const getInitialState = () => {
     const defaultPreferences = {
@@ -190,12 +221,79 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
     loadCities();
   }, [jobDetails.preferred_country, jobDetails.preferred_state]);
 
+  // Restore country after countries are loaded
+  useEffect(() => {
+    if (countries.length > 0 && savedLocationRef.current.country && dataFetched.current) {
+      const currentCountryLabel = jobDetails.preferred_country?.label;
+      const savedCountryLabel = savedLocationRef.current.country;
+      
+      // Restore if we have a saved value and it doesn't match the current value
+      if (currentCountryLabel !== savedCountryLabel) {
+        const matchedCountry = countries.find(c => c.label === savedCountryLabel);
+        if (matchedCountry) {
+          setJobDetails(prev => ({
+            ...prev,
+            preferred_country: matchedCountry,
+            preferred_state: null, // Reset state when country changes
+            preferred_city: null // Reset city when country changes
+          }));
+        }
+      }
+    }
+  }, [countries, jobDetails.preferred_country]);
+
+  // Restore state after states are loaded and country is set
+  useEffect(() => {
+    if (states.length > 0 && savedLocationRef.current.state && dataFetched.current && jobDetails.preferred_country) {
+      const currentStateLabel = jobDetails.preferred_state?.label;
+      const savedStateLabel = savedLocationRef.current.state;
+      
+      // Restore if we have a saved value and it doesn't match the current value
+      if (currentStateLabel !== savedStateLabel) {
+        const matchedState = states.find(s => s.label === savedStateLabel);
+        if (matchedState) {
+          setJobDetails(prev => ({
+            ...prev,
+            preferred_state: matchedState,
+            preferred_city: null // Reset city when state changes
+          }));
+        }
+      }
+    }
+  }, [states, jobDetails.preferred_state, jobDetails.preferred_country]);
+
+  // Restore city after cities are loaded and state is set
+  useEffect(() => {
+    if (cities.length > 0 && savedLocationRef.current.city && dataFetched.current && jobDetails.preferred_state) {
+      const currentCityLabel = jobDetails.preferred_city?.label;
+      const savedCityLabel = savedLocationRef.current.city;
+      
+      // Restore if we have a saved value and it doesn't match the current value
+      if (currentCityLabel !== savedCityLabel) {
+        const matchedCity = cities.find(c => c.label === savedCityLabel);
+        if (matchedCity) {
+          setJobDetails(prev => ({
+            ...prev,
+            preferred_city: matchedCity
+          }));
+        }
+      }
+    }
+  }, [cities, jobDetails.preferred_city, jobDetails.preferred_state]);
+
   // Update state when formData changes
   useEffect(() => {
-    if (formData) {
-      setPreferences(formData.preferences || initialStateRef.current.preferences);
-      setJobSearchStatus(formData.jobSearchStatus || initialStateRef.current.jobSearchStatus);
-      setJobDetails(formData.jobDetails || initialStateRef.current.jobDetails);
+    if (formData && Object.keys(formData).length > 0) {
+      // Only update if formData has the specific keys
+      if (formData.preferences) {
+        setPreferences(formData.preferences);
+      }
+      if (formData.jobSearchStatus) {
+        setJobSearchStatus(formData.jobSearchStatus);
+      }
+      if (formData.jobDetails) {
+        setJobDetails(formData.jobDetails);
+      }
     }
   }, [formData]);
 
@@ -237,7 +335,14 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       if (typeof val === 'string') return val.trim() !== '';
       if (Array.isArray(val)) return val.length > 0;
       if (typeof val === 'object') {
-        if (val.value !== undefined) return true; // Consider both "yes" and "no" as valid values
+        // Handle react-select objects (have value and label properties)
+        if (val.value !== undefined) {
+          // For react-select, check if value is not empty
+          if (typeof val.value === 'string') return val.value.trim() !== '';
+          if (Array.isArray(val.value)) return val.value.length > 0;
+          return val.value !== null && val.value !== undefined;
+        }
+        // Handle other objects
         return Object.keys(val).length > 0;
       }
       return true;
@@ -254,21 +359,42 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
     console.log('Preferences State:', preferences);
 
     // 1. Validate job shifts
-    const areJobShiftsValid = Object.values(preferences.jobShift).every(
-      (shift) => shift && shift.value
+    const areJobShiftsValid = Object.entries(preferences.jobShift).every(
+      ([key, shift]) => {
+        const shiftValue = shift?.value;
+        const isValid = shiftValue === "yes" || shiftValue === "no";
+        if (!isValid) {
+          console.log(`Job shift validation failed for ${key}:`, shift);
+        }
+        return isValid;
+      }
     );
 
     // 2. Validate organization types
-    const areOrgTypesValid = Object.values(preferences.organizationType).every(
-      (org) => org && org.value
+    const areOrgTypesValid = Object.entries(preferences.organizationType).every(
+      ([key, org]) => {
+        const orgValue = org?.value;
+        const isValid = orgValue === "yes" || orgValue === "no";
+        if (!isValid) {
+          console.log(`Organization type validation failed for ${key}:`, org);
+        }
+        return isValid;
+      }
     );
 
     // 3. Validate parent/guardian preferences
-    const areParentPrefsValid = Object.values(preferences.parentGuardian).every(
-      (pref) => pref && pref.value
+    const areParentPrefsValid = Object.entries(preferences.parentGuardian).every(
+      ([key, pref]) => {
+        const prefValue = pref?.value;
+        const isValid = prefValue === "yes" || prefValue === "no";
+        if (!isValid) {
+          console.log(`Parent/guardian validation failed for ${key}:`, pref);
+        }
+        return isValid;
+      }
     );
 
-    // 4. Validate teaching mode - Fixed to handle both string and object formats
+    // 4. Validate teaching mode
     const onlineValue = getTeachingModeValue(preferences.teachingMode.online);
     const offlineValue = getTeachingModeValue(preferences.teachingMode.offline);
     const isTeachingModeValid = 
@@ -276,10 +402,23 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       (offlineValue === "yes" || offlineValue === "no");
 
     // 5. Validate basic job details
+    const noticePeriodValue = jobDetails.notice_period?.value || jobDetails.notice_period;
     const areBasicDetailsValid =
       hasValue(jobDetails.Job_Type) &&
       hasValue(jobDetails.expected_salary) &&
-      hasValue(jobDetails.notice_period);
+      hasValue(noticePeriodValue);
+    
+    if (!areBasicDetailsValid) {
+      console.log('Basic details validation failed:', {
+        Job_Type: jobDetails.Job_Type,
+        expected_salary: jobDetails.expected_salary,
+        notice_period: jobDetails.notice_period,
+        noticePeriodValue: noticePeriodValue,
+        Job_TypeValid: hasValue(jobDetails.Job_Type),
+        expected_salaryValid: hasValue(jobDetails.expected_salary),
+        noticePeriodValid: hasValue(noticePeriodValue)
+      });
+    }
 
     // 6. Validate location preferences (if any are filled, all must be filled)
     const hasAnyLocation =
@@ -287,9 +426,13 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       jobDetails.preferred_state ||
       jobDetails.preferred_city;
 
+    // Check if country and state have values (could be react-select objects)
+    const countryValue = jobDetails.preferred_country?.value || jobDetails.preferred_country;
+    const stateValue = jobDetails.preferred_state?.value || jobDetails.preferred_state;
+    
     const areLocationsValid =
       !hasAnyLocation ||
-      (hasValue(jobDetails.preferred_country) && hasValue(jobDetails.preferred_state));
+      (hasValue(countryValue) && hasValue(stateValue));
 
     // 7. Validate job type specific fields - Removed curriculum requirement as it's not in the form
     let areJobTypeFieldsValid = true;
@@ -299,19 +442,47 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
         hasValue(jobDetails.teachingSubjects) &&
         hasValue(jobDetails.teachingGrades) &&
         hasValue(jobDetails.teachingCoreExpertise);
+      if (!areJobTypeFieldsValid) {
+        console.log('Teaching job type fields validation failed:', {
+          teachingDesignation: jobDetails.teachingDesignation,
+          teachingSubjects: jobDetails.teachingSubjects,
+          teachingGrades: jobDetails.teachingGrades,
+          teachingCoreExpertise: jobDetails.teachingCoreExpertise
+        });
+      }
     } else if (jobDetails.Job_Type === 'administration') {
       areJobTypeFieldsValid = hasValue(jobDetails.adminDesignations);
+      if (!areJobTypeFieldsValid) {
+        console.log('Administration job type fields validation failed:', {
+          adminDesignations: jobDetails.adminDesignations
+        });
+      }
     } else if (jobDetails.Job_Type === 'teachingAndAdmin') {
       areJobTypeFieldsValid =
         hasValue(jobDetails.teachingAdminDesignations) &&
         hasValue(jobDetails.teachingAdminSubjects) &&
         hasValue(jobDetails.teachingAdminGrades) &&
         hasValue(jobDetails.teachingAdminCoreExpertise);
+      if (!areJobTypeFieldsValid) {
+        console.log('Teaching+Admin job type fields validation failed:', {
+          teachingAdminDesignations: jobDetails.teachingAdminDesignations,
+          teachingAdminSubjects: jobDetails.teachingAdminSubjects,
+          teachingAdminGrades: jobDetails.teachingAdminGrades,
+          teachingAdminCoreExpertise: jobDetails.teachingAdminCoreExpertise
+        });
+      }
     }
 
     // 8. Validate job search status
-    const isJobSearchValid = Object.values(jobSearchStatus).every(
-      (status) => hasValue(status.value)
+    const isJobSearchValid = Object.entries(jobSearchStatus).every(
+      ([key, status]) => {
+        const statusValue = status?.value;
+        const isValid = statusValue && statusValue.trim() !== "";
+        if (!isValid) {
+          console.error(`❌ Job search status validation FAILED for "${key}":`, status);
+        }
+        return isValid;
+      }
     );
 
     // Debug logs
@@ -327,10 +498,20 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       teachingModeValues: {
         online: onlineValue,
         offline: offlineValue
+      },
+      jobDetails: {
+        Job_Type: jobDetails.Job_Type,
+        expected_salary: jobDetails.expected_salary,
+        notice_period: jobDetails.notice_period,
+        noticePeriodValue: noticePeriodValue,
+        preferred_country: jobDetails.preferred_country,
+        preferred_state: jobDetails.preferred_state,
+        countryValue: countryValue,
+        stateValue: stateValue
       }
     });
 
-    return (
+    const validationResult = 
       areJobShiftsValid &&
       areOrgTypesValid &&
       areParentPrefsValid &&
@@ -338,8 +519,22 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       areBasicDetailsValid &&
       areLocationsValid &&
       areJobTypeFieldsValid &&
-      isJobSearchValid
-    );
+      isJobSearchValid;
+
+    if (!validationResult) {
+      console.error('Validation failed. Details:', {
+        areJobShiftsValid,
+        areOrgTypesValid,
+        areParentPrefsValid,
+        isTeachingModeValid,
+        areBasicDetailsValid,
+        areLocationsValid,
+        areJobTypeFieldsValid,
+        isJobSearchValid
+      });
+    }
+
+    return validationResult;
   };
 
   // Subject/designation data
@@ -531,19 +726,19 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
 
           const jobSearch = {
             Full_time: {
-              value: record.full_time_2_offline || "",
+              value: (record.full_time_2_offline && record.full_time_2_offline.trim() !== "") ? record.full_time_2_offline : "activelySearching",
             },
             part_time_weekdays: {
-              value: record.part_time_weekdays_2_offline || "",
+              value: (record.part_time_weekdays_2_offline && record.part_time_weekdays_2_offline.trim() !== "") ? record.part_time_weekdays_2_offline : "activelySearching",
             },
             part_time_weekends: {
-              value: record.part_time_weekends_2_offline || "",
+              value: (record.part_time_weekends_2_offline && record.part_time_weekends_2_offline.trim() !== "") ? record.part_time_weekends_2_offline : "activelySearching",
             },
             part_time_vacations: {
-              value: record.part_time_vacations_2_offline || "",
+              value: (record.part_time_vacations_2_offline && record.part_time_vacations_2_offline.trim() !== "") ? record.part_time_vacations_2_offline : "activelySearching",
             },
             tuitions: {
-              value: record.tuitions_2_offline || "",
+              value: (record.tuitions_2_offline && record.tuitions_2_offline.trim() !== "") ? record.tuitions_2_offline : "activelySearching",
             },
           };
 
@@ -588,16 +783,17 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
               record.Job_Type === 'teachingAndAdmin'
                 ? record.teaching_administrative_coreExpertise || []
                 : [],
-            preferred_country: record.preferred_country
-              ? countries.find(c => c.label === record.preferred_country) || null
-              : null,
-            preferred_state: record.preferred_state
-              ? states.find(s => s.label === record.preferred_state) || null
-              : null,
-            preferred_city: record.preferred_city
-              ? cities.find(c => c.label === record.preferred_city) || null
-              : null,
+            preferred_country: null, // Will be set after countries load
+            preferred_state: null, // Will be set after states load
+            preferred_city: null, // Will be set after cities load
             notice_period: record.notice_period || "",
+          };
+
+          // Store saved location labels to restore later
+          savedLocationRef.current = {
+            country: record.preferred_country || null,
+            state: record.preferred_state || null,
+            city: record.preferred_city || null
           };
 
           setPreferences(pref);
@@ -637,24 +833,32 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
 
   // Update job search status change handler
   const handleJobSearchStatusChange = (type, mode, value) => {
+    // Ensure value is not empty - default to "activelySearching" if empty
+    // Convert to string first to handle any type
+    const stringValue = value !== null && value !== undefined ? String(value) : "";
+    const validValue = stringValue.trim() !== "" ? stringValue : "activelySearching";
+    
     setJobSearchStatus((prev) => {
       const newStatus = {
         ...prev,
         [type]: {
-          ...prev[type],
-          [mode]: value,
+          ...(prev[type] || {}),
+          [mode]: validValue,
         },
       };
 
-      const isValid = validateJobPreferences();
-      updateFormData(
-        {
-          preferences,
-          jobDetails,
-          jobSearchStatus: newStatus,
-        },
-        isValid
-      );
+      // Update parent form data with latest state
+      setTimeout(() => {
+        const isValid = validateJobPreferences();
+        updateFormData(
+          {
+            preferences,
+            jobDetails,
+            jobSearchStatus: newStatus,
+          },
+          isValid
+        );
+      }, 0);
 
       return newStatus;
     });
@@ -680,30 +884,30 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       const payload = {
         firebase_uid: user.uid,
         // Convert "yes"/"no" => 1/0
-        full_time_offline: convertToInt(preferences.jobShift.Full_time.value),
-        full_time_online: convertToInt(preferences.jobShift.Full_time.value),
-        part_time_weekdays_offline: convertToInt(preferences.jobShift.part_time_weekdays.value),
-        part_time_weekdays_online: convertToInt(preferences.jobShift.part_time_weekdays.value),
-        part_time_weekends_offline: convertToInt(preferences.jobShift.part_time_weekends.value),
-        part_time_weekends_online: convertToInt(preferences.jobShift.part_time_weekends.value),
-        part_time_vacations_offline: convertToInt(preferences.jobShift.part_time_vacations.value),
-        part_time_vacations_online: convertToInt(preferences.jobShift.part_time_vacations.value),
+        full_time_offline: convertToInt(preferences.jobShift.Full_time?.value),
+        full_time_online: convertToInt(preferences.jobShift.Full_time?.value),
+        part_time_weekdays_offline: convertToInt(preferences.jobShift.part_time_weekdays?.value),
+        part_time_weekdays_online: convertToInt(preferences.jobShift.part_time_weekdays?.value),
+        part_time_weekends_offline: convertToInt(preferences.jobShift.part_time_weekends?.value),
+        part_time_weekends_online: convertToInt(preferences.jobShift.part_time_weekends?.value),
+        part_time_vacations_offline: convertToInt(preferences.jobShift.part_time_vacations?.value),
+        part_time_vacations_online: convertToInt(preferences.jobShift.part_time_vacations?.value),
 
-        school_college_university_offline: convertToInt(preferences.organizationType.school_college_university.value),
-        school_college_university_online: convertToInt(preferences.organizationType.school_college_university.value),
-        coaching_institute_offline: convertToInt(preferences.organizationType.coaching_institute.value),
-        coaching_institute_online: convertToInt(preferences.organizationType.coaching_institute.value),
-        Ed_TechCompanies_offline: convertToInt(preferences.organizationType.Ed_TechCompanies.value),
-        Ed_TechCompanies_online: convertToInt(preferences.organizationType.Ed_TechCompanies.value),
+        school_college_university_offline: convertToInt(preferences.organizationType.school_college_university?.value),
+        school_college_university_online: convertToInt(preferences.organizationType.school_college_university?.value),
+        coaching_institute_offline: convertToInt(preferences.organizationType.coaching_institute?.value),
+        coaching_institute_online: convertToInt(preferences.organizationType.coaching_institute?.value),
+        Ed_TechCompanies_offline: convertToInt(preferences.organizationType.Ed_TechCompanies?.value),
+        Ed_TechCompanies_online: convertToInt(preferences.organizationType.Ed_TechCompanies?.value),
 
         // Parent/Guardian
-        Home_Tutor_offline: convertToInt(preferences.parentGuardian.Home_Tutor.value),
-        Home_Tutor_online: convertToInt(preferences.parentGuardian.Home_Tutor.value),
-        Private_Tutor_offline: convertToInt(preferences.parentGuardian.Private_Tutor.value),
-        Private_Tutor_online: convertToInt(preferences.parentGuardian.Private_Tutor.value),
-        Group_Tutor_offline: convertToInt(preferences.parentGuardian.Group_Tutor.value),
-        Group_Tutor_online: convertToInt(preferences.parentGuardian.Group_Tutor.value),
-        Private_Tutions_online_online: convertToInt(preferences.parentGuardian.Private_Tutions.value),
+        Home_Tutor_offline: convertToInt(preferences.parentGuardian.Home_Tutor?.value),
+        Home_Tutor_online: convertToInt(preferences.parentGuardian.Home_Tutor?.value),
+        Private_Tutor_offline: convertToInt(preferences.parentGuardian.Private_Tutor?.value),
+        Private_Tutor_online: convertToInt(preferences.parentGuardian.Private_Tutor?.value),
+        Group_Tutor_offline: convertToInt(preferences.parentGuardian.Group_Tutor?.value),
+        Group_Tutor_online: convertToInt(preferences.parentGuardian.Group_Tutor?.value),
+        Private_Tutions_online_online: convertToInt(preferences.parentGuardian.Private_Tutions?.value),
         // Removed parent_coaching_institute_offline / parent_coaching_institute_online
 
         // Job details
@@ -774,17 +978,17 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             ? jobDetails.teachingAdminCoreExpertise
             : [],
 
-        // Job search status
-        full_time_2_offline: jobSearchStatus.Full_time.value,
-        full_time_2_online: jobSearchStatus.Full_time.value,
-        part_time_weekdays_2_offline: jobSearchStatus.part_time_weekdays.value,
-        part_time_weekdays_2_online: jobSearchStatus.part_time_weekdays.value,
-        part_time_weekends_2_offline: jobSearchStatus.part_time_weekends.value,
-        part_time_weekends_2_online: jobSearchStatus.part_time_weekends.value,
-        part_time_vacations_2_offline: jobSearchStatus.part_time_vacations.value,
-        part_time_vacations_2_online: jobSearchStatus.part_time_vacations.value,
-        tuitions_2_offline: jobSearchStatus.tuitions.value,
-        tuitions_2_online: jobSearchStatus.tuitions.value,
+        // Job search status - use optional chaining and fallback to default
+        full_time_2_offline: jobSearchStatus.Full_time?.value || "activelySearching",
+        full_time_2_online: jobSearchStatus.Full_time?.value || "activelySearching",
+        part_time_weekdays_2_offline: jobSearchStatus.part_time_weekdays?.value || "activelySearching",
+        part_time_weekdays_2_online: jobSearchStatus.part_time_weekdays?.value || "activelySearching",
+        part_time_weekends_2_offline: jobSearchStatus.part_time_weekends?.value || "activelySearching",
+        part_time_weekends_2_online: jobSearchStatus.part_time_weekends?.value || "activelySearching",
+        part_time_vacations_2_offline: jobSearchStatus.part_time_vacations?.value || "activelySearching",
+        part_time_vacations_2_online: jobSearchStatus.part_time_vacations?.value || "activelySearching",
+        tuitions_2_offline: jobSearchStatus.tuitions?.value || "activelySearching",
+        tuitions_2_online: jobSearchStatus.tuitions?.value || "activelySearching",
       };
 
       const { data } = await axios.post(
@@ -805,225 +1009,141 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
   // Renders the lower half of the form (Job details, designations, etc.)
   const renderJobDetailsSection = () => (
     <div>
-      <h3 className="text-gray-700 font-medium mb-3" style={{color:"brown"}}>Expected Job Preferences</h3>
+      <h3 className="text-black font-semibold mb-3">Expected Job Preferences</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Job Type */}
         <div className="w-full">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Job Type</label>
-          <Select
-            placeholder="Job Type"
-            options={Job_TypeOptions}
-            value={Job_TypeOptions.find((option) => option.value === jobDetails.Job_Type)}
-            onChange={(selected) => {
-              setJobDetails((prev) => ({
-                ...prev,
-                Job_Type: selected?.value || '',
-              }));
-            }}
-            className="custom-select required"
-            styles={{
-              control: (base, state) => ({
-                ...base,
-                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                '&:hover': { borderColor: '#FDA4AF' },
-                borderRadius: '0.5rem',
-                padding: '0.25rem',
-                backgroundColor: 'white'
-              }),
-              dropdownIndicator: (base) => ({
-                ...base,
-                color: '#EF4444'
-              })
-            }}
-          />
+          <InputWithTooltip label="Job Type" required>
+            <Select
+              placeholder="Job Type"
+              options={Job_TypeOptions}
+              value={Job_TypeOptions.find((option) => option.value === jobDetails.Job_Type)}
+              onChange={(selected) => {
+                setJobDetails((prev) => ({
+                  ...prev,
+                  Job_Type: selected?.value || '',
+                }));
+              }}
+              styles={reactSelectStyles}
+            />
+          </InputWithTooltip>
         </div>
 
         {/* Expected Salary */}
         <div className="w-full">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Expected salary(INR)</label>
-          <Select
-            required
-            placeholder="Expected salary(INR)"
-            value={salaryRanges.find(option => option.value === jobDetails.expected_salary)}
-            onChange={(selectedOption) =>
-              setJobDetails((prev) => ({
-                ...prev,
-                expected_salary: selectedOption.value,
-              }))
-            }
-            options={salaryRanges}
-            className="custom-select required"
-            styles={{
-              control: (base, state) => ({
-                ...base,
-                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                '&:hover': { borderColor: '#FDA4AF' },
-                borderRadius: '0.5rem',
-                padding: '0.25rem',
-                backgroundColor: 'white'
-              }),
-              dropdownIndicator: (base) => ({
-                ...base,
-                color: '#EF4444'
-              })
-            }}
-          />
+          <InputWithTooltip label="Expected salary(INR)" required>
+            <Select
+              placeholder="Expected salary(INR)"
+              value={salaryRanges.find(option => option.value === jobDetails.expected_salary)}
+              onChange={(selectedOption) =>
+                setJobDetails((prev) => ({
+                  ...prev,
+                  expected_salary: selectedOption.value,
+                }))
+              }
+              options={salaryRanges}
+              styles={reactSelectStyles}
+            />
+          </InputWithTooltip>
         </div>
 
         {/* Notice Period */}
         <div className="w-full">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Notice Period</label>
-          <Select
-            placeholder="Notice Period"
-            options={[
-              { value: 'immediateJoiner', label: 'Immediate Joiner' },
-              { value: 'lessThan7', label: '< 7 days' },
-              { value: 'lessThan15', label: '< 15 days' },
-              { value: 'lessThan1Month', label: '< 1 month' },
-              { value: 'moreThan1Month', label: '> 1 Month' },
-            ]}
-            value={
-              jobDetails.notice_period
-                ? { 
-                    value: jobDetails.notice_period.value || jobDetails.notice_period, 
-                    label: jobDetails.notice_period.label || jobDetails.notice_period
-                  }
-                : null
-            }
-            onChange={(selected) =>
-              setJobDetails((prev) => ({
-                ...prev,
-                notice_period: selected
-              }))
-            }
-            className="custom-select required"
-            styles={{
-              control: (base, state) => ({
-                ...base,
-                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                '&:hover': { borderColor: '#FDA4AF' },
-                borderRadius: '0.5rem',
-                padding: '0.25rem',
-                backgroundColor: 'white'
-              }),
-              dropdownIndicator: (base) => ({
-                ...base,
-                color: '#EF4444'
-              })
-            }}
-          />
+          <InputWithTooltip label="Notice Period" required>
+            <Select
+              placeholder="Notice Period"
+              options={[
+                { value: 'immediateJoiner', label: 'Immediate Joiner' },
+                { value: 'lessThan7', label: '< 7 days' },
+                { value: 'lessThan15', label: '< 15 days' },
+                { value: 'lessThan1Month', label: '< 1 month' },
+                { value: 'moreThan1Month', label: '> 1 Month' },
+              ]}
+              value={
+                jobDetails.notice_period
+                  ? { 
+                      value: jobDetails.notice_period.value || jobDetails.notice_period, 
+                      label: jobDetails.notice_period.label || jobDetails.notice_period
+                    }
+                  : null
+              }
+              onChange={(selected) =>
+                setJobDetails((prev) => ({
+                  ...prev,
+                  notice_period: selected
+                }))
+              }
+              styles={reactSelectStyles}
+            />
+          </InputWithTooltip>
         </div>
 
         {/* Preferred Country */}
         <div className="w-full">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Country</label>
-          <Select
-            placeholder="Preferred Country"
-            options={countries}
-            value={jobDetails.preferred_country}
-            onChange={(option) => {
-              setJobDetails((prev) => ({
-                ...prev,
-                preferred_country: option,
-                preferred_state: null,
-                preferred_city: null,
-              }));
-            }}
-            className="custom-select required"
-            styles={{
-              control: (base, state) => ({
-                ...base,
-                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                '&:hover': { borderColor: '#FDA4AF' },
-                borderRadius: '0.5rem',
-                padding: '0.25rem',
-                backgroundColor: 'white'
-              }),
-              dropdownIndicator: (base) => ({
-                ...base,
-                color: '#EF4444'
-              })
-            }}
-          />
+          <InputWithTooltip label="Preferred Country" required>
+            <Select
+              placeholder="Preferred Country"
+              options={countries}
+              value={jobDetails.preferred_country}
+              onChange={(option) => {
+                setJobDetails((prev) => ({
+                  ...prev,
+                  preferred_country: option,
+                  preferred_state: null,
+                  preferred_city: null,
+                }));
+              }}
+              styles={reactSelectStyles}
+            />
+          </InputWithTooltip>
         </div>
 
         {/* Preferred State */}
         <div className="w-full">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Preferred State/UT</label>
-          <Select
-            placeholder="Preferred State/UT"
-            options={states}
-            value={jobDetails.preferred_state}
-            onChange={(option) => {
-              setJobDetails((prev) => ({
-                ...prev,
-                preferred_state: option,
-                preferred_city: null,
-              }));
-            }}
-            className="custom-select required"
-            styles={{
-              control: (base, state) => ({
-                ...base,
-                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                '&:hover': { borderColor: '#FDA4AF' },
-                borderRadius: '0.5rem',
-                padding: '0.25rem',
-                backgroundColor: 'white'
-              }),
-              dropdownIndicator: (base) => ({
-                ...base,
-                color: '#EF4444'
-              })
-            }}
-          />
+          <InputWithTooltip label="Preferred State/UT" required>
+            <Select
+              placeholder="Preferred State/UT"
+              options={states}
+              value={jobDetails.preferred_state}
+              onChange={(option) => {
+                setJobDetails((prev) => ({
+                  ...prev,
+                  preferred_state: option,
+                  preferred_city: null,
+                }));
+              }}
+              styles={reactSelectStyles}
+            />
+          </InputWithTooltip>
         </div>
 
         {/* Preferred City */}
         <div className="w-full">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Preferred City</label>
-          <Select
-            placeholder="Preferred City"
-            options={cities}
-            value={jobDetails.preferred_city}
-            onChange={(option) =>
-              setJobDetails((prev) => ({
-                ...prev,
-                preferred_city: option,
-              }))
-            }
-            className="custom-select required"
-            styles={{
-              control: (base, state) => ({
-                ...base,
-                borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                '&:hover': { borderColor: '#FDA4AF' },
-                borderRadius: '0.5rem',
-                padding: '0.25rem',
-                backgroundColor: 'white'
-              }),
-              dropdownIndicator: (base) => ({
-                ...base,
-                color: '#EF4444'
-              })
-            }}
-          />
+          <InputWithTooltip label="Preferred City">
+            <Select
+              placeholder="Preferred City"
+              options={cities}
+              value={jobDetails.preferred_city}
+              onChange={(option) =>
+                setJobDetails((prev) => ({
+                  ...prev,
+                  preferred_city: option,
+                }))
+              }
+              styles={reactSelectStyles}
+            />
+          </InputWithTooltip>
         </div>
+      </div>
 
-        {/* Teaching + Admin */}
-        {jobDetails.Job_Type && (
-          <>
-            {jobDetails.Job_Type === 'teachingAndAdmin' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Teaching + Admin */}
+      {jobDetails.Job_Type && (
+        <>
+          {jobDetails.Job_Type === 'teachingAndAdmin' && (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Teaching & Administrative Designation(s)</label>
-                  <Select
+                  <InputWithTooltip label="Teaching & Administrative Designation(s)" required>
+                    <Select
                     isMulti
                     placeholder="Teaching & Administrative Designation(s)"
                     options={teachingAdminDesignations}
@@ -1037,27 +1157,13 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
                         teachingAdminDesignations: selected ? selected.map((item) => item.value) : [],
                       }))
                     }
-                    className="custom-select required"
-                    styles={{
-                      control: (base, state) => ({
-                        ...base,
-                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                        '&:hover': { borderColor: '#FDA4AF' },
-                        borderRadius: '0.5rem',
-                        padding: '0.25rem',
-                        backgroundColor: 'white'
-                      }),
-                      dropdownIndicator: (base) => ({
-                        ...base,
-                        color: '#EF4444'
-                      })
-                    }}
-                  />
+                    styles={reactSelectStyles}
+                    />
+                  </InputWithTooltip>
                 </div>
                 <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Curriculum/Board/University</label>
-                  <Select
+                  <InputWithTooltip label="Curriculum/Board/University">
+                    <Select
                     isMulti
                     placeholder="Curriculum/Board/University"
                     options={curriculum}
@@ -1071,26 +1177,13 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
                         teachingAdminCurriculum: selected ? selected.map((item) => item.value) : [],
                       }))
                     }
-                    styles={{
-                      control: (base, state) => ({
-                        ...base,
-                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                        '&:hover': { borderColor: '#FDA4AF' },
-                        borderRadius: '0.5rem',
-                        padding: '0.25rem',
-                        backgroundColor: 'white'
-                      }),
-                      dropdownIndicator: (base) => ({
-                        ...base,
-                        color: '#EF4444'
-                      })
-                    }}
-                  />
+                    styles={reactSelectStyles}
+                    />
+                  </InputWithTooltip>
                 </div>
                 <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Subjects</label>
-                  <Select
+                  <InputWithTooltip label="Subjects" required>
+                    <Select
                     isMulti
                     placeholder="Subjects"
                     options={subjectsOptions}
@@ -1104,27 +1197,13 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
                         teachingAdminSubjects: selected ? selected.map((item) => item.value) : [],
                       }))
                     }
-                    className="custom-select required"
-                    styles={{
-                      control: (base, state) => ({
-                        ...base,
-                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                        '&:hover': { borderColor: '#FDA4AF' },
-                        borderRadius: '0.5rem',
-                        padding: '0.25rem',
-                        backgroundColor: 'white'
-                      }),
-                      dropdownIndicator: (base) => ({
-                        ...base,
-                        color: '#EF4444'
-                      })
-                    }}
-                  />
+                    styles={reactSelectStyles}
+                    />
+                  </InputWithTooltip>
                 </div>
                 <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Grades</label>
-                  <Select
+                  <InputWithTooltip label="Grades" required>
+                    <Select
                     isMulti
                     placeholder="Grades"
                     options={grades}
@@ -1138,27 +1217,13 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
                         teachingAdminGrades: selected ? selected.map((item) => item.value) : [],
                       }))
                     }
-                    className="custom-select required"
-                    styles={{
-                      control: (base, state) => ({
-                        ...base,
-                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                        '&:hover': { borderColor: '#FDA4AF' },
-                        borderRadius: '0.5rem',
-                        padding: '0.25rem',
-                        backgroundColor: 'white'
-                      }),
-                      dropdownIndicator: (base) => ({
-                        ...base,
-                        color: '#EF4444'
-                      })
-                    }}
-                  />
+                    styles={reactSelectStyles}
+                    />
+                  </InputWithTooltip>
                 </div>
                 <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Core Expertise</label>
-                  <Select
+                  <InputWithTooltip label="Core Expertise" required>
+                    <Select
                     isMulti
                     placeholder="Core Expertise"
                     options={coreExpertise}
@@ -1172,35 +1237,21 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
                         teachingAdminCoreExpertise: selected ? selected.map((item) => item.value) : [],
                       }))
                     }
-                    className="custom-select required"
-                    styles={{
-                      control: (base, state) => ({
-                        ...base,
-                        borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                        boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                        '&:hover': { borderColor: '#FDA4AF' },
-                        borderRadius: '0.5rem',
-                        padding: '0.25rem',
-                        backgroundColor: 'white'
-                      }),
-                      dropdownIndicator: (base) => ({
-                        ...base,
-                        color: '#EF4444'
-                      })
-                    }}
-                  />
+                    styles={reactSelectStyles}
+                    />
+                  </InputWithTooltip>
                 </div>
-              </div>
-            )}
-          </>
-        )}
+            </div>
+          )}
+        </>
+      )}
 
-        {/* Teaching only */}
-        {jobDetails.Job_Type === 'teaching' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Teaching only */}
+      {jobDetails.Job_Type === 'teaching' && (
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Teaching Designation(s)</label>
-              <Select
+              <InputWithTooltip label="Teaching Designation(s)" required>
+                <Select
                 isMulti
                 placeholder="Teaching Designation(s)"
                 options={teachingDesignations}
@@ -1213,28 +1264,14 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
                     teachingDesignation: selected ? selected.map((item) => item.value) : [],
                   }))
                 }
-                className="custom-select required"
-                styles={{
-                  control: (base, state) => ({
-                    ...base,
-                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                    '&:hover': { borderColor: '#FDA4AF' },
-                    borderRadius: '0.5rem',
-                    padding: '0.25rem',
-                    backgroundColor: 'white'
-                  }),
-                  dropdownIndicator: (base) => ({
-                    ...base,
-                    color: '#EF4444'
-                  })
-                }}
-              />
+                styles={reactSelectStyles}
+                />
+              </InputWithTooltip>
             </div>
             <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Curriculum/Board/University</label>
-              <Select
-                isMulti
+              <InputWithTooltip label="Curriculum/Board/University">
+                <Select
+                  isMulti
                 placeholder="Curriculum/Board/University"
                 options={curriculum}
                 value={jobDetails.teachingCurriculum.map((val) => {
@@ -1247,26 +1284,13 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
                     teachingCurriculum: selected ? selected.map((item) => item.value) : [],
                   }))
                 }
-                styles={{
-                  control: (base, state) => ({
-                    ...base,
-                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                    '&:hover': { borderColor: '#FDA4AF' },
-                    borderRadius: '0.5rem',
-                    padding: '0.25rem',
-                    backgroundColor: 'white'
-                  }),
-                  dropdownIndicator: (base) => ({
-                    ...base,
-                    color: '#EF4444'
-                  })
-                }}
-              />
+                styles={reactSelectStyles}
+                />
+              </InputWithTooltip>
             </div>
             <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Subjects</label>
-              <Select
+              <InputWithTooltip label="Subjects" required>
+                <Select
                 isMulti
                 placeholder="Subjects"
                 options={subjectsOptions}
@@ -1280,27 +1304,13 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
                     teachingSubjects: selected ? selected.map((item) => item.value) : [],
                   }))
                 }
-                className="custom-select required"
-                styles={{
-                  control: (base, state) => ({
-                    ...base,
-                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                    '&:hover': { borderColor: '#FDA4AF' },
-                    borderRadius: '0.5rem',
-                    padding: '0.25rem',
-                    backgroundColor: 'white'
-                  }),
-                  dropdownIndicator: (base) => ({
-                    ...base,
-                    color: '#EF4444'
-                  })
-                }}
-              />
+                styles={reactSelectStyles}
+                />
+              </InputWithTooltip>
             </div>
             <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Grades</label>
-              <Select
+              <InputWithTooltip label="Grades" required>
+                <Select
                 isMulti
                 placeholder="Grades"
                 options={grades}
@@ -1314,27 +1324,13 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
                     teachingGrades: selected ? selected.map((item) => item.value) : [],
                   }))
                 }
-                className="custom-select required"
-                styles={{
-                  control: (base, state) => ({
-                    ...base,
-                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                    '&:hover': { borderColor: '#FDA4AF' },
-                    borderRadius: '0.5rem',
-                    padding: '0.25rem',
-                    backgroundColor: 'white'
-                  }),
-                  dropdownIndicator: (base) => ({
-                    ...base,
-                    color: '#EF4444'
-                  })
-                }}
-              />
+                styles={reactSelectStyles}
+                />
+              </InputWithTooltip>
             </div>
             <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Core Expertise</label>
-              <Select
+              <InputWithTooltip label="Core Expertise" required>
+                <Select
                 isMulti
                 placeholder="Core Expertise"
                 options={coreExpertise}
@@ -1348,33 +1344,19 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
                     teachingCoreExpertise: selected ? selected.map((item) => item.value) : [],
                   }))
                 }
-                className="custom-select required"
-                styles={{
-                  control: (base, state) => ({
-                    ...base,
-                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                    '&:hover': { borderColor: '#FDA4AF' },
-                    borderRadius: '0.5rem',
-                    padding: '0.25rem',
-                    backgroundColor: 'white'
-                  }),
-                  dropdownIndicator: (base) => ({
-                    ...base,
-                    color: '#EF4444'
-                  })
-                }}
-              />
+                styles={reactSelectStyles}
+                />
+              </InputWithTooltip>
             </div>
           </div>
         )}
 
-        {/* Administration only */}
-        {jobDetails.Job_Type === 'administration' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Administration only */}
+      {jobDetails.Job_Type === 'administration' && (
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Administrative Designation(s)</label>
-              <Select
+              <InputWithTooltip label="Administrative Designation(s)" required>
+                <Select
                 isMulti
                 placeholder="Administrative Designation(s)"
                 options={adminDesignations}
@@ -1388,27 +1370,12 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
                     adminDesignations: selected ? selected.map((item) => item.value) : [],
                   }))
                 }
-                className="custom-select required"
-                styles={{
-                  control: (base, state) => ({
-                    ...base,
-                    borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
-                    boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
-                    '&:hover': { borderColor: '#FDA4AF' },
-                    borderRadius: '0.5rem',
-                    padding: '0.25rem',
-                    backgroundColor: 'white'
-                  }),
-                  dropdownIndicator: (base) => ({
-                    ...base,
-                    color: '#EF4444'
-                  })
-                }}
-              />
+                styles={reactSelectStyles}
+                />
+              </InputWithTooltip>
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 
@@ -1489,30 +1456,30 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       const payload = {
         firebase_uid: user.uid,
         // Convert "yes"/"no" => 1/0
-        full_time_offline: convertToInt(preferences.jobShift.Full_time.value),
-        full_time_online: convertToInt(preferences.jobShift.Full_time.value),
-        part_time_weekdays_offline: convertToInt(preferences.jobShift.part_time_weekdays.value),
-        part_time_weekdays_online: convertToInt(preferences.jobShift.part_time_weekdays.value),
-        part_time_weekends_offline: convertToInt(preferences.jobShift.part_time_weekends.value),
-        part_time_weekends_online: convertToInt(preferences.jobShift.part_time_weekends.value),
-        part_time_vacations_offline: convertToInt(preferences.jobShift.part_time_vacations.value),
-        part_time_vacations_online: convertToInt(preferences.jobShift.part_time_vacations.value),
+        full_time_offline: convertToInt(preferences.jobShift.Full_time?.value),
+        full_time_online: convertToInt(preferences.jobShift.Full_time?.value),
+        part_time_weekdays_offline: convertToInt(preferences.jobShift.part_time_weekdays?.value),
+        part_time_weekdays_online: convertToInt(preferences.jobShift.part_time_weekdays?.value),
+        part_time_weekends_offline: convertToInt(preferences.jobShift.part_time_weekends?.value),
+        part_time_weekends_online: convertToInt(preferences.jobShift.part_time_weekends?.value),
+        part_time_vacations_offline: convertToInt(preferences.jobShift.part_time_vacations?.value),
+        part_time_vacations_online: convertToInt(preferences.jobShift.part_time_vacations?.value),
 
-        school_college_university_offline: convertToInt(preferences.organizationType.school_college_university.value),
-        school_college_university_online: convertToInt(preferences.organizationType.school_college_university.value),
-        coaching_institute_offline: convertToInt(preferences.organizationType.coaching_institute.value),
-        coaching_institute_online: convertToInt(preferences.organizationType.coaching_institute.value),
-        Ed_TechCompanies_offline: convertToInt(preferences.organizationType.Ed_TechCompanies.value),
-        Ed_TechCompanies_online: convertToInt(preferences.organizationType.Ed_TechCompanies.value),
+        school_college_university_offline: convertToInt(preferences.organizationType.school_college_university?.value),
+        school_college_university_online: convertToInt(preferences.organizationType.school_college_university?.value),
+        coaching_institute_offline: convertToInt(preferences.organizationType.coaching_institute?.value),
+        coaching_institute_online: convertToInt(preferences.organizationType.coaching_institute?.value),
+        Ed_TechCompanies_offline: convertToInt(preferences.organizationType.Ed_TechCompanies?.value),
+        Ed_TechCompanies_online: convertToInt(preferences.organizationType.Ed_TechCompanies?.value),
 
         // Parent/Guardian
-        Home_Tutor_offline: convertToInt(preferences.parentGuardian.Home_Tutor.value),
-        Home_Tutor_online: convertToInt(preferences.parentGuardian.Home_Tutor.value),
-        Private_Tutor_offline: convertToInt(preferences.parentGuardian.Private_Tutor.value),
-        Private_Tutor_online: convertToInt(preferences.parentGuardian.Private_Tutor.value),
-        Group_Tutor_offline: convertToInt(preferences.parentGuardian.Group_Tutor.value),
-        Group_Tutor_online: convertToInt(preferences.parentGuardian.Group_Tutor.value),
-        Private_Tutions_online_online: convertToInt(preferences.parentGuardian.Private_Tutions.value),
+        Home_Tutor_offline: convertToInt(preferences.parentGuardian.Home_Tutor?.value),
+        Home_Tutor_online: convertToInt(preferences.parentGuardian.Home_Tutor?.value),
+        Private_Tutor_offline: convertToInt(preferences.parentGuardian.Private_Tutor?.value),
+        Private_Tutor_online: convertToInt(preferences.parentGuardian.Private_Tutor?.value),
+        Group_Tutor_offline: convertToInt(preferences.parentGuardian.Group_Tutor?.value),
+        Group_Tutor_online: convertToInt(preferences.parentGuardian.Group_Tutor?.value),
+        Private_Tutions_online_online: convertToInt(preferences.parentGuardian.Private_Tutions?.value),
 
         // Job details
         Job_Type: jobDetails.Job_Type,
@@ -1582,17 +1549,17 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             ? jobDetails.teachingAdminCoreExpertise
             : [],
 
-        // Job search status
-        full_time_2_offline: jobSearchStatus.Full_time.value,
-        full_time_2_online: jobSearchStatus.Full_time.value,
-        part_time_weekdays_2_offline: jobSearchStatus.part_time_weekdays.value,
-        part_time_weekdays_2_online: jobSearchStatus.part_time_weekdays.value,
-        part_time_weekends_2_offline: jobSearchStatus.part_time_weekends.value,
-        part_time_weekends_2_online: jobSearchStatus.part_time_weekends.value,
-        part_time_vacations_2_offline: jobSearchStatus.part_time_vacations.value,
-        part_time_vacations_2_online: jobSearchStatus.part_time_vacations.value,
-        tuitions_2_offline: jobSearchStatus.tuitions.value,
-        tuitions_2_online: jobSearchStatus.tuitions.value,
+        // Job search status - use optional chaining and fallback to default
+        full_time_2_offline: jobSearchStatus.Full_time?.value || "activelySearching",
+        full_time_2_online: jobSearchStatus.Full_time?.value || "activelySearching",
+        part_time_weekdays_2_offline: jobSearchStatus.part_time_weekdays?.value || "activelySearching",
+        part_time_weekdays_2_online: jobSearchStatus.part_time_weekdays?.value || "activelySearching",
+        part_time_weekends_2_offline: jobSearchStatus.part_time_weekends?.value || "activelySearching",
+        part_time_weekends_2_online: jobSearchStatus.part_time_weekends?.value || "activelySearching",
+        part_time_vacations_2_offline: jobSearchStatus.part_time_vacations?.value || "activelySearching",
+        part_time_vacations_2_online: jobSearchStatus.part_time_vacations?.value || "activelySearching",
+        tuitions_2_offline: jobSearchStatus.tuitions?.value || "activelySearching",
+        tuitions_2_online: jobSearchStatus.tuitions?.value || "activelySearching",
       };
 
       const { data } = await axios.post(
@@ -1608,8 +1575,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
 
   return (
     <form 
-      className="rounded-lg p-6" 
-      style={{backgroundColor: '#F0D8D9'}} 
+      className="rounded-lg pt-4 px-4 pb-4 md:pt-6 md:px-6 md:pb-6 bg-rose-100 overflow-x-hidden" 
       onSubmit={(e) => {
         e.preventDefault();
         handleSubmit(e);
@@ -1618,46 +1584,53 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       <div className="w-full space-y-6">
         {/* Job Shift & Job Category Section */}
         <div>
-          <h3 className='text-gray-700 font-medium mb-3' style={{color:"brown"}}>Select your preferred teaching mode :</h3>
+          <h3 className='text-black font-semibold mb-3'>Select your preferred teaching mode :</h3>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             <div className='w-full'>
               <label htmlFor="teachingMode_online" className="block text-sm font-medium text-gray-700 mb-2">Online</label>
-              <select
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                value={preferences.teachingMode.online?.value || preferences.teachingMode.online}
-                onChange={(e) => {
-                  handlePreferenceChange('teachingMode', 'online', null, e.target.value);
-                }}
-              >
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
+              <div className="relative">
+                <select
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
+                  value={preferences.teachingMode.online?.value || preferences.teachingMode.online}
+                  onChange={(e) => {
+                    handlePreferenceChange('teachingMode', 'online', null, e.target.value);
+                  }}
+                >
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+                <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
+              </div>
             </div>
             <div className='w-full'>
               <label htmlFor="teachingMode_offline" className="block text-sm font-medium text-gray-700 mb-2">Offline</label>
-              <select
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                value={preferences.teachingMode.offline?.value || preferences.teachingMode.offline}
-                onChange={(e) => {
-                  handlePreferenceChange('teachingMode', 'offline', null, e.target.value);
-                }}
-              >
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
+              <div className="relative">
+                <select
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
+                  value={preferences.teachingMode.offline?.value || preferences.teachingMode.offline}
+                  onChange={(e) => {
+                    handlePreferenceChange('teachingMode', 'offline', null, e.target.value);
+                  }}
+                >
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+                <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
+              </div>
             </div>
           </div>
         </div>
         <div>
-          <h3 className="text-gray-700 font-medium mb-3" style={{color:"brown"}}>Job Shift Preferences :</h3>
+          <h3 className="text-black font-semibold mb-3">Job Shift Preferences :</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="w-full">
-              <label htmlFor="Full_time" className="block text-sm font-medium text-gray-700 mb-2">Full Time</label>
+              <label htmlFor="Full_time" className="block text-sm font-medium text-gray-700 mb-2">Full Time <span className="text-purple-500">*</span></label>
               <select
+                required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                 value={preferences.jobShift.Full_time.value}
                 onChange={(e) => {
                   handlePreferenceChange('jobShift', 'Full_time', 'value', e.target.value);
@@ -1672,7 +1645,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
               <label htmlFor="Part_time_weekdays" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Weekdays)</label>
               <select
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                 value={preferences.jobShift.part_time_weekdays.value}
                 onChange={(e) => {
                   handlePreferenceChange('jobShift', 'part_time_weekdays', 'value', e.target.value);
@@ -1687,7 +1660,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
               <label htmlFor="Part_time_weekends" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Weekends)</label>
               <select
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                 value={preferences.jobShift.part_time_weekends.value}
                 onChange={(e) => {
                   handlePreferenceChange('jobShift', 'part_time_weekends', 'value', e.target.value);
@@ -1702,7 +1675,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
               <label htmlFor="Part_time_vacations" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Vacations)</label>
               <select
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                 value={preferences.jobShift.part_time_vacations.value}
                 onChange={(e) => {
                   handlePreferenceChange('jobShift', 'part_time_vacations', 'value', e.target.value);
@@ -1717,13 +1690,13 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
 
         {/* Organization Type Section */}
         <div>
-          <h3 className="text-gray-700 font-medium mb-3" style={{color:"brown"}}>Organization Type Preferences :</h3>
+          <h3 className="text-black font-semibold mb-3">Organization Type Preferences :</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="w-full">
               <label htmlFor="school_college_university" className="block text-sm font-medium text-gray-700 mb-2">School / College / University</label>
               <select
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                 value={preferences.organizationType.school_college_university.value}
                 onChange={(e) => {
                   handlePreferenceChange('organizationType', 'school_college_university', 'value', e.target.value);
@@ -1738,7 +1711,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
               <label htmlFor="coaching_institute" className="block text-sm font-medium text-gray-700 mb-2">Coaching Centers / Institutes</label>
               <select
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                 value={preferences.organizationType.coaching_institute.value}
                 onChange={(e) => {
                   handlePreferenceChange('organizationType', 'coaching_institute', 'value', e.target.value);
@@ -1753,7 +1726,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
               <label htmlFor="Ed_TechCompanies" className="block text-sm font-medium text-gray-700 mb-2">EdTech Companies</label>
               <select
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                 value={preferences.organizationType.Ed_TechCompanies.value}
                 onChange={(e) => {
                   handlePreferenceChange('organizationType', 'Ed_TechCompanies', 'value', e.target.value);
@@ -1769,13 +1742,14 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
 
         {/* Parent / Guardian Section */}
         <div>
-          <h3 className="text-gray-700 font-medium mb-3" style={{color:"brown"}}>Tuition Preferences :</h3>
+          <h3 className="text-black font-semibold mb-3">Tuition Preferences :</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="w-full">
-              <label htmlFor="Home_Tutor" className="block text-sm font-medium text-gray-700 mb-2">Home Tutor (One-to-One at Students Home)</label>
+              <label htmlFor="Home_Tutor" className="block text-sm font-medium text-gray-700 mb-2">Home Tutor (One-to-One at Students Home) <span className="text-purple-500">*</span></label>
               <select
+                required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                 value={preferences.parentGuardian.Home_Tutor.value}
                 onChange={(e) => {
                   handlePreferenceChange('parentGuardian', 'Home_Tutor', 'value', e.target.value);
@@ -1787,10 +1761,11 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="Private_Tutor" className="block text-sm font-medium text-gray-700 mb-2">Private Tutor (One-to-One at Tutors Place)</label>
+              <label htmlFor="Private_Tutor" className="block text-sm font-medium text-gray-700 mb-2">Private Tutor (One-to-One at Tutors Place) <span className="text-purple-500">*</span></label>
               <select
+                required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                 value={preferences.parentGuardian.Private_Tutor.value}
                 onChange={(e) => {
                   handlePreferenceChange('parentGuardian', 'Private_Tutor', 'value', e.target.value);
@@ -1802,10 +1777,11 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="Group_Tutor_offline" className="block text-sm font-medium text-gray-700 mb-2">Group Tuitions (at teachers home)</label>
+              <label htmlFor="Group_Tutor_offline" className="block text-sm font-medium text-gray-700 mb-2">Group Tuitions (at teachers home) <span className="text-purple-500">*</span></label>
               <select
+                required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                 value={preferences.parentGuardian.Group_Tutor.value}
                 onChange={(e) => {
                   handlePreferenceChange('parentGuardian', 'Group_Tutor', 'value', e.target.value);
@@ -1817,10 +1793,11 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="Private_Tutions_online" className="block text-sm font-medium text-gray-700 mb-2">Private Tuitions (One-One)</label>
+              <label htmlFor="Private_Tutions_online" className="block text-sm font-medium text-gray-700 mb-2">Private Tuitions (One-One) <span className="text-purple-500">*</span></label>
               <select
+                required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                 value={preferences.parentGuardian.Private_Tutions.value}
                 onChange={(e) => {
                   handlePreferenceChange('parentGuardian', 'Private_Tutions', 'value', e.target.value);
@@ -1832,10 +1809,11 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="Group_Tutor_online" className="block text-sm font-medium text-gray-700 mb-2">Group Tuitions (from teacher as tutor)</label>
+              <label htmlFor="Group_Tutor_online" className="block text-sm font-medium text-gray-700 mb-2">Group Tuitions (from teacher as tutor) <span className="text-purple-500">*</span></label>
               <select
+                required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                 value={preferences.parentGuardian.Group_Tuitions.value}
                 onChange={(e) => {
                   handlePreferenceChange('parentGuardian', 'Group_Tuitions', 'value', e.target.value);
@@ -1853,15 +1831,15 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
 
         {/* Job Search Status Section */}
         <div>
-          <h3 className="text-gray-700 font-medium mb-3" style={{color:"brown"}}>Job Search Status</h3>
+          <h3 className="text-black font-semibold mb-3">Job Search Status</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="w-full">
-              <label htmlFor="Full_time_status" className="block text-sm font-medium text-gray-700 mb-2">Full Time</label>
+              <label htmlFor="Full_time_status" className="block text-sm font-medium text-gray-700 mb-2">Full Time <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                value={jobSearchStatus.Full_time.value}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
+                value={jobSearchStatus.Full_time?.value || "activelySearching"}
                 onChange={(e) => {
                   handleJobSearchStatusChange('Full_time', 'value', e.target.value);
                 }}
@@ -1873,12 +1851,12 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="part_time_weekdays_status" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Weekdays)</label>
+              <label htmlFor="part_time_weekdays_status" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Weekdays) <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                value={jobSearchStatus.part_time_weekdays.value}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
+                value={jobSearchStatus.part_time_weekdays?.value || "activelySearching"}
                 onChange={(e) => {
                 handleJobSearchStatusChange('part_time_weekdays', 'value', e.target.value);
               }}
@@ -1890,12 +1868,12 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
           </div>
 
             <div className="w-full">
-              <label htmlFor="part_time_weekends_status" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Weekends)</label>
+              <label htmlFor="part_time_weekends_status" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Weekends) <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                value={jobSearchStatus.part_time_weekends.value}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
+                value={jobSearchStatus.part_time_weekends?.value || "activelySearching"}
                 onChange={(e) => {
                   handleJobSearchStatusChange('part_time_weekends', 'value', e.target.value);
                 }}
@@ -1907,12 +1885,12 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="part_time_vacations_status" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Vacations)</label>
+              <label htmlFor="part_time_vacations_status" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Vacations) <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                value={jobSearchStatus.part_time_vacations.value}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
+                value={jobSearchStatus.part_time_vacations?.value || "activelySearching"}
                 onChange={(e) => {
                   handleJobSearchStatusChange('part_time_vacations', 'value', e.target.value);
                 }}
@@ -1924,12 +1902,12 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="tuitions_status" className="block text-sm font-medium text-gray-700 mb-2">Tuitions</label>
+              <label htmlFor="tuitions_status" className="block text-sm font-medium text-gray-700 mb-2">Tuitions <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
-                value={jobSearchStatus.tuitions.value}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
+                value={jobSearchStatus.tuitions?.value || "activelySearching"}
                 onChange={(e) => {
                   handleJobSearchStatusChange('tuitions', 'value', e.target.value);
                 }}

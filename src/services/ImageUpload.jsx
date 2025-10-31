@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import './ImageUpload.css';
 
 const ImageUpload = ({ 
   imageFile, 
@@ -60,21 +59,30 @@ const ImageUpload = ({
   };
 
   return (
-    <div className={`uploadButton-input-wrap ${className}`}>
+    <div className={`relative max-w-full ${className}`}>
       <input
-        className="uploadButton-input"
+        type="text"
+        value={getDisplayName()}
+        placeholder={placeholder}
+        readOnly
+        className="w-full max-w-full px-4 py-3 pr-24 md:pr-28 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 cursor-pointer"
+        onClick={() => document.getElementById(id).click()}
+        title={typeof imageFile === 'string' ? imageFile : imageFile?.name || placeholder}
+      />
+      <button
+        type="button"
+        className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-xs md:text-sm font-medium shadow-sm transition-opacity whitespace-nowrap"
+        onClick={() => document.getElementById(id).click()}
+      >
+        Browse
+      </button>
+      <input
+        id={id}
         type="file"
         accept={accept}
-        id={id}
-        style={{ opacity: 0, position: "absolute", zIndex: -1 }}
+        style={{ opacity: 0, position: 'absolute', zIndex: -1 }}
         onChange={handleFileChange}
       />
-      <label htmlFor={id} className="form-control file-upload-label">
-        <span className="file-placeholder" title={imageFile?.name || imageFile}>
-          {getDisplayName()}
-        </span>
-        <span className="file-button">Browse</span>
-      </label>
     </div>
   );
 };

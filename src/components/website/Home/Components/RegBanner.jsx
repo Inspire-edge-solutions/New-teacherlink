@@ -21,7 +21,7 @@ const RegBanner = () => {
             <div className="p-6">
               <h3 className="text-2xl font-bold text-red-600 mb-4">Job Seekers</h3>
               <p className="text-gray-700 mb-6 leading-relaxed">
-                🎉 Welcome to TeacherLink — India's trusted job portal for teachers.
+                🎉 Welcome to TeacherLink - India's trusted job portal for teachers.
                 👉 Register today to explore opportunities that match your skills and passion.
               </p>
               <button 
@@ -48,7 +48,7 @@ const RegBanner = () => {
             <div className="p-6">
               <h3 className="text-2xl font-bold text-red-600 mb-4">Job Providers</h3>
               <p className="text-gray-700 mb-6 leading-relaxed">
-              🏫Welcome to TeacherLink—a platform for institutions/parents to find right teaching professionals.Register now to post jobs & connect with top educators.
+              🏫Welcome to TeacherLink - a platform for institutions/parents to find right teaching professionals.Register now to post jobs & connect with top educators.
               </p>
               <button 
               onClick={() => navigate('/register')}

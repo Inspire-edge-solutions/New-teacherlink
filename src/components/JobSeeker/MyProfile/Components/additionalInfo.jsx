@@ -1,9 +1,11 @@
 import { useState, useEffect, forwardRef, useImperativeHandle, useRef } from 'react';
-import { Select, MenuItem, FormControl, InputLabel, Chip, Box } from '@mui/material';
+import Select from 'react-select';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from "../../../../Context/AuthContext";
+import InputWithTooltip from '../../../../services/InputWithTooltip';
+import { FaChevronDown } from 'react-icons/fa';
 
 const AdditionalInfo = forwardRef(({ formData, updateFormData }, ref) => {
   const { user } = useAuth();
@@ -33,6 +35,27 @@ const AdditionalInfo = forwardRef(({ formData, updateFormData }, ref) => {
     { value: "Tally", label: "Tally" },
     { value: "Other", label: "Other" },
   ];
+
+  // React-select styles
+  const reactSelectStyles = {
+    control: (base, state) => ({
+      ...base,
+      borderColor: state.isFocused ? '#FDA4AF' : '#D1D5DB',
+      boxShadow: state.isFocused ? '0 0 0 2px #FED7E2' : 'none',
+      '&:hover': { borderColor: '#FDA4AF' },
+      borderRadius: '0.5rem',
+      padding: '0.25rem',
+      backgroundColor: 'white'
+    }),
+    dropdownIndicator: (base) => ({
+      ...base,
+      color: '#EF4444'
+    }),
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: 9999
+    })
+  };
 
   // Flag to indicate if record already exists (for PUT vs POST)
   const [infoExists, setInfoExists] = useState(false);
@@ -201,187 +224,174 @@ const AdditionalInfo = forwardRef(({ formData, updateFormData }, ref) => {
   }));
 
   return (
-    <div className="rounded-lg p-6 bg-rose-100">
+    <div className="rounded-lg pt-4 px-4 pb-4 md:pt-6 md:px-6 md:pb-6 bg-rose-100 overflow-x-hidden">
       <div className="w-full space-y-6">
         {/* Computer Skills */}
         <div className="w-full">
-          <FormControl fullWidth>
-            <InputLabel id="computer-skills-label">Computer Skills</InputLabel>
+          <InputWithTooltip label="Computer Skills">
             <Select
-              labelId="computer-skills-label"
-              id="computerSkills"
-              label="Computer Skills"
-              multiple
-              value={localFormData.computerSkills || []}
-              onChange={(e) => handleChange('computerSkills', e.target.value)}
-              renderValue={(selected) => {
-                if (selected.length === 0) {
-                  return <em>Computer Skills</em>;
-                }
-                return (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {selected.map((value) => (
-                      <Chip key={value} label={value} size="small" />
-                    ))}
-                  </Box>
-                );
+              isMulti
+              options={skillOptions}
+              value={skillOptions.filter((opt) =>
+                (localFormData.computerSkills || []).includes(opt.value)
+              )}
+              onChange={(selected) => {
+                handleChange('computerSkills', selected ? selected.map((item) => item.value) : []);
               }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '0.5rem',
-                  height: '48px',
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#FDA4AF',
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#FDA4AF',
-                    borderWidth: 2,
-                  },
-                },
-                '& .MuiSelect-select': {
-                  padding: '12px 14px',
-                },
-              }}
-            >
-              {skillOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+              placeholder="Select computer skills"
+              isClearable
+              styles={reactSelectStyles}
+            />
+          </InputWithTooltip>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Projects */}
           <div className="w-full">
-            <label htmlFor="projects" className="block text-sm font-medium text-gray-700 mb-2">Projects</label>
-            <input
-              type="text"
-              id="projects"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-              placeholder="Projects"
-              maxLength={40}
-              value={localFormData.projects || ''}
-              onChange={(e) => handleChange('projects', e.target.value)}
-            />
+            <InputWithTooltip label="Projects">
+              <input
+                type="text"
+                id="projects"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                placeholder="Projects"
+                maxLength={40}
+                value={localFormData.projects || ''}
+                onChange={(e) => handleChange('projects', e.target.value)}
+              />
+            </InputWithTooltip>
           </div>
 
           {/* Accomplishments */}
           <div className="w-full">
-            <label htmlFor="accomplishments" className="block text-sm font-medium text-gray-700 mb-2">Accomplishments</label>
-            <input
-              type="text"
-              id="accomplishments"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-              placeholder="Accomplishments"
-              maxLength={40}
-              value={localFormData.accomplishments || ''}
-              onChange={(e) => handleChange('accomplishments', e.target.value)}
-            />
+            <InputWithTooltip label="Accomplishments">
+              <input
+                type="text"
+                id="accomplishments"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                placeholder="Accomplishments"
+                maxLength={40}
+                value={localFormData.accomplishments || ''}
+                onChange={(e) => handleChange('accomplishments', e.target.value)}
+              />
+            </InputWithTooltip>
           </div>
 
           {/* Certifications */}
           <div className="w-full">
-            <label htmlFor="certifications" className="block text-sm font-medium text-gray-700 mb-2">Certifications</label>
-            <input
-              type="text"
-              id="certifications"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-              placeholder="Certifications"
-              maxLength={40}
-              value={localFormData.certifications || ''}
-              onChange={(e) => handleChange('certifications', e.target.value)}
-            />
+            <InputWithTooltip label="Certifications">
+              <input
+                type="text"
+                id="certifications"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                placeholder="Certifications"
+                maxLength={40}
+                value={localFormData.certifications || ''}
+                onChange={(e) => handleChange('certifications', e.target.value)}
+              />
+            </InputWithTooltip>
           </div>
 
           {/* Research Publications */}
           <div className="w-full">
-            <label htmlFor="researchPublications" className="block text-sm font-medium text-gray-700 mb-2">Research Publications</label>
-            <input
-              type="text"
-              id="researchPublications"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-              placeholder="Research Publications"
-              maxLength={40}
-              value={localFormData.researchPublications || ''}
-              onChange={(e) => handleChange('researchPublications', e.target.value)}
-            />
+            <InputWithTooltip label="Research Publications">
+              <input
+                type="text"
+                id="researchPublications"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                placeholder="Research Publications"
+                maxLength={40}
+                value={localFormData.researchPublications || ''}
+                onChange={(e) => handleChange('researchPublications', e.target.value)}
+              />
+            </InputWithTooltip>
           </div>
 
           {/* Patents */}
           <div className="w-full">
-            <label htmlFor="patents" className="block text-sm font-medium text-gray-700 mb-2">Patents</label>
-            <input
-              type="text"
-              id="patents"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-              placeholder="Patents"
-              maxLength={40}
-              value={localFormData.patents || ''}
-              onChange={(e) => handleChange('patents', e.target.value)}
-            />
+            <InputWithTooltip label="Patents">
+              <input
+                type="text"
+                id="patents"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                placeholder="Patents"
+                maxLength={40}
+                value={localFormData.patents || ''}
+                onChange={(e) => handleChange('patents', e.target.value)}
+              />
+            </InputWithTooltip>
           </div>
 
           {/* Religion */}
           <div className="w-full">
-            <label htmlFor="religion" className="block text-sm font-medium text-gray-700 mb-2">Religion</label>
-            <select 
-              id="religion"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-              value={localFormData.religion || ''}
-              onChange={(e) => handleChange('religion', e.target.value)}
-            >
-              <option value="" disabled>Religion</option>
-              {availableReligions.map((availableReligion) => (
-                <option key={availableReligion.id} value={availableReligion.value}>
-                  {availableReligion.label}
-                </option>
-              ))}
-            </select>
+            <InputWithTooltip label="Religion">
+              <div className="relative">
+                <select 
+                  id="religion"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
+                  value={localFormData.religion || ''}
+                  onChange={(e) => handleChange('religion', e.target.value)}
+                >
+                  <option value="">Select Religion</option>
+                  {availableReligions.map((availableReligion) => (
+                    <option key={availableReligion.id} value={availableReligion.value}>
+                      {availableReligion.label}
+                    </option>
+                  ))}
+                </select>
+                <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
+              </div>
+            </InputWithTooltip>
           </div>
 
           {/* Differently Abled */}
           <div className="w-full">
-            <label htmlFor="differentlyAbled" className="block text-sm font-medium text-gray-700 mb-2">Differently Abled</label>
-            <select 
-              id="differentlyAbled"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
-              value={localFormData.differentlyAbled || ''}
-              onChange={(e) => handleChange('differentlyAbled', e.target.value)}
-            >
-              <option value="" disabled>Differently Abled</option>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
+            <InputWithTooltip label="Differently Abled">
+              <div className="relative">
+                <select 
+                  id="differentlyAbled"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
+                  value={localFormData.differentlyAbled || ''}
+                  onChange={(e) => handleChange('differentlyAbled', e.target.value)}
+                >
+                  <option value="">Select option</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+                <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
+              </div>
+            </InputWithTooltip>
           </div>
 
           {/* Citizenship */}
           <div className="w-full">
-            <label htmlFor="citizenship" className="block text-sm font-medium text-gray-700 mb-2">Citizenship</label>
-            <input
-              type="text"
-              id="citizenship"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-              placeholder="Citizenship"
-              maxLength={40}
-              pattern="[A-Za-z]{20}"
-              value={localFormData.citizenship || ''}
-              onChange={(e) => handleChange('citizenship', e.target.value)}
-            />
+            <InputWithTooltip label="Citizenship">
+              <input
+                type="text"
+                id="citizenship"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                placeholder="Citizenship"
+                maxLength={40}
+                pattern="[A-Za-z]{20}"
+                value={localFormData.citizenship || ''}
+                onChange={(e) => handleChange('citizenship', e.target.value)}
+              />
+            </InputWithTooltip>
           </div>
         </div>
 
         {/* Additional Information */}
         <div className="w-full">
-          <label htmlFor="additionalInfo" className="block text-sm font-medium text-gray-700 mb-2">Additional Information</label>
-          <textarea
-            id="additionalInfo"
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-            placeholder="Additional Information"
-            value={localFormData.additionalInfo || ''}
-            onChange={(e) => handleChange('additionalInfo', e.target.value)}
-          />
+          <InputWithTooltip label="Additional Information">
+            <textarea
+              id="additionalInfo"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 min-h-[100px]"
+              placeholder="Additional Information"
+              value={localFormData.additionalInfo || ''}
+              onChange={(e) => handleChange('additionalInfo', e.target.value)}
+            />
+          </InputWithTooltip>
         </div>
       </div>
     </div>

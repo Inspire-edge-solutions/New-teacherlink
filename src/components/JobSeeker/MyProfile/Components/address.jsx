@@ -1,67 +1,67 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import axios from "axios";
-import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import Select from "react-select";
 import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import InputWithTooltip from "../../../../services/InputWithTooltip";
 
-//------------------------------------------------
-// Helper functions: map countries/states/cities by ID
-//------------------------------------------------
-const mapAllCountries = async () => {
-  const countries = await GetCountries();
-  return countries.map((country) => ({
-    value: country.id,
-    label: country.name
-  }));
+// Reusable react-select styles to match Tailwind design
+const selectStyles = {
+  control: (base, state) => ({
+    ...base,
+    minHeight: '48px',
+    padding: '0 0.75rem',
+    borderRadius: '0.5rem',
+    borderColor: state.isFocused ? '#fda4af' : '#d1d5db',
+    backgroundColor: 'white',
+    boxShadow: state.isFocused ? '0 0 0 2px rgba(253, 164, 175, 0.2)' : 'none',
+    '&:hover': {
+      borderColor: state.isFocused ? '#fda4af' : '#d1d5db',
+    },
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: '#9ca3af',
+  }),
 };
 
-// Find India in the countries list
-const findIndiaOption = async () => {
-  const countries = await GetCountries();
-  const countriesOptions = countries.map((country) => ({
-    value: country.id,
-    label: country.name
-  }));
-  const india = countriesOptions.find(country => country.label === "India");
-  return india || null;
-};
-
-const mapStatesOfCountry = async (countryId) => {
-  if (!countryId) return [];
-  const states = await GetState(countryId);
-  return states.map((state) => ({
-    value: state.id,
-    label: state.name
-  }));
-};
-
-const mapCitiesOfState = async (countryId, stateId) => {
-  if (!countryId || !stateId) return [];
-  const cities = await GetCity(countryId, stateId);
-  return cities.map((city) => ({
-    value: city.name,
-    label: city.name
-  }));
-};
-
-const Address = forwardRef(({ className, permanentCity, presentCity, formData: parentFormData, setFormData: setParentFormData }, ref) => {
+const Address = forwardRef(({ className, permanentCity, presentCity, formData: parentFormData, updateFormData }, ref) => {
   const { user } = useAuth();
 
   // ========== CSC Data ==========
   const [countries, setCountries] = useState([]);
   const [indiaOption, setIndiaOption] = useState(null);
+  const [permanentStates, setPermanentStates] = useState([]);
+  const [permanentCities, setPermanentCities] = useState([]);
+  const [presentStates, setPresentStates] = useState([]);
+  const [presentCities, setPresentCities] = useState([]);
+
+  // Load countries on mount
+  useEffect(() => {
+    GetCountries().then((countriesData) => {
+      const formattedCountries = countriesData.map(country => ({
+        value: country.id,
+        label: country.name,
+      }));
+      setCountries(formattedCountries);
+      
+      // Find India in the countries list
+      const india = formattedCountries.find(country => country.label === "India");
+      setIndiaOption(india || null);
+    });
+  }, []);
 
   // ========== Form State ==========
   const [localFormData, setLocalFormData] = useState({
     permanentAddress: parentFormData?.permanentAddress || {
-      country: null,
+      country: indiaOption || null,
       state: null,
       city: null,
     },
     presentAddress: parentFormData?.presentAddress || {
-      country: null,
+      country: indiaOption || null,
       state: null,
       city: null,
       sameAsPermanent: false,
@@ -69,71 +69,88 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  // ========== Load Countries on Component Mount ==========
+  // Sync with parent form data when it changes (e.g., when navigating back)
   useEffect(() => {
-    const loadCountries = async () => {
-      try {
-        const [countriesData, indiaData] = await Promise.all([
-          mapAllCountries(),
-          findIndiaOption()
-        ]);
-        setCountries(countriesData);
-        setIndiaOption(indiaData);
-        
-        // Update form data with India option if not already set
-        if (indiaData && !localFormData.permanentAddress.country && !localFormData.presentAddress.country) {
-          setLocalFormData(prev => ({
-            permanentAddress: {
-              ...prev.permanentAddress,
-              country: indiaData
-            },
-            presentAddress: {
-              ...prev.presentAddress,
-              country: indiaData
-            }
-          }));
-        }
-      } catch (error) {
-        console.error("Error loading countries:", error);
-      }
-    };
-    
-    loadCountries();
-  }, []);
-
-  const [states, setStates] = useState({ permanent: [], present: [] });
-  const [cities, setCities] = useState({ permanent: [], present: [] });
-
-  const getStates = async (countryId, addressType = 'permanent') => {
-    if (!countryId) {
-      setStates(prev => ({ ...prev, [addressType]: [] }));
-      return [];
+    if (parentFormData?.permanentAddress || parentFormData?.presentAddress) {
+      setLocalFormData(prev => ({
+        permanentAddress: parentFormData.permanentAddress || prev.permanentAddress,
+        presentAddress: parentFormData.presentAddress || prev.presentAddress,
+      }));
     }
-    try {
-      const statesData = await mapStatesOfCountry(countryId);
-      setStates(prev => ({ ...prev, [addressType]: statesData }));
-      return statesData;
-    } catch (error) {
-      console.error("Error loading states:", error);
-      setStates(prev => ({ ...prev, [addressType]: [] }));
-      return [];
+  }, [parentFormData?.permanentAddress, parentFormData?.presentAddress]);
+
+  // Load states when permanent country changes
+  useEffect(() => {
+    if (localFormData.permanentAddress.country?.value) {
+      GetState(localFormData.permanentAddress.country.value).then((statesData) => {
+        setPermanentStates(statesData.map(state => ({
+          value: state.id,
+          label: state.name,
+        })));
+      });
+    } else {
+      setPermanentStates([]);
     }
+  }, [localFormData.permanentAddress.country]);
+
+  // Load cities when permanent state changes
+  useEffect(() => {
+    if (localFormData.permanentAddress.country?.value && localFormData.permanentAddress.state?.value) {
+      GetCity(localFormData.permanentAddress.country.value, localFormData.permanentAddress.state.value).then((citiesData) => {
+        setPermanentCities(citiesData.map(city => ({
+          value: city.name,
+          label: city.name,
+        })));
+      });
+    } else {
+      setPermanentCities([]);
+    }
+  }, [localFormData.permanentAddress.country, localFormData.permanentAddress.state]);
+
+  // Load states when present country changes
+  useEffect(() => {
+    if (!localFormData.presentAddress.sameAsPermanent && localFormData.presentAddress.country?.value) {
+      GetState(localFormData.presentAddress.country.value).then((statesData) => {
+        setPresentStates(statesData.map(state => ({
+          value: state.id,
+          label: state.name,
+        })));
+      });
+    } else {
+      setPresentStates([]);
+    }
+  }, [localFormData.presentAddress.country, localFormData.presentAddress.sameAsPermanent]);
+
+  // Load cities when present state changes
+  useEffect(() => {
+    if (!localFormData.presentAddress.sameAsPermanent && localFormData.presentAddress.country?.value && localFormData.presentAddress.state?.value) {
+      GetCity(localFormData.presentAddress.country.value, localFormData.presentAddress.state.value).then((citiesData) => {
+        setPresentCities(citiesData.map(city => ({
+          value: city.name,
+          label: city.name,
+        })));
+      });
+    } else {
+      setPresentCities([]);
+    }
+  }, [localFormData.presentAddress.country, localFormData.presentAddress.state, localFormData.presentAddress.sameAsPermanent]);
+
+  const getStates = async (countryId) => {
+    if (!countryId) return [];
+    const states = await GetState(countryId);
+    return states.map(state => ({
+      value: state.id,
+      label: state.name,
+    }));
   };
 
-  const getCities = async (countryId, stateId, addressType = 'permanent') => {
-    if (!countryId || !stateId) {
-      setCities(prev => ({ ...prev, [addressType]: [] }));
-      return [];
-    }
-    try {
-      const citiesData = await mapCitiesOfState(countryId, stateId);
-      setCities(prev => ({ ...prev, [addressType]: citiesData }));
-      return citiesData;
-    } catch (error) {
-      console.error("Error loading cities:", error);
-      setCities(prev => ({ ...prev, [addressType]: [] }));
-      return [];
-    }
+  const getCities = async (countryId, stateId) => {
+    if (!countryId || !stateId) return [];
+    const cities = await GetCity(countryId, stateId);
+    return cities.map(city => ({
+      value: city.name,
+      label: city.name,
+    }));
   };
 
   // ========== Validation Errors ==========
@@ -143,7 +160,7 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
   });
 
   // ========== Handle Form Changes ==========
-  const handleAddressChange = async (addressType, field, value) => {
+  const handleAddressChange = (addressType, field, value) => {
     //console.log('Handling address change:', { addressType, field, value });
     
     const newLocalFormData = {
@@ -154,24 +171,12 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
       },
     };
 
-    // Clear dependent fields and load new data
+    // Clear dependent fields
     if (field === "country") {
       newLocalFormData[addressType].state = null;
       newLocalFormData[addressType].city = null;
-      // Load states for the selected country
-      if (value?.value) {
-        await getStates(value.value, addressType === 'permanentAddress' ? 'permanent' : 'present');
-      }
     } else if (field === "state") {
       newLocalFormData[addressType].city = null;
-      // Load cities for the selected state
-      if (value?.value && newLocalFormData[addressType].country?.value) {
-        await getCities(
-          newLocalFormData[addressType].country.value, 
-          value.value, 
-          addressType === 'permanentAddress' ? 'permanent' : 'present'
-        );
-      }
     }
 
     setLocalFormData(newLocalFormData);
@@ -186,11 +191,10 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
     }));
 
     // Update parent form data
-    if (typeof setParentFormData === 'function') {
-      setParentFormData(prev => ({
-        ...prev,
+    if (typeof updateFormData === 'function') {
+      updateFormData({
         [addressType]: newLocalFormData[addressType],
-      }));
+      });
     }
   };
 
@@ -212,17 +216,16 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
     };
 
     setLocalFormData(newLocalFormData);
-    if (typeof setParentFormData === 'function') {
-      setParentFormData(prev => ({
-        ...prev,
+    if (typeof updateFormData === 'function') {
+      updateFormData({
         presentAddress: newLocalFormData.presentAddress,
-      }));
+      });
     }
   };
 
   // ========== Load Saved Addresses ==========
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid || countries.length === 0) return;
 
     const fetchAddresses = async () => {
       try {
@@ -247,14 +250,14 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
           );
           
           if (country) {
-            const statesData = await getStates(country.value, 'permanent');
-            const state = statesData.find(s =>
+            const states = await getStates(country.value);
+            const state = states.find(s =>
               s.label.toLowerCase() === addr.state_name?.toLowerCase()
             );
             
             if (state) {
-              const citiesData = await getCities(country.value, state.value, 'permanent');
-              const city = citiesData.find(c =>
+              const cities = await getCities(country.value, state.value);
+              const city = cities.find(c =>
                 c.label.toLowerCase() === addr.city_name?.toLowerCase()
               );
 
@@ -275,14 +278,14 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
           );
           
           if (country) {
-            const statesData = await getStates(country.value, 'present');
-            const state = statesData.find(s =>
+            const states = await getStates(country.value);
+            const state = states.find(s =>
               s.label.toLowerCase() === addr.state_name?.toLowerCase()
             );
             
             if (state) {
-              const citiesData = await getCities(country.value, state.value, 'present');
-              const city = citiesData.find(c =>
+              const cities = await getCities(country.value, state.value);
+              const city = cities.find(c =>
                 c.label.toLowerCase() === addr.city_name?.toLowerCase()
               );
 
@@ -296,23 +299,20 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
           }
         }
 
-        //console.log("Setting form data:", newFormData);
         setLocalFormData(newFormData);
-        if (typeof setParentFormData === 'function') {
-          setParentFormData(prev => ({
-            ...prev,
+        if (typeof updateFormData === 'function') {
+          updateFormData({
             permanentAddress: newFormData.permanentAddress,
             presentAddress: newFormData.presentAddress,
-          }));
+          });
         }
       } catch (error) {
         console.error("Error fetching addresses:", error);
-        //toast.error("Failed to load saved addresses");
       }
     };
 
     fetchAddresses();
-  }, [user?.uid]);
+  }, [user?.uid, countries.length]);
 
   // ========== Validation Function ==========
   const validateFields = () => {
@@ -387,21 +387,25 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
             firebase_uid: user.uid,
           };
 
-      await Promise.all([
-        axios.post(
-          "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/permanentAddress",
-          permanentAddressPayload,
-          { headers: { "Content-Type": "application/json" } }
-        ),
-        axios.post(
-          "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/presentAddress",
-          presentAddressPayload,
-          { headers: { "Content-Type": "application/json" } }
-        ),
-      ]);
+      try {
+        await Promise.all([
+          axios.post(
+            "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/permanentAddress",
+            permanentAddressPayload,
+            { headers: { "Content-Type": "application/json" } }
+          ),
+          axios.post(
+            "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/presentAddress",
+            presentAddressPayload,
+            { headers: { "Content-Type": "application/json" } }
+          ),
+        ]);
 
-      console.log("Address data saved successfully");
-      return { success: true };
+        return { success: true };
+      } catch (error) {
+        console.error("Error saving address data:", error.response || error);
+        throw new Error(`Failed to save address: ${error.message}`);
+      }
     }
   }));
 
@@ -461,270 +465,145 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
   };
 
   return (
-    <form onSubmit={handleSubmit} className={`rounded-lg p-6 bg-rose-100 ${className}`}>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* PERMANENT ADDRESS */}
-        <div className="w-full md:col-span-2">
-          <h6 className="text-gray-700 font-medium mb-3">Permanent Address</h6>
-        </div>
-        
-        <div className="w-full">
-          <FormControl fullWidth required>
-            <InputLabel id="permanent-country-label" required>Permanent Country</InputLabel>
-            <Select
-              labelId="permanent-country-label"
-              id="permanentCountry"
-              label="Permanent Country"
-              value={localFormData.permanentAddress.country?.value || ''}
-              onChange={(e) => {
-                const selectedCountry = countries.find(c => c.value === e.target.value);
-                handleAddressChange("permanentAddress", "country", selectedCountry);
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '0.5rem',
-                  height: '48px',
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#FDA4AF',
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#FDA4AF',
-                    borderWidth: 2,
-                  },
-                },
-                '& .MuiSelect-select': {
-                  padding: '12px 14px',
-                },
-              }}
-            >
-              {countries.map((country) => (
-                <MenuItem key={country.value} value={country.value}>
-                  {country.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </div>
-
-        <div className="w-full">
-          <FormControl fullWidth required>
-            <InputLabel id="permanent-state-label" required>Permanent State</InputLabel>
-            <Select
-              labelId="permanent-state-label"
-              id="permanentState"
-              label="Permanent State"
-              value={localFormData.permanentAddress.state?.value || ''}
-              onChange={(e) => {
-                const selectedState = states.permanent.find(s => s.value === e.target.value);
-                handleAddressChange("permanentAddress", "state", selectedState);
-              }}
-              disabled={!localFormData.permanentAddress.country}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '0.5rem',
-                  height: '48px',
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#FDA4AF',
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#FDA4AF',
-                    borderWidth: 2,
-                  },
-                },
-                '& .MuiSelect-select': {
-                  padding: '12px 14px',
-                },
-              }}
-            >
-              {states.permanent.map((state) => (
-                <MenuItem key={state.value} value={state.value}>
-                  {state.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </div>
-
-        {permanentCity && (
-          <div className="w-full">
-            <FormControl fullWidth>
-              <InputLabel id="permanent-city-label">Permanent City</InputLabel>
-              <Select
-                labelId="permanent-city-label"
-                id="permanentCity"
-                label="Permanent City"
-                value={localFormData.permanentAddress.city?.value || ''}
-                onChange={(e) => {
-                  const selectedCity = cities.permanent.find(c => c.value === e.target.value);
-                  handleAddressChange("permanentAddress", "city", selectedCity);
-                }}
-                disabled={!localFormData.permanentAddress.state}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '0.5rem',
-                    height: '48px',
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#FDA4AF',
-                    },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#FDA4AF',
-                      borderWidth: 2,
-                    },
-                  },
-                  '& .MuiSelect-select': {
-                    padding: '12px 14px',
-                  },
-                }}
-              >
-                {cities.permanent.map((city) => (
-                  <MenuItem key={city.value} value={city.value}>
-                    {city.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </div>
-        )}
-
-        {/* PRESENT ADDRESS CHECKBOX */}
-        <div className="w-full md:col-span-2">
-          <label className="flex items-center gap-3 my-4">
-            <input
-              id="sameAsPermanent"
-              name="sameAsPermanent"
-              type="checkbox"
-              onChange={handleSameAsPermanent}
-              checked={localFormData.presentAddress.sameAsPermanent}
-              className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
-            />
-            <span className="text-sm text-gray-700">Present Address (Same as Permanent Address)</span>
-          </label>
-        </div>
-
-        {/* PRESENT ADDRESS */}
-        {!localFormData.presentAddress.sameAsPermanent && (
-          <>
-            <div className="w-full">
-              <FormControl fullWidth>
-                <InputLabel id="present-country-label">Present Country</InputLabel>
-                <Select
-                  labelId="present-country-label"
-                  id="presentCountry"
-                  label="Present Country"
-                  value={localFormData.presentAddress.country?.value || ''}
-                  onChange={(e) => {
-                    const selectedCountry = countries.find(c => c.value === e.target.value);
-                    handleAddressChange("presentAddress", "country", selectedCountry);
-                  }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: '0.5rem',
-                      height: '48px',
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#FDA4AF',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#FDA4AF',
-                        borderWidth: 2,
-                      },
-                    },
-                    '& .MuiSelect-select': {
-                      padding: '12px 14px',
-                    },
-                  }}
-                >
-                  {countries.map((country) => (
-                    <MenuItem key={country.value} value={country.value}>
-                      {country.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-
-            <div className="w-full">
-              <FormControl fullWidth>
-                <InputLabel id="present-state-label">Present State</InputLabel>
-                <Select
-                  labelId="present-state-label"
-                  id="presentState"
-                  label="Present State"
-                  value={localFormData.presentAddress.state?.value || ''}
-                  onChange={(e) => {
-                    const selectedState = states.present.find(s => s.value === e.target.value);
-                    handleAddressChange("presentAddress", "state", selectedState);
-                  }}
-                  disabled={!localFormData.presentAddress.country}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: '0.5rem',
-                      height: '48px',
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#FDA4AF',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#FDA4AF',
-                        borderWidth: 2,
-                      },
-                    },
-                    '& .MuiSelect-select': {
-                      padding: '12px 14px',
-                    },
-                  }}
-                >
-                  {states.present.map((state) => (
-                    <MenuItem key={state.value} value={state.value}>
-                      {state.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-
-            {presentCity && (
-              <div className="w-full">
-                <FormControl fullWidth>
-                  <InputLabel id="present-city-label">Present City</InputLabel>
+    <div className={`rounded-lg pt-0 px-4 pb-4 md:pt-0 md:px-6 md:pb-6 bg-rose-100 ${className} overflow-x-hidden`}>
+      <form onSubmit={handleSubmit} className="overflow-x-hidden">
+        <div className="space-y-4">
+          {/* PERMANENT ADDRESS */}
+          <div>
+            <h6 className="text-lg font-semibold mb-4 text-black">Permanent Address</h6>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="w-full min-w-0">
+                <InputWithTooltip label="Permanent Country" required>
                   <Select
-                    labelId="present-city-label"
-                    id="presentCity"
-                    label="Present City"
-                    value={localFormData.presentAddress.city?.value || ''}
-                    onChange={(e) => {
-                      const selectedCity = cities.present.find(c => c.value === e.target.value);
-                      handleAddressChange("presentAddress", "city", selectedCity);
-                    }}
-                    disabled={!localFormData.presentAddress.state}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: '0.5rem',
-                        height: '48px',
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#FDA4AF',
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#FDA4AF',
-                          borderWidth: 2,
-                        },
-                      },
-                      '& .MuiSelect-select': {
-                        padding: '12px 14px',
-                      },
-                    }}
-                  >
-                    {cities.present.map((city) => (
-                      <MenuItem key={city.value} value={city.value}>
-                        {city.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                    required
+                    id="permanentCountry"
+                    name="permanentCountry"
+                    placeholder="Country"
+                    options={countries}
+                    value={localFormData.permanentAddress.country}
+                    onChange={(option) => handleAddressChange("permanentAddress", "country", option)}
+                    isClearable={false}
+                    styles={selectStyles}
+                  />
+                </InputWithTooltip>
               </div>
-            )}
-          </>
-        )}
-      </div>
-    </form>
+
+              <div className="w-full min-w-0">
+                <InputWithTooltip label="Permanent State" required>
+                  <Select
+                    required
+                    id="permanentState"
+                    name="permanentState"
+                    placeholder="State"
+                    options={permanentStates}
+                    value={localFormData.permanentAddress.state}
+                    onChange={(option) => handleAddressChange("permanentAddress", "state", option)}
+                    isDisabled={!localFormData.permanentAddress.country}
+                    isClearable={false}
+                    styles={selectStyles}
+                  />
+                </InputWithTooltip>
+              </div>
+
+              {permanentCity && (
+                <div className="w-full min-w-0">
+                  <InputWithTooltip label="Permanent City">
+                    <Select
+                      id="permanentCity"
+                      name="permanentCity"
+                      placeholder="City"
+                      options={permanentCities}
+                      value={localFormData.permanentAddress.city}
+                      onChange={(option) => handleAddressChange("permanentAddress", "city", option)}
+                      isDisabled={!localFormData.permanentAddress.state}
+                      isClearable={false}
+                      styles={selectStyles}
+                    />
+                  </InputWithTooltip>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* PRESENT ADDRESS CHECKBOX */}
+          <div className="mt-4">
+            <label className="flex items-center gap-3 mb-0">
+              <input
+                id="sameAsPermanent"
+                name="sameAsPermanent"
+                type="checkbox"
+                onChange={handleSameAsPermanent}
+                checked={localFormData.presentAddress.sameAsPermanent}
+                className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
+              />
+              <span className="text-sm text-gray-700">Present Address (Same as Permanent Address)</span>
+            </label>
+          </div>
+
+          {/* PRESENT ADDRESS */}
+          {!localFormData.presentAddress.sameAsPermanent && (
+            <div className="mt-4">
+              <h6 className="text-lg font-semibold mb-4 text-black">Present Address</h6>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="w-full min-w-0">
+                  <InputWithTooltip label="Present Country" required>
+                    <Select
+                      required
+                      id="presentCountry"
+                      name="presentCountry"
+                      placeholder="Country"
+                      options={countries}
+                      value={localFormData.presentAddress.country}
+                      onChange={(option) => handleAddressChange("presentAddress", "country", option)}
+                      isClearable={false}
+                      styles={selectStyles}
+                    />
+                  </InputWithTooltip>
+                </div>
+
+                <div className="w-full min-w-0">
+                  <InputWithTooltip label="Present State" required>
+                    <Select
+                      required
+                      id="presentState"
+                      name="presentState"
+                      placeholder="State"
+                      options={presentStates}
+                      value={localFormData.presentAddress.state}
+                      onChange={(option) => handleAddressChange("presentAddress", "state", option)}
+                      isDisabled={!localFormData.presentAddress.country}
+                      isClearable={false}
+                      styles={selectStyles}
+                    />
+                  </InputWithTooltip>
+                </div>
+
+                {presentCity && (
+                  <div className="w-full min-w-0">
+                    <InputWithTooltip label="Present City">
+                      <Select
+                        id="presentCity"
+                        name="presentCity"
+                        placeholder="City"
+                        options={presentCities}
+                        value={localFormData.presentAddress.city}
+                        onChange={(option) => handleAddressChange("presentAddress", "city", option)}
+                        isDisabled={!localFormData.presentAddress.state}
+                        isClearable={false}
+                        styles={selectStyles}
+                      />
+                    </InputWithTooltip>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* SAVE BUTTON - Hidden for auto-save */}
+        {/* Auto-save handles saving when clicking Next */}
+      </form>
+    </div>
   );
 });
 

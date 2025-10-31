@@ -1,9 +1,9 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import axios from "axios";
-import "./profile-styles.css";
 import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import InputWithTooltip from "../../../../services/InputWithTooltip";
 //import ContactInfoBox from "./ContactInfoBox";
 
 const Social = forwardRef(({ formData, updateFormData }, ref) => {
@@ -124,64 +124,68 @@ const Social = forwardRef(({ formData, updateFormData }, ref) => {
   }));
 
   return (
-    <div className="rounded-lg p-6" style={{backgroundColor: '#F0D8D9'}}>
+    <div className="rounded-lg pt-4 px-4 pb-4 md:pt-6 md:px-6 md:pb-6 bg-rose-100 overflow-x-hidden">
       <form onSubmit={handleSubmit}>
-        <div className="w-full space-y-6">
+        <div className="w-full space-y-6 pt-2">
           {formData.isEasyMode ? (
             <>
               <div className="w-full">
-                <label htmlFor="facebook" className="block text-sm font-medium text-gray-700 mb-2">Facebook</label>
-                <input
-                  type="text"
-                  id="facebook"
-                  name="facebook"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  placeholder="Facebook - www.facebook.com/your-id"
-                  value={socialLinks.facebook}
-                  onChange={handleChange}
-                  required
-                />
+                <InputWithTooltip label="Facebook" required>
+                  <input
+                    type="text"
+                    id="facebook"
+                    name="facebook"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    placeholder="Facebook - www.facebook.com/your-id"
+                    value={socialLinks.facebook}
+                    onChange={handleChange}
+                    required
+                  />
+                </InputWithTooltip>
               </div>
 
               <div className="w-full">
-                <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700 mb-2">LinkedIn</label>
-                <input
-                  type="text"
-                  id="linkedin"
-                  name="linkedin"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  placeholder="LinkedIn - www.linkedin.com/your-id"
-                  value={socialLinks.linkedin}
-                  onChange={handleChange}
-                  required
-                />
+                <InputWithTooltip label="LinkedIn" required>
+                  <input
+                    type="text"
+                    id="linkedin"
+                    name="linkedin"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    placeholder="LinkedIn - www.linkedin.com/your-id"
+                    value={socialLinks.linkedin}
+                    onChange={handleChange}
+                    required
+                  />
+                </InputWithTooltip>
               </div>
             </>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="w-full">
-                <label htmlFor="facebook" className="block text-sm font-medium text-gray-700 mb-2">Facebook</label>
-                <input
-                  type="text"
-                  id="facebook"
-                  name="facebook"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  placeholder="Facebook - www.facebook.com/your-id"
-                  value={socialLinks.facebook}
-                  onChange={handleChange}
-                />
+                <InputWithTooltip label="Facebook">
+                  <input
+                    type="text"
+                    id="facebook"
+                    name="facebook"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    placeholder="Facebook - www.facebook.com/your-id"
+                    value={socialLinks.facebook}
+                    onChange={handleChange}
+                  />
+                </InputWithTooltip>
               </div>
               <div className="w-full">
-                <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700 mb-2">LinkedIn</label>
-                <input
-                  type="text"
-                  id="linkedin"
-                  name="linkedin"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-                  placeholder="LinkedIn - www.linkedin.com/your-id"
-                  value={socialLinks.linkedin}
-                  onChange={handleChange}
-                />
+                <InputWithTooltip label="LinkedIn">
+                  <input
+                    type="text"
+                    id="linkedin"
+                    name="linkedin"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    placeholder="LinkedIn - www.linkedin.com/your-id"
+                    value={socialLinks.linkedin}
+                    onChange={handleChange}
+                  />
+                </InputWithTooltip>
               </div>
             </div>
           )}

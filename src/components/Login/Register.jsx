@@ -7,6 +7,7 @@ import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { Skeleton } from "@mui/material";
 import TermsPrivacy from "../website/TermsPrivacy";
 import LoginWithSocial from "./LoginWithSocial";
+import InputWithTooltip from "../../services/InputWithTooltip";
 
 // Terms and Privacy Policy version tracking
 const TERMS_VERSION = "1.0";
@@ -275,75 +276,83 @@ const Register = ({ user_type }) => {
 
           <form onSubmit={handleRegister} className="flex flex-col gap-4 sm:gap-6 md:gap-8">
             {/* Full Name */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="w-full py-3 sm:py-4 md:py-5 border-b-2 border-gray-300 bg-transparent text-sm sm:text-base md:text-lg outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black"
-              />
-            </div>
+            <InputWithTooltip label="Full Name" required>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="w-full py-3 sm:py-4 md:py-5 border-b-2 border-gray-300 bg-transparent text-sm sm:text-base md:text-lg outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black"
+                />
+              </div>
+            </InputWithTooltip>
 
             {/* Email */}
-            <div className="relative">
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full py-3 sm:py-4 md:py-5 border-b-2 border-gray-300 bg-transparent text-sm sm:text-base md:text-lg outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black"
-              />
-            </div>
+            <InputWithTooltip label="Email" required>
+              <div className="relative">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full py-3 sm:py-4 md:py-5 border-b-2 border-gray-300 bg-transparent text-sm sm:text-base md:text-lg outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black"
+                />
+              </div>
+            </InputWithTooltip>
 
             {/* Password */}
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={handlePasswordChange}
-                required
-                className="w-full py-3 sm:py-4 md:py-5 pr-10 border-b-2 border-gray-300 bg-transparent text-sm sm:text-base md:text-lg outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 top-1/2 -translate-y-1/2 bg-none border-none cursor-pointer text-gray-500 text-lg sm:text-xl md:text-2xl"
-              >
-                {showPassword ? <MdVisibility /> : <MdVisibilityOff />}
-              </button>
-            </div>
+            <InputWithTooltip label="Password" required>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  required
+                  className="w-full py-3 sm:py-4 md:py-5 pr-10 border-b-2 border-gray-300 bg-transparent text-sm sm:text-base md:text-lg outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 bg-none border-none cursor-pointer text-gray-500 text-lg sm:text-xl md:text-2xl"
+                >
+                  {showPassword ? <MdVisibility /> : <MdVisibilityOff />}
+                </button>
+              </div>
+            </InputWithTooltip>
 
             {/* Phone Number */}
-            <div className="relative">
-              <input
-                type="tel"
-                placeholder="Mobile Number (10 digits)"
-                value={number}
-                onChange={handlePhoneChange}
-                required
-                minLength={10}
-                maxLength={10}
-                className="w-full py-3 sm:py-4 md:py-5 border-b-2 border-gray-300 bg-transparent text-sm sm:text-base md:text-lg outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black"
-                onFocus={() => setShowPhoneValidation(true)}
-                onBlur={() => setShowPhoneValidation(false)}
-              />
-              {showPhoneValidation && hasStartedTyping && !phoneValidation.isValid && (
-                <div className="absolute top-full left-0 right-0 bg-red-50 border border-red-200 rounded p-2 text-xs text-red-600 z-10">
-                  <div className="font-semibold mb-1">
-                    Phone number requirements:
-                  </div>
-                  {getMissingPhoneRequirements().map((requirement, index) => (
-                    <div key={index} className="text-red-600">
-                      • {requirement}
+            <InputWithTooltip label="Mobile Number" required>
+              <div className="relative">
+                <input
+                  type="tel"
+                  placeholder="Mobile Number (10 digits)"
+                  value={number}
+                  onChange={handlePhoneChange}
+                  required
+                  minLength={10}
+                  maxLength={10}
+                  className="w-full py-3 sm:py-4 md:py-5 border-b-2 border-gray-300 bg-transparent text-sm sm:text-base md:text-lg outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black"
+                  onFocus={() => setShowPhoneValidation(true)}
+                  onBlur={() => setShowPhoneValidation(false)}
+                />
+                {showPhoneValidation && hasStartedTyping && !phoneValidation.isValid && (
+                  <div className="absolute top-full left-0 right-0 bg-red-50 border border-red-200 rounded p-2 text-xs text-red-600 z-10">
+                    <div className="font-semibold mb-1">
+                      Phone number requirements:
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    {getMissingPhoneRequirements().map((requirement, index) => (
+                      <div key={index} className="text-red-600">
+                        • {requirement}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </InputWithTooltip>
 
             {/* Terms Checkbox */}
             <div className="flex items-start gap-2">

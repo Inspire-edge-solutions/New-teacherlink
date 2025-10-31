@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Skeleton } from "@mui/material";
+import InputWithTooltip from "../../services/InputWithTooltip";
 
 const API_FORGET = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/forget";
 const API_OTP_CREATE = "https://hmpffcv3r3.execute-api.ap-south-1.amazonaws.com/dev/otp/create";
@@ -260,7 +261,7 @@ const ForgetPassword = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row lg:min-h-screen">
+    <div className="flex flex-col lg:flex-row lg:min-h-screen bg-gradient-to-br from-red-50 to-red-100">
       {/* Left Section - Promotional */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-red-50 to-red-100 relative overflow-hidden">
         {/* Background Pattern */}
@@ -307,7 +308,7 @@ const ForgetPassword = () => {
       </div>
 
       {/* Right Section - Forget Password Form */}
-      <div className="w-full lg:w-1/2 bg-white flex items-center justify-center px-3 sm:px-4 md:px-6 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg lg:-ml-12">
+      <div className="w-full lg:w-1/2 bg-white flex items-center justify-center px-3 sm:px-4 md:px-6 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg">
         <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-4 sm:mb-6 text-center lg:text-left">Reset Password</h2>
           
@@ -315,17 +316,19 @@ const ForgetPassword = () => {
             <>
               {step === 1 && (
                 <form onSubmit={handleSendOTP} className="space-y-4 sm:space-y-6 md:space-y-8">
-                  <div className="relative">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Email"
-                      required
-                      autoComplete="email"
-                      className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-sm sm:text-base md:text-lg placeholder-black"
-                    />
-                  </div>
+                  <InputWithTooltip label="Email" required>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Email"
+                        required
+                        autoComplete="email"
+                        className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-sm sm:text-base md:text-lg placeholder-black"
+                      />
+                    </div>
+                  </InputWithTooltip>
                   
                   {loading ? (
                     <Skeleton variant="rectangular" width="100%" height={60} sx={{ borderRadius: 2 }} />
@@ -343,16 +346,18 @@ const ForgetPassword = () => {
 
               {step === 2 && (
                 <form onSubmit={handleVerifyOTP} className="space-y-4 sm:space-y-6 md:space-y-8">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
-                      placeholder="Enter OTP"
-                      required
-                      className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-sm sm:text-base md:text-lg placeholder-black text-center tracking-widest"
-                    />
-                  </div>
+                  <InputWithTooltip label="Enter OTP" required>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                        placeholder="Enter OTP"
+                        required
+                        className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-sm sm:text-base md:text-lg placeholder-black text-center tracking-widest"
+                      />
+                    </div>
+                  </InputWithTooltip>
                   
                   {loading ? (
                     <Skeleton variant="rectangular" width="100%" height={60} sx={{ borderRadius: 2 }} />
@@ -379,20 +384,22 @@ const ForgetPassword = () => {
 
               {step === 3 && (
                 <form onSubmit={handleResetPassword} className="space-y-4 sm:space-y-6 md:space-y-8">
-                  <div className="relative">
-                    <input
-                      type="password"
-                      value={newPassword}
-                      onChange={e => setNewPassword(e.target.value)}
-                      placeholder="New Password"
-                      required
-                      className={`w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 focus:outline-none text-sm sm:text-base md:text-lg placeholder-black ${
-                        showValidationErrors && !passwordValidation.length 
-                          ? 'border-red-500' 
-                          : 'border-gray-300 focus:border-red-500'
-                      }`}
-                    />
-                  </div>
+                  <InputWithTooltip label="New Password" required>
+                    <div className="relative">
+                      <input
+                        type="password"
+                        value={newPassword}
+                        onChange={e => setNewPassword(e.target.value)}
+                        placeholder="New Password"
+                        required
+                        className={`w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 focus:outline-none text-sm sm:text-base md:text-lg placeholder-black ${
+                          showValidationErrors && !passwordValidation.length 
+                            ? 'border-red-500' 
+                            : 'border-gray-300 focus:border-red-500'
+                        }`}
+                      />
+                    </div>
+                  </InputWithTooltip>
                   
                   {showValidationErrors && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-2 sm:p-3">
@@ -406,20 +413,22 @@ const ForgetPassword = () => {
                     </div>
                   )}
                   
-                  <div className="relative">
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={e => setConfirmPassword(e.target.value)}
-                      placeholder="Confirm Password"
-                      required
-                      className={`w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 focus:outline-none text-sm sm:text-base md:text-lg placeholder-black ${
-                        showValidationErrors && !passwordValidation.match 
-                          ? 'border-red-500' 
-                          : 'border-gray-300 focus:border-red-500'
-                      }`}
-                    />
-                  </div>
+                  <InputWithTooltip label="Confirm Password" required>
+                    <div className="relative">
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm Password"
+                        required
+                        className={`w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 focus:outline-none text-sm sm:text-base md:text-lg placeholder-black ${
+                          showValidationErrors && !passwordValidation.match 
+                            ? 'border-red-500' 
+                            : 'border-gray-300 focus:border-red-500'
+                        }`}
+                      />
+                    </div>
+                  </InputWithTooltip>
                   
                   {showValidationErrors && !passwordValidation.match && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-2 sm:p-3">

@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from "../../../../Context/AuthContext";
-import './profile-styles.css';
-import './view.css';
-import './cv-style.css';
+// CSS imports removed - all styles converted to Tailwind CSS
 import { toast } from 'react-toastify';
 import { FaMapMarkerAlt, FaPhone, FaWhatsapp, FaFacebook, FaLinkedin, FaEnvelope } from 'react-icons/fa';
 import { decodeCandidateData } from '../../../../utils/dataDecoder';
@@ -483,7 +481,7 @@ function Fullview({ onViewAttempt, formData }) {
     const teachingMonths = experienceData.mysqlData.teaching_experience_months || 0;
     
     return (
-      <div style={{ marginBottom: '20px', fontSize: '15px' }}>
+      <div className="mb-5 text-[15px]">
         <div><strong>Total Teaching Experience</strong> : {teachingYears} Years & {teachingMonths} months</div>
         <div><strong>Total Experience (Teaching + Non-Teaching)</strong> : {totalYears} Years & {totalMonths} months</div>
       </div>
@@ -517,17 +515,17 @@ function Fullview({ onViewAttempt, formData }) {
       if (education.specialization) additionalInfo.push(`${education.specialization}`);
       
       return (
-        <div className="education-block" key={index}>
-          <div className="education-title">{educationType}</div>
+        <div className="education-block mb-5 pb-[15px] border-b border-gray-300 last:border-b-0" key={index}>
+          <div className="education-title font-bold text-gray-800 mb-1">{educationType}</div>
           <div className="education-details">
             {details.map((detail, i) => (
-              <div key={i} className="education-detail">{detail}</div>
+              <div key={i} className="education-detail text-sm mb-0.5">{detail}</div>
             ))}
-            <div className="education-meta">
+            <div className="education-meta text-[13px] text-gray-600 mt-1 italic">
               {additionalInfo.join(' | ')}
             </div>
             {education.coreSubjects && (
-              <div className="core-subjects">
+              <div className="core-subjects text-[13px] mt-1">
                 <strong>Core Subjects:</strong> {
                   Array.isArray(education.coreSubjects) 
                     ? education.coreSubjects.join(', ') 
@@ -601,41 +599,26 @@ function Fullview({ onViewAttempt, formData }) {
       const location = [exp.city, exp.state, exp.country].filter(Boolean).join(', ');
       
       return (
-        <div className="experience-block" key={index} style={{ 
-          marginBottom: '25px',
-          fontSize: '15px',
-          lineHeight: '1.5'
-        }}>
+        <div className="experience-block mb-[25px] text-[15px] leading-[1.5]" key={index}>
           {/* Organization and date row */}
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            fontWeight: 'bold',
-            marginBottom: '4px'
-          }}>
-            <div style={{ fontSize: '16px' }}>{exp.organizationName}</div>
+          <div className="flex justify-between font-bold mb-1">
+            <div className="text-base">{exp.organizationName}</div>
             <div>
               {dateRange}
-              <span style={{ fontWeight: 'normal', color: '#555' }}>{durationText}</span>
+              <span className="font-normal text-gray-600">{durationText}</span>
             </div>
           </div>
           
           {/* Location row */}
-          <div style={{ marginBottom: '6px', color: '#555' }}>{location}</div>
+          <div className="mb-1.5 text-gray-600">{location}</div>
           
           {/* Job details row */}
-          <div style={{ marginBottom: '6px' }}>
+          <div className="mb-1.5">
             {jobTypeText.join(' | ')}
           </div>
           
           {/* Enhanced responsive details grid */}
-          <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : (isTablet ? '1fr 1fr' : '1fr 1fr'),
-            columnGap: isMobile ? '0' : '20px',
-            rowGap: isMobile ? '8px' : '5px',
-            marginTop: '8px'
-          }}>
+          <div className={`grid ${isMobile ? 'grid-cols-1 gap-y-2' : isTablet ? 'grid-cols-2 gap-x-5 gap-y-1.25' : 'grid-cols-2 gap-x-5 gap-y-1.25'} mt-2`}>
             <div>
               <strong>Designation:</strong> {designation}
             </div>
@@ -740,44 +723,16 @@ function Fullview({ onViewAttempt, formData }) {
     return (
       <div className="work-exposure">
         <h6 className="work-exposure-title">Work Exposure</h6>
-        <div className="responsive-grid" style={{ 
+        <div className="responsive-grid grid" style={{ 
           gridTemplateColumns: `repeat(${getGridColumns()}, 1fr)`,
           gap: isMobile ? '8px' : '10px'
         }}>
           {workTypes.map(type => (
-            <div key={type.key} style={{ 
-              backgroundColor: 'white', 
-              borderRadius: '8px',
-              padding: isMobile ? '12px 8px' : '12px', 
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              minHeight: '50px',
-              border: '1px solid #e9ecef'
-            }}>
-              <div style={{ 
-                fontSize: isMobile ? '13px' : '14px', 
-                fontWeight: '500',
-                lineHeight: '1.3',
-                flex: 1,
-                marginRight: '8px'
-              }}>
+            <div key={type.key} className={`bg-white rounded-lg ${isMobile ? 'p-2 px-2' : 'p-3'} shadow-sm flex justify-between items-center min-h-[50px] border border-gray-200`}>
+              <div className={`${isMobile ? 'text-[13px]' : 'text-sm'} font-medium leading-snug flex-1 mr-2`}>
                 {type.label}
               </div>
-              <div style={{ 
-                width: isMobile ? '20px' : '24px', 
-                height: isMobile ? '20px' : '24px', 
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: isWorkTypeEnabled(type.key) ? '#e6f7ed' : '#fdf1f0',
-                color: isWorkTypeEnabled(type.key) ? '#34a853' : '#ea4335',
-                fontSize: isMobile ? '12px' : '14px',
-                fontWeight: 'bold',
-                flexShrink: 0
-              }}>
+              <div className={`${isMobile ? 'w-5 h-5 text-xs' : 'w-6 h-6 text-sm'} rounded-full flex items-center justify-center font-bold shrink-0 ${isWorkTypeEnabled(type.key) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
                 {isWorkTypeEnabled(type.key) ? '✓' : '×'}
               </div>
             </div>
@@ -799,34 +754,16 @@ function Fullview({ onViewAttempt, formData }) {
     const displayLanguages = (languageArray) => {
       return languageArray.length > 0 
         ? languageArray.join(', ') 
-        : <span style={{ color: '#777', fontStyle: 'italic' }}>None</span>;
+        : <span className="text-gray-500 italic">None</span>;
     };
 
     // Simple language item component with inline display
     const LanguageItem = ({ label, languages }) => (
-      <div className="language-item" style={{ 
-        display: 'flex', 
-        marginBottom: isMobile ? '4px' : '5px',
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        padding: isMobile ? '2px 0' : '3px 0',
-        flexWrap: 'wrap'
-      }}>
-        <span style={{ 
-          fontWeight: '600',
-          marginRight: '6px',
-          color: '#333',
-          fontSize: isMobile ? '13px' : '14px',
-          minWidth: 'fit-content'
-        }}>
+      <div className={`language-item flex ${isMobile ? 'mb-1 py-0.5' : 'mb-1.25 py-0.75'} flex-row items-start flex-wrap`}>
+        <span className={`font-semibold mr-1.5 text-gray-800 ${isMobile ? 'text-[13px]' : 'text-sm'} min-w-fit`}>
           {label}:
         </span>
-        <span style={{
-          fontSize: isMobile ? '13px' : '14px',
-          lineHeight: '1.4',
-          flex: 1,
-          color: '#555'
-        }}>
+        <span className={`${isMobile ? 'text-[13px]' : 'text-sm'} leading-[1.4] flex-1 text-gray-600`}>
           {languages.length > 0 ? languages.join(', ') : 'None'}
         </span>
       </div>
@@ -835,12 +772,7 @@ function Fullview({ onViewAttempt, formData }) {
     return (
       <div className="language-proficiency">
         <h6 className="language-title">Language Proficiency</h6>
-        <div style={{ 
-          paddingLeft: '0',
-          backgroundColor: isMobile ? '#fff' : 'transparent',
-          borderRadius: isMobile ? '4px' : '0',
-          padding: isMobile ? '6px' : '4px'
-        }}>
+        <div className={`pl-0 ${isMobile ? 'bg-white rounded p-1.5' : 'bg-transparent p-1'}`}>
           <LanguageItem label="Speak" languages={speakLanguages} />
           <LanguageItem label="Read" languages={readLanguages} />
           <LanguageItem label="Write" languages={writeLanguages} />
@@ -857,34 +789,11 @@ function Fullview({ onViewAttempt, formData }) {
       if (!value) return null;
       
       return (
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: isMobile ? 'column' : 'row',
-          marginBottom: isMobile ? '12px' : '8px',
-          padding: isMobile ? '10px' : '6px 0',
-          backgroundColor: isMobile ? '#fff' : 'transparent',
-          borderRadius: isMobile ? '6px' : '0',
-          border: isMobile ? '1px solid #eee' : 'none',
-          alignItems: isMobile ? 'flex-start' : 'flex-start'
-        }}>
-          <span style={{ 
-            width: isMobile ? '100%' : '160px', 
-            fontWeight: '600',
-            marginBottom: isMobile ? '4px' : '0',
-            color: '#333',
-            fontSize: isMobile ? '13px' : '14px',
-            flexShrink: 0
-          }}>
+        <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-2 py-1.5 bg-transparent items-start'}`}>
+          <span className={`${isMobile ? 'w-full mb-1' : 'w-40'} font-semibold ${isMobile ? 'text-[13px]' : 'text-sm'} text-gray-800 shrink-0`}>
             {label}:
           </span>
-          <span style={{ 
-            fontSize: isMobile ? '13px' : '14px',
-            lineHeight: '1.4',
-            marginLeft: isMobile ? '0' : '10px',
-            flex: 1,
-            wordBreak: 'break-word',
-            color: '#555'
-          }}>
+          <span className={`${isMobile ? 'text-[13px]' : 'text-sm'} leading-[1.4] ${isMobile ? 'ml-0' : 'ml-2.5'} flex-1 break-words text-gray-600`}>
             {value}
           </span>
         </div>
@@ -920,35 +829,15 @@ function Fullview({ onViewAttempt, formData }) {
     };
     
     return (
-      <div className="additional-information" style={{ 
-        marginBottom: '30px', 
-        padding: '15px', 
-        backgroundColor: '#f9f9f9', 
-        borderRadius: '8px',
-        border: '1px solid #e9ecef'
-      }}>
-        <h6 className="info-title" style={{ 
-          marginBottom: '15px', 
-          color: '#1967d2', 
-          borderBottom: '1px solid #ddd', 
-          paddingBottom: '8px',
-          fontSize: '16px',
-          fontWeight: '600'
-        }}>
+      <div className="additional-information mb-[30px] p-[15px] bg-gray-50 rounded-lg border border-gray-200">
+        <h6 className="info-title mb-[15px] text-[#1967d2] border-b border-gray-300 pb-2 text-base font-semibold">
           Additional Information
         </h6>
         
         {/* Enhanced layout that works with existing CSS */}
-        <div style={{ 
-          display: isMobile ? 'block' : 'flex',
-          flexWrap: 'wrap',
-          gap: isMobile ? '0' : '20px'
-        }}>
+        <div className={`${isMobile ? 'block' : 'flex'} flex-wrap ${isMobile ? 'gap-0' : 'gap-5'}`}>
           {/* Left column */}
-          <div style={{ 
-            flex: isMobile ? 'none' : '1 1 300px',
-            minWidth: isMobile ? '100%' : '0'
-          }}>
+          <div className={`${isMobile ? 'flex-none w-full' : 'flex-1 min-w-0'} ${isMobile ? '' : 'basis-[300px]'}`}>
             {additionalInfo?.religion && (
               <InfoItem label="Religion" value={additionalInfo.religion} />
             )}
@@ -967,10 +856,7 @@ function Fullview({ onViewAttempt, formData }) {
           </div>
           
           {/* Right column */}
-          <div style={{ 
-            flex: isMobile ? 'none' : '1 1 300px',
-            minWidth: isMobile ? '100%' : '0'
-          }}>
+          <div className={`${isMobile ? 'flex-none w-full' : 'flex-1 min-w-0'} ${isMobile ? '' : 'basis-[300px]'}`}>
             {additionalInfo?.citizenship && (
               <InfoItem label="Citizenship" value={additionalInfo.citizenship} />
             )}
@@ -990,10 +876,7 @@ function Fullview({ onViewAttempt, formData }) {
         </div>
         
         {/* Full width items for longer content */}
-        <div style={{ 
-          marginTop: isMobile ? '8px' : '15px',
-          width: '100%'
-        }}>
+        <div className={`${isMobile ? 'mt-2' : 'mt-[15px]'} w-full`}>
           {additionalInfo?.projects && (
             <InfoItem label="Projects" value={additionalInfo.projects} />
           )}
@@ -1068,69 +951,45 @@ function Fullview({ onViewAttempt, formData }) {
   const highestEducation = getHighestEducation();
 
   return (
-    <div className={`cv-container ${isMobile ? 'mobile-layout' : ''} ${isTablet ? 'tablet-layout' : ''}`} style={{ 
-      margin: '0', 
-      padding: '10px 5px',
-      maxWidth: '100%'
-    }}>
+    <div className={`cv-container max-w-[1000px] mx-auto bg-white shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-lg overflow-hidden font-sans text-gray-800 px-[5px] py-2.5 ${isMobile ? 'mobile-layout' : ''} ${isTablet ? 'tablet-layout' : ''}`}>
       {/* Edit Profile Button - Top Level */}
-      <div style={{ 
-        display: 'flex',
-        justifyContent: 'flex-end',
-        marginBottom: '15px'
-      }}>
+      <div className="flex justify-end mb-[15px]">
         <button
           onClick={() => window.location.href = "/candidates-dashboard/my-profile"}
-          className={`btn btn-warning ${isMobile ? 'btn-mobile' : ''}`}
-          style={{
-            fontSize: isMobile ? '14px' : '16px',
-            padding: isMobile ? '8px 16px' : '10px 20px',
-            borderRadius: '6px',
-            fontWeight: '500'
-          }}
+          className={`btn btn-warning ${isMobile ? 'btn-mobile' : ''} ${isMobile ? 'text-sm px-4 py-2' : 'text-base px-5 py-2.5'} rounded-md font-medium`}
         >
           Edit Profile
         </button>
       </div>
 
-      <div className="cv-header" style={{ 
-        marginBottom: '10px'
-      }}>
+      <div className={`cv-header flex ${isMobile ? 'flex-col items-center text-center p-2' : 'p-6'} bg-white border-b border-gray-200 mb-2.5`}>
         {/* First Row: Profile Picture + Basic Info */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '20px', 
-          marginBottom: '8px',
-          alignItems: 'center'
-        }}>
+        <div className={`flex ${isMobile ? 'flex-col' : ''} gap-5 mb-2 items-center`}>
           {/* Profile Picture */}
-          <div className="profile-photo" style={{ flexShrink: 0 }}>
+          <div className={`profile-photo ${isMobile ? 'w-[100px] h-[120px] mb-2.5' : 'w-[150px] h-[180px]'} rounded-full overflow-hidden border-[3px] border-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.1)] ${isMobile ? 'm-0' : 'mr-2.5'} shrink-0`}>
             {photoUrl ? (
               <img 
                 src={photoUrl} 
                 alt={`${profileData.fullName || 'User'}'s profile photo`}
+                className="w-full h-full object-cover"
                 onError={(e) => {
                   setPhotoError(true);
                   e.target.src = defaultAvatar;
                 }}
               />
             ) : (
-              <img src={defaultAvatar} alt={`${profileData.fullName || 'User'}'s default avatar`} />
+              <img src={defaultAvatar} alt={`${profileData.fullName || 'User'}'s default avatar`} className="w-full h-full object-cover" />
             )}
           </div>
           
           {/* Basic Information */}
-          <div style={{ flex: 1 }}>
-                         <h1 className="candidate-name" style={{ marginBottom: '4px', fontSize: isMobile ? '20px' : '24px' }}>
-               {profileData.fullName || 'Candidate Name'}
-             </h1>
+          <div className="flex-1">
+            <h1 className={`candidate-name mb-1 ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+              {profileData.fullName || 'Candidate Name'}
+            </h1>
             
-                         {/* Personal Details */}
-             <div style={{ 
-               marginBottom: '2px', 
-               fontSize: isMobile ? '14px' : '15px',
-               color: '#555'
-             }}>
+            {/* Personal Details */}
+            <div className={`mb-0.5 ${isMobile ? 'text-sm' : 'text-[15px]'} text-gray-600`}>
               {profileData.gender && <span>{profileData.gender}</span>}
               {profileData.dateOfBirth && (
                 <span> | {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
@@ -1142,12 +1001,8 @@ function Fullview({ onViewAttempt, formData }) {
               {currentDesignation && <span> | {currentDesignation}</span>}
             </div>
             
-                         {/* Professional Info */}
-             <div style={{ 
-               marginBottom: '2px', 
-               fontSize: isMobile ? '14px' : '15px',
-               color: '#555'
-             }}>
+            {/* Professional Info */}
+            <div className={`mb-0.5 ${isMobile ? 'text-sm' : 'text-[15px]'} text-gray-600`}>
               {profileData.designation && <span>{profileData.designation}</span>}
               {(profileData.teachingSubjects?.length > 0 || profileData.teachingCoreExpertise?.length > 0) && (
                 <span> | {profileData.teachingSubjects?.[0] || profileData.teachingCoreExpertise?.[0]} Faculty</span>
@@ -1156,13 +1011,9 @@ function Fullview({ onViewAttempt, formData }) {
             
             {/* Email */}
             {profileData.email && (
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center',
-                fontSize: isMobile ? '14px' : '15px'
-              }}>
-                <FaEnvelope style={{ marginRight: '6px', color: '#A9A9A9' }} />
-                <a href={`mailto:${profileData.email}`} style={{ textDecoration: 'none', color: '#1967d2' }}>
+              <div className={`flex items-center ${isMobile ? 'text-sm' : 'text-[15px]'}`}>
+                <FaEnvelope className="mr-1.5 text-gray-400" />
+                <a href={`mailto:${profileData.email}`} className="no-underline text-[#1967d2]">
                   {profileData.email}
                 </a>
               </div>
@@ -1171,32 +1022,13 @@ function Fullview({ onViewAttempt, formData }) {
         </div>
         
         {/* Contact Information Rows - Starting from left edge */}
-        <div style={{ 
-          fontFamily: 'Arial, sans-serif',
-          fontSize: isMobile ? '13px' : '14px',
-          lineHeight: '1.4'
-        }}>
+        <div className={`font-sans ${isMobile ? 'text-[13px]' : 'text-sm'} leading-[1.4]`}>
           {/* Row 2: Address Information */}
-          <div style={{ 
-            display: 'flex',
-            flexDirection: 'row',
-            gap: isMobile ? '15px' : '20px',
-            marginBottom: '6px',
-            flexWrap: 'wrap'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaMapMarkerAlt style={{ 
-                marginRight: '6px', 
-                color: '#e74c3c',
-                fontSize: '13px'
-              }} />
-              <span style={{ fontWeight: '600', marginRight: '6px' }}>Present:</span>
-              <span style={{ 
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: isMobile ? '280px' : '350px'
-              }}>
+          <div className={`flex flex-row ${isMobile ? 'gap-[15px]' : 'gap-5'} mb-1.5 flex-wrap`}>
+            <div className="flex items-center">
+              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px]" />
+              <span className="font-semibold mr-1.5">Present:</span>
+              <span className={`overflow-hidden text-ellipsis whitespace-nowrap ${isMobile ? 'max-w-[280px]' : 'max-w-[350px]'}`}>
                 {[
                   profileData.present_city_name,
                   profileData.present_state_name,
@@ -1205,19 +1037,10 @@ function Fullview({ onViewAttempt, formData }) {
               </span>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaMapMarkerAlt style={{ 
-                marginRight: '6px', 
-                color: '#e74c3c',
-                fontSize: '13px'
-              }} />
-              <span style={{ fontWeight: '600', marginRight: '6px' }}>Permanent:</span>
-              <span style={{ 
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: isMobile ? '280px' : '350px'
-              }}>
+            <div className="flex items-center">
+              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px]" />
+              <span className="font-semibold mr-1.5">Permanent:</span>
+              <span className={`overflow-hidden text-ellipsis whitespace-nowrap ${isMobile ? 'max-w-[280px]' : 'max-w-[350px]'}`}>
                 {[
                   profileData.permanent_city_name,
                   profileData.permanent_state_name,
@@ -1228,118 +1051,72 @@ function Fullview({ onViewAttempt, formData }) {
           </div>
           
           {/* Row 3: Phone Numbers */}
-          <div style={{ 
-            display: 'flex',
-            flexDirection: 'row',
-            gap: isMobile ? '15px' : '20px',
-            marginBottom: '6px',
-            flexWrap: 'wrap'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaPhone style={{ 
-                marginRight: '6px', 
-                color: '#1a73e8',
-                fontSize: '13px'
-              }} />
-              <span style={{ fontWeight: '600', marginRight: '6px' }}>Phone:</span>
+          <div className={`flex flex-row ${isMobile ? 'gap-[15px]' : 'gap-5'} mb-1.5 flex-wrap`}>
+            <div className="flex items-center">
+              <FaPhone className="mr-1.5 text-[#1a73e8] text-[13px]" />
+              <span className="font-semibold mr-1.5">Phone:</span>
               <span>{profileData.callingNumber}</span>
             </div>
              
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaWhatsapp style={{ 
-                marginRight: '6px', 
-                color: '#25D366',
-                fontSize: '13px'
-              }} />
-              <span style={{ fontWeight: '600', marginRight: '6px' }}>WhatsApp:</span>
+            <div className="flex items-center">
+              <FaWhatsapp className="mr-1.5 text-[#25D366] text-[13px]" />
+              <span className="font-semibold mr-1.5">WhatsApp:</span>
               <span>{profileData.whatsappNumber}</span>
             </div>
           </div>
           
           {/* Row 4: Social Links */}
-          <div style={{ 
-            display: 'flex',
-            gap: isMobile ? '15px' : '20px',
-            alignItems: 'center',
-            flexWrap: 'wrap'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaFacebook style={{ 
-                marginRight: '6px', 
-                color: '#385898',
-                fontSize: '13px'
-              }} /> 
-              <span style={{ fontWeight: '600', marginRight: '6px' }}>Facebook:</span>
+          <div className={`flex ${isMobile ? 'gap-[15px]' : 'gap-5'} items-center flex-wrap`}>
+            <div className="flex items-center">
+              <FaFacebook className="mr-1.5 text-[#385898] text-[13px]" /> 
+              <span className="font-semibold mr-1.5">Facebook:</span>
               {socialLinks.facebook ? (
                 <a 
                   href={socialLinks.facebook.startsWith('http') ? socialLinks.facebook : `https://${socialLinks.facebook}`} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  style={{ 
-                    textDecoration: 'none', 
-                    color: '#385898',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: '200px'
-                  }}
+                  className="no-underline text-[#385898] overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px]"
                 >
                   {socialLinks.facebook}
                 </a>
               ) : (
-                <span style={{ color: '#999', fontStyle: 'italic' }}>Not provided</span>
+                <span className="text-gray-500 italic">Not provided</span>
               )}
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaLinkedin style={{ 
-                marginRight: '6px', 
-                color: '#0077b5',
-                fontSize: '13px'
-              }} /> 
-              <span style={{ fontWeight: '600', marginRight: '6px' }}>LinkedIn:</span>
+            <div className="flex items-center">
+              <FaLinkedin className="mr-1.5 text-[#0077b5] text-[13px]" /> 
+              <span className="font-semibold mr-1.5">LinkedIn:</span>
               {socialLinks.linkedin ? (
                 <a 
                   href={socialLinks.linkedin.startsWith('http') ? socialLinks.linkedin : `https://${socialLinks.linkedin}`} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  style={{ 
-                    textDecoration: 'none', 
-                    color: '#0077b5',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: '200px'
-                  }}
+                  className="no-underline text-[#0077b5] overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px]"
                 >
                   {socialLinks.linkedin}
                 </a>
               ) : (
-                <span style={{ color: '#999', fontStyle: 'italic' }}>Not provided</span>
+                <span className="text-gray-500 italic">Not provided</span>
               )}
             </div>
           </div>
         </div>
       </div>
       
-      <div className="cv-body">
-        <div className="cv-sidebar">
-          <div className="cv-section education-section">
-            <h2 className="section-title">EDUCATION</h2>
+      <div className="cv-body flex flex-col md:flex-row p-0 bg-white">
+        <div className="cv-sidebar w-full md:w-[35%] bg-gray-100 p-2.5 md:p-5">
+          <div className="cv-section education-section mt-0 mb-2.5">
+            <h2 className="section-title text-lg border-b-2 border-[#1967d2] pb-2 mb-[15px] font-bold text-[#1967d2] uppercase text-left">
+              EDUCATION
+            </h2>
             {renderEducationBlocks()}
           </div>
         </div>
 
-        <div className="cv-main">
-          <div className="cv-section experience-section">
-            <h2 className="section-title" style={{ 
-              textAlign: 'center',
-              borderBottom: '1px solid #000',
-              marginBottom: '15px',
-              paddingBottom: '5px',
-              textTransform: 'uppercase',
-              fontWeight: 'bold'
-            }}>
+        <div className="cv-main w-full md:w-[65%] md:px-2">
+          <div className="cv-section experience-section mt-0 mb-2.5">
+            <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-lg text-[#1967d2]">
               WORK EXPERIENCE
             </h2>
             {getExperienceText()}
@@ -1390,23 +1167,11 @@ function Fullview({ onViewAttempt, formData }) {
             if (!hasBasicData && !hasConditionalData) return null;
             
             return (
-              <div className="cv-section job-preferences">
-                <h2 className="section-title">Job Preferences</h2>
-                <div className="job-preferences-block" style={{ 
-                  marginBottom: '25px',
-                  padding: '20px',
-                  background: '#f5f7fc',
-                  borderRadius: '8px',
-                  fontSize: '15px',
-                  lineHeight: '1.5'
-                }}>
+              <div className="cv-section job-preferences mt-0 mb-2.5">
+                <h2 className="section-title text-lg border-b-2 border-[#1967d2] pb-2 mb-[15px] font-bold text-[#1967d2] uppercase">Job Preferences</h2>
+                <div className="job-preferences-block bg-[#f5f7fc] p-5 rounded-lg mb-[25px] text-[15px] leading-[1.5]">
                   {/* Two-column details grid */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr',
-                    columnGap: '20px',
-                    rowGap: '5px'
-                  }}>
+                  <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-x-5 gap-y-1`}>
                     {/* Basic Job Information */}
                     {jobPreferenceData.Job_Type && (
                       <div>

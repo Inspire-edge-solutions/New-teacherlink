@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { MdLock, MdRocketLaunch, MdHowToReg, MdGroupAdd, MdRedeem } from 'react-icons/md'
 
 const SubscriptionPlans = () => {
   const [activeTab, setActiveTab] = useState("job-seekers")
@@ -10,7 +11,7 @@ const SubscriptionPlans = () => {
     { icon: "🔔", name: "Favorite Notification", basic: "Not Available", standard: "Not Available", premium: "Available Per Notification (20 Coins)" },
     { icon: "📞", name: "Support", basic: "Yes", standard: "Yes", premium: "Priority Support" },
     { icon: "📝", name: "Applying Jobs", basic: "🪙 100 Coins / Job", standard: "🪙 100 Coins / Job", premium: "🪙 100 Coins / Job" },
-    { icon: "👁️", name: "Job View", basic: "🪙 100 Coins / Job", standard: "🪙 100 Coins / Job", premium: "🪙 100 Coins / Job" }
+    { icon: "👁️", name: "Job View", basic: "🪙 50 Coins / Job", standard: "🪙 50 Coins / Job", premium: "🪙 50 Coins / Job" }
   ]
 
   const jobProvidersFeatures = [
@@ -219,6 +220,67 @@ const SubscriptionPlans = () => {
             <div className="bg-white rounded-lg p-4 sm:p-6 mb-6">
               {renderFeaturesTable(activeTab === "job-seekers" ? jobSeekersFeatures : jobProvidersFeatures)}
             </div>
+
+            {/* Special Offers - Job Seekers only, before Pricing */}
+            {activeTab === 'job-seekers' && (
+              <div className="mb-6">
+                <div className="w-full rounded-t-lg px-4 sm:px-6 py-3 text-white font-bold text-center bg-red-600">
+                  <span className="mr-2">🔔</span> SPECIAL OFFERS:
+                </div>
+                <div className="bg-white border border-gray-300 rounded-b-lg divide-y">
+                  <div className="flex items-center p-4">
+                    <div className="text-orange-500 mr-3"><MdLock size={22} /></div>
+                    <div className="w-1/4 text-gray-800 font-semibold">Unlock more with Premium</div>
+                    <div className="w-3/4 text-gray-700 text-center flex justify-center">More coins, better support, and exclusive features!</div>
+                  </div>
+                  <div className="flex items-center p-4">
+                    <div className="text-blue-600 mr-3"><MdRocketLaunch size={22} /></div>
+                    <div className="w-1/4 text-gray-800 font-semibold">Build your dream career faster</div>
+                    <div className="w-3/4 text-gray-700 text-center flex justify-center">With Standard & Premium perks.</div>
+                  </div>
+                  <div className="flex items-center p-4">
+                    <div className="text-emerald-600 mr-3"><MdHowToReg size={22} /></div>
+                    <div className="w-1/4 text-gray-800 font-semibold">Join now & start applying today!</div>
+                    <div className="w-3/4 text-gray-700 text-center flex justify-center">Get started with your subscription plan</div>
+                  </div>
+                  <div className="flex items-center p-4">
+                    <div className="text-pink-600 mr-3"><MdGroupAdd size={22} /></div>
+                    <div className="w-1/4 text-gray-800 font-semibold">Refer & Earn</div>
+                    <div className="w-3/4 text-gray-700 text-center flex justify-center">
+                      <span className="mr-1"><span className="font-bold">✨ </span> Refer 20 candidates </span> → <span className="inline-flex items-center font-semibold ml-1 mr-1">when 10 get placed</span> →<span className="ml-1">🪙 Earn 2000 Bonus Coins!</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center p-4">
+                    <div className="text-red-600 mr-3"><MdRedeem size={22} /></div>
+                    <div className="w-1/4 text-gray-800 font-semibold">Coupon Redemption</div>
+                    <div className="w-3/4 text-gray-700 text-center flex justify-center"><span className="mr-1">✨</span> Got a promo code? Redeem it now for instant bonus <span className="ml-1">🪙</span></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Special Offers - Job Providers only, before Pricing */}
+            {activeTab === 'job-providers' && (
+              <div className="mb-6">
+                <div className="w-full rounded-t-lg px-4 sm:px-6 py-3 text-white font-bold text-center bg-red-600">
+                  <span className="mr-2">🔔</span> SPECIAL OFFERS:
+                </div>
+                <div className="bg-white border border-gray-300 rounded-b-lg divide-y">
+                  <div className="flex items-center p-4">
+                    <div className="text-pink-600 mr-3"><MdGroupAdd size={22} /></div>
+                    <div className="w-1/4 text-gray-800 font-semibold">Refer & Earn</div>
+                    <div className="w-3/4 text-gray-700 text-center flex justify-center">
+                      <span className="mr-1">✨ Refer 10 institutions</span> → <span className="inline-flex items-center font-semibold ml-1 mr-1">When 5 register</span> → <span className="ml-1">🪙 Earn 4000 Bonus Coins!</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center p-4">
+                    <div className="text-red-600 mr-3"><MdRedeem size={22} /></div>
+                    <div className="w-1/4 text-gray-800 font-semibold">Redeem Offer Coupon</div>
+                    <div className="w-3/4 text-gray-700 text-center flex justify-center"><span className="mr-1">✨</span> Got a code? Redeem now to earn extra <span className="ml-1">🪙</span> Coins!</div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Pricing Header */}
             <div className="bg-red-600 text-white py-3 px-4 sm:px-6 rounded-t-lg mb-0">

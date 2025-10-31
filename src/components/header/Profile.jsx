@@ -15,6 +15,9 @@ import { MailIcon } from "lucide-react";
 import { useAuth } from "../../Context/AuthContext";
 import { getDefaultAvatar, handleImageError } from "../../utils/Avatar";
 import axios from "axios";
+import { MdReport, MdLock, MdLogout } from "react-icons/md";
+import SupportModal from "./SupportModal";
+import ChangePasswordModal from "./ChangePasswordModal";
 
 const Profile = () => {
   const { logout, user } = useAuth();
@@ -26,6 +29,8 @@ const Profile = () => {
   const [personalData, setPersonalData] = useState(null);
   const [organizationData, setOrganizationData] = useState(null);
   const [error, setError] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   const IMAGE_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image";
   const PERSONAL_DETAILS_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal";
@@ -156,6 +161,16 @@ const Profile = () => {
    navigate("/");
   };
 
+  const openSupport = () => {
+    setAnchorEl2(null);
+    setShowSupportModal(true);
+  };
+
+  const openChangePassword = () => {
+    setAnchorEl2(null);
+    setShowChangePasswordModal(true);
+  };
+
   return (
     <Box>
       <IconButton
@@ -236,72 +251,49 @@ const Profile = () => {
             </Box>
           </Stack>
           <Divider />
-          {/* {dropdownData.profile.map((profile) => (
-              <Box key={profile.title}>
-                <Box sx={{ py: 2, px: 0 }} className="hover-text-primary">
-                  <Link to={profile.href}>
-                    <Stack direction="row" spacing={2}>
-                      <Box
-                        width="45px"
-                        height="45px"
-                        bgcolor="primary.light"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                      >
-                        <Avatar
-                          src={profile.icon}
-                          alt={profile.icon}
-                          sx={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: 0,
-                          }}
-                        />
-                      </Box>
-                      <Box>
-                        <Typography
-                          variant="subtitle2"
-                          fontWeight={600}
-                          color="textPrimary"
-                          className="text-hover"
-                          noWrap
-                          sx={{
-                            width: "240px",
-                          }}
-                        >
-                          {profile.title}
-                        </Typography>
-                        <Typography
-                          color="textSecondary"
-                          variant="subtitle2"
-                          sx={{
-                            width: "240px",
-                          }}
-                          noWrap
-                        >
-                          {profile.subtitle}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  </Link>
-                </Box>
-              </Box>
-            ))} */}
-          <Box mt={2}>
-            <Button
-              variant="outlined"
-              color="primary"
-              component={Link}
-              fullWidth
-              onClick={handlelogout}
-            >
-              Logout
-            </Button>
+          <Box mt={1}>
+            <Stack spacing={1}>
+              <Button
+                onClick={openSupport}
+                startIcon={<MdReport />}
+                variant="text"
+                color="inherit"
+                sx={{ justifyContent: "flex-start" }}
+              >
+                Support
+              </Button>
+              <Button
+                onClick={openChangePassword}
+                startIcon={<MdLock />}
+                variant="text"
+                color="inherit"
+                sx={{ justifyContent: "flex-start" }}
+              >
+                Change Password
+              </Button>
+              <Divider />
+              <Button
+                onClick={handlelogout}
+                startIcon={<MdLogout />}
+                variant="text"
+                color="error"
+                sx={{ justifyContent: "flex-start" }}
+              >
+                Logout
+              </Button>
+            </Stack>
           </Box>
         </Box>
         {/* </Scrollbar> */}
       </Menu>
+      <SupportModal 
+        isOpen={showSupportModal}
+        onClose={() => setShowSupportModal(false)}
+      />
+      <ChangePasswordModal 
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+      />
     </Box>
   );
 };

@@ -68,11 +68,11 @@ const WhyTeacherlink = () => {
                             }`}>
                                 {/* Image Section */}
                                 <div className="flex-shrink-0 w-full lg:w-1/2">
-                                    <div className="relative overflow-hidden rounded-xl shadow-lg">
+                                    <div className="relative overflow-hidden rounded-xl">
                                         <img 
                                             src={feature.image} 
                                             alt={feature.title}
-                                            className="w-full h-64 lg:h-80 object-cover transition-transform duration-300 hover:scale-105"
+                                            className="w-full h-64 lg:h-80 object-cover rounded-xl transition-transform duration-300 hover:scale-105 drop-shadow-xl hover:drop-shadow-2xl"
                                         />
                                     </div>
                                 </div>

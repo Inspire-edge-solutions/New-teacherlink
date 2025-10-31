@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Box, AppBar, Toolbar, styled, Stack, IconButton } from "@mui/material";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import Profile from "./Profile";
-import Settings from "./Settings";
 import { useAuth } from "../../Context/AuthContext";
 import axios from "axios";
 
@@ -77,7 +76,6 @@ const DashboardHeader = ({ onMenuClick , activeTab }) => {
         <Box flexGrow={1} />
         
         <Stack spacing={1} direction="row" alignItems="center">
-          <Settings />
           <Profile />
         </Stack>
       </ToolbarStyled>

@@ -3,6 +3,7 @@ import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
 import { Skeleton } from "@mui/material";
 import Payment from "./Payments";
+import ModalPortal from "../../../common/ModalPortal";
 import Referrals from "./Referrals";
 
 // Success Modal
@@ -463,19 +464,19 @@ const Subscription = () => {
 
       {/* Payment History Popup */}
       {showHistoryPopup && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center backdrop-blur-sm p-2 sm:p-4 overflow-auto"
-          style={{ zIndex: 9999 }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowHistoryPopup(false);
-            }
-          }}
-        >
+        <ModalPortal>
           <div 
-            className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 backdrop-blur-sm p-2 sm:p-4 overflow-auto"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowHistoryPopup(false);
+              }
+            }}
           >
+            <div 
+              className="bg-white rounded-xl sm:rounded-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
             {/* Header with Close Button */}
             <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-start relative">
               <div className="flex-1 pr-3 sm:pr-4">
@@ -582,8 +583,9 @@ const Subscription = () => {
                 </div>
               )}
             </div>
+            </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {/* MODALS */}

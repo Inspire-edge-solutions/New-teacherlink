@@ -445,7 +445,7 @@ const Referrals = ({ user, onSuccess }) => {
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
-                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                    className="bg-gradient-brand h-2 rounded-full transition-all duration-300"
                     style={{ width: `${(contacts.length / 20) * 100}%` }}
                   />
                 </div>
@@ -458,7 +458,7 @@ const Referrals = ({ user, onSuccess }) => {
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
-                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                    className="bg-gradient-brand h-2 rounded-full transition-all duration-300"
                     style={{ width: `${(registeredContacts.length / 10) * 100}%` }}
                   />
                 </div>

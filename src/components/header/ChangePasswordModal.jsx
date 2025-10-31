@@ -3,6 +3,7 @@ import { MdClose, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { useAuth } from '../../Context/AuthContext';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import ModalPortal from '../common/ModalPortal';
 
 const ChangePasswordModal = ({ isOpen, onClose }) => {
   const { user } = useAuth();
@@ -132,6 +133,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
+    <ModalPortal>
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
@@ -279,6 +281,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
         </form>
       </div>
     </div>
+    </ModalPortal>
   );
 };
 

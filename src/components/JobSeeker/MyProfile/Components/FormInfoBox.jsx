@@ -1,5 +1,7 @@
 import { React, useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../../../../Context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { flushSync } from "react-dom";
 import PersonalDetails from "./personalDetails";
 import Address from "./address";
 import Languages from "./languages";
@@ -10,7 +12,6 @@ import Social from "./social";
 import AdditionalInfo from "./additionalInfo";
 import Easyview from "./Easyview";
 import Fullview from "./Fullview";
-import "./formInfo.css";
 import { toast } from "react-toastify";
 import MediaUpload from "./MediaUpload";
 import ProfileCompletionPopup from "../../Dashboard/Components/ProfileCompletionPopup";
@@ -19,6 +20,7 @@ import axios from "axios";
 
 const FormInfoBox = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -32,20 +34,7 @@ const FormInfoBox = () => {
   const [stepFormData, setStepFormData] = useState({}); // Store data for each step
   const [educationData, setEducationData] = useState(null); // Dedicated education state
   const [isSaving, setIsSaving] = useState(false); // Loading state for save operations
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  const profileBoxRef = useRef(null); // Ref for profile box scroll
 
   useEffect(() => {
     setFormData(prev => ({ ...prev, firebase_uid: user.uid }));
@@ -666,9 +655,8 @@ const FormInfoBox = () => {
         stepRefs.current = [];
         setCurrentStep(currentStep - 1);
         setIsPreviewMode(false);
-        const profileBox = document.querySelector(".profile-box");
-        if (profileBox) {
-          profileBox.scrollIntoView({ behavior: "smooth" });
+        if (profileBoxRef.current) {
+          profileBoxRef.current.scrollIntoView({ behavior: "smooth" });
         }
       }
     } catch (err) {
@@ -712,27 +700,69 @@ const FormInfoBox = () => {
         // Only block if found and rejected/response
         if (responseMsg && responseMsg.trim() !== "") {
           toast.info("Admin has sent you a message.");
-          redirect("/candidates-dashboard/my-profile");
+          setTimeout(() => {
+            setViewMode(null);
+            setShowProfile(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }, 1500);
           return;
         } else if (rejected === 1) {
           toast.error("Your profile is rejected");
-          redirect("/candidates-dashboard/my-profile");
+          setTimeout(() => {
+            setViewMode(null);
+            setShowProfile(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }, 1500);
           return;
         } else if (approved === 0) {
           toast.warning("Your profile is sent to admin for approval");
-          redirect("/candidates-dashboard/my-profile");
+          setTimeout(() => {
+            setViewMode(null);
+            setShowProfile(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }, 1500);
           return;
         }
       }
       // If not found (no record), or found and approved, allow submission
-      localStorage.setItem('formData', JSON.stringify(formData));
       toast.success("Profile updated successfully!");
-      setViewMode(null);
-      setShowProfile(false);
-      redirect("/candidates-dashboard/my-profile");
+      
+      // Reset to mode selection screen after toast
+      setTimeout(() => {
+        // Clear localStorage first to prevent useEffect from restoring it
+        localStorage.removeItem('formData');
+        
+        // Use flushSync to ensure state updates are processed immediately
+        flushSync(() => {
+          // Reset all state together
+          stepRefs.current = [];
+          setFormData({});
+          setValidatedSteps(new Set());
+          setSavedSteps(new Set());
+          setStepFormData({});
+          setEducationData(null);
+          setCurrentStep(1);
+          setIsPreviewMode(false);
+          setShowProfile(false);
+        });
+        
+        // Set viewMode to null in separate flushSync to trigger re-render
+        flushSync(() => {
+          setViewMode(null);
+        });
+        
+        // Scroll to top to show mode selection
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 50);
+      }, 1500);
     } catch (err) {
       toast.error("An error occurred while submitting");
-      redirect("/candidates-dashboard/my-profile");
+      setTimeout(() => {
+        setViewMode(null);
+        setShowProfile(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 1500);
     }
   };
 
@@ -751,7 +781,7 @@ const FormInfoBox = () => {
   }
 
   if (!steps.length) {
-    return <div className="profile-box">Loading profile form...</div>;
+    return <div className="bg-white rounded-lg p-4 shadow-sm">Loading profile form...</div>;
   }
 
   const renderCurrentStep = () => {
@@ -791,34 +821,28 @@ const FormInfoBox = () => {
 
 
 
-  // For redirect
-  const redirect = (url) => {
-    setTimeout(() => {
-      window.location.href = url;
-    }, 1500);
-  };
 
   // If mode is not selected, show upload section and mode selection.
   if (!viewMode) {
     return (
-      <div className="max-w-5xl mx-auto p-4 space-y-6">
+      <div className="max-w-5xl mx-auto p-4 space-y-1">
         <MediaUpload />
         
-        <div className=" rounded-lg shadow-sm p-8">
-          <h3 className="text-2xl font-bold text-center text-gray-800 mb-8">
+        <div className="rounded-lg shadow-sm p-4 md:p-6">
+          <h3 className="text-xl md:text-2xl font-bold text-center text-gray-800 mb-3 md:mb-6">
             Select Mode
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             {/* Short Profile Card */}
-            <div className="border-2 border-gray-200 rounded-xl p-6 hover:border-[#C2185B] hover:shadow-lg transition-all duration-300">
-              <h3 className="text-xl font-bold text-center text-black-500 mb-3">
+            <div className="border-2 border-gray-200 rounded-xl p-3 md:p-4 hover:border-[#C2185B] hover:shadow-lg transition-all duration-300">
+              <h3 className="text-lg md:text-xl font-bold text-center text-black-500 mb-3">
                 Short Profile
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">
                 Quick and simple profile with essential information
               </p>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   className="flex-1 px-4 py-2.5 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover transition-all duration-200 shadow-lg"
                   onClick={() => setViewMode("easy")}
@@ -836,14 +860,14 @@ const FormInfoBox = () => {
             </div>
 
             {/* Complete Profile Card */}
-            <div className="border-2 border-gray-200 rounded-xl p-6 hover:border-[#C2185B] hover:shadow-lg transition-all duration-300">
-              <h3 className="text-xl font-bold text-center text-black-500 mb-3">
+            <div className="border-2 border-gray-200 rounded-xl p-3 md:p-4 hover:border-[#C2185B] hover:shadow-lg transition-all duration-300">
+              <h3 className="text-lg md:text-xl font-bold text-center text-black-500 mb-3">
                 Complete Profile
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">
                 Comprehensive profile with detailed information
               </p>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   className="flex-1 px-4 py-2.5 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover transition-all duration-200 shadow-lg"
                   onClick={() => setViewMode("full")}
@@ -867,7 +891,7 @@ const FormInfoBox = () => {
 
   // If a mode is selected, show the multi-step form or final view.
   return (
-    <div className="max-w-5xl mx-auto p-4">
+    <div className="bg-white rounded-lg shadow-sm max-w-5xl mx-auto p-4 md:p-6" ref={profileBoxRef}>
       {/* Profile Completion Popup */}
       <ProfileCompletionPopup />
       
@@ -881,8 +905,7 @@ const FormInfoBox = () => {
                   My Profile ({viewMode === "easy" ? "Short" : "Complete"})
                 </h2>
                 <p className="text-xs sm:text-sm text-gray-600">
-                  <span className="text-red-500">★</span> Fields highlighted with{" "}
-                  <span className="text-purple-600 font-semibold">PURPLE</span> are mandatory to fill
+                  <span className="text-red-500">★</span> Fields highlighted are mandatory to fill
                 </p>
               </div>
               <button
@@ -914,10 +937,10 @@ const FormInfoBox = () => {
           )}
 
           {/* Accordion Steps */}
-          <div className="p-4 sm:p-6">
+          <div className="p-2 sm:p-4 md:p-6 overflow-x-hidden">
             <div className="relative">
               {/* Vertical Line - Hidden on mobile, positioned to align with center of badges */}
-              <div className="hidden sm:block absolute left-[1.5rem] top-12 bottom-12 w-[2px]" style={{ backgroundColor: '#C2185B', zIndex: 0 }} />
+              <div className="hidden sm:block absolute left-[1.5rem] top-12 bottom-12 w-[2px] bg-rose-700 z-0" />
               
               {steps.map((step, index) => {
                 const isActive = currentStep === step.id;
@@ -925,15 +948,10 @@ const FormInfoBox = () => {
                 const isSaved = savedSteps.has(step.id);
                 
                 return (
-                  <div key={step.id} className="relative mb-6 sm:mb-7 pl-14 sm:pl-16">
+                  <div key={step.id} className="relative mb-4 sm:mb-6 md:mb-7 pl-12 sm:pl-14 md:pl-16">
                     {/* Step Number Badge - Positioned absolutely outside */}
                     <div
-                      className="absolute left-0 top-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-lg sm:text-xl"
-                      style={{ 
-                        backgroundColor: isActive ? '#F0D8D9' : '#ECECEC',
-                        color: '#C2185B',
-                        zIndex: 10 
-                      }}
+                      className={`absolute left-0 top-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-lg sm:text-xl z-10 ${isActive ? 'bg-rose-100' : 'bg-gray-200'} text-rose-700`}
                     >
                       {step.id}
                     </div>
@@ -942,30 +960,17 @@ const FormInfoBox = () => {
                     <button
                       onClick={() => jumpToStep(step.id)}
                       className={`w-full flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 py-4 sm:py-5 rounded-lg border transition-all ${
-                        isActive
-                          ? "border-transparent"
-                          : "border-transparent"
+                        isActive ? 'bg-rose-100' : 'bg-gray-200 hover:bg-rose-100'
                       }`}
-                      style={{ backgroundColor: isActive ? '#F0D8D9' : '#ECECEC' }}
-                      onMouseEnter={(e) => {
-                        if (!isActive) {
-                          e.currentTarget.style.backgroundColor = '#F0D8D9';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isActive) {
-                          e.currentTarget.style.backgroundColor = '#ECECEC';
-                        }
-                      }}
                     >
                       {/* Step Title */}
                       <div className="flex-1 flex items-center">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-base sm:text-lg font-bold leading-none m-0 p-0" style={{ color: '#C2185B', lineHeight: '1' }}>
+                          <h3 className="text-base sm:text-lg font-bold m-0 p-0 text-rose-700">
                             {step.title}
                           </h3>
                           {isSaved && (
-                            <span className="text-xs text-green-600 font-medium leading-none m-0 p-0" style={{ lineHeight: '1' }}>
+                            <span className="text-xs text-green-600 font-medium m-0 p-0">
                               ✓ Saved
                             </span>
                           )}
