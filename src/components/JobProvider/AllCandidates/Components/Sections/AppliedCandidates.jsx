@@ -8,6 +8,7 @@ import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import CandidateApiService from '../shared/CandidateApiService';
 import { useAuth } from "../../../../../Context/AuthContext";
+import '../styles/candidate-highlight.css';
 
 const AppliedCandidates = ({ 
   onViewCandidate, 

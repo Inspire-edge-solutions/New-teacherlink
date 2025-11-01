@@ -15,6 +15,7 @@ import FilterPanel from '../shared/FilterPanel';
 import { searchJobs } from '../../utils/searchUtils';
 import { formatQualification } from '../../utils/formatUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
+import '../styles/job-highlight.css';
 
 // Additional API endpoints for specific functionality
 const EDUCATION_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails";
@@ -31,7 +32,7 @@ const PERSONAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/de
 const COIN_HISTORY_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history';
 
 
-const AllJobs = ({ onViewJob }) => {
+const AllJobs = ({ onViewJob, onBackFromJobView }) => {
   const { user, loading: userLoading } = useAuth();
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
@@ -1003,6 +1004,111 @@ const AllJobs = ({ onViewJob }) => {
   }, [jobs, activeFilters, filteredJobsByFilters, isSearching, searchResults]);
 
   const finalFilteredJobs = getCombinedResults();
+
+  // Function to scroll to a specific job
+  const scrollToJob = useCallback((jobId) => {
+    if (!jobId) return;
+    
+    // Convert jobId to number to match JobCard format
+    const numericJobId = Number(jobId);
+    
+    // Get the current filtered jobs list
+    const filteredJobs = getCombinedResults();
+    
+    // First, check if the job exists in the jobs list
+    const jobExists = jobs.find(job => Number(job.id) === numericJobId);
+    if (!jobExists) {
+      console.warn('❌ Job not found in jobs list:', numericJobId);
+      return;
+    }
+    
+    // Check if the job is in the current filtered list (for pagination calculation)
+    const jobIndex = filteredJobs.findIndex(job => Number(job.id) === numericJobId);
+    
+    if (jobIndex === -1) {
+      console.warn('❌ Job not found in current filtered jobs (might be filtered out):', numericJobId);
+      // Still try to find and highlight it in case it's on the page but filtered
+      // We'll proceed with direct DOM lookup
+    }
+    
+    // If job is in filtered list, check pagination
+    if (jobIndex !== -1) {
+      // Check if the job is on the current page
+      const indexOfLastJob = currentPage * jobsPerPage;
+      const indexOfFirstJob = indexOfLastJob - jobsPerPage;
+      const isOnCurrentPage = jobIndex >= indexOfFirstJob && jobIndex < indexOfLastJob;
+      
+      // If job is not on current page, navigate to the correct page first
+      if (!isOnCurrentPage) {
+        const targetPage = Math.floor(jobIndex / jobsPerPage) + 1;
+        console.log(`Job is on page ${targetPage}, navigating...`);
+        setCurrentPage(targetPage);
+        // Wait for page change and re-render, then try scrolling
+        setTimeout(() => {
+          scrollToJob(jobId);
+        }, 300);
+        return;
+      }
+    }
+    
+    // Try multiple times with increasing delays to handle async rendering
+    const tryFindAndScroll = (attempt = 0) => {
+      const maxAttempts = 10;
+      const delay = 100 + (attempt * 50); // 100ms, 150ms, 200ms, etc.
+      
+      setTimeout(() => {
+        // Try both string and number formats
+        let jobElement = document.querySelector(`[data-job-id="${numericJobId}"]`);
+        if (!jobElement) {
+          jobElement = document.querySelector(`[data-job-id="${jobId}"]`);
+        }
+        
+        if (jobElement) {
+          // Remove any existing highlights first
+          document.querySelectorAll('.highlighted-job').forEach(el => {
+            el.classList.remove('highlighted-job');
+          });
+          
+          jobElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+          
+          // Add highlight effect after a small delay to ensure scroll starts
+          setTimeout(() => {
+            jobElement.classList.add('highlighted-job');
+            console.log('✅ Job highlighted:', numericJobId);
+          }, 100);
+        } else if (attempt < maxAttempts) {
+          console.log(`Attempt ${attempt + 1}: Job element not found, retrying...`);
+          tryFindAndScroll(attempt + 1);
+        } else {
+          console.warn('❌ Could not find job element after multiple attempts:', numericJobId);
+        }
+      }, delay);
+    };
+    
+    tryFindAndScroll();
+  }, [jobs, currentPage, jobsPerPage, getCombinedResults]);
+
+  // Handle back from job view
+  const handleBackFromJobView = useCallback((jobId) => {
+    console.log('AllJobs handleBackFromJobView called, jobId:', jobId);
+    if (jobId) {
+      // Wait a bit longer to ensure the list view is fully rendered
+      setTimeout(() => {
+        scrollToJob(jobId);
+      }, 500);
+    }
+  }, [scrollToJob]);
+
+  // Register back handler with parent
+  useEffect(() => {
+    if (onBackFromJobView) {
+      console.log('AllJobs: Registering handleBackFromJobView with parent');
+      onBackFromJobView(handleBackFromJobView);
+    }
+  }, [onBackFromJobView, handleBackFromJobView]);
 
   // Pagination
   const indexOfLastJob = currentPage * jobsPerPage;

@@ -106,7 +106,7 @@ const MyProfileComponent = () => {
         <div className="bg-white rounded-lg shadow-sm p-6">
             {/* Header with View/Edit Profile Button */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <h4 className="text-2xl font-bold text-green-600">Profile Details</h4>
+                <h4 className="text-2xl font-bold">Profile Details</h4>
                 
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
                     {/* Mandatory Fields Notice */}
@@ -114,7 +114,7 @@ const MyProfileComponent = () => {
                         <div className="text-sm">
                             <p className="m-0 text-gray-700">
                                 <span className="text-red-500 font-bold">★ </span>
-                                Fields highlighted with <span className="text-purple-600 font-semibold">PURPLE</span> are mandatory to fill
+                                Fields highlighted are mandatory to fill
                             </p>
                         </div>
                     )}

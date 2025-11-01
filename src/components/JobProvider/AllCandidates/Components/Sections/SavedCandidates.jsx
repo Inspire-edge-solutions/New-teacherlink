@@ -8,6 +8,7 @@ import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import CandidateApiService from '../shared/CandidateApiService';
 import { useAuth } from "../../../../../Context/AuthContext";
+import '../styles/candidate-highlight.css';
 
 const SavedCandidates = ({ 
   onViewCandidate, 
@@ -249,28 +250,6 @@ const SavedCandidates = ({
           currentPageEnd={Math.min(indexOfLastCandidate, filteredCandidates.length)}
         />
       )}
-
-      <style>{`
-        .highlighted-candidate {
-          border: 3px solid #2196f3 !important;
-          background-color: #e3f2fd !important;
-          transform: scale(1.02) !important;
-          box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3) !important;
-        }
-        .highlighted-candidate::before {
-          content: "Recently Viewed";
-          position: absolute;
-          top: -8px;
-          right: -8px;
-          background: #2196f3;
-          color: white;
-          padding: 2px 8px;
-          border-radius: 12px;
-          font-size: 10px;
-          font-weight: bold;
-          z-index: 10;
-        }
-      `}</style>
     </div>
   );
 };

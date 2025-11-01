@@ -5,6 +5,7 @@ import { GetCountries, GetState, GetCity } from 'react-country-state-city';
 import axios from 'axios';
 import { toast } from "react-toastify";
 import { useAuth } from "../../../../../Context/AuthContext";
+import InputWithTooltip from "../../../../../services/InputWithTooltip";
 
 const CandidateFilterPanel = ({ 
   isOpen, 
@@ -263,263 +264,281 @@ const CandidateFilterPanel = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Location Filters */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-              <Select
-                value={filters.country}
-                onChange={(value) => handleFilterChange('country', value)}
-                options={locationOptions.countries}
-                placeholder="Select Country"
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="Country">
+                <Select
+                  value={filters.country}
+                  onChange={(value) => handleFilterChange('country', value)}
+                  options={locationOptions.countries}
+                  placeholder="Country"
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-              <Select
-                value={filters.state}
-                onChange={(value) => handleFilterChange('state', value)}
-                options={locationOptions.states}
-                placeholder="Select State"
-                isClearable
-                isDisabled={!filters.country}
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="State">
+                <Select
+                  value={filters.state}
+                  onChange={(value) => handleFilterChange('state', value)}
+                  options={locationOptions.states}
+                  placeholder="State"
+                  isClearable
+                  isDisabled={!filters.country}
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-              <Select
-                value={filters.city}
-                onChange={(value) => handleFilterChange('city', value)}
-                options={locationOptions.cities}
-                placeholder="Select City"
-                isClearable
-                isDisabled={!filters.state}
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="City">
+                <Select
+                  value={filters.city}
+                  onChange={(value) => handleFilterChange('city', value)}
+                  options={locationOptions.cities}
+                  placeholder="City"
+                  isClearable
+                  isDisabled={!filters.state}
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Languages */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Languages</label>
-              <Select
-                value={filters.languages}
-                onChange={(value) => handleFilterChange('languages', value)}
-                options={initialOptions.languages || []}
-                placeholder="Select Languages"
-                isMulti
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="Languages">
+                <Select
+                  value={filters.languages}
+                  onChange={(value) => handleFilterChange('languages', value)}
+                  options={initialOptions.languages || []}
+                  placeholder="Languages"
+                  isMulti
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Education */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Education</label>
-              <Select
-                value={filters.education}
-                onChange={(value) => handleFilterChange('education', value)}
-                options={initialOptions.education || []}
-                placeholder="Select Education"
-                isMulti
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="Education">
+                <Select
+                  value={filters.education}
+                  onChange={(value) => handleFilterChange('education', value)}
+                  options={initialOptions.education || []}
+                  placeholder="Education"
+                  isMulti
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Core Subjects */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Core Subjects</label>
-              <Select
-                value={filters.coreSubjects}
-                onChange={(value) => handleFilterChange('coreSubjects', value)}
-                options={initialOptions.coreSubjects || []}
-                placeholder="Select Core Subjects"
-                isMulti
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="Core Subjects">
+                <Select
+                  value={filters.coreSubjects}
+                  onChange={(value) => handleFilterChange('coreSubjects', value)}
+                  options={initialOptions.coreSubjects || []}
+                  placeholder="Core Subjects"
+                  isMulti
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Job Types */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
-              <Select
-                value={filters.jobTypes}
-                onChange={(value) => handleFilterChange('jobTypes', value)}
-                options={filterOptions.jobTypes}
-                placeholder="Select Job Type"
-                isMulti
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="Job Type">
+                <Select
+                  value={filters.jobTypes}
+                  onChange={(value) => handleFilterChange('jobTypes', value)}
+                  options={filterOptions.jobTypes}
+                  placeholder="Job Type"
+                  isMulti
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Grades */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Grades</label>
-              <Select
-                value={filters.grades}
-                onChange={(value) => handleFilterChange('grades', value)}
-                options={initialOptions.grades || []}
-                placeholder="Select Grades"
-                isMulti
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="Grades">
+                <Select
+                  value={filters.grades}
+                  onChange={(value) => handleFilterChange('grades', value)}
+                  options={initialOptions.grades || []}
+                  placeholder="Grades"
+                  isMulti
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Curriculum */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Curriculum</label>
-              <Select
-                value={filters.curriculum}
-                onChange={(value) => handleFilterChange('curriculum', value)}
-                options={initialOptions.curriculum || []}
-                placeholder="Select Curriculum"
-                isMulti
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="Curriculum">
+                <Select
+                  value={filters.curriculum}
+                  onChange={(value) => handleFilterChange('curriculum', value)}
+                  options={initialOptions.curriculum || []}
+                  placeholder="Curriculum"
+                  isMulti
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Designations */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Designations</label>
-              <Select
-                value={filters.designations}
-                onChange={(value) => handleFilterChange('designations', value)}
-                options={initialOptions.designations || []}
-                placeholder="Select Designations"
-                isMulti
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="Designations">
+                <Select
+                  value={filters.designations}
+                  onChange={(value) => handleFilterChange('designations', value)}
+                  options={initialOptions.designations || []}
+                  placeholder="Designations"
+                  isMulti
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Gender */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-              <Select
-                value={filters.gender}
-                onChange={(value) => handleFilterChange('gender', value)}
-                options={filterOptions.genderOptions}
-                placeholder="Select Gender"
-                isMulti
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="Gender">
+                <Select
+                  value={filters.gender}
+                  onChange={(value) => handleFilterChange('gender', value)}
+                  options={filterOptions.genderOptions}
+                  placeholder="Gender"
+                  isMulti
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Notice Period */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notice Period</label>
-              <Select
-                value={filters.noticePeriod}
-                onChange={(value) => handleFilterChange('noticePeriod', value)}
-                options={filterOptions.noticePeriodOptions}
-                placeholder="Select Notice Period"
-                isMulti
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="Notice Period">
+                <Select
+                  value={filters.noticePeriod}
+                  onChange={(value) => handleFilterChange('noticePeriod', value)}
+                  options={filterOptions.noticePeriodOptions}
+                  placeholder="Notice Period"
+                  isMulti
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Job Search Status */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Job Search Status</label>
-              <Select
-                value={filters.jobSearchStatus}
-                onChange={(value) => handleFilterChange('jobSearchStatus', value)}
-                options={filterOptions.jobSearchStatusOptions}
-                placeholder="Select Status"
-                isMulti
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="Job Search Status">
+                <Select
+                  value={filters.jobSearchStatus}
+                  onChange={(value) => handleFilterChange('jobSearchStatus', value)}
+                  options={filterOptions.jobSearchStatusOptions}
+                  placeholder="Job Search Status"
+                  isMulti
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Job Shift Preferences */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Job Shift Preferences</label>
-              <Select
-                value={filters.jobShiftPreferences}
-                onChange={(value) => handleFilterChange('jobShiftPreferences', value)}
-                options={filterOptions.jobShiftOptions}
-                placeholder="Select Shifts"
-                isMulti
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="Job Shift Preferences">
+                <Select
+                  value={filters.jobShiftPreferences}
+                  onChange={(value) => handleFilterChange('jobShiftPreferences', value)}
+                  options={filterOptions.jobShiftOptions}
+                  placeholder="Job Shift Preferences"
+                  isMulti
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Online/Offline */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Online/Offline</label>
-              <Select
-                value={filters.online}
-                onChange={(value) => handleFilterChange('online', value)}
-                options={filterOptions.onlineOfflineOptions}
-                placeholder="Select Mode"
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="Online/Offline">
+                <Select
+                  value={filters.online}
+                  onChange={(value) => handleFilterChange('online', value)}
+                  options={filterOptions.onlineOfflineOptions}
+                  placeholder="Online/Offline"
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Tuition Preferences */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tuition Preferences</label>
-              <Select
-                value={filters.tutionPreferences}
-                onChange={(value) => handleFilterChange('tutionPreferences', value)}
-                options={filterOptions.tutionPreferenceOptions}
-                placeholder="Select Tuition Type"
-                isMulti
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
+              <InputWithTooltip label="Tuition Preferences">
+                <Select
+                  value={filters.tutionPreferences}
+                  onChange={(value) => handleFilterChange('tutionPreferences', value)}
+                  options={filterOptions.tutionPreferenceOptions}
+                  placeholder="Tuition Preferences"
+                  isMulti
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Salary Range */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Min Salary</label>
-              <input
-                type="number"
-                className="w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                name="min_salary"
-                value={filters.min_salary}
-                onChange={handleInputChange}
-                placeholder="Minimum Salary"
-              />
+              <InputWithTooltip label="Min Salary">
+                <input
+                  type="number"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  name="min_salary"
+                  value={filters.min_salary}
+                  onChange={handleInputChange}
+                  placeholder="Minimum Salary"
+                />
+              </InputWithTooltip>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Max Salary</label>
-              <input
-                type="number"
-                className="w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                name="max_salary"
-                value={filters.max_salary}
-                onChange={handleInputChange}
-                placeholder="Maximum Salary"
-              />
+              <InputWithTooltip label="Max Salary">
+                <input
+                  type="number"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  name="max_salary"
+                  value={filters.max_salary}
+                  onChange={handleInputChange}
+                  placeholder="Maximum Salary"
+                />
+              </InputWithTooltip>
             </div>
           </div>
 

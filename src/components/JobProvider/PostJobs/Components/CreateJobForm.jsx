@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "../../../../Context/AuthContext";
 import Select from "react-select";
 import InputWithTooltip from "../../../../services/InputWithTooltip";
+import JobDetailsView from "../Shared/JobDetailsView";
 import {
   findIndiaOption,
   mapAllCountries,
@@ -22,33 +23,68 @@ const ProfileRequiredModal = ({ isOpen, onClose }) => {
   
   // Create modal content
   const modalContent = (
-    <div className="fixed inset-0 w-screen h-screen bg-black bg-opacity-20 z-[22222] flex items-center justify-center" onClick={onClose}>
+    <div 
+      className="fixed inset-0 w-screen h-screen bg-black bg-opacity-20 z-[22222] flex items-center justify-center p-5"
+      onClick={onClose}
+    >
       <div 
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 animate-modalSlideIn"
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden relative flex flex-col animate-modalSlideIn"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: 'linear-gradient(135deg, #e0f2f1 0%, #e8f5e9 50%, #fff3e0 100%)',
+          background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
           animation: 'modalSlideIn 0.3s ease-out'
         }}
       >
-        <button 
-          className="absolute top-4 right-4 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors"
-          onClick={onClose}
-        >
-          &times;
-        </button>
-        
-        <div className="text-center p-10 pt-12">
-          <div className="text-5xl mb-5">👤</div>
-          <div className="font-semibold text-gray-800 text-xl mb-4 leading-tight">
-            Create Your Profile First
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200 bg-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
+                👤
+              </div>
+              <h3 className="text-2xl font-semibold text-gray-800 m-0">
+                Profile Required
+              </h3>
+            </div>
+            <button 
+              className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors text-xl"
+              onClick={onClose}
+            >
+              &times;
+            </button>
           </div>
-          <div className="text-gray-600 text-base leading-relaxed mb-8">
-            Please complete your organization profile to start posting jobs.
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6 bg-[#F0D8D9]">
+          <div className="text-center">
+            <div className="text-6xl mb-6">👤</div>
+            <div className="bg-white rounded-lg p-6 mb-6 border border-gray-200 shadow-sm">
+              <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                Create Your Profile First
+              </h4>
+              <p className="text-gray-700 text-base leading-relaxed m-0">
+                Please complete your organization profile to start posting jobs. Your profile information helps job seekers learn more about your organization.
+              </p>
+            </div>
+
+            {/* Information Box */}
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg text-left">
+              <div className="flex items-start gap-2">
+                <span className="text-blue-600 text-xl">ℹ️</span>
+                <p className="text-sm text-blue-800 m-0 leading-relaxed">
+                  You can access your profile from the "My Profile" section in the navigation menu.
+                </p>
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 border-t border-gray-200 bg-white flex justify-center">
           <button
             onClick={onClose}
-            className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity min-w-[120px]"
+            className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity min-w-[120px] shadow-md"
           >
             Got It
           </button>
@@ -64,54 +100,6 @@ const ProfileRequiredModal = ({ isOpen, onClose }) => {
 const JobReviewModal = ({ isOpen, onClose, onConfirm, previewData, isPosting }) => {
   if (!isOpen || !previewData) return null;
 
-  const formatArrayData = (arr) => {
-    if (!Array.isArray(arr) || arr.length === 0) return "Not specified";
-    return arr.join(", ");
-  };
-
-  const formatExperience = (years, months) => {
-    if (!years && !months) return "Not specified";
-    
-    // Extract numeric values from react-select values
-    let yearValue = 0;
-    let monthValue = 0;
-    
-    if (years) {
-      if (typeof years === 'number') {
-        yearValue = years;
-      } else if (typeof years === 'string') {
-        // Handle strings like "0 years", "1 year", "2 years"
-        const match = years.match(/^(\d+)/);
-        yearValue = match ? parseInt(match[1]) : 0;
-      }
-    }
-    
-    if (months) {
-      if (typeof months === 'number') {
-        monthValue = months;
-      } else if (typeof months === 'string') {
-        // Handle strings like "0 months", "1 month", "2 months"
-        const match = months.match(/^(\d+)/);
-        monthValue = match ? parseInt(match[1]) : 0;
-      }
-    }
-    
-    // If both are 0, return "Not specified"
-    if (yearValue === 0 && monthValue === 0) return "Not specified";
-    
-    const yearText = yearValue > 0 ? `${yearValue} year${yearValue !== 1 ? 's' : ''}` : '';
-    const monthText = monthValue > 0 ? `${monthValue} month${monthValue !== 1 ? 's' : ''}` : '';
-    return [yearText, monthText].filter(Boolean).join(" ");
-  };
-
-  const formatSalary = (min, max) => {
-    if (!min && !max) return "Not specified";
-    if (min && max) return `₹${min} - ₹${max}`;
-    if (min) return `₹${min}+`;
-    if (max) return `Up to ₹${max}`;
-    return "Not specified";
-  };
-
   const modalContent = (
     <div className="fixed inset-0 w-screen h-screen bg-black bg-opacity-20 z-[22222] flex items-center justify-center" onClick={onClose}>
       <div 
@@ -123,136 +111,36 @@ const JobReviewModal = ({ isOpen, onClose, onConfirm, previewData, isPosting }) 
         }}
       >
         <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-white">
-          <h3 className="text-2xl font-semibold text-gray-800 flex items-center gap-2 m-0">
-            📋 Job Post Review
-          </h3>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
+              📋
+            </div>
+            <h3 className="text-2xl font-semibold text-gray-800 m-0">
+              Job Post Review
+            </h3>
+          </div>
           <button 
-            className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors"
+            className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors text-xl"
             onClick={onClose}
           >
             &times;
           </button>
         </div>
         
-        <div className="flex-1 overflow-auto p-6 bg-gray-50">
-          <div className="bg-white rounded-xl p-6 shadow-sm">
-            {/* Basic Information */}
-            <div className="mb-8">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-blue-500">
-                📝 Basic Information
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div><strong>Job Title:</strong> {previewData.job_title || "Not specified"}</div>
-                <div><strong>Job Type:</strong> {previewData.job_type?.replace('_', ' ').toUpperCase() || "Not specified"}</div>
-                <div><strong>Number of Openings:</strong> {previewData.no_of_opening || "Not specified"}</div>
-                <div><strong>Joining Date:</strong> {previewData.joining_date || "Not specified"}</div>
-                <div><strong>Salary Range:</strong> {formatSalary(previewData.min_salary, previewData.max_salary)}</div>
-                <div><strong>Notice Period:</strong> {previewData.notice_period || "Not specified"}</div>
-              </div>
-              {previewData.job_description && (
-                <div className="mt-4">
-                  <strong>Job Description:</strong>
-                  <div className="bg-gray-50 p-3 rounded-lg mt-2 leading-relaxed whitespace-pre-wrap">
-                    {previewData.job_description}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Location */}
-            <div className="mb-8">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-red-500">
-                📍 Location
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div><strong>Country:</strong> {previewData.country || "Not specified"}</div>
-                <div><strong>State:</strong> {previewData.state_ut || "Not specified"}</div>
-                <div><strong>City:</strong> {previewData.city || "Not specified"}</div>
-                {previewData.address && (
-                  <div className="col-span-full">
-                    <strong>Address:</strong>
-                    <div className="bg-gray-50 p-3 rounded-lg mt-1">
-                      {previewData.address}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Experience Requirements */}
-            <div className="mb-8">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-yellow-500">
-                💼 Experience Requirements
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div><strong>Total Experience:</strong> {formatExperience(previewData.total_experience_min_years, previewData.total_experience_min_months)} - {formatExperience(previewData.total_experience_max_years, previewData.total_experience_max_months)}</div>
-                <div><strong>Teaching Experience:</strong> {formatExperience(previewData.teaching_experience_min_years, previewData.teaching_experience_min_months)} - {formatExperience(previewData.teaching_experience_max_years, previewData.teaching_experience_max_months)}</div>
-                <div><strong>Non-Teaching Experience:</strong> {formatExperience(previewData.non_teaching_experience_min_years, previewData.non_teaching_experience_min_months)} - {formatExperience(previewData.non_teaching_experience_max_years, previewData.non_teaching_experience_max_months)}</div>
-              </div>
-            </div>
-
-            {/* Qualifications & Skills */}
-            <div className="mb-8">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-purple-500">
-                🎓 Qualifications & Skills
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div><strong>Required Qualifications:</strong> {formatArrayData(previewData.qualification)}</div>
-                <div><strong>Core Subjects:</strong> {formatArrayData(previewData.core_subjects)}</div>
-                <div><strong>Optional Subjects:</strong> {formatArrayData(previewData.optional_subject)}</div>
-                <div><strong>Designations:</strong> {formatArrayData(previewData.designations)}</div>
-                <div><strong>Grades:</strong> {formatArrayData(previewData.designated_grades)}</div>
-                <div><strong>Curriculum:</strong> {formatArrayData(previewData.curriculum)}</div>
-                <div><strong>Subjects:</strong> {formatArrayData(previewData.subjects)}</div>
-                <div><strong>Core Expertise:</strong> {formatArrayData(previewData.core_expertise)}</div>
-                <div><strong>Computer Skills:</strong> {formatArrayData(previewData.computer_skills)}</div>
-              </div>
-            </div>
-
-            {/* Languages */}
-            <div className="mb-8">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-teal-500">
-                🗣️ Language Requirements
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div><strong>Speak:</strong> {formatArrayData(previewData.language_speak)}</div>
-                <div><strong>Read:</strong> {formatArrayData(previewData.language_read)}</div>
-                <div><strong>Write:</strong> {formatArrayData(previewData.language_write)}</div>
-              </div>
-            </div>
-
-            {/* Additional Preferences */}
-            <div className="mb-8">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-gray-600">
-                ⚙️ Additional Preferences
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div><strong>Gender:</strong> {previewData.gender || "Not specified"}</div>
-                <div><strong>Age Range:</strong> {previewData.minimum_age && previewData.maximum_age ? `${previewData.minimum_age} - ${previewData.maximum_age} years` : "Not specified"}</div>
-                <div><strong>Job Search Status:</strong> {previewData.job_search_status || "Not specified"}</div>
-                <div><strong>Knowledge of ACC Process:</strong> {previewData.knowledge_of_acc_process || "Not specified"}</div>
-                <div><strong>WFO Verification:</strong> {previewData.wfo_verification ? "Yes" : "No"}</div>
-                <div><strong>Job Shifts:</strong> {formatArrayData(previewData.job_shifts)}</div>
-                <div><strong>Job Process:</strong> {formatArrayData(previewData.job_process)}</div>
-                <div><strong>Selection Process:</strong> {formatArrayData(previewData.selection_process)}</div>
-                {previewData.tution_types && previewData.tution_types.length > 0 && (
-                  <div><strong>Tution Types:</strong> {formatArrayData(previewData.tution_types)}</div>
-                )}
-              </div>
-            </div>
-          </div>
+        <div className="flex-1 overflow-auto p-6 bg-[#F0D8D9]">
+          <JobDetailsView jobData={previewData} variant="modal" />
         </div>
         
         <div className="p-6 border-t border-gray-200 bg-white flex justify-between items-center gap-4 flex-wrap">
           <button
             onClick={onClose}
-            className="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors min-w-[120px] flex-1 max-w-[200px]"
+            className="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors min-w-[120px] flex-1 max-w-[200px] shadow-md"
           >
             ✏️ Edit Job
           </button>
           <button
             onClick={onConfirm}
-            className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 min-w-[150px] flex-1 max-w-[250px]"
+            className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 min-w-[150px] flex-1 max-w-[250px] shadow-md"
             disabled={isPosting}
           >
             {isPosting ? "⏳ Posting..." : "✅ Confirm & Post Job"}
@@ -341,6 +229,18 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
     return options.find((option) => option.value === value || option.label === value) || null;
   };
 
+  // Helper function to parse experience values (handles "3 years", "1 year", or numeric values)
+  const parseExperienceValue = (value) => {
+    if (!value) return null;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      // Extract number from strings like "3 years", "1 year", "3"
+      const match = value.match(/^(\d+)/);
+      return match ? parseInt(match[1]) : null;
+    }
+    return null;
+  };
+
   const createYearMonthOptions = () => {
     const years = [];
     const months = [];
@@ -353,39 +253,31 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
     return { years, months };
   };
 
+  // Populate basic fields immediately when editJobData exists
   useEffect(() => {
-    if (editJobData && qualifications.length > 0 && designations.length > 0 && coreExpertise.length > 0) {
+    if (editJobData) {
+      console.log("Loading edit job data:", editJobData);
       setJobTitle(editJobData.job_title || "");
-      setJobCategory(editJobData.job_type || "full_time");
-      setSelectedJobCategory(editJobData.job_type || "full_time");
+      // Normalize job_type: convert "fullTime" to "full_time", etc.
+      const normalizedJobType = editJobData.job_type ? editJobData.job_type.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase() : "full_time";
+      setJobCategory(normalizedJobType);
+      setSelectedJobCategory(normalizedJobType);
       setNoOfOpening(String(editJobData.no_of_opening || ""));
       setJobDescription(editJobData.job_description || "");
       setJoiningDate(editJobData.joining_date || "");
       setMinSalary(String(editJobData.min_salary || ""));
       setMaxSalary(String(editJobData.max_salary || ""));
-      if (editJobData.qualification) {
-        const qualificationValues = Array.isArray(editJobData.qualification) ? editJobData.qualification : [editJobData.qualification];
-        setSelectedQualifications(findOptionsByValues(qualifications, qualificationValues));
-      }
-      if (editJobData.core_subjects) {
-        const coreSubjectValues = Array.isArray(editJobData.core_subjects) ? editJobData.core_subjects : [editJobData.core_subjects];
-        setSelectedCoreSubjects(findOptionsByValues(coreExpertise, coreSubjectValues));
-      }
-      if (editJobData.optional_subject) {
-        const optionalSubjectValues = Array.isArray(editJobData.optional_subject) ? editJobData.optional_subject : [editJobData.optional_subject];
-        setSelectedOptionalSubject(findOptionsByValues(subjectsList, optionalSubjectValues));
-      }
       setKnowledgeOfAccProcess(editJobData.knowledge_of_acc_process || "No");
       setNoticePeriod(editJobData.notice_period || "");
       setJobSearchStatus(editJobData.job_search_status || "");
       setGender(editJobData.gender || "");
       setMinimumAge(String(editJobData.minimum_age || ""));
       setMaximumAge(String(editJobData.maximum_age || ""));
-      //setWfoVerification(editJobData.wfo_verification || false);
       setAddress(editJobData.address || "");
       setLatitude(editJobData.latitude || "");
       setLongitude(editJobData.longitude || "");
 
+      // Load country/state/city data
       if (editJobData.country) {
         const loadCountryData = async () => {
           try {
@@ -415,76 +307,138 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
         loadCountryData();
       }
 
+      // Load experience fields (these don't depend on external arrays)
       const { years, months } = createYearMonthOptions();
-      if (editJobData.total_experience_min_years) setTotalExpMinYears(findOptionByValue(years, parseInt(editJobData.total_experience_min_years)));
-      if (editJobData.total_experience_min_months) setTotalExpMinMonths(findOptionByValue(months, parseInt(editJobData.total_experience_min_months)));
-      if (editJobData.total_experience_max_years) setTotalExpMaxYears(findOptionByValue(years, parseInt(editJobData.total_experience_max_years)));
-      if (editJobData.total_experience_max_months) setTotalExpMaxMonths(findOptionByValue(months, parseInt(editJobData.total_experience_max_months)));
-      if (editJobData.teaching_experience_min_years) setTeachingExpMinYears(findOptionByValue(years, parseInt(editJobData.teaching_experience_min_years)));
-      if (editJobData.teaching_experience_min_months) setTeachingExpMinMonths(findOptionByValue(months, parseInt(editJobData.teaching_experience_min_months)));
-      if (editJobData.teaching_experience_max_years) setTeachingExpMaxYears(findOptionByValue(years, parseInt(editJobData.teaching_experience_max_years)));
-      if (editJobData.teaching_experience_max_months) setTeachingExpMaxMonths(findOptionByValue(months, parseInt(editJobData.teaching_experience_max_months)));
-      if (editJobData.non_teaching_experience_min_years) setNonTeachingExpMinYears(findOptionByValue(years, parseInt(editJobData.non_teaching_experience_min_years)));
-      if (editJobData.non_teaching_experience_min_months) setNonTeachingExpMinMonths(findOptionByValue(months, parseInt(editJobData.non_teaching_experience_min_months)));
-      if (editJobData.non_teaching_experience_max_years) setNonTeachingExpMaxYears(findOptionByValue(years, parseInt(editJobData.non_teaching_experience_max_years)));
-      if (editJobData.non_teaching_experience_max_months) setNonTeachingExpMaxMonths(findOptionByValue(months, parseInt(editJobData.non_teaching_experience_max_months)));
-      if (editJobData.designations) {
-        const designationValues = Array.isArray(editJobData.designations) ? editJobData.designations : [editJobData.designations];
-        setSelectedDesignations(findOptionsByValues(designations, designationValues));
-      }
-      if (editJobData.subjects) {
-        const subjectValues = Array.isArray(editJobData.subjects) ? editJobData.subjects : [editJobData.subjects];
-        setSelectedSubjects(findOptionsByValues(subjectsList, subjectValues));
-      }
-      if (editJobData.language_speak) {
-        const speakValues = Array.isArray(editJobData.language_speak) ? editJobData.language_speak : [editJobData.language_speak];
-        setSelectedLanguageSpeak(findOptionsByValues(languagesSpeak, speakValues));
-      }
-      if (editJobData.language_read) {
-        const readValues = Array.isArray(editJobData.language_read) ? editJobData.language_read : [editJobData.language_read];
-        setSelectedLanguageRead(findOptionsByValues(languagesRead, readValues));
-      }
-      if (editJobData.language_write) {
-        const writeValues = Array.isArray(editJobData.language_write) ? editJobData.language_write : [editJobData.language_write];
-        setSelectedLanguageWrite(findOptionsByValues(languagesWrite, writeValues));
-      }
-      if (editJobData.computer_skills) {
-        const computerSkillsValues = Array.isArray(editJobData.computer_skills) ? editJobData.computer_skills : [editJobData.computer_skills];
-        setSelectedComputerSkills(findOptionsByValues(multiSelectOptions.computer_skills, computerSkillsValues));
-      }
-      if (editJobData.designated_grades) {
-        const gradeValues = Array.isArray(editJobData.designated_grades) ? editJobData.designated_grades : [editJobData.designated_grades];
-        setSelectedDesignatedGrades(findOptionsByValues(designatedGrades, gradeValues));
-      }
-      if (editJobData.curriculum) {
-        const curriculumValues = Array.isArray(editJobData.curriculum) ? editJobData.curriculum : [editJobData.curriculum];
-        setSelectedCurriculum(findOptionsByValues(curriculum, curriculumValues));
-      }
-      if (editJobData.core_expertise) {
-        const coreExpertiseValues = Array.isArray(editJobData.core_expertise) ? editJobData.core_expertise : [editJobData.core_expertise];
-        setSelectedCoreExpertise(findOptionsByValues(coreExpertise, coreExpertiseValues));
-      }
-      if (editJobData.selection_process) {
-        const selectionProcessValues = Array.isArray(editJobData.selection_process) ? editJobData.selection_process : [editJobData.selection_process];
-        setSelectedSelectionProcess(findOptionsByValues(multiSelectOptions.selection_process, selectionProcessValues));
-      }
-      if (editJobData.job_shifts) {
-        const jobShiftValues = Array.isArray(editJobData.job_shifts) ? editJobData.job_shifts : [editJobData.job_shifts];
-        setSelectedJobShifts(findOptionsByValues(multiSelectOptions.job_shifts, jobShiftValues));
-      }
-      if (editJobData.job_process) {
-        const jobProcessValues = Array.isArray(editJobData.job_process) ? editJobData.job_process : [editJobData.job_process];
-        setSelectedJobProcess(findOptionsByValues(multiSelectOptions.job_process, jobProcessValues));
-      }
-      if (editJobData.job_sub_process) {
-        const jobSubCategoryValues = Array.isArray(editJobData.job_sub_process) ? editJobData.job_sub_process : [editJobData.job_sub_process];
-        setSelectedJobSubCategory(findOptionsByValues(multiSelectOptions.job_sub_category, jobSubCategoryValues));
-      }
-      if (editJobData.tution_types && jobCategory === "tuitions") {
-        const tutionTypeValues = Array.isArray(editJobData.tution_types) ? editJobData.tution_types : [editJobData.tution_types];
-        setSelectedTutionTypes(findOptionsByValues(multiSelectOptions.tution_types, tutionTypeValues));
-      }
+      const totalExpMinYearsValue = parseExperienceValue(editJobData.total_experience_min_years);
+      const totalExpMinMonthsValue = parseExperienceValue(editJobData.total_experience_min_months);
+      const totalExpMaxYearsValue = parseExperienceValue(editJobData.total_experience_max_years);
+      const totalExpMaxMonthsValue = parseExperienceValue(editJobData.total_experience_max_months);
+      const teachingExpMinYearsValue = parseExperienceValue(editJobData.teaching_experience_min_years);
+      const teachingExpMinMonthsValue = parseExperienceValue(editJobData.teaching_experience_min_months);
+      const teachingExpMaxYearsValue = parseExperienceValue(editJobData.teaching_experience_max_years);
+      const teachingExpMaxMonthsValue = parseExperienceValue(editJobData.teaching_experience_max_months);
+      const nonTeachingExpMinYearsValue = parseExperienceValue(editJobData.non_teaching_experience_min_years);
+      const nonTeachingExpMinMonthsValue = parseExperienceValue(editJobData.non_teaching_experience_min_months);
+      const nonTeachingExpMaxYearsValue = parseExperienceValue(editJobData.non_teaching_experience_max_years);
+      const nonTeachingExpMaxMonthsValue = parseExperienceValue(editJobData.non_teaching_experience_max_months);
+      
+      if (totalExpMinYearsValue !== null) setTotalExpMinYears(findOptionByValue(years, totalExpMinYearsValue));
+      if (totalExpMinMonthsValue !== null) setTotalExpMinMonths(findOptionByValue(months, totalExpMinMonthsValue));
+      if (totalExpMaxYearsValue !== null) setTotalExpMaxYears(findOptionByValue(years, totalExpMaxYearsValue));
+      if (totalExpMaxMonthsValue !== null) setTotalExpMaxMonths(findOptionByValue(months, totalExpMaxMonthsValue));
+      if (teachingExpMinYearsValue !== null) setTeachingExpMinYears(findOptionByValue(years, teachingExpMinYearsValue));
+      if (teachingExpMinMonthsValue !== null) setTeachingExpMinMonths(findOptionByValue(months, teachingExpMinMonthsValue));
+      if (teachingExpMaxYearsValue !== null) setTeachingExpMaxYears(findOptionByValue(years, teachingExpMaxYearsValue));
+      if (teachingExpMaxMonthsValue !== null) setTeachingExpMaxMonths(findOptionByValue(months, teachingExpMaxMonthsValue));
+      if (nonTeachingExpMinYearsValue !== null) setNonTeachingExpMinYears(findOptionByValue(years, nonTeachingExpMinYearsValue));
+      if (nonTeachingExpMinMonthsValue !== null) setNonTeachingExpMinMonths(findOptionByValue(months, nonTeachingExpMinMonthsValue));
+      if (nonTeachingExpMaxYearsValue !== null) setNonTeachingExpMaxYears(findOptionByValue(years, nonTeachingExpMaxYearsValue));
+      if (nonTeachingExpMaxMonthsValue !== null) setNonTeachingExpMaxMonths(findOptionByValue(months, nonTeachingExpMaxMonthsValue));
+      
       toast.info("Job data loaded for editing. Make your changes and submit.");
+    }
+  }, [editJobData]);
+
+  // Populate array-dependent fields once arrays are loaded
+  useEffect(() => {
+    if (!editJobData) return;
+
+    // Handle qualifications
+    if (editJobData.qualification && qualifications.length > 0) {
+      const qualificationValues = Array.isArray(editJobData.qualification) ? editJobData.qualification : [editJobData.qualification];
+      setSelectedQualifications(findOptionsByValues(qualifications, qualificationValues));
+    }
+
+    // Handle core subjects
+    if (editJobData.core_subjects && subjectsList.length > 0) {
+      const coreSubjectValues = Array.isArray(editJobData.core_subjects) ? editJobData.core_subjects : [editJobData.core_subjects];
+      setSelectedCoreSubjects(findOptionsByValues(subjectsList, coreSubjectValues));
+    }
+
+    // Handle optional subjects
+    if (editJobData.optional_subject && subjectsList.length > 0) {
+      const optionalSubjectValues = Array.isArray(editJobData.optional_subject) ? editJobData.optional_subject : [editJobData.optional_subject];
+      setSelectedOptionalSubject(findOptionsByValues(subjectsList, optionalSubjectValues));
+    }
+
+    // Handle designations
+    if (editJobData.designations && designations.length > 0) {
+      const designationValues = Array.isArray(editJobData.designations) ? editJobData.designations : [editJobData.designations];
+      setSelectedDesignations(findOptionsByValues(designations, designationValues));
+    }
+
+    // Handle subjects
+    if (editJobData.subjects && subjectsList.length > 0) {
+      const subjectValues = Array.isArray(editJobData.subjects) ? editJobData.subjects : [editJobData.subjects];
+      setSelectedSubjects(findOptionsByValues(subjectsList, subjectValues));
+    }
+
+    // Handle languages
+    if (editJobData.language_speak && languagesSpeak.length > 0) {
+      const speakValues = Array.isArray(editJobData.language_speak) ? editJobData.language_speak : [editJobData.language_speak];
+      setSelectedLanguageSpeak(findOptionsByValues(languagesSpeak, speakValues));
+    }
+    if (editJobData.language_read && languagesRead.length > 0) {
+      const readValues = Array.isArray(editJobData.language_read) ? editJobData.language_read : [editJobData.language_read];
+      setSelectedLanguageRead(findOptionsByValues(languagesRead, readValues));
+    }
+    if (editJobData.language_write && languagesWrite.length > 0) {
+      const writeValues = Array.isArray(editJobData.language_write) ? editJobData.language_write : [editJobData.language_write];
+      setSelectedLanguageWrite(findOptionsByValues(languagesWrite, writeValues));
+    }
+
+    // Handle computer skills
+    if (editJobData.computer_skills) {
+      const computerSkillsValues = Array.isArray(editJobData.computer_skills) ? editJobData.computer_skills : [editJobData.computer_skills];
+      setSelectedComputerSkills(findOptionsByValues(multiSelectOptions.computer_skills, computerSkillsValues));
+    }
+
+    // Handle designated grades
+    if (editJobData.designated_grades && designatedGrades.length > 0) {
+      const gradeValues = Array.isArray(editJobData.designated_grades) ? editJobData.designated_grades : [editJobData.designated_grades];
+      setSelectedDesignatedGrades(findOptionsByValues(designatedGrades, gradeValues));
+    }
+
+    // Handle curriculum
+    if (editJobData.curriculum && curriculum.length > 0) {
+      const curriculumValues = Array.isArray(editJobData.curriculum) ? editJobData.curriculum : [editJobData.curriculum];
+      setSelectedCurriculum(findOptionsByValues(curriculum, curriculumValues));
+    }
+
+    // Handle core expertise
+    if (editJobData.core_expertise && coreExpertise.length > 0) {
+      const coreExpertiseValues = Array.isArray(editJobData.core_expertise) ? editJobData.core_expertise : [editJobData.core_expertise];
+      setSelectedCoreExpertise(findOptionsByValues(coreExpertise, coreExpertiseValues));
+    }
+
+    // Handle selection process
+    if (editJobData.selection_process) {
+      const selectionProcessValues = Array.isArray(editJobData.selection_process) ? editJobData.selection_process : [editJobData.selection_process];
+      setSelectedSelectionProcess(findOptionsByValues(multiSelectOptions.selection_process, selectionProcessValues));
+    }
+
+    // Handle job shifts
+    if (editJobData.job_shifts) {
+      const jobShiftValues = Array.isArray(editJobData.job_shifts) ? editJobData.job_shifts : [editJobData.job_shifts];
+      setSelectedJobShifts(findOptionsByValues(multiSelectOptions.job_shifts, jobShiftValues));
+    }
+
+    // Handle job process
+    if (editJobData.job_process) {
+      const jobProcessValues = Array.isArray(editJobData.job_process) ? editJobData.job_process : [editJobData.job_process];
+      setSelectedJobProcess(findOptionsByValues(multiSelectOptions.job_process, jobProcessValues));
+    }
+
+    // Handle job sub process
+    if (editJobData.job_sub_process) {
+      const jobSubCategoryValues = Array.isArray(editJobData.job_sub_process) ? editJobData.job_sub_process : [editJobData.job_sub_process];
+      setSelectedJobSubCategory(findOptionsByValues(multiSelectOptions.job_sub_category, jobSubCategoryValues));
+    }
+
+    // Handle tution types
+    if (editJobData.tution_types && editJobData.job_type === "tuitions") {
+      const tutionTypeValues = Array.isArray(editJobData.tution_types) ? editJobData.tution_types : [editJobData.tution_types];
+      setSelectedTutionTypes(findOptionsByValues(multiSelectOptions.tution_types, tutionTypeValues));
     }
   }, [editJobData, qualifications, coreExpertise, subjectsList, designations, designatedGrades, curriculum, languagesSpeak, languagesRead, languagesWrite]);
 
@@ -538,6 +492,98 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
   const [selectedLanguageRead, setSelectedLanguageRead] = useState([]);
   const [selectedLanguageWrite, setSelectedLanguageWrite] = useState([]);
   const [selectedComputerSkills, setSelectedComputerSkills] = useState([]);
+
+  // Validation error states for experience fields
+  const [totalExpError, setTotalExpError] = useState("");
+  const [teachingExpError, setTeachingExpError] = useState("");
+  const [nonTeachingExpError, setNonTeachingExpError] = useState("");
+
+  // Helper function to get error styles for Select components
+  const getSelectErrorStyles = (hasError) => {
+    if (!hasError) return selectMenuPortalStyles;
+    return {
+      ...selectMenuPortalStyles,
+      control: (base, state) => ({
+        ...base,
+        borderColor: '#EF4444',
+        boxShadow: state.isFocused ? '0 0 0 2px rgba(239, 68, 68, 0.2)' : '0 0 0 1px #EF4444',
+        '&:hover': { borderColor: '#EF4444' }
+      })
+    };
+  };
+
+  // Helper function to compare experience values (years and months)
+  const compareExperience = (minYears, minMonths, maxYears, maxMonths) => {
+    // Extract numeric values from react-select objects
+    // Values are stored as strings like "3 years" or "1 year"
+    // Use parseExperienceValue which handles string extraction
+    const minYearsVal = parseExperienceValue(minYears?.value) ?? 0;
+    const minMonthsVal = parseExperienceValue(minMonths?.value) ?? 0;
+    const maxYearsVal = parseExperienceValue(maxYears?.value) ?? 0;
+    const maxMonthsVal = parseExperienceValue(maxMonths?.value) ?? 0;
+    
+    // Calculate total months for comparison
+    const minTotal = minYearsVal * 12 + minMonthsVal;
+    const maxTotal = maxYearsVal * 12 + maxMonthsVal;
+    
+    // Return true if max >= min (greater than or equal to)
+    // Allow equal values (e.g., 3 years = 3 years is valid)
+    return maxTotal >= minTotal;
+  };
+
+  // Real-time validation for Total Experience
+  useEffect(() => {
+    // Only validate if maximum is provided
+    if (totalExpMaxYears || totalExpMaxMonths) {
+      const isValid = compareExperience(totalExpMinYears, totalExpMinMonths, totalExpMaxYears, totalExpMaxMonths);
+      // Force update error state - clear if valid, show if invalid
+      if (isValid) {
+        setTotalExpError("");
+      } else {
+        setTotalExpError("Maximum must be greater than or equal to Minimum");
+      }
+    } else {
+      // Clear error if maximum is cleared
+      setTotalExpError("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalExpMinYears, totalExpMinMonths, totalExpMaxYears, totalExpMaxMonths]);
+
+  // Real-time validation for Teaching Experience
+  useEffect(() => {
+    // Only validate if maximum is provided
+    if (teachingExpMaxYears || teachingExpMaxMonths) {
+      const isValid = compareExperience(teachingExpMinYears, teachingExpMinMonths, teachingExpMaxYears, teachingExpMaxMonths);
+      // Force update error state - clear if valid, show if invalid
+      if (isValid) {
+        setTeachingExpError("");
+      } else {
+        setTeachingExpError("Maximum must be greater than or equal to Minimum");
+      }
+    } else {
+      // Clear error if maximum is cleared
+      setTeachingExpError("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teachingExpMinYears, teachingExpMinMonths, teachingExpMaxYears, teachingExpMaxMonths]);
+
+  // Real-time validation for Non-Teaching Experience
+  useEffect(() => {
+    // Only validate if maximum is provided
+    if (nonTeachingExpMaxYears || nonTeachingExpMaxMonths) {
+      const isValid = compareExperience(nonTeachingExpMinYears, nonTeachingExpMinMonths, nonTeachingExpMaxYears, nonTeachingExpMaxMonths);
+      // Force update error state - clear if valid, show if invalid
+      if (isValid) {
+        setNonTeachingExpError("");
+      } else {
+        setNonTeachingExpError("Maximum must be greater than or equal to Minimum");
+      }
+    } else {
+      // Clear error if maximum is cleared
+      setNonTeachingExpError("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nonTeachingExpMinYears, nonTeachingExpMinMonths, nonTeachingExpMaxYears, nonTeachingExpMaxMonths]);
 
   useEffect(() => {
     if (!editJobData) {
@@ -935,6 +981,35 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
       return;
     }
 
+    // Validate experience ranges
+    let validationError = null;
+    
+    // Check Total Experience
+    if (totalExpMaxYears || totalExpMaxMonths) {
+      if (!compareExperience(totalExpMinYears, totalExpMinMonths, totalExpMaxYears, totalExpMaxMonths)) {
+        validationError = "Maximum Total Experience must be greater than or equal to Minimum Total Experience.";
+      }
+    }
+    
+    // Check Teaching Experience
+    if (teachingExpMaxYears || teachingExpMaxMonths) {
+      if (!compareExperience(teachingExpMinYears, teachingExpMinMonths, teachingExpMaxYears, teachingExpMaxMonths)) {
+        validationError = validationError || "Maximum Teaching Experience must be greater than or equal to Minimum Teaching Experience.";
+      }
+    }
+    
+    // Check Non-Teaching Experience
+    if (nonTeachingExpMaxYears || nonTeachingExpMaxMonths) {
+      if (!compareExperience(nonTeachingExpMinYears, nonTeachingExpMinMonths, nonTeachingExpMaxYears, nonTeachingExpMaxMonths)) {
+        validationError = validationError || "Maximum Non-Teaching Experience must be greater than or equal to Minimum Non-Teaching Experience.";
+      }
+    }
+    
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
     // Check if user profile exists in organisation API
     const profileExists = await checkUserProfile();
     if (!profileExists) {
@@ -1315,7 +1390,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                           onChange={setTotalExpMaxYears}
                           placeholder="Years"
                           menuPortalTarget={document.body}
-                          styles={selectMenuPortalStyles}
+                          styles={getSelectErrorStyles(!!totalExpError)}
                           className="react-select-container"
                           classNamePrefix="react-select"
                         />
@@ -1327,12 +1402,15 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                           onChange={setTotalExpMaxMonths}
                           placeholder="Months"
                           menuPortalTarget={document.body}
-                          styles={selectMenuPortalStyles}
+                          styles={getSelectErrorStyles(!!totalExpError)}
                           className="react-select-container"
                           classNamePrefix="react-select"
                         />
                       </div>
                     </div>
+                    {totalExpError && (
+                      <p className="text-red-500 text-sm mt-2">{totalExpError}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1380,7 +1458,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                           onChange={setTeachingExpMaxYears}
                           placeholder="Years"
                           menuPortalTarget={document.body}
-                          styles={selectMenuPortalStyles}
+                          styles={getSelectErrorStyles(!!teachingExpError)}
                           className="react-select-container"
                           classNamePrefix="react-select"
                         />
@@ -1392,12 +1470,15 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                           onChange={setTeachingExpMaxMonths}
                           placeholder="Months"
                           menuPortalTarget={document.body}
-                          styles={selectMenuPortalStyles}
+                          styles={getSelectErrorStyles(!!teachingExpError)}
                           className="react-select-container"
                           classNamePrefix="react-select"
                         />
                       </div>
                     </div>
+                    {teachingExpError && (
+                      <p className="text-red-500 text-sm mt-2">{teachingExpError}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1445,7 +1526,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                           onChange={setNonTeachingExpMaxYears}
                           placeholder="Years"
                           menuPortalTarget={document.body}
-                          styles={selectMenuPortalStyles}
+                          styles={getSelectErrorStyles(!!nonTeachingExpError)}
                           className="react-select-container"
                           classNamePrefix="react-select"
                         />
@@ -1457,12 +1538,15 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                           onChange={setNonTeachingExpMaxMonths}
                           placeholder="Months"
                           menuPortalTarget={document.body}
-                          styles={selectMenuPortalStyles}
+                          styles={getSelectErrorStyles(!!nonTeachingExpError)}
                           className="react-select-container"
                           classNamePrefix="react-select"
                         />
                       </div>
                     </div>
+                    {nonTeachingExpError && (
+                      <p className="text-red-500 text-sm mt-2">{nonTeachingExpError}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1738,7 +1822,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                   value={knowledgeOfAccProcess}
                   onChange={(e) => setKnowledgeOfAccProcess(e.target.value)}
                 >
-                  <option value="" disabled>Knowledge Level</option>
+                  <option value="" disabled>Knowledge of Accounting Process</option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
@@ -1779,18 +1863,18 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
           <div className="flex justify-between items-center flex-wrap gap-4 mt-8 pt-6 border-t border-gray-200">
             <button
               type="button"
-              className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
+              className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 shadow-md"
               onClick={handleSave}
               disabled={isSaving || isPosting}
             >
-              {isSaving ? "Saving..." : "Save Job"}
+              {isSaving ? "💾 Saving..." : "💾 Save Job"}
             </button>
             <button
               type="submit"
-              className={`bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 ${editJobData ? "bg-yellow-600 hover:bg-yellow-700" : ""}`}
+              className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 shadow-md"
               disabled={isSaving || isPosting}
             >
-              {isPosting ? "Posting..." : editJobData ? "Review & Update Job" : "Review & Post Job"}
+              {isPosting ? "⏳ Posting..." : editJobData ? "✏️ Review & Update Job" : "📋 Review & Post Job"}
             </button>
           </div>
         </form>

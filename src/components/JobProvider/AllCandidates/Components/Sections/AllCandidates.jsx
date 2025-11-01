@@ -10,6 +10,7 @@ import CandidateFilterPanel from '../shared/CandidateFilterPanel';
 import CandidateApiService from '../shared/CandidateApiService';
 import { parseLanguages, parseEducation } from '../../utils/candidateUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
+import '../styles/candidate-highlight.css';
 
 const AllCandidates = ({ 
   onViewCandidate, 
@@ -658,37 +659,6 @@ const AllCandidates = ({
         activeFiltersCount={activeFilters.size}
         initialOptions={filterOptions}
       />
-
-      {/* Highlight styles for recently viewed candidate */}
-      <style>{`
-        .highlighted-candidate {
-          border: 3px solid #2196f3 !important;
-          background-color: #e3f2fd !important;
-          transform: scale(1.02) !important;
-          transition: all 0.3s ease-in-out !important;
-          position: relative !important;
-          box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3) !important;
-        }
-        
-        .highlighted-candidate::before {
-          content: "Recently Viewed";
-          position: absolute;
-          top: -8px;
-          right: -8px;
-          background: #2196f3;
-          color: white;
-          padding: 2px 8px;
-          border-radius: 12px;
-          font-size: 10px;
-          font-weight: bold;
-          z-index: 10;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        [data-candidate-id] {
-          transition: all 0.3s ease-in-out;
-        }
-      `}</style>
     </div>
   );
 };

@@ -160,6 +160,11 @@ const ViewJobs = ({ job, onBack }) => {
   const [applyError, setApplyError] = useState("");
   const [isApplied, setIsApplied] = useState(false);
 
+  // Scroll to top when component mounts (when viewing a job)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [job?.id]);
+
   // --- Check Already Applied on Mount
   useEffect(() => {
     if (!job?.id || !userId) return;

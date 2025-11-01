@@ -7,10 +7,11 @@ import { toast } from "react-toastify";
 import { FaCheckCircle } from "react-icons/fa";
 import { useAuth } from "../../../../Context/AuthContext";
 import { getAuth, updateEmail, fetchSignInMethodsForEmail } from "firebase/auth";
-import { validateField, formatFieldValue, validateWithFeedback } from "../../../../utils/formValidation";
+import { validateField, formatFieldValue, validateWithFeedback, validatePincodeForStateWithFeedback } from "../../../../utils/formValidation";
 import CollapsibleSection from "./CollapsibleSection";
 import LogoCoverUploader from "./LogoCoverUploader";
 import InputWithTooltip from "../../../../services/InputWithTooltip";
+import { selectMenuPortalStyles } from "../../PostJobs/Shared/utils";
 
 const LOGIN_API_URL = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login";
 const API_URL = "https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation";
@@ -238,6 +239,25 @@ const OrgDetails = () => {
   useEffect(() => {
     if (isGoogleAccount) setEmailVerified(true);
   }, [isGoogleAccount]);
+
+  // Fetch designations on mount
+  useEffect(() => {
+    const fetchDesignations = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_DEV1_API}/constants`);
+        const transformedData = response.data.map((item) => ({
+          category: item.category,
+          value: item.value,
+          label: item.label,
+        }));
+        setDesignations(transformedData.filter((item) => item.category === "Administration") || []);
+      } catch (error) {
+        console.error("Error fetching designations:", error);
+      }
+    };
+    
+    fetchDesignations();
+  }, []);
 
   useEffect(() => {
     if (!isFetched || !countries.length) return;
@@ -744,6 +764,16 @@ const OrgDetails = () => {
   // ---- /profile_approved HANDLING ----
   const handleSubmit = async e => {
     e.preventDefault();
+    
+    // Validate pincode against selected state before submission
+    if (orgDetails.pincode && orgDetails.state) {
+      const isPincodeValid = validatePincodeForStateWithFeedback(orgDetails.pincode, orgDetails.state, true);
+      if (!isPincodeValid) {
+        toast.error("Please correct the pincode before submitting");
+        return;
+      }
+    }
+    
     const cp = orgDetails.contactPerson;
     const isParent = selectedType === PARENT_TYPE;
     const payload = {
@@ -880,11 +910,11 @@ const OrgDetails = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen p-6">
+    <div className="bg-gray-50 min-h-screen p-3 sm:p-4 md:p-6">
       <form onSubmit={handleSubmit} className="max-w-7xl mx-auto">
         {/* Organization Type Selection */}
         <div className="mb-6">
-          <div className="bg-[#F0D8D9] rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-[#F0D8D9] rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Organization/Entity Type
@@ -908,7 +938,7 @@ const OrgDetails = () => {
         {/* Account Details Section */}
         {selectedType && (
           <CollapsibleSection title="Account Details" defaultOpen={true}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {/* School / College / University Name */}
               <div>
                     <InputWithTooltip label="School / College / University" required>
@@ -948,7 +978,7 @@ const OrgDetails = () => {
             </div>
 
             {/* Continue with remaining fields in grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6">
               {/* PAN Number */}
               <div>
                     <InputWithTooltip label="PAN Number">
@@ -1049,6 +1079,8 @@ const OrgDetails = () => {
                           setCities([]);
                         }}
                         placeholder="Country"
+                        menuPortalTarget={document.body}
+                        styles={selectMenuPortalStyles}
                         className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
                         classNamePrefix="react-select"
                         isSearchable
@@ -1088,6 +1120,8 @@ const OrgDetails = () => {
                           }
                         }}
                         placeholder="State"
+                        menuPortalTarget={document.body}
+                        styles={selectMenuPortalStyles}
                         className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                         classNamePrefix="react-select"
                         isSearchable
@@ -1112,6 +1146,8 @@ const OrgDetails = () => {
                           }));
                         }}
                         placeholder="City"
+                        menuPortalTarget={document.body}
+                        styles={selectMenuPortalStyles}
                         className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                         classNamePrefix="react-select"
                         isSearchable
@@ -1131,7 +1167,7 @@ const OrgDetails = () => {
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
                         value={orgDetails.pincode}
                         onChange={handleInputChange}
-                        onBlur={(e) => validateWithFeedback('pincode', e.target.value, true)}
+                        onBlur={(e) => validatePincodeForStateWithFeedback(e.target.value, orgDetails.state, true)}
                         pattern="^[1-9][0-9]{5}$"
                         title="Enter a valid 6-digit pincode"
                         minLength={6}
@@ -1159,7 +1195,7 @@ const OrgDetails = () => {
         {/* Contact Person Section */}
           {selectedType && (
           <CollapsibleSection title="Contact Person" defaultOpen={true}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {/* Contact Person Name */}
               <div>
                     <InputWithTooltip label="Name" required>
@@ -1203,6 +1239,8 @@ const OrgDetails = () => {
                         )}
                         onChange={handleContactPersonDesignationChange}
                         placeholder="Designation"
+                        menuPortalTarget={document.body}
+                        styles={selectMenuPortalStyles}
                         className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
                         classNamePrefix="react-select"
                       />
@@ -1211,12 +1249,12 @@ const OrgDetails = () => {
 
               {/* Mobile Number with Verification */}
               <div>
-                <div className="flex items-center space-x-2">
+                <div className="relative">
                       <input
                         type="text"
                         name="phone1"
-                    placeholder="Mobile Number"
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                        placeholder="Mobile Number"
+                        className="w-full px-4 py-3 pr-12 sm:pr-24 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
                         value={orgDetails.contactPerson.phone1}
                         onChange={handleContactPersonChange}
                         onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
@@ -1225,11 +1263,11 @@ const OrgDetails = () => {
                         disabled={phoneVerified}
                       />
                       {phoneVerified ? (
-                    <FaCheckCircle className="h-5 w-5 text-green-500" />
+                        <FaCheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />
                       ) : (
                         <button
                           type="button"
-                      className="px-4 py-3 bg-gradient-brand text-white rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-brand text-white text-xs sm:text-sm rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium whitespace-nowrap"
                           onClick={sendPhoneOtp}
                           disabled={isPhoneVerifying}
                         >
@@ -1238,7 +1276,7 @@ const OrgDetails = () => {
                       )}
                   </div>
                   {showPhoneOtpInput && !phoneVerified && (
-                  <div className="flex items-center space-x-2 mt-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:space-x-2 sm:gap-0 mt-2">
                       <input
                         type="text"
                         placeholder="Enter Phone OTP"
@@ -1249,7 +1287,7 @@ const OrgDetails = () => {
                       />
                       <button
                         type="button"
-                      className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium"
+                      className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium whitespace-nowrap"
                         onClick={verifyPhoneOtp}
                         disabled={isPhoneVerifying}
                       >
@@ -1261,12 +1299,12 @@ const OrgDetails = () => {
 
               {/* Email Address with Verification */}
               <div>
-                <div className="flex items-center space-x-2">
+                <div className="relative">
                       <input
                         type="email"
                         name="email"
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                    placeholder="Email Address"
+                        className="w-full px-4 py-3 pr-12 sm:pr-24 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                        placeholder="Email Address"
                         value={orgDetails.contactPerson.email}
                         onChange={handleContactPersonChange}
                         onBlur={(e) => validateWithFeedback('email', e.target.value, true)}
@@ -1274,20 +1312,20 @@ const OrgDetails = () => {
                         disabled={isGoogleAccount || emailVerified}
                       />
                       {(isGoogleAccount || emailVerified) ? (
-                    <FaCheckCircle className="h-5 w-5 text-green-500" />
+                        <FaCheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />
                       ) : (
                         <button
                           type="button"
-                      className="px-4 py-3 bg-gradient-brand text-white rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-brand text-white text-xs sm:text-sm rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium whitespace-nowrap"
                           onClick={sendEmailOtp}
                           disabled={isVerifying}
                         >
-                      {isVerifying ? "Sendingâ€¦" : "Verify"}
+                          {isVerifying ? "Sendingâ€¦" : "Verify"}
                         </button>
                       )}
                   </div>
                   {showOtpInput && !emailVerified && !isGoogleAccount && (
-                  <div className="flex items-center space-x-2 mt-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:space-x-2 sm:gap-0 mt-2">
                       <input
                         type="text"
                         placeholder="Enter OTP"
@@ -1298,7 +1336,7 @@ const OrgDetails = () => {
                       />
                       <button
                         type="button"
-                      className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium"
+                      className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium whitespace-nowrap"
                         onClick={verifyEmailOtp}
                         disabled={isVerifying}
                       >
@@ -1336,31 +1374,33 @@ const OrgDetails = () => {
 
               {/* Are you the owner - Radio Buttons */}
               {isNonParent() && (
-                <div className="col-span-2">
-                  <div className="flex items-center space-x-6">
-                    <span className="text-sm font-medium text-gray-700">Are you the owner or the main head of the organization?</span>
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="isOwner"
-                        value="yes"
-                        checked={isOwner === "yes"}
-                        onChange={(e) => setIsOwner(e.target.value)}
-                        className="w-4 h-4 text-pink-600 border-gray-300 focus:ring-pink-200"
-                      />
-                      <span className="text-sm text-gray-700">Yes</span>
-                    </label>
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="isOwner"
-                        value="no"
-                        checked={isOwner === "no"}
-                        onChange={(e) => setIsOwner(e.target.value)}
-                        className="w-4 h-4 text-pink-600 border-gray-300 focus:ring-pink-200"
-                      />
-                      <span className="text-sm text-gray-700">No</span>
-                    </label>
+                <div className="col-span-1 md:col-span-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:space-x-6">
+                    <span className="text-sm font-medium text-gray-700 flex-shrink-0">Are you the owner or the main head of the organization?</span>
+                    <div className="flex items-center gap-4 sm:gap-6">
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="isOwner"
+                          value="yes"
+                          checked={isOwner === "yes"}
+                          onChange={(e) => setIsOwner(e.target.value)}
+                          className="w-4 h-4 text-pink-600 border-gray-300 focus:ring-pink-200"
+                        />
+                        <span className="text-sm text-gray-700">Yes</span>
+                      </label>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="isOwner"
+                          value="no"
+                          checked={isOwner === "no"}
+                          onChange={(e) => setIsOwner(e.target.value)}
+                          className="w-4 h-4 text-pink-600 border-gray-300 focus:ring-pink-200"
+                        />
+                        <span className="text-sm text-gray-700">No</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1371,7 +1411,7 @@ const OrgDetails = () => {
         {/* Reporting Authority Section - Shows when user is NOT the owner */}
         {selectedType && isNonParent() && isOwner === "no" && (
           <CollapsibleSection title="Reporting Authority" defaultOpen={true}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {/* Reporting Authority Name */}
               <div>
                   <InputWithTooltip label="Name" required>
@@ -1415,6 +1455,8 @@ const OrgDetails = () => {
                       )}
                       onChange={handleReportingAuthorityDesignationChange}
                       placeholder="Designation"
+                      menuPortalTarget={document.body}
+                      styles={selectMenuPortalStyles}
                       className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
                       classNamePrefix="react-select"
                     />
@@ -1489,9 +1531,9 @@ const OrgDetails = () => {
 
         {/* Submit Button */}
           {selectedType && (
-          <div className="mt-8 text-center">
+          <div className="mt-6 sm:mt-8 text-center">
               <button 
-              className="px-8 py-3 bg-gradient-brand text-white rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-gradient-brand text-white rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium"
                 type="submit"
                 disabled={isSaving}
               >

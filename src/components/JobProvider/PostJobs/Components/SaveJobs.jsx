@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../../../Context/AuthContext';
+import JobDetailsView from '../Shared/JobDetailsView';
 
 const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
   const { user } = useAuth();
@@ -188,53 +189,95 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
   const ConfirmationModal = () => {
     if (!showConfirmDialog) return null;
 
+    const handleClose = () => {
+      setShowConfirmDialog(false);
+      setSelectedJob(null);
+    };
+
     return createPortal(
       <div 
-        className="fixed inset-0 w-screen h-screen bg-black bg-opacity-60 z-[9999] flex items-center justify-center p-5 backdrop-blur-sm"
+        className="fixed inset-0 w-screen h-screen bg-black bg-opacity-20 z-[22222] flex items-center justify-center p-5"
         onClick={(e) => {
           if (e.target === e.currentTarget) {
-            setShowConfirmDialog(false);
+            handleClose();
           }
         }}
       >
         <div 
-          className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden relative border border-gray-200 animate-modalSlideIn"
+          className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden relative flex flex-col animate-modalSlideIn"
           onClick={(e) => e.stopPropagation()}
+          style={{
+            background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
+            animation: 'modalSlideIn 0.3s ease-out'
+          }}
         >
-          <div className="p-6 pb-4 border-b border-gray-200 relative bg-gray-50">
-            <h5 className="m-0 text-xl font-semibold text-gray-900 leading-tight pr-10">
-              Confirm Job Posting
-            </h5>
+          {/* Header */}
+          <div className="p-6 border-b border-gray-200 bg-white">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
+                  ✅
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-800 m-0">
+                  Confirm Job Posting
+                </h3>
+              </div>
+              <button 
+                type="button" 
+                className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors text-xl"
+                onClick={handleClose}
+              >
+                &times;
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-6 bg-[#F0D8D9]">
+            {/* Job Info Card */}
+            <div className="bg-white rounded-lg p-4 mb-6 border border-gray-200 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">💼</div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500 mb-1 font-medium">Job Title</p>
+                  <p className="text-lg font-semibold text-gray-900 m-0">
+                    {selectedJob?.job_title || 'Untitled Job'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Information Message */}
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
+              <div className="flex items-start gap-2">
+                <span className="text-blue-600 text-xl">ℹ️</span>
+                <div>
+                  <p className="text-sm font-semibold text-blue-900 m-0 mb-2">
+                    Ready to post this job?
+                  </p>
+                  <p className="text-sm text-blue-800 m-0 leading-relaxed">
+                    This saved job will be posted and become active for 30 days. Make sure all details are correct before posting.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="p-6 border-t border-gray-200 bg-white flex flex-col sm:flex-row justify-end gap-3">
             <button 
               type="button" 
-              className="absolute top-5 right-5 bg-none border-none text-xl cursor-pointer p-1 w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              onClick={() => setShowConfirmDialog(false)}
-            >
-              ×
-            </button>
-          </div>
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-            <p className="m-0 mb-4 leading-relaxed text-gray-700">
-              Are you sure you want to post this saved job?
-            </p>
-            <p className="m-0 mb-0 leading-relaxed text-gray-700">
-              <strong className="text-gray-900 font-semibold">Job Title:</strong> {selectedJob?.job_title}
-            </p>
-          </div>
-          <div className="p-4 pt-4 flex justify-end gap-3 border-t border-gray-200 bg-gray-50">
-            <button 
-              type="button" 
-              className="px-5 py-2.5 rounded-md cursor-pointer border border-gray-500 bg-gray-500 text-white text-sm font-medium transition-all duration-200 inline-flex items-center justify-center min-w-[80px] outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:translate-y-px hover:bg-gray-600 hover:border-gray-600"
-              onClick={() => setShowConfirmDialog(false)}
+              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors min-w-[120px]"
+              onClick={handleClose}
             >
               Cancel
             </button>
             <button 
               type="button" 
-              className="px-5 py-2.5 rounded-md cursor-pointer border border-blue-600 bg-blue-600 text-white text-sm font-medium transition-all duration-200 inline-flex items-center justify-center min-w-[80px] outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:translate-y-px hover:bg-blue-700 hover:border-blue-700"
+              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-brand text-white font-medium hover:opacity-90 transition-opacity min-w-[150px] shadow-md"
               onClick={confirmPostSavedJob}
             >
-              Yes, Post Job
+              ✅ Post Job
             </button>
           </div>
         </div>
@@ -246,46 +289,95 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
   const DeleteModal = () => {
     if (!showDeleteDialog) return null;
     
+    const handleClose = () => {
+      setShowDeleteDialog(false);
+      setJobToDelete(null);
+    };
+    
     return createPortal(
-      <div className="fixed inset-0 w-screen h-screen bg-black bg-opacity-60 z-[9999] flex items-center justify-center p-5 backdrop-blur-sm">
-        <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden relative border border-gray-200 animate-modalSlideIn">
-          <div className="p-6 pb-4 border-b border-gray-200 relative bg-gray-50">
-            <h5 className="m-0 text-xl font-semibold text-gray-900 leading-tight pr-10">
-              Delete Saved Job
-            </h5>
+      <div 
+        className="fixed inset-0 w-screen h-screen bg-black bg-opacity-20 z-[22222] flex items-center justify-center p-5"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            handleClose();
+          }
+        }}
+      >
+        <div 
+          className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden relative flex flex-col animate-modalSlideIn"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
+            animation: 'modalSlideIn 0.3s ease-out'
+          }}
+        >
+          {/* Header */}
+          <div className="p-6 border-b border-gray-200 bg-white">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
+                  🗑️
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-800 m-0">
+                  Delete Saved Job
+                </h3>
+              </div>
+              <button 
+                type="button" 
+                className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors text-xl"
+                onClick={handleClose}
+              >
+                &times;
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-6 bg-[#F0D8D9]">
+            {/* Job Info Card */}
+            <div className="bg-white rounded-lg p-4 mb-6 border border-gray-200 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">💼</div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500 mb-1 font-medium">Job Title</p>
+                  <p className="text-lg font-semibold text-gray-900 m-0">
+                    {jobToDelete?.job_title || 'Untitled Job'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Danger Warning Message */}
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
+              <div className="flex items-start gap-2">
+                <span className="text-red-600 text-xl">⚠️</span>
+                <div>
+                  <p className="text-sm font-semibold text-red-900 m-0 mb-2">
+                    This action cannot be undone!
+                  </p>
+                  <p className="text-sm text-red-800 m-0 leading-relaxed">
+                    Are you sure you want to permanently delete this saved job? All job details will be lost and you'll need to recreate it from scratch.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="p-6 border-t border-gray-200 bg-white flex flex-col sm:flex-row justify-end gap-3">
             <button 
               type="button" 
-              className="absolute top-5 right-5 bg-none border-none text-xl cursor-pointer p-1 w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              onClick={() => setShowDeleteDialog(false)}
-            >
-              ×
-            </button>
-          </div>
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-            <p className="mb-3 text-gray-700 leading-relaxed">
-              Are you sure you want to delete this saved job?
-            </p>
-            <p className="mb-3 text-gray-700 leading-relaxed">
-              <strong className="text-gray-900 font-semibold">Job Title:</strong> {jobToDelete?.job_title || 'Untitled Job'}
-            </p>
-            <p className="mb-0 text-gray-700 leading-relaxed">
-              This action cannot be undone.
-            </p>
-          </div>
-          <div className="p-4 pt-4 flex justify-end gap-3 border-t border-gray-200 bg-gray-50">
-            <button 
-              type="button" 
-              className="px-5 py-2.5 rounded-md cursor-pointer border border-gray-500 bg-gray-500 text-white text-sm font-medium transition-all duration-200 inline-flex items-center justify-center min-w-[80px] outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:translate-y-px hover:bg-gray-600 hover:border-gray-600"
-              onClick={() => setShowDeleteDialog(false)}
+              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors min-w-[120px]"
+              onClick={handleClose}
             >
               Cancel
             </button>
             <button 
               type="button" 
-              className="px-5 py-2.5 rounded-md cursor-pointer border border-red-600 bg-red-600 text-white text-sm font-medium transition-all duration-200 inline-flex items-center justify-center min-w-[80px] outline-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 active:translate-y-px hover:bg-red-700 hover:border-red-700"
+              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-brand text-white font-medium hover:bg-red-700 transition-colors min-w-[150px] shadow-md"
               onClick={confirmDeleteJob}
             >
-              Delete Job
+              🗑️ Delete Job
             </button>
           </div>
         </div>
@@ -307,8 +399,14 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
     );
   }
 
+  const handlePostJob = (job) => {
+    setSelectedJob(job);
+    setShowConfirmDialog(true);
+  };
+
   return (
     <div className="w-full max-w-full">
+      <ConfirmationModal />
       <DeleteModal />
 
       <div className="m-0 w-full">
@@ -332,9 +430,9 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
           ) : (
             // Job List
             <div className="w-full">
-              <div className="flex justify-between items-center mb-5 flex-wrap gap-4 w-full">
-                <h6 className="text-gray-700 text-base font-semibold">Your Saved Jobs: {filteredJobs.length}</h6>
-                <div className="relative flex-1 max-w-md min-w-[250px]">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-5 gap-4 w-full">
+                <h6 className="text-gray-700 text-base font-semibold whitespace-nowrap">Your Saved Jobs: {filteredJobs.length}</h6>
+                <div className="relative w-full sm:flex-1 sm:max-w-md">
                   <input
                     type="text"
                     className="w-full p-2.5 px-4 pr-10 border border-gray-300 rounded-md text-sm transition-all duration-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
@@ -347,57 +445,82 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
               </div>
               
               {filteredJobs.map((job, index) => (
-                <div key={job.id || index} className="mb-4 border border-gray-200 rounded-lg shadow-sm transition-all duration-300 overflow-hidden bg-white p-4 w-full hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300">
+                <div key={job.id || index} className="mb-4 border border-gray-200 rounded-lg shadow-sm transition-all duration-300 overflow-hidden bg-white p-3 sm:p-4 w-full hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300 hover:bg-[#F0D8D9]">
                   {/* Job Card - Clean One Line */}
                   <div className="border-none shadow-none bg-none m-0 p-0 w-full">
                     <div className="p-0 m-0 bg-none w-full">
-                      <div className="flex items-center m-0 w-full">
-                        {/* Job ID Section */}
-                        <div className="flex-none max-w-[10%] min-w-[80px] px-2 flex items-center">
-                          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-3 py-1.5 rounded-xl text-xs font-semibold text-center inline-block whitespace-nowrap shadow-md w-fit">
-                            ID: {job.id || `${index + 1}`}
+                      <div className="flex flex-row items-start m-0 w-full gap-3">
+                        {/* Left Side: ID, Title, Date */}
+                        <div className="flex flex-col gap-2 flex-1 min-w-0">
+                          {/* Top Row: ID and Title */}
+                          <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+                            {/* Job ID Section */}
+                            <div className="flex-shrink-0 flex items-center">
+                              <div className="bg-gradient-brand text-white px-3 py-1.5 rounded-xl text-xs font-semibold text-center inline-block whitespace-nowrap shadow-md w-fit">
+                                ID: {job.id || `${index + 1}`}
+                              </div>
+                            </div>
+
+                            {/* Job Title Section */}
+                            <div className="flex-1 min-w-0 flex flex-col items-start justify-center">
+                              <h6 className="text-lg sm:text-xl font-semibold text-gray-800 leading-tight m-0 mb-1 break-words sm:truncate w-full" title={job.job_title || 'Untitled Job'}>
+                                {job.job_title || 'Untitled Job'}
+                              </h6>
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 mt-2">
+                                <p className="m-0 text-xs text-gray-500 font-medium uppercase tracking-wide bg-gray-100 px-2 py-0.5 rounded inline-block w-fit">
+                                  {job.job_type ? job.job_type.replace('_', ' ').toUpperCase() : 'Not specified'}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Saved Date Section - Hidden on mobile, shown on tablet+ */}
+                            <div className="hidden md:flex flex-shrink-0 px-2 text-center flex-col items-center">
+                              <p className="m-0 mb-1 text-xs text-gray-500 font-medium uppercase tracking-wide">
+                                Saved
+                              </p>
+                              <p className="m-0 text-sm text-gray-800 font-semibold bg-gray-100 px-2 py-0.5 rounded border border-gray-200 whitespace-nowrap">
+                                {formatDate(job.saved_date || job.created_at) || 'Not specified'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Saved Date Section - Mobile only */}
+                          <div className="md:hidden flex flex-shrink-0 text-left flex-row items-center gap-2">
+                            <p className="m-0 text-xs text-gray-500 font-medium uppercase tracking-wide">
+                              Saved:
+                            </p>
+                            <p className="m-0 text-sm text-gray-800 font-semibold bg-gray-100 px-2 py-0.5 rounded border border-gray-200 whitespace-nowrap">
+                              {formatDate(job.saved_date || job.created_at) || 'Not specified'}
+                            </p>
                           </div>
                         </div>
 
-                        {/* Job Title Section */}
-                        <div className="flex-none max-w-[35%] min-w-[200px] px-2 flex flex-col items-start justify-center">
-                          <h6 className="text-xl font-semibold text-gray-800 leading-tight m-0 mb-1 break-words">
-                            {job.job_title || 'Untitled Job'}
-                          </h6>
-                          <p className="m-0 text-xs text-gray-500 font-medium uppercase tracking-wide bg-gray-100 px-2 py-0.5 rounded inline-block">
-                            {job.job_type ? job.job_type.replace('_', ' ').toUpperCase() : 'Not specified'}
-                          </p>
-                        </div>
-
-                        {/* Saved Date Section */}
-                        <div className="flex-none max-w-[15%] min-w-[120px] px-2 text-center flex flex-col items-center w-full">
-                          <p className="m-0 mb-1 text-xs text-gray-500 font-medium uppercase tracking-wide">
-                            Saved
-                          </p>
-                          <p className="m-0 text-sm text-gray-800 font-semibold bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
-                            {formatDate(job.saved_date || job.created_at)}
-                          </p>
-                        </div>
-
-                        {/* Action Buttons Section */}
-                        <div className="flex-1 max-w-[40%] min-w-[250px] px-2">
-                          <div className="flex flex-row gap-2 justify-end flex-nowrap items-center pl-2.5 w-full">
+                        {/* Right Side: Action Buttons Section - Vertical on mobile, Horizontal on larger screens */}
+                        <div className="flex-shrink-0 px-2">
+                          <div className="flex flex-col sm:flex-row gap-2 items-end sm:items-center lg:flex-nowrap">
                             <button
-                              className="border-none rounded-md py-2.5 px-3.5 text-xs font-semibold transition-all duration-300 inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline flex-1 min-h-[38px] max-w-[120px] bg-gradient-brand text-white hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md"
-                              onClick={() => handleViewJob(job.id)}
+                              className="border-none rounded-md py-2 px-3 text-xs font-semibold transition-all duration-300 inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md"
+                              onClick={() => handleViewJob(job.id || index)}
                             >
-                              View
+                              {expandedJobId === (job.id || index) ? 'Hide' : 'View'}
                             </button>
 
                             <button
-                              className="border-none rounded-md py-2.5 px-3.5 text-xs font-semibold transition-all duration-300 inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline flex-1 min-h-[38px] max-w-[120px] bg-gradient-brand text-white hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md"
+                              className="border-none rounded-md py-2 px-3 text-xs font-semibold transition-all duration-300 inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md"
+                              onClick={() => handlePostJob(job)}
+                            >
+                              Post
+                            </button>
+
+                            <button
+                              className="border-none rounded-md py-2 px-3 text-xs font-semibold transition-all duration-300 inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md"
                               onClick={() => handleEditAndPost(job)}
                             >
                               Edit
                             </button>
 
                             <button
-                              className="border-none rounded-md py-2.5 px-3.5 text-xs font-semibold transition-all duration-300 inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline flex-1 min-h-[38px] max-w-[120px] bg-gradient-brand text-white hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md"
+                              className="border-none rounded-md py-2 px-3 text-xs font-semibold transition-all duration-300 inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md"
                               onClick={() => handleDeleteJob(job)}
                             >
                               Delete
@@ -409,51 +532,12 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                     
                     {/* Expanded Job Details - Clean One Line Style */}
                     {expandedJobId === (job.id || index) && (
-                      <div className="border-t border-gray-200 bg-gray-50 p-5 -mx-4 -mb-4 w-[calc(100%+32px)]">
-                        <div className="border-t border-gray-200 pt-5">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <h6 className="mb-3 text-base font-semibold text-blue-600">
-                                Job Information
-                              </h6>
-                              <div className="text-sm leading-relaxed text-gray-600">
-                                <div className="mb-2 py-1"><strong className="text-gray-900 font-semibold min-w-[120px] inline-block">Type:</strong> {job.job_type || 'Not specified'}</div>
-                                <div className="mb-2 py-1"><strong className="text-gray-900 font-semibold min-w-[120px] inline-block">Openings:</strong> {job.no_of_opening || 'Not specified'}</div>
-                                <div className="mb-2 py-1"><strong className="text-gray-900 font-semibold min-w-[120px] inline-block">Salary:</strong> {job.min_salary && job.max_salary ? `₹${job.min_salary} - ₹${job.max_salary}` : 'Not specified'}</div>
-                                <div className="mb-2 py-1"><strong className="text-gray-900 font-semibold min-w-[120px] inline-block">Location:</strong> {job.city || job.location || 'Not specified'}</div>
-                                <div className="mb-2 py-1"><strong className="text-gray-900 font-semibold min-w-[120px] inline-block">Joining Date:</strong> {formatDate(job.joining_date) || 'Not specified'}</div>
-                              </div>
-                            </div>
-                            <div>
-                              <h6 className="mb-3 text-base font-semibold text-red-600">
-                                Requirements
-                              </h6>
-                              <div className="text-sm leading-relaxed text-gray-600">
-                                <div className="mb-2 py-1"><strong className="text-gray-900 font-semibold min-w-[120px] inline-block">Qualifications:</strong> {Array.isArray(job.qualification) ? job.qualification.join(', ') : job.qualification || 'Not specified'}</div>
-                                <div className="mb-2 py-1"><strong className="text-gray-900 font-semibold min-w-[120px] inline-block">Experience:</strong> {job.total_experience_min_years ? `${job.total_experience_min_years}+ years` : 'Not specified'}</div>
-                                <div className="mb-2 py-1"><strong className="text-gray-900 font-semibold min-w-[120px] inline-block">Subjects:</strong> {(() => {
-                                  if (Array.isArray(job.subjects)) {
-                                    return job.subjects.length > 0 ? job.subjects.join(', ') : 'Not specified';
-                                  }
-                                  return job.subjects || 'Not specified';
-                                })()}</div>
-                                <div className="mb-2 py-1"><strong className="text-gray-900 font-semibold min-w-[120px] inline-block">Gender:</strong> {job.gender || 'Any'}</div>
-                              </div>
-                            </div>
-                          </div>
-                          {job.job_description && (
-                            <div className="mt-4">
-                              <div className="w-full">
-                                <h6 className="mb-3 text-base font-semibold text-purple-600">
-                                  Job Description
-                                </h6>
-                                <p className="text-gray-600 leading-relaxed m-0 text-sm bg-white p-3 rounded-md border border-gray-200">
-                                  {job.job_description}
-                                </p>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                      <div className="border-t border-gray-200 p-4 sm:p-5 -mx-4 -mb-4 w-[calc(100%+32px)]">
+                        <JobDetailsView 
+                          jobData={job} 
+                          variant="expanded"
+                          formatDate={formatDate}
+                        />
                       </div>
                     )}
                   </div>

@@ -26,7 +26,7 @@ const mapStatesOfCountry = async (countryId) => {
   }));
 };
 
-const Field = ({ label, value, isUrl = false }) => {
+const Field = ({ label, value, isUrl = false, icon: Icon }) => {
   if (!value) return null;
   
   const displayValue = Array.isArray(value) ? value.join(', ') : 
@@ -34,21 +34,24 @@ const Field = ({ label, value, isUrl = false }) => {
                       value;
 
   return (
-    <div className="col-12">
-      <div className="flex items-start mb-2.5">
-        <div className="w-32 min-w-32 text-gray-500 text-sm pr-2.5">{label}:</div>
-        <div className="flex-1">
+    <div className="mb-3">
+      <div className="flex items-start">
+        {Icon && (
+          <Icon className="text-blue-600 text-base mr-2 mt-0.5 flex-shrink-0" />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="text-gray-500 text-sm font-medium mb-1">{label}</div>
           {isUrl ? (
             <a 
               href={displayValue.startsWith('http') ? displayValue : `https://${displayValue}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-decoration-none text-blue-600 text-sm break-all"
+              className="text-blue-600 hover:text-blue-800 text-base break-all transition-colors"
             >
               {displayValue}
             </a>
           ) : (
-            <span className="text-gray-900 text-sm block">{displayValue}</span>
+            <span className="text-gray-900 text-base break-words">{displayValue}</span>
           )}
         </div>
       </div>
@@ -85,11 +88,11 @@ const StateField = ({ label, countryCode, stateCode }) => {
   if (!countryCode || !stateCode) return null;
 
   return (
-    <div className="col-12">
-      <div className="flex items-start mb-2.5">
-        <div className="w-32 min-w-32 text-gray-500 text-sm pr-2.5">{label}:</div>
-        <div className="flex-1">
-          <span className="text-gray-900 text-sm block">
+    <div className="mb-3">
+      <div className="flex items-start">
+        <div className="flex-1 min-w-0">
+          <div className="text-gray-500 text-sm font-medium mb-1">{label}</div>
+          <span className="text-gray-900 text-base">
             {isLoading ? "Loading..." : stateName}
           </span>
         </div>
@@ -99,18 +102,16 @@ const StateField = ({ label, countryCode, stateCode }) => {
 };
 
 const Section = ({ title, children, icon: Icon }) => (
-  <div className={`mb-3 rounded-lg p-5 shadow-sm ${
-    title === "Organization Details" ? 'bg-gray-50' : 'bg-white'
-  }`}>
-    <div className="flex items-center mb-4 border-b border-gray-200 pb-2.5">
+  <div className="mb-4 rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+    <div className="flex items-center px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
       {Icon && (
-        <Icon className="text-blue-600 text-lg mr-2.5" />
+        <Icon className="text-blue-600 text-lg mr-2" />
       )}
-      <h4 className="text-gray-900 text-lg font-semibold m-0">
+      <h4 className="text-gray-900 text-base font-semibold m-0">
         {title}
       </h4>
     </div>
-    <div className="row">{children}</div>
+    <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">{children}</div>
   </div>
 );
 
@@ -118,16 +119,16 @@ const SocialLink = ({ icon: Icon, url, label, color }) => {
   if (!url) return null;
   
   return (
-    <div className="col-12">
-      <div className="flex items-start mb-2.5">
-        <div className="w-32 min-w-32 text-gray-500 text-sm pr-2.5">{label}:</div>
-        <div className="flex items-center flex-1">
-          <Icon className="text-sm mr-2 flex-shrink-0" style={{ color }} />
+    <div className="mb-3">
+      <div className="flex items-center">
+        <Icon className="text-lg mr-2 flex-shrink-0" style={{ color }} />
+        <div className="flex-1 min-w-0">
+          <div className="text-gray-500 text-sm font-medium mb-1">{label}</div>
           <a 
             href={url.startsWith('http') ? url : `https://${url}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-decoration-none text-blue-600 text-sm break-all"
+            className="text-blue-600 hover:text-blue-800 text-base break-all transition-colors"
           >
             {url}
           </a>
@@ -268,100 +269,97 @@ const ViewProfile = () => {
   const isParent = orgData.type === PARENT_TYPE;
 
   return (
-    <div className="profile-view-container bg-gray-50 min-h-screen p-2.5 md:p-5">
-      <div className="container-fluid">
+    <div className="profile-view-container bg-gray-50 min-h-screen p-3 md:p-4">
+      <div className="max-w-7xl mx-auto">
         
         {/* Header Section with Profile Photo */}
-        <div className="profile-header-card mb-4 bg-white rounded-lg p-4 md:p-6 shadow-sm border border-gray-200">
-          <div className="row align-items-center">
-            <div className="col-md-3 col-sm-12 text-center mb-md-0 mb-3">
-              <div className="profile-image-container w-24 h-24 md:w-32 md:h-32 mx-auto rounded-full border-4 border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
-                {profileImage ? (
-                  <img 
-                    src={profileImage} 
-                    alt="Organization Logo" 
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
-                    }}
-                  />
-                ) : null}
-                <div className={`${profileImage ? 'hidden' : 'flex'} items-center justify-center w-full h-full bg-gray-200 text-gray-600`}>
-                  <FaBuilding size={30} />
+        <div className="profile-header-card mb-4 bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 border-b border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <div className="profile-image-container w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-white shadow-md overflow-hidden bg-white flex items-center justify-center">
+                  {profileImage ? (
+                    <img 
+                      src={profileImage} 
+                      alt="Organization Logo" 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div className={`${profileImage ? 'hidden' : 'flex'} items-center justify-center w-full h-full bg-gray-200 text-gray-600`}>
+                    <FaBuilding size={24} />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="col-md-9 col-sm-12">
-              <div className="d-flex align-items-center mb-3">
-                <div className="flex items-center w-full">
-                  <FaBuilding className="text-blue-600 text-2xl mr-3" />
-                  <h3 className="font-semibold text-gray-900 text-2xl m-0">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center mb-1">
+                  <FaBuilding className="text-blue-600 text-xl mr-2" />
+                  <h3 className="font-semibold text-gray-900 text-xl m-0 truncate">
                     {orgData?.name || 'Organization Name Not Set'}
                   </h3>
                 </div>
-              </div>
-              <div className="flex items-center mb-4">
-                <FaBuilding className="text-blue-600 text-base mr-2.5" />
-                <span className="text-base text-gray-900 font-medium">
+                <div className="text-sm text-gray-600 truncate">
                   {orgData?.type || 'Organization Type Not Set'}
-                </span>
-              </div>
-              <div className="row">
-                <div className="col-12">
-                  {orgData?.contact_person_name && (
-                    <div className="flex items-start mb-2.5">
-                      <FaUser className="text-blue-600 text-sm mr-2 mt-1 flex-shrink-0" />
-                      <div className="flex-1">
-                        <strong>Contact:</strong> {orgData.contact_person_name}
-                      </div>
-                    </div>
-                  )}
-                  {orgData?.contact_person_email && (
-                    <div className="flex items-start mb-2.5">
-                      <FaEnvelope className="text-blue-600 text-sm mr-2 mt-1 flex-shrink-0" />
-                      <a href={`mailto:${orgData.contact_person_email}`} 
-                         className="text-blue-600 no-underline text-sm flex-1">
-                        {orgData.contact_person_email}
-                      </a>
-                    </div>
-                  )}
-                  {(orgData?.city || orgData?.country) && (
-                    <div className="flex items-start mb-2.5">
-                      <FaMapMarkerAlt className="text-blue-600 text-sm mr-2 mt-1 flex-shrink-0" />
-                      <div className="flex-1">
-                        {[orgData.city, orgData.state, orgData.country].filter(Boolean).join(', ')}
-                      </div>
-                    </div>
-                  )}
-                  {orgData?.contact_person_phone1 && (
-                    <div className="flex items-start mb-2.5">
-                      <FaPhone className="text-blue-600 text-sm mr-2 mt-1 flex-shrink-0" />
-                      <a href={`tel:${orgData.contact_person_phone1}`} 
-                         className="text-blue-600 no-underline text-sm flex-1">
-                        {orgData.contact_person_phone1}
-                      </a>
-                    </div>
-                  )}
-                  {orgData?.contact_person_phone2 && (
-                    <div className="flex items-start mb-2.5">
-                      <FaWhatsapp className="text-sm mr-2 mt-1 flex-shrink-0" style={{color: '#25D366'}} />
-                      <a href={`https://wa.me/${orgData.contact_person_phone2}`} 
-                         className="text-blue-600 no-underline text-sm flex-1">
-                        {orgData.contact_person_phone2}
-                      </a>
-                    </div>
-                  )}
                 </div>
               </div>
+            </div>
+          </div>
+          
+          {/* Quick Info Grid */}
+          <div className="px-4 py-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {orgData?.contact_person_name && (
+                <div className="flex items-center">
+                  <FaUser className="text-blue-600 text-base mr-2 flex-shrink-0" />
+                  <span className="text-base text-gray-900 truncate">{orgData.contact_person_name}</span>
+                </div>
+              )}
+              {orgData?.contact_person_email && (
+                <div className="flex items-center">
+                  <FaEnvelope className="text-blue-600 text-base mr-2 flex-shrink-0" />
+                  <a href={`mailto:${orgData.contact_person_email}`} 
+                     className="text-blue-600 hover:text-blue-800 text-base truncate transition-colors">
+                    {orgData.contact_person_email}
+                  </a>
+                </div>
+              )}
+              {(orgData?.city || orgData?.country) && (
+                <div className="flex items-center">
+                  <FaMapMarkerAlt className="text-blue-600 text-base mr-2 flex-shrink-0" />
+                  <span className="text-base text-gray-900 truncate">
+                    {[orgData.city, orgData.state, orgData.country].filter(Boolean).join(', ')}
+                  </span>
+                </div>
+              )}
+              {orgData?.contact_person_phone1 && (
+                <div className="flex items-center">
+                  <FaPhone className="text-blue-600 text-base mr-2 flex-shrink-0" />
+                  <a href={`tel:${orgData.contact_person_phone1}`} 
+                     className="text-blue-600 hover:text-blue-800 text-base truncate transition-colors">
+                    {orgData.contact_person_phone1}
+                  </a>
+                </div>
+              )}
+              {orgData?.contact_person_phone2 && (
+                <div className="flex items-center">
+                  <FaWhatsapp className="text-base mr-2 flex-shrink-0" style={{color: '#25D366'}} />
+                  <a href={`https://wa.me/${orgData.contact_person_phone2}`} 
+                     className="text-blue-600 hover:text-blue-800 text-base truncate transition-colors">
+                    {orgData.contact_person_phone2}
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Two Column Layout */}
-        <div className="row g-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Left Column */}
-          <div className="col-lg-6 col-12">
+          <div>
             {/* Combined Organization Details and Social Media Links */}
             {!isParent && (
               <Section title="Organization Details" icon={FaBuilding}>
@@ -373,37 +371,31 @@ const ViewProfile = () => {
                 {/* Social Media Links */}
                 {(orgData?.facebook || orgData?.twitter || orgData?.linkedin || orgData?.instagram) && (
                   <>
-                    <div className="col-12">
-                      <hr className="my-3 border-gray-200" />
-                      <div className="flex items-center mb-4">
-                        <FaGlobe className="text-blue-600 text-lg mr-2.5" />
-                        <h5 className="text-gray-900 text-base font-medium m-0">
-                          Social Media Links
-                        </h5>
-                      </div>
+                    <div className="col-span-full my-2">
+                      <hr className="border-gray-200" />
                     </div>
                     <SocialLink 
                       icon={FaFacebook} 
                       url={orgData?.facebook} 
-                      label="Facebook Profile" 
+                      label="Facebook" 
                       color="#1877f2" 
                     />
                     <SocialLink 
                       icon={FaTwitter} 
                       url={orgData?.twitter} 
-                      label="Twitter Profile" 
+                      label="Twitter" 
                       color="#1da1f2" 
                     />
                     <SocialLink 
                       icon={FaLinkedin} 
                       url={orgData?.linkedin} 
-                      label="LinkedIn Profile" 
+                      label="LinkedIn" 
                       color="#0077b5" 
                     />
                     <SocialLink 
                       icon={FaInstagram} 
                       url={orgData?.instagram} 
-                      label="Instagram Profile" 
+                      label="Instagram" 
                       color="#e4405f" 
                     />
                   </>
@@ -413,7 +405,7 @@ const ViewProfile = () => {
           </div>
 
           {/* Right Column */}
-          <div className="col-lg-6 col-12">
+          <div>
             {/* Contact Person Details */}
             {(orgData?.contact_person_name || orgData?.contact_person_email || orgData?.contact_person_phone1) && (
               <Section title="Contact Person Details" icon={FaUser}>

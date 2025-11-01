@@ -12,6 +12,7 @@ import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import { toast } from "react-toastify";
 import { useAuth } from "../../../../../Context/AuthContext";
+import InputWithTooltip from "../../../../services/InputWithTooltip";
 
 // Additional API endpoints for specific functionality
 const JOB_PREFERENCES_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference";
@@ -1302,253 +1303,238 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
           <div className="row g-3">
             {/* Location Filters */}
             <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <Select
-                value={filters.country}
-                onChange={(value) => handleFilterChange('country', value)}
-                options={locationOptions.countries}
-                placeholder="Country"
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-              <span className="custom-tooltip">Country</span>
-              </div>
+              <InputWithTooltip label="Country">
+                <Select
+                  value={filters.country}
+                  onChange={(value) => handleFilterChange('country', value)}
+                  options={locationOptions.countries}
+                  placeholder="Country"
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
             
             <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <Select
-                value={filters.state}
-                onChange={(value) => handleFilterChange('state', value)}
-                options={locationOptions.states}
-                placeholder="State"
-                isClearable
-                isDisabled={!filters.country}
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-              <span className="custom-tooltip">State</span>
-              </div>
+              <InputWithTooltip label="State">
+                <Select
+                  value={filters.state}
+                  onChange={(value) => handleFilterChange('state', value)}
+                  options={locationOptions.states}
+                  placeholder="State"
+                  isClearable
+                  isDisabled={!filters.country}
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
             
             <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <Select
-                value={filters.city}
-                onChange={(value) => handleFilterChange('city', value)}
-                options={locationOptions.cities}
-                placeholder="City"
-                isClearable
-                isDisabled={!filters.state}
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-              <span className="custom-tooltip">City</span>
-              </div>
+              <InputWithTooltip label="City">
+                <Select
+                  value={filters.city}
+                  onChange={(value) => handleFilterChange('city', value)}
+                  options={locationOptions.cities}
+                  placeholder="City"
+                  isClearable
+                  isDisabled={!filters.state}
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Job Category */}
             <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <Select
-                value={filters.job_category}
-                onChange={(value) => handleFilterChange('job_category', value)}
-                options={filterOptions.jobCategories}
-                placeholder="Job Category"
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-              <span className="custom-tooltip">Job Category</span>
-              </div>
+              <InputWithTooltip label="Job Category">
+                <Select
+                  value={filters.job_category}
+                  onChange={(value) => handleFilterChange('job_category', value)}
+                  options={filterOptions.jobCategories}
+                  placeholder="Job Category"
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Salary Range */}
             <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <input
-                type="number"
-                className="form-control"
-                name="min_salary"
-                value={filters.min_salary}
-                onChange={handleInputChange}
-                placeholder="Minimum Salary"
-              />
-              <span className="custom-tooltip">Min Salary</span>
-              </div>
+              <InputWithTooltip label="Min Salary">
+                <input
+                  type="number"
+                  className="form-control"
+                  name="min_salary"
+                  value={filters.min_salary}
+                  onChange={handleInputChange}
+                  placeholder="Minimum Salary"
+                />
+              </InputWithTooltip>
             </div>
             
             <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <input
-                type="number"
-                className="form-control"
-                name="max_salary"
-                value={filters.max_salary}
-                onChange={handleInputChange}
-                placeholder="Maximum Salary"
-              />
-              <span className="custom-tooltip">Max Salary</span>
-              </div>
+              <InputWithTooltip label="Max Salary">
+                <input
+                  type="number"
+                  className="form-control"
+                  name="max_salary"
+                  value={filters.max_salary}
+                  onChange={handleInputChange}
+                  placeholder="Maximum Salary"
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Job Shifts */}
             <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <Select
-                value={filters.job_shifts}
-                onChange={(value) => handleFilterChange('job_shifts', value)}
-                options={filterOptions.jobShifts}
-                placeholder="Job Shifts"
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-              <span className="custom-tooltip">Job Shifts</span>
-              </div>
+              <InputWithTooltip label="Job Shifts">
+                <Select
+                  value={filters.job_shifts}
+                  onChange={(value) => handleFilterChange('job_shifts', value)}
+                  options={filterOptions.jobShifts}
+                  placeholder="Job Shifts"
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Job Process */}
               <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <Select
-                value={filters.job_process}
-                onChange={(value) => handleFilterChange('job_process', value)}
-                options={filterOptions.jobProcesses}
-                placeholder="Job Process"
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-              <span className="custom-tooltip">Job Process</span>
-              </div>
+              <InputWithTooltip label="Job Process">
+                <Select
+                  value={filters.job_process}
+                  onChange={(value) => handleFilterChange('job_process', value)}
+                  options={filterOptions.jobProcesses}
+                  placeholder="Job Process"
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Subjects */}
             <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <Select
-                value={filters.subjects}
-                onChange={(value) => handleFilterChange('subjects', value)}
-                options={apiOptions.subjects}
-                placeholder="Subjects"
-                isMulti
-                isClearable
-                isLoading={isLoading.subjects}
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-              <span className="custom-tooltip">Subjects</span>
-              </div>
+              <InputWithTooltip label="Subjects">
+                <Select
+                  value={filters.subjects}
+                  onChange={(value) => handleFilterChange('subjects', value)}
+                  options={apiOptions.subjects}
+                  placeholder="Subjects"
+                  isMulti
+                  isClearable
+                  isLoading={isLoading.subjects}
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
 
 
             {/* Designations */}
             <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <Select
-                value={filters.designations}
-                onChange={(value) => handleFilterChange('designations', value)}
-                options={apiOptions.designations}
-                placeholder="Designations"
-                isMulti
-                isClearable
-                isLoading={isLoading.constants}
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-              <span className="custom-tooltip">Designations</span>
-              </div>
+              <InputWithTooltip label="Designations">
+                <Select
+                  value={filters.designations}
+                  onChange={(value) => handleFilterChange('designations', value)}
+                  options={apiOptions.designations}
+                  placeholder="Designations"
+                  isMulti
+                  isClearable
+                  isLoading={isLoading.constants}
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Designated Grades */}
             <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <Select
-                value={filters.designated_grades}
-                onChange={(value) => handleFilterChange('designated_grades', value)}
-                options={apiOptions.grades}
-                placeholder="Grades"
-                isMulti
-                isClearable
-                isLoading={isLoading.constants}
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-              <span className="custom-tooltip">Grades</span>
-              </div>
+              <InputWithTooltip label="Grades">
+                <Select
+                  value={filters.designated_grades}
+                  onChange={(value) => handleFilterChange('designated_grades', value)}
+                  options={apiOptions.grades}
+                  placeholder="Grades"
+                  isMulti
+                  isClearable
+                  isLoading={isLoading.constants}
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Curriculum */}
             <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <Select
-                value={filters.curriculum}
-                onChange={(value) => handleFilterChange('curriculum', value)}
-                options={apiOptions.curriculum}
-                placeholder="Curriculum"
-                isMulti
-                isClearable
-                isLoading={isLoading.constants}
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-              <span className="custom-tooltip">Curriculum</span>
-              </div>
+              <InputWithTooltip label="Curriculum">
+                <Select
+                  value={filters.curriculum}
+                  onChange={(value) => handleFilterChange('curriculum', value)}
+                  options={apiOptions.curriculum}
+                  placeholder="Curriculum"
+                  isMulti
+                  isClearable
+                  isLoading={isLoading.constants}
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Core Subjects */}
             <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <Select
-                value={filters.core_subjects}
-                onChange={(value) => handleFilterChange('core_subjects', value)}
-                options={apiOptions.subjects}
-                placeholder="Core Subjects"
-                isMulti
-                isClearable
-                isLoading={isLoading.subjects}
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-              <span className="custom-tooltip">Core Subjects</span>
-              </div>
+              <InputWithTooltip label="Core Subjects">
+                <Select
+                  value={filters.core_subjects}
+                  onChange={(value) => handleFilterChange('core_subjects', value)}
+                  options={apiOptions.subjects}
+                  placeholder="Core Subjects"
+                  isMulti
+                  isClearable
+                  isLoading={isLoading.subjects}
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Core Expertise */}
             <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <Select
-                value={filters.core_expertise}
-                onChange={(value) => handleFilterChange('core_expertise', value)}
-                options={apiOptions.coreExpertise}
-                placeholder="Core Expertise"
-                isMulti
-                isClearable
-                isLoading={isLoading.constants}
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-              <span className="custom-tooltip">Core Expertise</span>
-              </div>
+              <InputWithTooltip label="Core Expertise">
+                <Select
+                  value={filters.core_expertise}
+                  onChange={(value) => handleFilterChange('core_expertise', value)}
+                  options={apiOptions.coreExpertise}
+                  placeholder="Core Expertise"
+                  isMulti
+                  isClearable
+                  isLoading={isLoading.constants}
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
 
             {/* Job Sub Process */}
             <div className="form-group col-md-4">
-              <div className="input-wrapper">
-              <Select
-                value={filters.job_sub_process}
-                onChange={(value) => handleFilterChange('job_sub_process', value)}
-                options={filterOptions.jobSubProcesses}
-                placeholder="Job Sub Process"
-                isClearable
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-              <span className="custom-tooltip">Job Sub Process</span>
-              </div>
+              <InputWithTooltip label="Job Sub Process">
+                <Select
+                  value={filters.job_sub_process}
+                  onChange={(value) => handleFilterChange('job_sub_process', value)}
+                  options={filterOptions.jobSubProcesses}
+                  placeholder="Job Sub Process"
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
             </div>
           </div>
 

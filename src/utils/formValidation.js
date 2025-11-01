@@ -1,5 +1,6 @@
 // Validation patterns for common form fields
 import { toast } from "react-toastify";
+import { validatePincodeForState } from "./pincodeStateMapping";
 // Export validation patterns
 export const validationPatterns = {
   panNumber: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
@@ -108,6 +109,42 @@ export const validateWithFeedback = (name, value, showToast = false) => {
     } catch (err) {
       console.error("Toast notification error:", err);
     }
+  }
+  
+  return isValid;
+};
+
+/**
+ * Validates pincode against selected state and shows toast message
+ * @param {string} pincode - Pincode value
+ * @param {string} state - State name
+ * @param {boolean} showToast - Whether to show toast notifications
+ * @returns {boolean} Whether validation passed
+ */
+export const validatePincodeForStateWithFeedback = (pincode, state, showToast = false) => {
+  console.log(`Validating pincode ${pincode} for state:`, state);
+  
+  // First validate the pincode format
+  const isFormatValid = validateField('pincode', pincode);
+  
+  if (!isFormatValid) {
+    console.log('Pincode format invalid');
+    if (showToast) {
+      toast.error(errorMessages.pincode, {
+        toastId: `pincode-format-validation-${Date.now()}`
+      });
+    }
+    return false;
+  }
+  
+  // Then validate pincode against state
+  const { isValid, message } = validatePincodeForState(pincode, state);
+  console.log(`Pincode-state validation result:`, isValid ? 'valid' : 'invalid', message);
+  
+  if (!isValid && showToast && message) {
+    toast.error(message, {
+      toastId: `pincode-state-validation-${Date.now()}`
+    });
   }
   
   return isValid;
