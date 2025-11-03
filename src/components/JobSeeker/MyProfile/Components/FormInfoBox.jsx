@@ -1,6 +1,6 @@
 import { React, useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../../../../Context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { flushSync } from "react-dom";
 import PersonalDetails from "./personalDetails";
 import Address from "./address";
@@ -21,6 +21,7 @@ import axios from "axios";
 const FormInfoBox = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [viewMode, setViewMode] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -39,6 +40,18 @@ const FormInfoBox = () => {
   useEffect(() => {
     setFormData(prev => ({ ...prev, firebase_uid: user.uid }));
   }, [user.uid]);
+
+  // Reset viewMode when edit=true in URL params
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('edit') === 'true') {
+      setViewMode(null);
+      setShowProfile(false);
+      setIsPreviewMode(false);
+      // Clear the URL parameter
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.search, location.pathname, navigate]);
 
   const updateFormData = useCallback((newData) => {
     setFormData(prev => {

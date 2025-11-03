@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "../../../../../Context/AuthContext";
 import { formatQualification } from '../../utils/formatUtils';
 import ViewJobs from "../ViewJobs";
+import noJobsIllustration from '../../../../../assets/Illustrations/No jobs.png';
 
 // API Endpoints
 const APPLY_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate';
@@ -425,8 +426,15 @@ const AppliedJobs = () => {
                 </div>
               </div>
             ) : (
-              <div className="no-results text-center py-5">
-                <p>No applied jobs available.</p>
+              <div className="no-results text-center py-12">
+                <div className="flex flex-col items-center justify-center">
+                  <img 
+                    src={noJobsIllustration} 
+                    alt="No applied jobs" 
+                    className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
+                  />
+                  <p className="text-gray-600 text-lg font-medium">No applied jobs available.</p>
+                </div>
               </div>
             )}
           </div>

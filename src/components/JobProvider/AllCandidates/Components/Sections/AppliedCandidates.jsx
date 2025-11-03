@@ -8,6 +8,7 @@ import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import CandidateApiService from '../shared/CandidateApiService';
 import { useAuth } from "../../../../../Context/AuthContext";
+import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
 import '../styles/candidate-highlight.css';
 
 const AppliedCandidates = ({ 
@@ -221,9 +222,16 @@ const AppliedCandidates = ({
             </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-gray-600">
-            No candidates have applied to your jobs yet.
-          </p>
+          <div className="flex flex-col items-center justify-center">
+            <img 
+              src={noCandidateIllustration} 
+              alt="No applied candidates" 
+              className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
+            />
+            <p className="text-gray-600 text-lg font-medium">
+              No candidates have applied to your jobs yet.
+            </p>
+          </div>
               </div>
             )}
 

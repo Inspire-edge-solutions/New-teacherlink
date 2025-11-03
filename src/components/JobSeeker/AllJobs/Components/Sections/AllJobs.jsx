@@ -15,6 +15,7 @@ import FilterPanel from '../shared/FilterPanel';
 import { searchJobs } from '../../utils/searchUtils';
 import { formatQualification } from '../../utils/formatUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
+import noJobsIllustration from '../../../../../assets/Illustrations/No jobs.png';
 import '../styles/job-highlight.css';
 
 // Additional API endpoints for specific functionality
@@ -1218,8 +1219,15 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
             </div>
           </div>
         ) : (
-          <div className="no-results text-center py-5">
-            <p>No jobs available at the moment.</p>
+          <div className="no-results text-center py-12">
+            <div className="flex flex-col items-center justify-center">
+              <img 
+                src={noJobsIllustration} 
+                alt="No jobs" 
+                className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
+              />
+              <p className="text-gray-600 text-lg font-medium">No jobs available at the moment.</p>
+            </div>
           </div>
         )}
 

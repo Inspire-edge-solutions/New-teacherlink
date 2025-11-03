@@ -5,6 +5,7 @@ import { Skeleton } from "@mui/material";
 import Payment from "./Payments";
 import ModalPortal from "../../../common/ModalPortal";
 import Referrals from "./Referrals";
+import noPaymentIllustration from "../../../../../assets/Illustrations/No payment.png";
 
 // Success Modal
 const SuccessModal = ({ open, onClose, message }) => {
@@ -507,7 +508,11 @@ const Subscription = () => {
                 </div>
               ) : paymentHistory.length === 0 ? (
                 <div className="text-center py-8 sm:py-12 text-gray-600 flex-1 flex flex-col justify-center items-center">
-                  <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">📋</div>
+                  <img 
+                    src={noPaymentIllustration} 
+                    alt="No payment history" 
+                    className="w-48 h-48 sm:w-64 sm:h-64 mb-4 mx-auto"
+                  />
                   <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">No Payment History</h3>
                   <p className="text-sm sm:text-base">You haven't made any payments yet.</p>
                 </div>

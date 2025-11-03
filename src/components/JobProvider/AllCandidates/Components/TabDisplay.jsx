@@ -105,12 +105,12 @@ const TabDisplay = () => {
     <div>
       {/* Tab Navigation - Separate Container */}
       <div className="rounded-lg shadow-sm mb-4 border border-gray-500">
-        <div className="p-4">
-          <nav className="flex justify-between flex-wrap gap-1" aria-label="Tabs">
+        <div className="p-3 sm:p-4">
+          <nav className="flex flex-wrap justify-start sm:justify-between gap-1.5 sm:gap-1" aria-label="Tabs">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'bg-gradient-brand text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
@@ -133,7 +133,7 @@ const TabDisplay = () => {
 
       {/* Tab Content - Separate Container */}
       <div className="rounded-lg shadow-sm border">
-        <div className="p-6">
+        <div className="p-3 sm:p-4 md:p-6">
           <ActiveComponent 
             onViewCandidate={handleViewCandidate}
             onBackFromCandidateView={

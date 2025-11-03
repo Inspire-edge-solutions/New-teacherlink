@@ -8,6 +8,7 @@ import { AvatarImage } from '../utils/avatarUtils.jsx';
 import { cleanContentForPrint, generatePrintHTML, generatePDF } from '../utils/printPdfUtils.jsx';
 import { useAuth } from "../../../../../Context/AuthContext";
 import { decodeCandidateData } from '../../../../../utils/dataDecoder';
+import CandidateApiService from './CandidateApiService';
 
 const IMAGE_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image";
 const FULL_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/candidate_details_byid';
@@ -20,6 +21,7 @@ const REDEEM_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/
 const COIN_HISTORY_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history';
 const ORGANISATION_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation';
 const PERSONAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal';
+const UNLOCK_INFO_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/unlock_details';
 
 // -- Unlock Modal Component with Portal-based display
 function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, unlockStatus, error }) {
@@ -195,6 +197,7 @@ function CandidateDetail({ candidate, onBack }) {
   const [showUnlock, setShowUnlock] = useState(false);
   const [showCoinAnim, setShowCoinAnim] = useState(false);
   const [photoError, setPhotoError] = useState(false);
+  const [unlockedInfo, setUnlockedInfo] = useState(null);
     
   
   
@@ -233,6 +236,21 @@ function CandidateDetail({ candidate, onBack }) {
           d => d.firebase_uid === userId
         ) : null;
         setCoinValue(found?.coin_value ?? null);
+        
+        // Fetch unlock info if already unlocked
+        if (isUnlocked) {
+          try {
+            const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
+              firebase_uid: candidate.firebase_uid
+            });
+            if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
+              setUnlockedInfo(unlockInfoResponse.data[0]);
+            }
+          } catch (unlockError) {
+            console.error("Error fetching unlock info:", unlockError);
+          }
+        }
+        
         setShowUnlock(true);
       } catch (e) {
       const errorMsg = 'Could not check coins. Please try again.';
@@ -251,7 +269,7 @@ function CandidateDetail({ candidate, onBack }) {
       setCheckingCoins(false);
     }
     return () => { cancelled = true; };
-  }, [userId, candidateId]);
+  }, [userId, candidateId, isUnlocked]);
 
   const handleUnlockDetails = async () => {
     setUnlockError('');
@@ -308,6 +326,8 @@ function CandidateDetail({ candidate, onBack }) {
     if (windowWidth <= 992) return tablet;
     return desktop;
   };
+  const isMobile = windowWidth <= 768;
+  const isTablet = windowWidth > 768 && windowWidth <= 1024;
 
 
   // Fetch coins on modal open
@@ -347,24 +367,48 @@ function CandidateDetail({ candidate, onBack }) {
         return;
       }
 
-      // 2. Subtract 20 coins via PUT
-      await axios.put(REDEEM_API, {
+      // 2. Subtract 50 coins via PUT
+      const redeemResponse = await axios.put(REDEEM_API, {
         firebase_uid: userId,
         coin_value: coins - 50
       });
 
-      // 3. Get organization ID for the current user
-      let candidateId = null;
+      if (redeemResponse.status !== 200) {
+        throw new Error("Failed to deduct coins");
+      }
+
+      // 3. Mark candidate as unlocked in database FIRST (so it appears in unlocked list)
+      try {
+        await CandidateApiService.upsertCandidateAction(candidate, user, { unlocked_candidate: 1 });
+      } catch (dbError) {
+        console.error("Error updating unlock status in database:", dbError);
+        // Still continue - we'll try again, but don't fail the whole unlock
+      }
+
+      // 4. Call unlock info API after successful unlock and database update
+      try {
+        const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
+          firebase_uid: candidate.firebase_uid
+        });
+        if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
+          setUnlockedInfo(unlockInfoResponse.data[0]);
+        }
+      } catch (unlockError) {
+        console.error("Error fetching unlock info:", unlockError);
+      }
+
+      // 5. Get organization ID for the current user
+      let orgId = null;
       try {
         const orgResponse = await axios.get(`${ORGANISATION_API}?firebase_uid=${encodeURIComponent(userId)}`);
         if (orgResponse.status === 200 && Array.isArray(orgResponse.data) && orgResponse.data.length > 0) {
-          candidateId = orgResponse.data[0].id;
+          orgId = orgResponse.data[0].id;
         }
       } catch (orgError) {
         console.error("Error fetching organization data:", orgError);
       }
 
-      // 4. Record coin history with unblocked_candidate_id and unblocked_candidate_name from /personal
+      // 6. Record coin history with unblocked_candidate_id and unblocked_candidate_name from /personal
       let unblocked_candidate_id = null;
       let unblocked_candidate_name = null;
       try {
@@ -377,7 +421,7 @@ function CandidateDetail({ candidate, onBack }) {
       try {
         await axios.post(COIN_HISTORY_API, {
           firebase_uid: userId,
-          candidate_id: candidateId,
+          candidate_id: orgId,
           job_id: null,
           coin_value: coins - 50,
           reduction: 50,
@@ -760,7 +804,7 @@ function CandidateDetail({ candidate, onBack }) {
       if (education.courseDuration) additionalInfo.push(`Duration: ${education.courseDuration}`);
       if (education.specialization) additionalInfo.push(`${education.specialization}`);
       return (
-        <div className="mb-5 p-4 bg-[#f5f7fc] rounded-lg" key={index}>
+        <div className={`${isMobile ? 'mb-3' : 'mb-5'} p-4 bg-[#f5f7fc] rounded-lg`} key={index}>
           <div className="text-base text-[#202124] mb-2.5 font-semibold">{educationType}</div>
           <div>
             {details.map((detail, i) => (
@@ -893,7 +937,7 @@ function CandidateDetail({ candidate, onBack }) {
           <div className="mb-1.5">
             {jobTypeText.join(' | ')}
           </div>
-          <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-x-5 gap-y-1.5`}>
+          <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1' : 'grid-cols-2'} ${isMobile ? 'gap-x-0 gap-y-1' : isTablet ? 'gap-x-3 gap-y-1.5' : 'gap-x-5 gap-y-1.5'}`}>
             <div>
               <strong>Designation:</strong> {designation}
             </div>
@@ -971,14 +1015,16 @@ function CandidateDetail({ candidate, onBack }) {
       const value = experienceData.mysqlData[key];
       return value === 1 || value === '1' || value === true || value === 'true' || value === 'yes' || value === 'Yes';
     };
+    const isMobile = windowWidth <= 768;
+    const isTablet = windowWidth > 768 && windowWidth <= 1024;
     return (
-      <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-        <h6 className="mb-4 text-[#1967d2] border-b border-gray-300 pb-2">Work Exposure</h6>
-        <div className="flex flex-wrap gap-2.5">
+      <div className={`${isMobile ? 'mb-6 p-3' : isTablet ? 'mb-7 p-3.5' : 'mb-8 p-4'} bg-gray-50 rounded-lg`}>
+        <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>WORK EXPOSURE</h2>
+        <div className={`flex flex-wrap ${isMobile ? 'gap-2' : isTablet ? 'gap-2.5' : 'gap-2.5'}`}>
           {workTypes.map(type => (
-            <div key={type.key} style={{ flex: `0 0 ${columnWidth}` }} className="bg-white rounded-md p-2.5 shadow-sm flex justify-between items-center">
-              <div className="text-sm font-medium">{type.label}</div>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${isWorkTypeEnabled(type.key) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+            <div key={type.key} style={{ flex: `0 0 ${columnWidth}` }} className={`bg-white rounded-md ${isMobile ? 'p-2' : isTablet ? 'p-2.5' : 'p-2.5'} shadow-sm flex justify-between items-center`}>
+              <div className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>{type.label}</div>
+              <div className={`${isMobile ? 'w-5 h-5 text-xs' : 'w-6 h-6'} rounded-full flex items-center justify-center ${isWorkTypeEnabled(type.key) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
                 {isWorkTypeEnabled(type.key) ? '✓' : '×'}
               </div>
             </div>
@@ -1004,23 +1050,25 @@ function CandidateDetail({ candidate, onBack }) {
         : 'none';
     };
 
+    const LanguageItem = ({ label, languages }) => {
+      const isMobile = windowWidth <= 768;
+      return (
+        <div className={`language-item flex ${isMobile ? 'mb-2 py-1' : 'mb-1.5 py-1'} flex-row items-start flex-wrap`}>
+          <span className={`font-semibold mr-2 text-gray-800 ${isMobile ? 'text-base' : 'text-[16px]'} min-w-fit`}>
+            {label}:
+          </span>
+          <span className={`${isMobile ? 'text-base' : 'text-[16px]'} leading-[1.5] flex-1 text-gray-700 font-medium`}>
+            {languages.length > 0 ? languages.join(', ') : <span className="text-gray-500 italic font-normal">None</span>}
+          </span>
+        </div>
+      );
+    };
+
     return (
       <div>
-        <div className="border-b border-gray-300 mb-2.5"></div>
-        <div>
-          <div className="flex mb-1 items-center">
-            <span className="w-20 text-[#202124]">Speak</span>
-            <span className="flex-1 pl-5 text-gray-800">{displayLanguages(speakLanguages)}</span>
-          </div>
-          <div className="flex mb-1 items-center">
-            <span className="w-20 text-[#202124]">Read</span>
-            <span className="flex-1 pl-5 text-gray-800">{displayLanguages(readLanguages)}</span>
-          </div>
-          <div className="flex items-center">
-            <span className="w-20 text-[#202124]">Write</span>
-            <span className="flex-1 pl-5 text-gray-800">{displayLanguages(writeLanguages)}</span>
-          </div>
-        </div>
+        <LanguageItem label="Speak" languages={speakLanguages} />
+        <LanguageItem label="Read" languages={readLanguages} />
+        <LanguageItem label="Write" languages={writeLanguages} />
       </div>
     );
   };
@@ -1046,12 +1094,12 @@ function CandidateDetail({ candidate, onBack }) {
     const InfoItem = ({ label, value }) => {
       if (!value) return null;
       return (
-        <div className={`flex ${windowWidth <= 576 ? 'flex-col' : 'flex-row'} mb-2`}>
-          <span className={`${windowWidth <= 576 ? 'w-full mb-1' : 'w-[170px]'} font-bold text-gray-800`}>
-            {label}
+        <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
+          <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold ${isMobile ? 'text-[13px]' : 'text-sm'} text-gray-800 shrink-0`}>
+            {label}:
           </span>
-          <span className={`flex flex-1 ${windowWidth <= 576 ? 'pl-0' : 'pl-2'}`}>
-            {windowWidth > 576 ? ': ' : ''}{value}
+          <span className={`${isMobile ? 'text-[13px]' : 'text-sm'} leading-[1.4] ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600`}>
+            {value}
           </span>
         </div>
       );
@@ -1078,44 +1126,40 @@ function CandidateDetail({ candidate, onBack }) {
     };
 
     return (
-      <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-        <h6 className="mb-4 text-[#1967d2] border-b border-gray-300 pb-2">
-          Additional Information
-        </h6>
-        <div className="flex flex-wrap gap-2.5">
-          <div className={`flex-1 basis-[300px] ${windowWidth <= 768 ? 'min-w-full' : 'min-w-0'}`}>
-            {additionalInfo1?.religion && (
-              <InfoItem label="Religion" value={additionalInfo1.religion} />
-            )}
-            {additionalInfo1?.marital_status && (
-              <InfoItem label="Marital Status" value={additionalInfo1.marital_status} />
-            )}
-            {additionalInfo1?.computer_skills && (
-              <InfoItem label="Computer skills" value={formatComputerSkills()} />
-            )}
-            {additionalInfo1?.accounting_knowledge !== undefined && (
-              <InfoItem 
-                label="Accounting Knowledge" 
-                value={isPositiveValue(additionalInfo1.accounting_knowledge) ? 'Yes' : 'No'} 
-              />
-            )}
-          </div>
-          <div className={`flex-1 basis-[300px] ${windowWidth <= 768 ? 'min-w-full' : 'min-w-0'}`}>
-            {additionalInfo1?.citizenship && (
-              <InfoItem label="Citizenship" value={additionalInfo1.citizenship} />
-            )}
-            {additionalInfo1?.differently_abled && (
-              <InfoItem label="Differently abled" value={additionalInfo1.differently_abled} />
-            )}
-            {additionalInfo1?.certifications && (
-              <InfoItem label="Certifications" value={additionalInfo1.certifications} />
-            )}
-            {additionalInfo1?.accomplishments && (
-              <InfoItem label="Accomplishments" value={additionalInfo1.accomplishments} />
-            )}
-          </div>
+      <>
+        {/* Optimized grid layout for better space utilization */}
+        <div className={`${isMobile ? 'block' : 'grid'} ${isMobile ? '' : isTablet ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} ${isMobile ? 'gap-0' : isTablet ? 'gap-x-3 gap-y-0' : 'gap-x-4 gap-y-0'}`}>
+          {additionalInfo1?.religion && (
+            <InfoItem label="Religion" value={additionalInfo1.religion} />
+          )}
+          {additionalInfo1?.marital_status && (
+            <InfoItem label="Marital Status" value={additionalInfo1.marital_status} />
+          )}
+          {additionalInfo1?.computer_skills && (
+            <InfoItem label="Computer skills" value={formatComputerSkills()} />
+          )}
+          {additionalInfo1?.accounting_knowledge !== undefined && (
+            <InfoItem 
+              label="Accounting Knowledge" 
+              value={isPositiveValue(additionalInfo1.accounting_knowledge) ? 'Yes' : 'No'} 
+            />
+          )}
+          {additionalInfo1?.citizenship && (
+            <InfoItem label="Citizenship" value={additionalInfo1.citizenship} />
+          )}
+          {additionalInfo1?.differently_abled && (
+            <InfoItem label="Differently abled" value={additionalInfo1.differently_abled} />
+          )}
+          {additionalInfo1?.certifications && (
+            <InfoItem label="Certifications" value={additionalInfo1.certifications} />
+          )}
+          {additionalInfo1?.accomplishments && (
+            <InfoItem label="Accomplishments" value={additionalInfo1.accomplishments} />
+          )}
         </div>
-        <div className={windowWidth <= 768 ? 'mt-1.5' : 'mt-4'}>
+        
+        {/* Full width items for longer content */}
+        <div className={`${isMobile ? 'mt-2' : 'mt-[5px]'} w-full`}>
           {additionalInfo1?.projects && (
             <InfoItem label="Projects" value={additionalInfo1.projects} />
           )}
@@ -1126,7 +1170,7 @@ function CandidateDetail({ candidate, onBack }) {
             <InfoItem label="Anything more about yourself" value={additionalInfo1.additional_info} />
           )}
         </div>
-      </div>
+      </>
     );
   };
 
@@ -1219,7 +1263,7 @@ function CandidateDetail({ candidate, onBack }) {
 
   // ----- MAIN JSX -----
   return (
-    <div className="max-w-[1200px] mx-auto p-6 md:p-8 bg-white shadow-md rounded-lg overflow-hidden font-sans text-gray-800 relative">
+    <div className={`${isMobile ? 'max-w-full' : isTablet ? 'max-w-[1000px]' : 'max-w-[1200px]'} mx-auto ${isMobile ? 'px-2 py-3' : isTablet ? 'p-5' : 'p-6 md:p-8'} bg-white shadow-md rounded-lg overflow-hidden font-sans text-gray-800 relative`}>
       {/* Unlock Modal */}
       <UnlockModal
         isOpen={showUnlockModal}
@@ -1232,11 +1276,11 @@ function CandidateDetail({ candidate, onBack }) {
         error={unlockError}
       />
       {/* Navigation */}
-      <div className="flex justify-between items-center mb-6 w-full gap-4 flex-nowrap px-2">
+      <div className={`flex flex-col sm:flex-row justify-between items-stretch sm:items-center ${isMobile ? 'mb-4' : 'mb-6'} w-full ${isMobile ? 'gap-2' : 'gap-4'} ${isMobile ? 'px-1' : 'px-2'}`}>
         {/* SHOW Unlock button only if not unlocked */}
         {!isUnlocked && (
           <button 
-            className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none w-[250px] flex-shrink-0"
+            className={`inline-flex items-center justify-center gap-2.5 ${isMobile ? 'px-4 py-2.5 text-sm' : 'px-6 py-3 text-base'} bg-gradient-brand text-white border-none rounded-lg font-semibold cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none ${isMobile ? 'w-full sm:w-auto sm:min-w-[180px]' : 'w-[250px]'} flex-shrink-0`}
             onClick={handleUnlockClick}
             disabled={isUnlocked}
           >
@@ -1244,139 +1288,148 @@ function CandidateDetail({ candidate, onBack }) {
             Unlock Details
           </button>
         )}
-        <div className="ml-auto flex gap-2.5 items-center flex-nowrap">
-          <button onClick={handleBack} className="px-4 py-2.5 bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all whitespace-nowrap font-medium">
+        <div className={`${isMobile ? 'w-full sm:w-auto sm:ml-auto' : 'ml-auto'} flex gap-2.5 items-center`}>
+          <button onClick={handleBack} className={`w-full sm:w-auto ${isMobile ? 'px-3 py-2 text-sm' : 'px-4 py-2.5 text-base'} bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all whitespace-nowrap font-medium`}>
             Back to List
           </button>
         </div>
       </div>
 
       {/* Header Section with Photo and Basic Info */}
-      <div className="grid grid-cols-1 lg:grid-cols-[auto,1fr] gap-8 mb-2.5 pb-5 border-b-2 border-gray-200 text-center lg:text-left">
-        <div className="w-[150px] h-[150px] flex-shrink-0 mx-auto lg:mx-0 rounded-full overflow-hidden">
-          <AvatarImage
-            src={photoUrl}
-            alt={`${candidate?.fullName || candidate?.name || 'User'}'s profile photo`}
-            name={candidate?.fullName || candidate?.name}
-            gender={profileData?.gender || candidate?.gender}
-            className="w-full h-full object-cover"
-            style={{ 
-              border: 'none',
-              transform: 'scale(1.4) translateY(7%)',
-              transformOrigin: 'center'
-            }}
-          />
-        </div>
-        {/* Header Content */}
-        <div className="flex flex-col gap-2.5 flex-1 pl-5">
-          <h1 className="text-3xl text-[#202124] m-0">{candidate?.fullName || candidate?.name || 'Candidate Name'}</h1>
-          <div className="flex flex-wrap gap-2.5 text-gray-600 text-sm mb-2">
-          {profileData?.gender && <span>{profileData.gender}</span>}
-            {profileData?.dateOfBirth && (
-              <span className="ml-4">
-                DOB: {new Date(profileData.dateOfBirth).toLocaleDateString('en-US', { 
-                  day: '2-digit', month: '2-digit', year: 'numeric' 
-                })}
-              </span>
-            )}
-            {profileData?.email && (
-              <div className="flex items-center mt-1">
+      <div className={`${isMobile ? 'flex-col items-center text-center px-2 py-2' : isTablet ? 'flex flex-row items-start p-4' : 'flex flex-row items-start p-6'} bg-white border-b border-gray-200 mb-2.5`}>
+        {/* Left Side: Profile Picture + Basic Info */}
+        <div className={`flex ${isMobile ? 'flex-col' : ''} ${isMobile ? 'gap-3' : 'gap-5'} ${isMobile ? 'mb-2 items-center' : isTablet ? 'w-1/2 pr-3' : 'w-1/2 pr-4'}`}>
+          {/* Profile Picture */}
+          <div className={`profile-photo ${isMobile ? 'w-[100px] h-[100px] mb-2.5' : isTablet ? 'w-[110px] h-[110px]' : 'w-[120px] h-[120px]'} rounded-full overflow-hidden border-[3px] border-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.1)] ${isMobile ? 'm-0' : 'mr-2.5'} shrink-0`}>
+            <AvatarImage
+              src={photoUrl}
+              alt={`${candidate?.fullName || candidate?.name || 'User'}'s profile photo`}
+              name={candidate?.fullName || candidate?.name}
+              gender={profileData?.gender || candidate?.gender}
+              className="w-full h-full object-cover"
+              style={{ 
+                border: 'none',
+                transform: 'scale(1.4) translateY(7%)',
+                transformOrigin: 'center'
+              }}
+            />
+          </div>
+          
+          {/* Basic Information */}
+          <div className="flex-1">
+            <h1 className={`candidate-name mb-1 ${isMobile ? 'text-xl' : isTablet ? 'text-2xl' : 'text-3xl'} bg-gradient-brand bg-clip-text text-transparent`}>
+              {candidate?.fullName || candidate?.name || 'Candidate Name'}
+            </h1>
+            
+            {/* Personal Details */}
+            <div className={`mb-0.5 ${isMobile ? 'text-sm' : isTablet ? 'text-[14px]' : 'text-[15px]'} text-gray-600`}>
+              {profileData?.gender && <span>{profileData.gender}</span>}
+              {profileData?.dateOfBirth && (
+                <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
+              )}
+              {experienceData?.mysqlData?.total_experience_years > 0 && (
+                <span> | Experience: {experienceData.mysqlData.total_experience_years} Years {experienceData.mysqlData.total_experience_months || 0} Months</span>
+              )}
+            </div>
+            
+            {/* Email */}
+            {(profileData?.email || unlockedInfo?.email) && (
+              <div className={`flex items-center ${isMobile ? 'text-sm' : isTablet ? 'text-[14px]' : 'text-[15px]'}`}>
                 <FaEnvelope className="mr-1.5 text-gray-400" />
                 <BlurWrapper isUnlocked={isUnlocked}>
-                  <a href={isUnlocked ? `mailto:${profileData.email}` : undefined} className={`text-[#1766af] ${!isUnlocked ? 'pointer-events-none' : ''}`}>
-                    {profileData.email}
+                  <a href={isUnlocked ? `mailto:${unlockedInfo?.email || profileData?.email}` : undefined} className={`no-underline text-[#1967d2] ${!isUnlocked ? 'pointer-events-none' : ''}`}>
+                    {isUnlocked && unlockedInfo?.email ? unlockedInfo.email : (profileData?.email || 'N/A')}
                   </a>
                 </BlurWrapper>
               </div>
             )}
           </div>
-          {/* Contact Information - Optimized Layout */}
-          <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-4 font-sans text-sm`}>
-
-            {/* Left Column - Addresses */}
-            <div>
-              <div className="flex items-center mb-2">
-                <FaMapMarkerAlt className="mr-2 text-red-500 text-base" /> 
-                <span><strong>Present:</strong> {profileData.present_state_name || 'N/A'}</span>
-              </div>
-              {profileData.permanent_state_name && (
-                <div className="flex items-center">
-                  <FaMapMarkerAlt className="mr-2 text-gray-400 text-base" />
-                  <span><strong>Permanent:</strong> {profileData.permanent_state_name}</span>
-                </div>
-              )}
+        </div>
+        
+        {/* Right Side: Contact Information */}
+        <div className={`font-sans ${isMobile ? 'text-[13px] w-full' : 'text-sm w-1/2'} leading-[1.4] ${isMobile ? 'mt-2' : isTablet ? 'pl-3' : 'pl-4'}`}>
+          {/* Address Information */}
+          <div className={`flex ${isMobile ? 'flex-row' : 'flex-col'} ${isMobile ? 'gap-[15px]' : 'gap-1.5'} ${isMobile ? 'mb-1.5 flex-wrap' : 'mb-2'}`}>
+            <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'}`}>
+              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
+              <span className="font-semibold mr-1.5 shrink-0">Present:</span>
+              <span className={`${isMobile ? 'overflow-hidden text-ellipsis whitespace-nowrap max-w-[280px]' : 'break-words'}`}>
+                {[
+                  profileData?.present_city_name,
+                  profileData?.present_state_name,
+                  profileData?.present_country_name
+                ].filter(Boolean).join(', ') || 'N/A'}
+              </span>
             </div>
-            {/* Right Column - Phone Numbers */}
-            <div>
-            <div className="flex items-center mb-2">
-            <FaPhone className="mr-2 text-blue-600 text-base" />
-  <span>
-    <strong>Phone:</strong>{" "}
-    <BlurWrapper isUnlocked={isUnlocked}>
-  {isUnlocked
-    ? profileData?.callingNumber || "N/A"
-    : profileData?.callingNumber
-      ? <span className="tracking-wide">{profileData.callingNumber.replace(/\d/g, "•")}</span>
-      : "N/A"
-  }
-</BlurWrapper>
-  </span>
-</div>
-
-  <div className="flex items-center">
-    <FaWhatsapp className="mr-2 text-green-500 text-base" />
-    <span>
-    <strong>WhatsApp:</strong>{" "}
-    <BlurWrapper isUnlocked={isUnlocked}>
-      {isUnlocked
-        ? profileData?.whatsappNumber || "N/A"
-        : profileData?.whatsappNumber
-          ? <span className="tracking-wide">{profileData.whatsappNumber.replace(/\d/g, "•")}</span>
-          : "N/A"
-      }
-    </BlurWrapper>
-  </span>
-  </div>
-</div>
-
+            
+            <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'}`}>
+              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
+              <span className="font-semibold mr-1.5 shrink-0">Permanent:</span>
+              <span className={`${isMobile ? 'overflow-hidden text-ellipsis whitespace-nowrap max-w-[280px]' : 'break-words'}`}>
+                {[
+                  profileData?.permanent_city_name,
+                  profileData?.permanent_state_name,
+                  profileData?.permanent_country_name
+                ].filter(Boolean).join(', ') || 'N/A'}
+              </span>
+            </div>
           </div>
-          {/* Additional Info Row */}
-          {(profileData.aadharNumber || profileData.panNumber) && (
-            <div className={`mt-2.5 grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-[repeat(auto-fit,minmax(200px,1fr))]'} gap-2 text-xs text-gray-600`}>
-              {profileData.aadharNumber && (
-                <div><strong>Aadhar:</strong> {profileData.aadharNumber}</div>
-              )}
-              {profileData.panNumber && (
-                <div><strong>PAN:</strong> {profileData.panNumber}</div>
-              )}
+          
+          {/* Phone Numbers - Responsive layout */}
+          <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} ${isMobile ? 'gap-2' : isTablet ? 'gap-3' : 'gap-4'} ${isMobile ? 'mb-2' : 'mb-2'}`}>
+            <div className="flex items-center flex-wrap gap-1.5">
+              <FaPhone className="text-[#1a73e8] text-[13px] shrink-0" />
+              <span className="font-semibold shrink-0">Phone:</span>
+              <BlurWrapper isUnlocked={isUnlocked}>
+                {isUnlocked
+                  ? unlockedInfo?.phone_number || profileData?.callingNumber || "N/A"
+                  : (unlockedInfo?.phone_number || profileData?.callingNumber)
+                    ? <span className="tracking-wide break-all">{(unlockedInfo?.phone_number || profileData?.callingNumber).replace(/\d/g, "•")}</span>
+                    : "N/A"
+                }
+              </BlurWrapper>
             </div>
-          )}
-          {/* Social Links Row */}
+             
+            <div className="flex items-center flex-wrap gap-1.5">
+              <FaWhatsapp className="text-[#25D366] text-[13px] shrink-0" />
+              <span className="font-semibold shrink-0">WhatsApp:</span>
+              <BlurWrapper isUnlocked={isUnlocked}>
+                {isUnlocked
+                  ? unlockedInfo?.whatsup_number || profileData?.whatsappNumber || "N/A"
+                  : (unlockedInfo?.whatsup_number || profileData?.whatsappNumber)
+                    ? <span className="tracking-wide break-all">{(unlockedInfo?.whatsup_number || profileData?.whatsappNumber).replace(/\d/g, "•")}</span>
+                    : "N/A"
+                }
+              </BlurWrapper>
+            </div>
+          </div>
+          
+          {/* Social Links */}
           {(socialLinks.facebook || socialLinks.linkedin) && (
-            <div className="mt-2 flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold text-gray-600 mr-1">Social Links:</span>
-              <div className="flex gap-4 flex-wrap flex-1">
+            <div className={`flex ${isMobile ? 'flex-col gap-2' : 'flex-col gap-1.5'} items-start`}>
               {socialLinks?.facebook && (
-                <div className="flex items-center mb-1">
-                  <FaFacebook className="mr-1.5 text-[#1877f2] text-base" />
+                <div className="flex items-start flex-wrap gap-1.5">
+                  <FaFacebook className="text-[#385898] text-[13px] shrink-0 mt-0.5" /> 
+                  <span className="font-semibold shrink-0">Facebook:</span>
                   <BlurWrapper isUnlocked={isUnlocked}>
-                    <a href={isUnlocked ? socialLinks.facebook : undefined} className={`text-[#1877f2] ${!isUnlocked ? 'pointer-events-none' : ''}`}>
+                    <a href={isUnlocked ? socialLinks.facebook : undefined} className={`no-underline text-[#385898] break-all ${!isUnlocked ? 'pointer-events-none' : ''}`}>
                       {socialLinks.facebook}
                     </a>
                   </BlurWrapper>
                 </div>
               )}
+              
               {socialLinks?.linkedin && (
-                <div className="flex items-center">
-                  <FaLinkedin className="mr-1.5 text-[#0077b5] text-base" />
+                <div className="flex items-start flex-wrap gap-1.5">
+                  <FaLinkedin className="text-[#0077b5] text-[13px] shrink-0 mt-0.5" /> 
+                  <span className="font-semibold shrink-0">LinkedIn:</span>
                   <BlurWrapper isUnlocked={isUnlocked}>
-                    <a href={isUnlocked ? socialLinks.linkedin : undefined} className={`text-[#0077b5] ${!isUnlocked ? 'pointer-events-none' : ''}`}>
+                    <a href={isUnlocked ? socialLinks.linkedin : undefined} className={`no-underline text-[#0077b5] break-all ${!isUnlocked ? 'pointer-events-none' : ''}`}>
                       {socialLinks.linkedin}
                     </a>
                   </BlurWrapper>
                 </div>
               )}
-              </div>
             </div>
           )}
 
@@ -1410,13 +1463,13 @@ function CandidateDetail({ candidate, onBack }) {
       </div>
 
       {/* Body Section - Two column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-8 mt-0">
+      <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-[300px,1fr]'} ${isMobile ? 'gap-4' : isTablet ? 'gap-6' : 'gap-8'} mt-0`}>
         {/* Left Sidebar */}
-        <div className="bg-gray-100 p-5 lg:w-auto">
+        <div className={`bg-gray-100 ${isMobile ? 'px-2 py-3' : isTablet ? 'p-4' : 'p-5'} lg:w-auto`}>
           {/* Education Section */}
           {educationData && educationData.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-xl text-[#202124] mb-5 pb-2.5 border-b-2 border-[#1967d2]">Education</h2>
+            <div className={`${isMobile ? 'mb-6' : 'mb-8'}`}>
+              <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>EDUCATION</h2>
               <div>
                 {renderEducationBlocks()}
               </div>
@@ -1425,10 +1478,10 @@ function CandidateDetail({ candidate, onBack }) {
         </div>
 
         {/* Right Main Content */}
-        <div className="p-5">
+        <div className={`${isMobile ? 'px-2 py-3' : isTablet ? 'p-4' : 'p-5'}`}>
           {/* Experience Section */}
-          <div className="mb-8 mt-0 pt-0">
-            <h2 className="text-xl text-[#202124] mb-5 pb-2.5 border-b-2 border-[#1967d2] mt-0">Work Experience</h2>
+          <div className={`${isMobile ? 'mb-6' : 'mb-8'} mt-0 pt-0`}>
+            <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>WORK EXPERIENCE</h2>
             <div>
               {getExperienceText()}
               {renderExperienceBlocks()}
@@ -1440,11 +1493,11 @@ function CandidateDetail({ candidate, onBack }) {
 
           {/* Job Preferences Section */}
           {hasJobPreferencesData() && (
-            <div className="mb-8">
-              <h2 className="text-xl text-[#202124] mb-5 pb-2.5 border-b-2 border-[#1967d2]">Job Preferences</h2>
-              <div className="mb-6 p-5 bg-[#f5f7fc] rounded-lg text-base leading-relaxed">
+            <div className={`${isMobile ? 'mb-6' : 'mb-8'}`}>
+              <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>JOB PREFERENCES</h2>
+              <div className={`mb-6 ${isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-5'} bg-[#f5f7fc] rounded-lg ${isMobile ? 'text-sm' : 'text-base'} leading-relaxed`}>
                 {/* Two-column details grid */}
-                <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-x-5 gap-y-1.5`}>
+                <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1' : 'grid-cols-2'} ${isMobile ? 'gap-x-0 gap-y-1' : isTablet ? 'gap-x-3 gap-y-1.5' : 'gap-x-5 gap-y-1.5'}`}>
                   {/* Basic Job Information */}
                   {jobPreferenceData.Job_Type && (
                     <div>
@@ -1560,9 +1613,9 @@ function CandidateDetail({ candidate, onBack }) {
 
           {/* Language Proficiency */}
           {languages && languages.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-xl text-[#202124] mb-5 pb-2.5 border-b-2 border-[#1967d2]">Language Proficiency</h2>
-              <div className="p-4">
+            <div className={`${isMobile ? 'mb-3' : 'mb-4'}`}>
+              <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>LANGUAGE PROFICIENCY</h2>
+              <div className={`${isMobile ? 'bg-white rounded-lg p-3 border border-gray-200' : 'bg-gray-50 rounded-lg p-3 border border-gray-200'}`}>
                 {renderLanguageProficiency()}
               </div>
             </div>
@@ -1570,22 +1623,22 @@ function CandidateDetail({ candidate, onBack }) {
 
           {/* Additional Information */}
           {additionalInfo1 && (
-            <div className="mb-8">
-              <h2 className="text-xl text-[#202124] mb-5 pb-2.5 border-b-2 border-[#1967d2]">Additional Information</h2>
-              <div className="p-4">
-                {renderAdditionalInfo()}
-              </div>
+            <div className={`mb-[30px] ${isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-[15px]'} bg-gray-50 rounded-lg border border-gray-200`}>
+              <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>
+                ADDITIONAL INFORMATION
+              </h2>
+              {renderAdditionalInfo()}
             </div>
           )}
         </div>
       </div>
 
       {/* Download and Print Section */}
-      <div className="flex justify-center gap-4 mt-10 pt-5 border-t border-gray-200 flex-wrap">
+      <div className={`flex flex-col sm:flex-row justify-center ${isMobile ? 'gap-2' : 'gap-4'} ${isMobile ? 'mt-6 pt-4' : 'mt-10 pt-5'} border-t border-gray-200`}>
         <button 
           onClick={downloadPDF} 
           disabled={isDownloading}
-            className="inline-flex items-center gap-2 px-6 py-3 text-base min-w-[200px] justify-center bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`inline-flex items-center justify-center gap-2 ${isMobile ? 'px-4 py-2.5 text-sm w-full sm:w-auto' : 'px-6 py-3 text-base'} ${isMobile ? 'sm:min-w-[160px]' : 'min-w-[200px]'} bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
           title={isDownloading ? "Generating PDF..." : "Download CV as PDF file"}
         >
           {isDownloading ? (
@@ -1603,9 +1656,9 @@ function CandidateDetail({ candidate, onBack }) {
           )}
         </button>
         
-          <button 
-            onClick={handlePrint}
-            className="inline-flex items-center gap-2 px-6 py-3 text-base min-w-[200px] justify-center bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all"
+        <button 
+          onClick={handlePrint}
+          className={`inline-flex items-center justify-center gap-2 ${isMobile ? 'px-4 py-2.5 text-sm w-full sm:w-auto' : 'px-6 py-3 text-base'} ${isMobile ? 'sm:min-w-[160px]' : 'min-w-[200px]'} bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all`}
           title="Open browser print dialog"
         >
           <i className="fas fa-print"></i>

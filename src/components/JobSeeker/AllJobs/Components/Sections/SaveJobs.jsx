@@ -12,6 +12,7 @@ import SearchBar from '../shared/SearchBar';
 import { searchJobs } from '../../utils/searchUtils';
 import { formatQualification } from '../../utils/formatUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
+import noJobsIllustration from '../../../../../assets/Illustrations/No jobs.png';
 
 // API Endpoints
 const FAV_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteJobs';
@@ -538,30 +539,42 @@ const SaveJobs = ({ onViewJob, onBackFromJobView }) => {
             </div>
           </div>
         ) : isSearching ? (
-          <div className="no-results text-center py-5">
-            <AiOutlineSave size={48} className="text-muted mb-3" />
-            <h5 className="text-muted">No Results Found</h5>
-            <p className="text-muted">
-              No saved jobs match your search criteria. Try adjusting your search terms.
-            </p>
+          <div className="no-results text-center py-12">
+            <div className="flex flex-col items-center justify-center">
+              <img 
+                src={noJobsIllustration} 
+                alt="No saved jobs found" 
+                className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
+              />
+              <h5 className="text-gray-700 text-lg font-semibold mb-2">No Results Found</h5>
+              <p className="text-gray-600">
+                No saved jobs match your search criteria. Try adjusting your search terms.
+              </p>
+            </div>
           </div>
         ) : (
-          <div className="no-results text-center py-5">
-            <AiOutlineSave size={48} className="text-muted mb-3" />
-            <h5 className="text-muted">No Saved Jobs</h5>
-            <p className="text-muted">
-              You haven't saved any jobs yet. Browse jobs and save the ones you're interested in.
-            </p>
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                // Optional: navigate to all jobs tab
-                const allJobsTab = document.querySelector('[data-tab="all"]');
-                if (allJobsTab) allJobsTab.click();
-              }}
-            >
-              Browse Jobs
-            </button>
+          <div className="no-results text-center py-12">
+            <div className="flex flex-col items-center justify-center">
+              <img 
+                src={noJobsIllustration} 
+                alt="No saved jobs" 
+                className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
+              />
+              <h5 className="text-gray-700 text-lg font-semibold mb-2">No Saved Jobs</h5>
+              <p className="text-gray-600 mb-4">
+                You haven't saved any jobs yet. Browse jobs and save the ones you're interested in.
+              </p>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  // Optional: navigate to all jobs tab
+                  const allJobsTab = document.querySelector('[data-tab="all"]');
+                  if (allJobsTab) allJobsTab.click();
+                }}
+              >
+                Browse Jobs
+              </button>
+            </div>
           </div>
         )}
 

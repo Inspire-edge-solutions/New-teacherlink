@@ -530,18 +530,18 @@ function EasyView({ onViewAttempt }) {
       {/* Edit Profile Button - Top Level */}
       <div className="flex justify-end mb-[15px]">
         <button
-          onClick={() => window.location.href = "/candidates-dashboard/my-profile"}
-          className={`btn btn-warning ${isMobile ? 'btn-mobile' : ''} ${isMobile ? 'text-sm px-4 py-2' : 'text-base px-5 py-2.5'} rounded-md font-medium`}
+          onClick={() => window.location.href = "/seeker/my-profile"}
+          className={`btn bg-gradient-brand hover:bg-gradient-brand-hover text-white ${isMobile ? 'btn-mobile' : ''} ${isMobile ? 'text-sm px-4 py-2' : 'text-base px-5 py-2.5'} rounded-md font-medium`}
         >
           Edit Profile
         </button>
       </div>
 
-      <div className={`cv-header flex ${isMobile ? 'flex-col items-center text-center p-2' : 'p-6'} bg-white border-b border-gray-200 mb-2.5`}>
-        {/* First Row: Profile Picture + Basic Info */}
-        <div className={`flex ${isMobile ? 'flex-col' : ''} gap-5 mb-2 items-center`}>
+      <div className={`cv-header ${isMobile ? 'flex-col items-center text-center p-2' : 'flex flex-row items-start p-6'} bg-white border-b border-gray-200 mb-2.5`}>
+        {/* Left Side: Profile Picture + Basic Info */}
+        <div className={`flex ${isMobile ? 'flex-col' : ''} gap-5 ${isMobile ? 'mb-2 items-center' : 'w-1/2 pr-4'}`}>
           {/* Profile Picture */}
-          <div className={`profile-photo ${isMobile ? 'w-[100px] h-[120px] mb-2.5' : 'w-[150px] h-[180px]'} rounded-full overflow-hidden border-[3px] border-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.1)] ${isMobile ? 'm-0' : 'mr-2.5'} shrink-0`}>
+          <div className={`profile-photo ${isMobile ? 'w-[100px] h-[100px] mb-2.5' : 'w-[100px] h-[100px]'} rounded-full overflow-hidden border-[3px] border-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.1)] ${isMobile ? 'm-0' : 'mr-2.5'} shrink-0`}>
             {photoUrl ? (
               <img 
                 src={photoUrl} 
@@ -559,15 +559,18 @@ function EasyView({ onViewAttempt }) {
           
           {/* Basic Information */}
           <div className="flex-1">
-            <h1 className={`candidate-name mb-1 ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+            <h1 className={`candidate-name mb-1 ${isMobile ? 'text-xl' : 'text-2xl'} bg-gradient-brand bg-clip-text text-transparent`}>
               {profileData.fullName || 'Candidate Name'}
             </h1>
             
             {/* Personal Details */}
-            <div className={`mb-1 ${isMobile ? 'text-sm' : 'text-[15px]'} text-gray-600`}>
+            <div className={`mb-0.5 ${isMobile ? 'text-sm' : 'text-[15px]'} text-gray-600`}>
               {profileData.gender && <span>{profileData.gender}</span>}
               {profileData.dateOfBirth && (
-                <span> | {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
+                <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
+              )}
+              {experienceData?.mysqlData?.total_experience_years > 0 && (
+                <span> | Experience: {experienceData.mysqlData.total_experience_years} Years {experienceData.mysqlData.total_experience_months || 0} Months</span>
               )}
             </div>
             
@@ -583,14 +586,14 @@ function EasyView({ onViewAttempt }) {
           </div>
         </div>
         
-        {/* Contact Information Rows - Starting from left edge */}
-        <div className={`font-sans ${isMobile ? 'text-[13px]' : 'text-sm'} leading-[1.4]`}>
-          {/* Row 2: Address Information */}
-          <div className={`flex flex-row ${isMobile ? 'gap-[15px]' : 'gap-5'} mb-1.5 flex-wrap`}>
-            <div className="flex items-center">
-              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px]" />
-              <span className="font-semibold mr-1.5">Present:</span>
-              <span className={`overflow-hidden text-ellipsis whitespace-nowrap ${isMobile ? 'max-w-[280px]' : 'max-w-[350px]'}`}>
+        {/* Right Side: Contact Information */}
+        <div className={`font-sans ${isMobile ? 'text-[13px] w-full' : 'text-sm w-1/2'} leading-[1.4] ${isMobile ? 'mt-2' : 'pl-4'}`}>
+          {/* Address Information */}
+          <div className={`flex ${isMobile ? 'flex-row' : 'flex-col'} ${isMobile ? 'gap-[15px]' : 'gap-1.5'} ${isMobile ? 'mb-1.5 flex-wrap' : 'mb-2'}`}>
+            <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'}`}>
+              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
+              <span className="font-semibold mr-1.5 shrink-0">Present:</span>
+              <span className={`${isMobile ? 'overflow-hidden text-ellipsis whitespace-nowrap max-w-[280px]' : 'break-words'}`}>
                 {[
                   profileData.present_city_name,
                   profileData.present_state_name,
@@ -599,10 +602,10 @@ function EasyView({ onViewAttempt }) {
               </span>
             </div>
             
-            <div className="flex items-center">
-              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px]" />
-              <span className="font-semibold mr-1.5">Permanent:</span>
-              <span className={`overflow-hidden text-ellipsis whitespace-nowrap ${isMobile ? 'max-w-[280px]' : 'max-w-[350px]'}`}>
+            <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'}`}>
+              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
+              <span className="font-semibold mr-1.5 shrink-0">Permanent:</span>
+              <span className={`${isMobile ? 'overflow-hidden text-ellipsis whitespace-nowrap max-w-[280px]' : 'break-words'}`}>
                 {[
                   profileData.permanent_city_name,
                   profileData.permanent_state_name,
@@ -612,17 +615,17 @@ function EasyView({ onViewAttempt }) {
             </div>
           </div>
           
-          {/* Row 3: Phone Numbers */}
-          <div className={`flex flex-row ${isMobile ? 'gap-[15px]' : 'gap-5'} mb-1.5 flex-wrap`}>
+          {/* Phone Numbers - Same Line */}
+          <div className={`flex ${isMobile ? 'flex-row' : 'flex-row'} ${isMobile ? 'gap-[15px]' : 'gap-4'} ${isMobile ? 'mb-1.5 flex-wrap' : 'mb-2'}`}>
             <div className="flex items-center">
-              <FaPhone className="mr-1.5 text-[#1a73e8] text-[13px]" />
-              <span className="font-semibold mr-1.5">Phone:</span>
+              <FaPhone className="mr-1.5 text-[#1a73e8] text-[13px] shrink-0" />
+              <span className="font-semibold mr-1.5 shrink-0">Phone:</span>
               <span>{profileData.callingNumber || 'Not provided'}</span>
             </div>
              
             <div className="flex items-center">
-              <FaWhatsapp className="mr-1.5 text-[#25D366] text-[13px]" />
-              <span className="font-semibold mr-1.5">WhatsApp:</span>
+              <FaWhatsapp className="mr-1.5 text-[#25D366] text-[13px] shrink-0" />
+              <span className="font-semibold mr-1.5 shrink-0">WhatsApp:</span>
               <span>{profileData.whatsappNumber || 'Not provided'}</span>
             </div>
           </div>
@@ -632,7 +635,7 @@ function EasyView({ onViewAttempt }) {
       <div className="cv-body flex flex-col md:flex-row p-0 bg-white">
         <div className="cv-sidebar w-full md:w-[35%] bg-gray-100 p-2.5 md:p-5">
           <div className="cv-section education-section mt-0 mb-2.5">
-            <h2 className="section-title text-lg border-b-2 border-[#1967d2] pb-2 mb-[15px] font-bold text-[#1967d2] uppercase text-left">
+            <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-lg bg-gradient-brand bg-clip-text text-transparent">
               EDUCATION
             </h2>
             {renderEducationBlocks()}
@@ -641,7 +644,7 @@ function EasyView({ onViewAttempt }) {
 
         <div className="cv-main w-full md:w-[65%] md:px-2">
           <div className="cv-section experience-section mt-0 mb-2.5">
-            <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-lg text-[#1967d2]">
+            <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-lg bg-gradient-brand bg-clip-text text-transparent">
               WORK EXPERIENCE
             </h2>
             {getExperienceText()}
@@ -687,7 +690,7 @@ function EasyView({ onViewAttempt }) {
             
             return (
               <div className="cv-section job-preferences mt-0 mb-2.5">
-                <h2 className="section-title text-lg border-b-2 border-[#1967d2] pb-2 mb-[15px] font-bold text-[#1967d2] uppercase">Job Preferences</h2>
+                <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-lg bg-gradient-brand bg-clip-text text-transparent">JOB PREFERENCES</h2>
                 <div className="job-preferences-block bg-[#f5f7fc] p-5 rounded-lg mb-[25px] text-[15px] leading-[1.5]">
                   {/* Two-column details grid */}
                   <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-x-5 gap-y-1`}>

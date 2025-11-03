@@ -244,24 +244,24 @@ const CandidateFilterPanel = ({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
-      <div className="rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto z-[10000]" style={{ backgroundColor: '#F0D8D9' }}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-2 sm:p-4">
+      <div className="rounded-lg shadow-xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto z-[10000]" style={{ backgroundColor: '#F0D8D9' }}>
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b">
-          <h3 className="text-xl font-semibold text-gray-800">
-            Filter Candidates {activeFiltersCount > 0 && `(${activeFiltersCount} active)`}
+        <div className="flex justify-between items-center p-4 sm:p-6 border-b sticky top-0 bg-[#F0D8D9] z-10">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 truncate pr-2">
+            Filter Candidates {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-600 hover:text-gray-800 text-2xl"
+            className="text-gray-600 hover:text-gray-800 text-2xl flex-shrink-0"
           >
             ×
           </button>
         </div>
 
         {/* Filter Form */}
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {/* Location Filters */}
             <div>
               <InputWithTooltip label="Country">
@@ -543,15 +543,15 @@ const CandidateFilterPanel = ({
           </div>
 
           {/* Filter Actions */}
-          <div className="flex justify-end space-x-3 mt-6 pt-6 border-t">
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 sm:space-x-3 mt-6 pt-6 border-t">
             <button
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
+              className="w-full sm:w-auto px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
               onClick={handleReset}
             >
               Reset Filters
             </button>
             <button
-              className="px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-primary-hover focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              className="w-full sm:w-auto px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-primary-hover focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
               onClick={handleApply}
             >
               Apply Filters

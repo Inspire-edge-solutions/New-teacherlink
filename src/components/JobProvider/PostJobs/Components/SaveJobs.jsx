@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../../../Context/AuthContext';
 import JobDetailsView from '../Shared/JobDetailsView';
+import noDataIllustration from '../../../../assets/Illustrations/No data found.png';
 
 const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
   const { user } = useAuth();
@@ -414,17 +415,21 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
           {savedJobs.length === 0 ? (
             // Empty State
             <div className="text-center py-12">
-              <div className="text-5xl text-blue-600 mb-4">
-                <i className="la la-bookmark"></i>
-              </div>
-              <h6 className="text-gray-900 text-lg font-semibold mb-2">No Saved Jobs Yet</h6>
-              <p className="text-gray-500 mb-6">
-                You haven't saved any job drafts yet. Start by creating a new job post.
-              </p>
-              <div className="mt-3">
-                <button className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-full hover:opacity-90 transition-opacity inline-flex items-center gap-2" onClick={onCreateNewJob}>
-                  Create New Job
-                </button>
+              <div className="flex flex-col items-center justify-center">
+                <img 
+                  src={noDataIllustration} 
+                  alt="No saved jobs" 
+                  className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
+                />
+                <h6 className="text-gray-900 text-lg font-semibold mb-2">No Saved Jobs Yet</h6>
+                <p className="text-gray-500 mb-6">
+                  You haven't saved any job drafts yet. Start by creating a new job post.
+                </p>
+                <div className="mt-3">
+                  <button className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-full hover:opacity-90 transition-opacity inline-flex items-center gap-2" onClick={onCreateNewJob}>
+                    Create New Job
+                  </button>
+                </div>
               </div>
             </div>
           ) : (

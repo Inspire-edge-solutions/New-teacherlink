@@ -8,6 +8,7 @@ import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import CandidateApiService from '../shared/CandidateApiService';
 import { useAuth } from "../../../../../Context/AuthContext";
+import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
 import '../styles/candidate-highlight.css';
 
 const SavedCandidates = ({ 
@@ -230,12 +231,19 @@ const SavedCandidates = ({
               </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-gray-600">
-            {isSearching 
-              ? 'No saved candidates found matching your search.'
-              : 'You haven\'t saved any candidates yet.'
-            }
-          </p>
+          <div className="flex flex-col items-center justify-center">
+            <img 
+              src={noCandidateIllustration} 
+              alt="No saved candidates" 
+              className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
+            />
+            <p className="text-gray-600 text-lg font-medium">
+              {isSearching 
+                ? 'No saved candidates found matching your search.'
+                : 'You haven\'t saved any candidates yet.'
+              }
+            </p>
+          </div>
               </div>
             )}
 

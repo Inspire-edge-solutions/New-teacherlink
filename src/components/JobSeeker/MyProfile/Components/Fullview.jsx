@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from "../../../../Context/AuthContext";
+import { useNavigate } from 'react-router-dom';
 // CSS imports removed - all styles converted to Tailwind CSS
 import { toast } from 'react-toastify';
 import { FaMapMarkerAlt, FaPhone, FaWhatsapp, FaFacebook, FaLinkedin, FaEnvelope } from 'react-icons/fa';
@@ -82,6 +83,7 @@ const hasValidContent = (value1, value2) => {
 
 function Fullview({ onViewAttempt, formData }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [profileData, setProfileData] = useState(null);
@@ -618,7 +620,7 @@ function Fullview({ onViewAttempt, formData }) {
           </div>
           
           {/* Enhanced responsive details grid */}
-          <div className={`grid ${isMobile ? 'grid-cols-1 gap-y-2' : isTablet ? 'grid-cols-2 gap-x-5 gap-y-1.25' : 'grid-cols-2 gap-x-5 gap-y-1.25'} mt-2`}>
+          <div className={`grid ${isMobile ? 'grid-cols-1 gap-y-2' : isTablet ? 'grid-cols-1 gap-y-1.5' : 'grid-cols-2 gap-x-5 gap-y-1.25'} mt-2`}>
             <div>
               <strong>Designation:</strong> {designation}
             </div>
@@ -720,25 +722,26 @@ function Fullview({ onViewAttempt, formData }) {
       return value === 1 || value === '1' || value === true || value === 'true' || value === 'yes' || value === 'Yes';
     };
     
+    const isTablet = windowWidth > 768 && windowWidth <= 1024;
     return (
-      <div className="work-exposure">
-        <h6 className="work-exposure-title">Work Exposure</h6>
-        <div className="responsive-grid grid" style={{ 
-          gridTemplateColumns: `repeat(${getGridColumns()}, 1fr)`,
-          gap: isMobile ? '8px' : '10px'
-        }}>
-          {workTypes.map(type => (
-            <div key={type.key} className={`bg-white rounded-lg ${isMobile ? 'p-2 px-2' : 'p-3'} shadow-sm flex justify-between items-center min-h-[50px] border border-gray-200`}>
-              <div className={`${isMobile ? 'text-[13px]' : 'text-sm'} font-medium leading-snug flex-1 mr-2`}>
-                {type.label}
+      <div className={`work-exposure ${isMobile ? 'mb-4' : isTablet ? 'mb-5' : 'mb-6'}`}>
+          <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>WORK EXPOSURE</h2>
+          <div className="responsive-grid grid" style={{ 
+            gridTemplateColumns: `repeat(${getGridColumns()}, 1fr)`,
+            gap: isMobile ? '8px' : isTablet ? '9px' : '10px'
+          }}>
+            {workTypes.map(type => (
+              <div key={type.key} className={`bg-white rounded-lg ${isMobile ? 'p-2 px-2' : isTablet ? 'p-2.5' : 'p-3'} shadow-sm flex justify-between items-center ${isMobile ? 'min-h-[45px]' : 'min-h-[50px]'} border border-gray-200`}>
+                <div className={`${isMobile ? 'text-[13px]' : isTablet ? 'text-sm' : 'text-sm'} font-medium leading-snug flex-1 mr-2`}>
+                  {type.label}
+                </div>
+                <div className={`${isMobile ? 'w-5 h-5 text-xs' : isTablet ? 'w-5 h-5 text-xs' : 'w-6 h-6 text-sm'} rounded-full flex items-center justify-center font-bold shrink-0 ${isWorkTypeEnabled(type.key) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                  {isWorkTypeEnabled(type.key) ? '✓' : '×'}
+                </div>
               </div>
-              <div className={`${isMobile ? 'w-5 h-5 text-xs' : 'w-6 h-6 text-sm'} rounded-full flex items-center justify-center font-bold shrink-0 ${isWorkTypeEnabled(type.key) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-                {isWorkTypeEnabled(type.key) ? '✓' : '×'}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
     );
   };
 
@@ -757,22 +760,22 @@ function Fullview({ onViewAttempt, formData }) {
         : <span className="text-gray-500 italic">None</span>;
     };
 
-    // Simple language item component with inline display
+    // Enhanced language item component with larger fonts
     const LanguageItem = ({ label, languages }) => (
-      <div className={`language-item flex ${isMobile ? 'mb-1 py-0.5' : 'mb-1.25 py-0.75'} flex-row items-start flex-wrap`}>
-        <span className={`font-semibold mr-1.5 text-gray-800 ${isMobile ? 'text-[13px]' : 'text-sm'} min-w-fit`}>
+      <div className={`language-item flex ${isMobile ? 'mb-2 py-1' : 'mb-1.5 py-1'} flex-row items-start flex-wrap`}>
+        <span className={`font-semibold mr-2 text-gray-800 ${isMobile ? 'text-base' : 'text-[16px]'} min-w-fit`}>
           {label}:
         </span>
-        <span className={`${isMobile ? 'text-[13px]' : 'text-sm'} leading-[1.4] flex-1 text-gray-600`}>
-          {languages.length > 0 ? languages.join(', ') : 'None'}
+        <span className={`${isMobile ? 'text-base' : 'text-[16px]'} leading-[1.5] flex-1 text-gray-700 font-medium`}>
+          {languages.length > 0 ? languages.join(', ') : <span className="text-gray-500 italic font-normal">None</span>}
         </span>
       </div>
     );
     
     return (
-      <div className="language-proficiency">
-        <h6 className="language-title">Language Proficiency</h6>
-        <div className={`pl-0 ${isMobile ? 'bg-white rounded p-1.5' : 'bg-transparent p-1'}`}>
+      <div className="language-proficiency mb-4">
+        <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-lg bg-gradient-brand bg-clip-text text-transparent">LANGUAGE PROFICIENCY</h2>
+        <div className={`${isMobile ? 'bg-white rounded-lg p-3 border border-gray-200' : 'bg-gray-50 rounded-lg p-3 border border-gray-200'}`}>
           <LanguageItem label="Speak" languages={speakLanguages} />
           <LanguageItem label="Read" languages={readLanguages} />
           <LanguageItem label="Write" languages={writeLanguages} />
@@ -789,11 +792,11 @@ function Fullview({ onViewAttempt, formData }) {
       if (!value) return null;
       
       return (
-        <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-2 py-1.5 bg-transparent items-start'}`}>
-          <span className={`${isMobile ? 'w-full mb-1' : 'w-40'} font-semibold ${isMobile ? 'text-[13px]' : 'text-sm'} text-gray-800 shrink-0`}>
+        <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
+          <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold ${isMobile ? 'text-[13px]' : 'text-sm'} text-gray-800 shrink-0`}>
             {label}:
           </span>
-          <span className={`${isMobile ? 'text-[13px]' : 'text-sm'} leading-[1.4] ${isMobile ? 'ml-0' : 'ml-2.5'} flex-1 break-words text-gray-600`}>
+          <span className={`${isMobile ? 'text-[13px]' : 'text-sm'} leading-[1.4] ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600`}>
             {value}
           </span>
         </div>
@@ -829,54 +832,47 @@ function Fullview({ onViewAttempt, formData }) {
     };
     
     return (
-      <div className="additional-information mb-[30px] p-[15px] bg-gray-50 rounded-lg border border-gray-200">
-        <h6 className="info-title mb-[15px] text-[#1967d2] border-b border-gray-300 pb-2 text-base font-semibold">
-          Additional Information
-        </h6>
+      <div className={`additional-information mb-[30px] ${isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-[15px]'} bg-gray-50 rounded-lg border border-gray-200`}>
+        <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>
+          ADDITIONAL INFORMATION
+        </h2>
         
-        {/* Enhanced layout that works with existing CSS */}
-        <div className={`${isMobile ? 'block' : 'flex'} flex-wrap ${isMobile ? 'gap-0' : 'gap-5'}`}>
-          {/* Left column */}
-          <div className={`${isMobile ? 'flex-none w-full' : 'flex-1 min-w-0'} ${isMobile ? '' : 'basis-[300px]'}`}>
-            {additionalInfo?.religion && (
-              <InfoItem label="Religion" value={additionalInfo.religion} />
-            )}
-            {additionalInfo?.marital_status && (
-              <InfoItem label="Marital Status" value={additionalInfo.marital_status} />
-            )}
-            {additionalInfo?.computer_skills && (
-              <InfoItem label="Computer skills" value={formatComputerSkills()} />
-            )}
-            {additionalInfo?.accounting_knowledge !== undefined && (
-              <InfoItem 
-                label="Accounting Knowledge" 
-                value={isPositiveValue(additionalInfo.accounting_knowledge) ? 'Yes' : 'No'} 
-              />
-            )}
-          </div>
-          
-          {/* Right column */}
-          <div className={`${isMobile ? 'flex-none w-full' : 'flex-1 min-w-0'} ${isMobile ? '' : 'basis-[300px]'}`}>
-            {additionalInfo?.citizenship && (
-              <InfoItem label="Citizenship" value={additionalInfo.citizenship} />
-            )}
-            {additionalInfo?.differently_abled && (
-              <InfoItem 
-                label="Differently abled" 
-                value={additionalInfo.differently_abled} 
-              />
-            )}
-            {additionalInfo?.certifications && (
-              <InfoItem label="Certifications" value={additionalInfo.certifications} />
-            )}
-            {additionalInfo?.accomplishments && (
-              <InfoItem label="Accomplishments" value={additionalInfo.accomplishments} />
-            )}
-          </div>
+        {/* Optimized grid layout for better space utilization */}
+        <div className={`${isMobile ? 'block' : 'grid'} ${isMobile ? '' : isTablet ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} ${isMobile ? 'gap-0' : isTablet ? 'gap-x-3 gap-y-0' : 'gap-x-4 gap-y-0'}`}>
+          {additionalInfo?.religion && (
+            <InfoItem label="Religion" value={additionalInfo.religion} />
+          )}
+          {additionalInfo?.marital_status && (
+            <InfoItem label="Marital Status" value={additionalInfo.marital_status} />
+          )}
+          {additionalInfo?.computer_skills && (
+            <InfoItem label="Computer skills" value={formatComputerSkills()} />
+          )}
+          {additionalInfo?.accounting_knowledge !== undefined && (
+            <InfoItem 
+              label="Accounting Knowledge" 
+              value={isPositiveValue(additionalInfo.accounting_knowledge) ? 'Yes' : 'No'} 
+            />
+          )}
+          {additionalInfo?.citizenship && (
+            <InfoItem label="Citizenship" value={additionalInfo.citizenship} />
+          )}
+          {additionalInfo?.differently_abled && (
+            <InfoItem 
+              label="Differently abled" 
+              value={additionalInfo.differently_abled} 
+            />
+          )}
+          {additionalInfo?.certifications && (
+            <InfoItem label="Certifications" value={additionalInfo.certifications} />
+          )}
+          {additionalInfo?.accomplishments && (
+            <InfoItem label="Accomplishments" value={additionalInfo.accomplishments} />
+          )}
         </div>
         
         {/* Full width items for longer content */}
-        <div className={`${isMobile ? 'mt-2' : 'mt-[15px]'} w-full`}>
+        <div className={`${isMobile ? 'mt-2' : 'mt-[5px]'} w-full`}>
           {additionalInfo?.projects && (
             <InfoItem label="Projects" value={additionalInfo.projects} />
           )}
@@ -951,22 +947,24 @@ function Fullview({ onViewAttempt, formData }) {
   const highestEducation = getHighestEducation();
 
   return (
-    <div className={`cv-container max-w-[1000px] mx-auto bg-white shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-lg overflow-hidden font-sans text-gray-800 px-[5px] py-2.5 ${isMobile ? 'mobile-layout' : ''} ${isTablet ? 'tablet-layout' : ''}`}>
+    <div className={`cv-container ${isMobile ? 'max-w-full' : isTablet ? 'max-w-[900px]' : 'max-w-[1000px]'} mx-auto bg-white shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-lg overflow-hidden font-sans text-gray-800 ${isMobile ? 'px-2 py-2' : isTablet ? 'px-3 py-2.5' : 'px-[5px] py-2.5'} ${isMobile ? 'mobile-layout' : ''} ${isTablet ? 'tablet-layout' : ''}`}>
       {/* Edit Profile Button - Top Level */}
       <div className="flex justify-end mb-[15px]">
         <button
-          onClick={() => window.location.href = "/candidates-dashboard/my-profile"}
-          className={`btn btn-warning ${isMobile ? 'btn-mobile' : ''} ${isMobile ? 'text-sm px-4 py-2' : 'text-base px-5 py-2.5'} rounded-md font-medium`}
+          onClick={() => {
+            navigate("/seeker/my-profile?edit=true", { replace: false });
+          }}
+          className={`btn bg-gradient-brand hover:bg-gradient-brand-hover text-white ${isMobile ? 'btn-mobile' : ''} ${isMobile ? 'text-sm px-4 py-2' : 'text-base px-5 py-2.5'} rounded-md font-medium`}
         >
           Edit Profile
         </button>
       </div>
 
-      <div className={`cv-header flex ${isMobile ? 'flex-col items-center text-center p-2' : 'p-6'} bg-white border-b border-gray-200 mb-2.5`}>
-        {/* First Row: Profile Picture + Basic Info */}
-        <div className={`flex ${isMobile ? 'flex-col' : ''} gap-5 mb-2 items-center`}>
+      <div className={`cv-header ${isMobile ? 'flex-col items-center text-center p-2' : 'flex flex-row items-start p-6'} bg-white border-b border-gray-200 mb-2.5`}>
+        {/* Left Side: Profile Picture + Basic Info */}
+        <div className={`flex ${isMobile ? 'flex-col' : ''} gap-5 ${isMobile ? 'mb-2 items-center' : 'w-1/2 pr-4'} ${isMobile ? '' : ''}`}>
           {/* Profile Picture */}
-          <div className={`profile-photo ${isMobile ? 'w-[100px] h-[120px] mb-2.5' : 'w-[150px] h-[180px]'} rounded-full overflow-hidden border-[3px] border-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.1)] ${isMobile ? 'm-0' : 'mr-2.5'} shrink-0`}>
+          <div className={`profile-photo ${isMobile ? 'w-[100px] h-[100px] mb-2.5' : 'w-[120px] h-[120px]'} rounded-full overflow-hidden border-[3px] border-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.1)] ${isMobile ? 'm-0' : 'mr-2.5'} shrink-0`}>
             {photoUrl ? (
               <img 
                 src={photoUrl} 
@@ -984,25 +982,27 @@ function Fullview({ onViewAttempt, formData }) {
           
           {/* Basic Information */}
           <div className="flex-1">
-            <h1 className={`candidate-name mb-1 ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+            <h1 className={`candidate-name mb-1 ${isMobile ? 'text-xl' : isTablet ? 'text-2xl' : 'text-3xl'} bg-gradient-brand bg-clip-text text-transparent`}>
               {profileData.fullName || 'Candidate Name'}
             </h1>
             
             {/* Personal Details */}
-            <div className={`mb-0.5 ${isMobile ? 'text-sm' : 'text-[15px]'} text-gray-600`}>
+            <div className={`mb-0.5 ${isMobile ? 'text-sm' : isTablet ? 'text-[14px]' : 'text-[15px]'} text-gray-600`}>
               {profileData.gender && <span>{profileData.gender}</span>}
               {profileData.dateOfBirth && (
-                <span> | {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
+                <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
               )}
               {highestEducation && <span> | {highestEducation}</span>}
+              </div>
+              <div className={`mb-0.5 ${isMobile ? 'text-sm' : isTablet ? 'text-[14px]' : 'text-[15px]'} text-gray-600`}>
               {experienceData?.mysqlData?.total_experience_years > 0 && (
-                <span> | {experienceData.mysqlData.total_experience_years} Years {experienceData.mysqlData.total_experience_months || 0} Months</span>
+                <span> | Experience: {experienceData.mysqlData.total_experience_years} Years {experienceData.mysqlData.total_experience_months || 0} Months</span>
               )}
               {currentDesignation && <span> | {currentDesignation}</span>}
             </div>
             
             {/* Professional Info */}
-            <div className={`mb-0.5 ${isMobile ? 'text-sm' : 'text-[15px]'} text-gray-600`}>
+            <div className={`mb-0.5 ${isMobile ? 'text-sm' : isTablet ? 'text-[14px]' : 'text-[15px]'} text-gray-600`}>
               {profileData.designation && <span>{profileData.designation}</span>}
               {(profileData.teachingSubjects?.length > 0 || profileData.teachingCoreExpertise?.length > 0) && (
                 <span> | {profileData.teachingSubjects?.[0] || profileData.teachingCoreExpertise?.[0]} Faculty</span>
@@ -1011,7 +1011,7 @@ function Fullview({ onViewAttempt, formData }) {
             
             {/* Email */}
             {profileData.email && (
-              <div className={`flex items-center ${isMobile ? 'text-sm' : 'text-[15px]'}`}>
+              <div className={`flex items-center ${isMobile ? 'text-sm' : isTablet ? 'text-[14px]' : 'text-[15px]'}`}>
                 <FaEnvelope className="mr-1.5 text-gray-400" />
                 <a href={`mailto:${profileData.email}`} className="no-underline text-[#1967d2]">
                   {profileData.email}
@@ -1021,14 +1021,14 @@ function Fullview({ onViewAttempt, formData }) {
           </div>
         </div>
         
-        {/* Contact Information Rows - Starting from left edge */}
-        <div className={`font-sans ${isMobile ? 'text-[13px]' : 'text-sm'} leading-[1.4]`}>
-          {/* Row 2: Address Information */}
-          <div className={`flex flex-row ${isMobile ? 'gap-[15px]' : 'gap-5'} mb-1.5 flex-wrap`}>
-            <div className="flex items-center">
-              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px]" />
-              <span className="font-semibold mr-1.5">Present:</span>
-              <span className={`overflow-hidden text-ellipsis whitespace-nowrap ${isMobile ? 'max-w-[280px]' : 'max-w-[350px]'}`}>
+        {/* Right Side: Contact Information */}
+        <div className={`font-sans ${isMobile ? 'text-[13px] w-full' : 'text-sm w-1/2'} leading-[1.4] ${isMobile ? 'mt-2' : 'pl-4'}`}>
+          {/* Address Information */}
+          <div className={`flex ${isMobile ? 'flex-row' : 'flex-col'} ${isMobile ? 'gap-[15px]' : 'gap-1.5'} ${isMobile ? 'mb-1.5 flex-wrap' : 'mb-2'}`}>
+            <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'}`}>
+              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
+              <span className="font-semibold mr-1.5 shrink-0">Present:</span>
+              <span className={`${isMobile ? 'overflow-hidden text-ellipsis whitespace-nowrap max-w-[280px]' : 'break-words'}`}>
                 {[
                   profileData.present_city_name,
                   profileData.present_state_name,
@@ -1037,10 +1037,10 @@ function Fullview({ onViewAttempt, formData }) {
               </span>
             </div>
             
-            <div className="flex items-center">
-              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px]" />
-              <span className="font-semibold mr-1.5">Permanent:</span>
-              <span className={`overflow-hidden text-ellipsis whitespace-nowrap ${isMobile ? 'max-w-[280px]' : 'max-w-[350px]'}`}>
+            <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'}`}>
+              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
+              <span className="font-semibold mr-1.5 shrink-0">Permanent:</span>
+              <span className={`${isMobile ? 'overflow-hidden text-ellipsis whitespace-nowrap max-w-[280px]' : 'break-words'}`}>
                 {[
                   profileData.permanent_city_name,
                   profileData.permanent_state_name,
@@ -1050,32 +1050,32 @@ function Fullview({ onViewAttempt, formData }) {
             </div>
           </div>
           
-          {/* Row 3: Phone Numbers */}
-          <div className={`flex flex-row ${isMobile ? 'gap-[15px]' : 'gap-5'} mb-1.5 flex-wrap`}>
+          {/* Phone Numbers - Same Line */}
+          <div className={`flex ${isMobile ? 'flex-row' : 'flex-row'} ${isMobile ? 'gap-[15px]' : 'gap-4'} ${isMobile ? 'mb-1.5 flex-wrap' : 'mb-2'}`}>
             <div className="flex items-center">
-              <FaPhone className="mr-1.5 text-[#1a73e8] text-[13px]" />
-              <span className="font-semibold mr-1.5">Phone:</span>
+              <FaPhone className="mr-1.5 text-[#1a73e8] text-[13px] shrink-0" />
+              <span className="font-semibold mr-1.5 shrink-0">Phone:</span>
               <span>{profileData.callingNumber}</span>
             </div>
              
             <div className="flex items-center">
-              <FaWhatsapp className="mr-1.5 text-[#25D366] text-[13px]" />
-              <span className="font-semibold mr-1.5">WhatsApp:</span>
+              <FaWhatsapp className="mr-1.5 text-[#25D366] text-[13px] shrink-0" />
+              <span className="font-semibold mr-1.5 shrink-0">WhatsApp:</span>
               <span>{profileData.whatsappNumber}</span>
             </div>
           </div>
           
-          {/* Row 4: Social Links */}
-          <div className={`flex ${isMobile ? 'gap-[15px]' : 'gap-5'} items-center flex-wrap`}>
+          {/* Social Links */}
+          <div className={`flex ${isMobile ? 'flex-row gap-[15px]' : 'flex-col gap-1.5'} items-start flex-wrap`}>
             <div className="flex items-center">
-              <FaFacebook className="mr-1.5 text-[#385898] text-[13px]" /> 
-              <span className="font-semibold mr-1.5">Facebook:</span>
+              <FaFacebook className="mr-1.5 text-[#385898] text-[13px] shrink-0" /> 
+              <span className="font-semibold mr-1.5 shrink-0">Facebook:</span>
               {socialLinks.facebook ? (
                 <a 
                   href={socialLinks.facebook.startsWith('http') ? socialLinks.facebook : `https://${socialLinks.facebook}`} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="no-underline text-[#385898] overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px]"
+                  className={`no-underline text-[#385898] ${isMobile ? 'overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px]' : 'break-words'}`}
                 >
                   {socialLinks.facebook}
                 </a>
@@ -1085,14 +1085,14 @@ function Fullview({ onViewAttempt, formData }) {
             </div>
             
             <div className="flex items-center">
-              <FaLinkedin className="mr-1.5 text-[#0077b5] text-[13px]" /> 
-              <span className="font-semibold mr-1.5">LinkedIn:</span>
+              <FaLinkedin className="mr-1.5 text-[#0077b5] text-[13px] shrink-0" /> 
+              <span className="font-semibold mr-1.5 shrink-0">LinkedIn:</span>
               {socialLinks.linkedin ? (
                 <a 
                   href={socialLinks.linkedin.startsWith('http') ? socialLinks.linkedin : `https://${socialLinks.linkedin}`} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="no-underline text-[#0077b5] overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px]"
+                  className={`no-underline text-[#0077b5] ${isMobile ? 'overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px]' : 'break-words'}`}
                 >
                   {socialLinks.linkedin}
                 </a>
@@ -1104,19 +1104,19 @@ function Fullview({ onViewAttempt, formData }) {
         </div>
       </div>
       
-      <div className="cv-body flex flex-col md:flex-row p-0 bg-white">
-        <div className="cv-sidebar w-full md:w-[35%] bg-gray-100 p-2.5 md:p-5">
+      <div className={`cv-body flex flex-col ${isTablet ? 'md:flex-row' : 'md:flex-row'} p-0 bg-white`}>
+        <div className={`cv-sidebar w-full ${isTablet ? 'md:w-[35%]' : 'md:w-[35%]'} bg-gray-100 ${isMobile ? 'p-2.5' : isTablet ? 'p-4' : 'md:p-5'}`}>
           <div className="cv-section education-section mt-0 mb-2.5">
-            <h2 className="section-title text-lg border-b-2 border-[#1967d2] pb-2 mb-[15px] font-bold text-[#1967d2] uppercase text-left">
+            <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>
               EDUCATION
             </h2>
             {renderEducationBlocks()}
           </div>
         </div>
 
-        <div className="cv-main w-full md:w-[65%] md:px-2">
+        <div className={`cv-main w-full ${isTablet ? 'md:w-[65%]' : 'md:w-[65%]'} ${isMobile ? 'md:px-2' : isTablet ? 'md:px-3' : 'md:px-2'}`}>
           <div className="cv-section experience-section mt-0 mb-2.5">
-            <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-lg text-[#1967d2]">
+            <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>
               WORK EXPERIENCE
             </h2>
             {getExperienceText()}
@@ -1168,10 +1168,10 @@ function Fullview({ onViewAttempt, formData }) {
             
             return (
               <div className="cv-section job-preferences mt-0 mb-2.5">
-                <h2 className="section-title text-lg border-b-2 border-[#1967d2] pb-2 mb-[15px] font-bold text-[#1967d2] uppercase">Job Preferences</h2>
-                <div className="job-preferences-block bg-[#f5f7fc] p-5 rounded-lg mb-[25px] text-[15px] leading-[1.5]">
+                <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>JOB PREFERENCES</h2>
+                <div className={`job-preferences-block bg-[#f5f7fc] ${isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-5'} rounded-lg mb-[25px] ${isMobile ? 'text-sm' : isTablet ? 'text-[14px]' : 'text-[15px]'} leading-[1.5]`}>
                   {/* Two-column details grid */}
-                  <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-x-5 gap-y-1`}>
+                  <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1' : 'grid-cols-2'} ${isMobile ? 'gap-x-0 gap-y-1' : isTablet ? 'gap-x-3 gap-y-1' : 'gap-x-5 gap-y-1'}`}>
                     {/* Basic Job Information */}
                     {jobPreferenceData.Job_Type && (
                       <div>

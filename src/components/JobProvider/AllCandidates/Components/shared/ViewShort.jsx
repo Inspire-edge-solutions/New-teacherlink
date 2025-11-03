@@ -12,6 +12,7 @@ import {
 } from '../utils/printPdfUtils.jsx';
 import { useAuth } from "../../../../../Context/AuthContext";
 import { decodeCandidateData } from '../../../../../utils/dataDecoder';
+import CandidateApiService from './CandidateApiService';
 
 const FULL_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/fullapi';
 const EDUCATION_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails';
@@ -23,6 +24,7 @@ const COIN_HISTORY_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.co
 const ORGANISATION_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation';
 const UNLOCK_COST = 50;
 const PERSONAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal';
+const UNLOCK_INFO_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/unlock_details';
 
 function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, unlockStatus, error }) {
   
@@ -114,6 +116,7 @@ const ViewShort = ({
   const [unlockLoading, setUnlockLoading] = useState(false);
   const [unlockStatus, setUnlockStatus] = useState(""); // "success" | "error" | ""
   const [unlockError, setUnlockError] = useState("");
+  const [unlockedInfo, setUnlockedInfo] = useState(null);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -151,6 +154,20 @@ const ViewShort = ({
           d => d.firebase_uid === userId
         ) : null;
         setCoinValue(found?.coin_value ?? null);
+        
+        // Fetch unlock info if already unlocked
+        if (isUnlocked) {
+          try {
+            const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
+              firebase_uid: candidateId
+            });
+            if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
+              setUnlockedInfo(unlockInfoResponse.data[0]);
+            }
+          } catch (unlockError) {
+            console.error("Error fetching unlock info:", unlockError);
+          }
+        }
       } catch (e) {
         const errorMsg = 'Could not check coins. Please try again.';
         setUnlockError(errorMsg);
@@ -158,7 +175,7 @@ const ViewShort = ({
       }
     };
     if (userId && candidateId) checkUnlocked();
-  }, [userId, candidateId, unlockKey]);
+  }, [userId, candidateId, unlockKey, isUnlocked]);
 
   const handleUnlockClick = () => {
     setShowUnlockModal(true);
@@ -191,17 +208,41 @@ const ViewShort = ({
       }
 
       // Subtract coins
-      await axios.put(REDEEM_API, {
+      const redeemResponse = await axios.put(REDEEM_API, {
         firebase_uid: userId,
         coin_value: coins - UNLOCK_COST
       });
 
+      if (redeemResponse.status !== 200) {
+        throw new Error("Failed to deduct coins");
+      }
+
+      // Mark candidate as unlocked in database FIRST (so it appears in unlocked list)
+      try {
+        await CandidateApiService.upsertCandidateAction(candidate, user, { unlocked_candidate: 1 });
+      } catch (dbError) {
+        console.error("Error updating unlock status in database:", dbError);
+        // Still continue - we'll try again, but don't fail the whole unlock
+      }
+
+      // Call unlock info API after successful unlock and database update
+      try {
+        const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
+          firebase_uid: candidateId
+        });
+        if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
+          setUnlockedInfo(unlockInfoResponse.data[0]);
+        }
+      } catch (unlockError) {
+        console.error("Error fetching unlock info:", unlockError);
+      }
+
       // Get organization ID for the current user
-      let candidateId = null;
+      let orgId = null;
       try {
         const orgResponse = await axios.get(`${ORGANISATION_API}?firebase_uid=${encodeURIComponent(userId)}`);
         if (orgResponse.status === 200 && Array.isArray(orgResponse.data) && orgResponse.data.length > 0) {
-          candidateId = orgResponse.data[0].id;
+          orgId = orgResponse.data[0].id;
         }
       } catch (orgError) {
         console.error("Error fetching organization data:", orgError);
@@ -220,7 +261,7 @@ const ViewShort = ({
       try {
         await axios.post(COIN_HISTORY_API, {
           firebase_uid: userId,
-          candidate_id: candidateId,
+          candidate_id: orgId,
           job_id: null,
           coin_value: coins - UNLOCK_COST,
           reduction: UNLOCK_COST,
@@ -435,7 +476,7 @@ const ViewShort = ({
       return <div className="text-gray-600">No education details available</div>;
     }
     return educationData.map((education, index) => (
-      <div key={`${education.education_type}-${index}`} className="mb-5 p-4 bg-[#f5f7fc] rounded-lg">
+      <div key={`${education.education_type}-${index}`} className={`${windowWidth <= 768 ? 'mb-3' : 'mb-5'} p-4 bg-[#f5f7fc] rounded-lg`}>
         <div className="text-base text-[#202124] mb-2.5 font-semibold">{getEducationTypeTitle(education.education_type)}</div>
         {education.yearOfPassing && (
           <div className="my-1.5 text-gray-600 text-sm">Year of Passing: {education.yearOfPassing}</div>
@@ -641,11 +682,11 @@ const ViewShort = ({
   return (
     <div>
       {/* PROFILE ACTIONS BAR - TOP */}
-      <div className="flex justify-between items-center mb-6 w-full gap-4 flex-nowrap px-2">
+      <div className={`flex flex-col sm:flex-row justify-between items-stretch sm:items-center ${windowWidth <= 768 ? 'mb-4' : 'mb-6'} w-full ${windowWidth <= 768 ? 'gap-2' : 'gap-4'} ${windowWidth <= 768 ? 'px-1' : 'px-2'}`}>
         {/* SHOW Unlock button only if not unlocked */}
         {!isUnlocked && (
           <button 
-            className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none min-w-[170px] flex-shrink-0"
+            className={`inline-flex items-center justify-center gap-2.5 ${windowWidth <= 768 ? 'px-4 py-2.5 text-sm' : 'px-6 py-3 text-base'} bg-gradient-brand text-white border-none rounded-lg font-semibold cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none ${windowWidth <= 768 ? 'w-full sm:w-auto sm:min-w-[150px]' : 'min-w-[170px]'} flex-shrink-0`}
             onClick={handleUnlockClick}
             disabled={isUnlocked}
           >
@@ -653,8 +694,8 @@ const ViewShort = ({
             Unlock Details
           </button>
         )}
-        <div className="ml-auto">
-          <button className="px-4 py-2.5 bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-colors whitespace-nowrap" onClick={onBack}>
+        <div className={`${windowWidth <= 768 ? 'w-full sm:w-auto sm:ml-auto' : 'ml-auto'}`}>
+          <button className={`w-full sm:w-auto ${windowWidth <= 768 ? 'px-3 py-2 text-sm' : 'px-4 py-2.5 text-base'} bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-colors whitespace-nowrap`} onClick={onBack}>
             Back to List
           </button>
         </div>
@@ -673,128 +714,135 @@ const ViewShort = ({
       />
 
       {/* Actual card content */}
-      <div className="max-w-[1200px] mx-auto p-6 md:p-8 bg-white shadow-md rounded-lg overflow-hidden font-sans text-gray-800 relative">
-        <div className="grid grid-cols-1 lg:grid-cols-[auto,1fr] gap-8 mb-2.5 pb-5 border-b-2 border-gray-200 text-center lg:text-left">
-          <div className="w-[150px] h-[150px] flex-shrink-0 mx-auto lg:mx-0 rounded-full overflow-hidden">
-            <AvatarImage
-              src={photoUrl}
-              alt={`${profileData.fullName || 'User'}'s profile photo`}
-              gender={profileData.gender}
-              className="w-full h-full object-cover"
-              style={{ 
-                border: 'none',
-                transform: 'scale(1.4) translateY(7%)',
-                transformOrigin: 'center'
-              }}
-            />
-          </div>
-          <div className="flex flex-col gap-2.5 flex-1 pl-0 lg:pl-5">
-            <h1 className="text-3xl text-[#202124] m-0">{profileData.fullName || 'Candidate Name'}</h1>
-            <div className="flex flex-wrap gap-2.5 text-gray-600 text-sm mb-2">
-              {profileData.gender && <span>{profileData.gender}</span>}
-              {profileData.dateOfBirth && (
-                <span className="ml-4">
-                  DOB: {new Date(profileData.dateOfBirth).toLocaleDateString('en-US', { 
-                    day: '2-digit', 
-                    month: '2-digit', 
-                    year: 'numeric' 
-                  })}
-                </span>
-              )}
-              {profileData.email && (
-                <div className="flex items-center mt-1">
+      <div className={`${windowWidth <= 768 ? 'max-w-full' : windowWidth <= 1024 ? 'max-w-[1000px]' : 'max-w-[1200px]'} mx-auto ${windowWidth <= 768 ? 'px-2 py-3' : windowWidth <= 1024 ? 'p-5' : 'p-6 md:p-8'} bg-white shadow-md rounded-lg overflow-hidden font-sans text-gray-800 relative`}>
+        <div className={`${windowWidth <= 768 ? 'flex-col items-center text-center px-2 py-2' : 'flex flex-row items-start p-6'} bg-white border-b border-gray-200 mb-2.5`}>
+          {/* Left Side: Profile Picture + Basic Info */}
+          <div className={`flex ${windowWidth <= 768 ? 'flex-col' : ''} gap-5 ${windowWidth <= 768 ? 'mb-2 items-center' : 'w-1/2 pr-4'}`}>
+            {/* Profile Picture */}
+            <div className={`profile-photo ${windowWidth <= 768 ? 'w-[100px] h-[100px] mb-2.5' : 'w-[100px] h-[100px]'} rounded-full overflow-hidden border-[3px] border-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.1)] ${windowWidth <= 768 ? 'm-0' : 'mr-2.5'} shrink-0`}>
+              <AvatarImage
+                src={photoUrl}
+                alt={`${profileData.fullName || 'User'}'s profile photo`}
+                gender={profileData.gender}
+                className="w-full h-full object-cover"
+                style={{ 
+                  border: 'none',
+                  transform: 'scale(1.4) translateY(7%)',
+                  transformOrigin: 'center'
+                }}
+              />
+            </div>
+            
+            {/* Basic Information */}
+            <div className="flex-1">
+              <h1 className={`candidate-name mb-1 ${windowWidth <= 768 ? 'text-xl' : windowWidth <= 1024 ? 'text-2xl' : 'text-3xl'} bg-gradient-brand bg-clip-text text-transparent`}>
+                {profileData.fullName || 'Candidate Name'}
+              </h1>
+              
+              {/* Personal Details */}
+              <div className={`mb-0.5 ${windowWidth <= 768 ? 'text-sm' : windowWidth <= 1024 ? 'text-[14px]' : 'text-[15px]'} text-gray-600`}>
+                {profileData.gender && <span>{profileData.gender}</span>}
+                {profileData.dateOfBirth && (
+                  <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
+                )}
+                {experienceData?.mysqlData?.total_experience_years > 0 && (
+                  <span> | Experience: {experienceData.mysqlData.total_experience_years} Years {experienceData.mysqlData.total_experience_months || 0} Months</span>
+                )}
+              </div>
+              
+              {/* Email */}
+              {(profileData.email || unlockedInfo?.email) && (
+                <div className={`flex items-center ${windowWidth <= 768 ? 'text-sm' : windowWidth <= 1024 ? 'text-[14px]' : 'text-[15px]'}`}>
                   <FaEnvelope className="mr-1.5 text-gray-400" />
                   <BlurWrapper isUnlocked={isUnlocked}>
-                    <a href={isUnlocked ? `mailto:${profileData.email}` : undefined} className={`text-[#1766af] ${!isUnlocked ? 'pointer-events-none' : ''}`}>
-                      {profileData.email}
+                    <a href={isUnlocked ? `mailto:${unlockedInfo?.email || profileData.email}` : undefined} className={`no-underline text-[#1967d2] ${!isUnlocked ? 'pointer-events-none' : ''}`}>
+                      {isUnlocked && unlockedInfo?.email ? unlockedInfo.email : (profileData.email || 'N/A')}
                     </a>
                   </BlurWrapper>
                 </div>
               )}
             </div>
-
-            {/* Contact Information - Optimized Layout */}
-            <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-4 font-sans text-sm`}>
-              {/* Left Column - Addresses */}
-              <div>
-                <div className="flex items-center mb-2">
-                  <FaMapMarkerAlt className="mr-2 text-red-500 text-base" /> 
-                  <span><strong>Present:</strong> {profileData.present_state_name || 'N/A'}</span>
+          </div>
+          
+          {/* Right Side: Contact Information */}
+          <div className={`font-sans ${windowWidth <= 768 ? 'text-[13px] w-full' : 'text-sm w-1/2'} leading-[1.4] ${windowWidth <= 768 ? 'mt-2' : 'pl-4'}`}>
+            {/* Address Information */}
+            <div className={`flex ${windowWidth <= 768 ? 'flex-col' : 'flex-col'} ${windowWidth <= 768 ? 'gap-2' : 'gap-1.5'} ${windowWidth <= 768 ? 'mb-2' : 'mb-2'}`}>
+              <div className={`flex items-start ${windowWidth <= 768 ? 'flex-col sm:flex-row sm:items-center' : 'flex-wrap'} gap-1.5`}>
+                <div className="flex items-center flex-shrink-0">
+                  <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
+                  <span className="font-semibold shrink-0">Present:</span>
                 </div>
-                {profileData.permanent_state_name && (
-                  <div className="flex items-center">
-                    <FaMapMarkerAlt className="mr-2 text-gray-400 text-base" />
-                    <span><strong>Permanent:</strong> {profileData.permanent_state_name}</span>
-                  </div>
-                )}
+                <span className={`${windowWidth <= 768 ? 'break-words ml-6 sm:ml-0' : 'break-words'}`}>
+                  {profileData.present_state_name || 'N/A'}
+                </span>
               </div>
-
-              {/* Right Column - Phone Numbers */}
-              <div>
-                <div className="flex items-center mb-2">
-                  <FaPhone className="mr-2 text-blue-600 text-base" />
-                  <span><strong>Phone:</strong>{" "}
-                    <BlurWrapper isUnlocked={isUnlocked}>
-                      {isUnlocked
-                        ? profileData.callingNumber || "N/A"
-                        : profileData.callingNumber
-                          ? <span className="tracking-wide">{profileData.callingNumber.replace(/\d/g, "•")}</span>
-                          : "N/A"
-                      }
-                    </BlurWrapper>
+              
+              {profileData.permanent_state_name && (
+                <div className={`flex items-start ${windowWidth <= 768 ? 'flex-col sm:flex-row sm:items-center' : 'flex-wrap'} gap-1.5`}>
+                  <div className="flex items-center flex-shrink-0">
+                    <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
+                    <span className="font-semibold shrink-0">Permanent:</span>
+                  </div>
+                  <span className={`${windowWidth <= 768 ? 'break-words ml-6 sm:ml-0' : 'break-words'}`}>
+                    {profileData.permanent_state_name}
                   </span>
                 </div>
-                <div className="flex items-center">
-                  <FaWhatsapp className="mr-2 text-green-500 text-base" />
-                  <span><strong>WhatsApp:</strong>{" "}
-                    <BlurWrapper isUnlocked={isUnlocked}>
-                      {isUnlocked
-                        ? profileData.whatsappNumber || "N/A"
-                        : profileData.whatsappNumber
-                          ? <span className="tracking-wide">{profileData.whatsappNumber.replace(/\d/g, "•")}</span>
-                          : "N/A"
-                      }
-                    </BlurWrapper>
-                  </span>
-                </div>
+              )}
+            </div>
+            
+            {/* Phone Numbers - Responsive layout */}
+            <div className={`flex ${windowWidth <= 768 ? 'flex-col' : 'flex-row'} ${windowWidth <= 768 ? 'gap-2' : 'gap-4'} ${windowWidth <= 768 ? 'mb-2' : 'mb-2'}`}>
+              <div className="flex items-center flex-wrap gap-1.5">
+                <FaPhone className="text-[#1a73e8] text-[13px] shrink-0" />
+                <span className="font-semibold shrink-0">Phone:</span>
+                <BlurWrapper isUnlocked={isUnlocked}>
+                  {isUnlocked
+                    ? unlockedInfo?.phone_number || profileData.callingNumber || "N/A"
+                    : (unlockedInfo?.phone_number || profileData.callingNumber)
+                      ? <span className="tracking-wide break-all">{(unlockedInfo?.phone_number || profileData.callingNumber).replace(/\d/g, "•")}</span>
+                      : "N/A"
+                  }
+                </BlurWrapper>
+              </div>
+              
+              <div className="flex items-center flex-wrap gap-1.5">
+                <FaWhatsapp className="text-[#25D366] text-[13px] shrink-0" />
+                <span className="font-semibold shrink-0">WhatsApp:</span>
+                <BlurWrapper isUnlocked={isUnlocked}>
+                  {isUnlocked
+                    ? unlockedInfo?.whatsup_number || profileData.whatsappNumber || "N/A"
+                    : (unlockedInfo?.whatsup_number || profileData.whatsappNumber)
+                      ? <span className="tracking-wide break-all">{(unlockedInfo?.whatsup_number || profileData.whatsappNumber).replace(/\d/g, "•")}</span>
+                      : "N/A"
+                  }
+                </BlurWrapper>
               </div>
             </div>
-
-            {/* Additional Info Row */}
-            {(profileData.aadharNumber || profileData.panNumber) && (
-              <div className={`mt-2.5 grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-[repeat(auto-fit,minmax(200px,1fr))]'} gap-2 text-xs text-gray-600`}>
-                {profileData.aadharNumber && (
-                  <div><strong>Aadhar:</strong> {profileData.aadharNumber}</div>
-                )}
-                {profileData.panNumber && (
-                  <div><strong>PAN:</strong> {profileData.panNumber}</div>
-                )}
-              </div>
-            )}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-8 mt-0">
-          <div className="bg-gray-100 p-5 lg:w-auto">
-            <div className="mb-8">
-              <h2 className="text-lg border-b-2 border-[#1967d2] pb-2 mb-4 font-bold text-[#1967d2] uppercase text-left">EDUCATION</h2>
+        <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : windowWidth <= 1024 ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-[300px,1fr]'} ${windowWidth <= 768 ? 'gap-4' : windowWidth <= 1024 ? 'gap-6' : 'gap-8'} mt-0`}>
+          <div className={`bg-gray-100 ${windowWidth <= 768 ? 'px-2 py-3' : windowWidth <= 1024 ? 'p-4' : 'p-5'} lg:w-auto`}>
+            <div className={`${windowWidth <= 768 ? 'mb-6' : 'mb-8'}`}>
+              <h2 className={`section-title text-center border-b border-black ${windowWidth <= 768 ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${windowWidth <= 768 ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>EDUCATION</h2>
               {renderEducationBlocks()}
             </div>
           </div>
-          <div className="p-5">
-            <div className="mb-8">
-              <h2 className="text-center border-b border-black mb-4 pb-1.5 uppercase font-bold text-lg text-[#1967d2]">
+          <div className={`${windowWidth <= 768 ? 'px-2 py-3' : windowWidth <= 1024 ? 'p-4' : 'p-5'}`}>
+            <div className={`${windowWidth <= 768 ? 'mb-6' : 'mb-8'}`}>
+              <h2 className={`section-title text-center border-b border-black ${windowWidth <= 768 ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${windowWidth <= 768 ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>
                 WORK EXPERIENCE
               </h2>
               {getExperienceText()}
               {renderExperienceBlocks()}
             </div>
             {jobPreferenceData && hasJobPreferencesData() && (
-              <div className="mb-8">
-                <h2 className="text-xl text-[#202124] mb-5 pb-2.5 border-b-2 border-[#1967d2]">Job Preferences</h2>
-                <div className="mb-6 p-5 bg-[#f5f7fc] rounded-lg text-base leading-relaxed">
+              <div className={`${windowWidth <= 768 ? 'mb-6' : 'mb-8'}`}>
+                <h2 className={`section-title text-center border-b border-black ${windowWidth <= 768 ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${windowWidth <= 768 ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>JOB PREFERENCES</h2>
+                <div className={`mb-6 ${windowWidth <= 768 ? 'p-3' : windowWidth <= 1024 ? 'p-4' : 'p-5'} bg-[#f5f7fc] rounded-lg ${windowWidth <= 768 ? 'text-sm' : windowWidth <= 1024 ? 'text-[14px]' : 'text-base'} leading-relaxed`}>
                   {/* Two-column details grid */}
-                  <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-x-5 gap-y-1.5`}>
+                  <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : windowWidth <= 1024 ? 'grid-cols-1' : 'grid-cols-2'} ${windowWidth <= 768 ? 'gap-x-0 gap-y-1' : windowWidth <= 1024 ? 'gap-x-3 gap-y-1.5' : 'gap-x-5 gap-y-1.5'}`}>
                     {/* Basic Job Information */}
                     {jobPreferenceData.Job_Type && (
                       <div>
@@ -911,11 +959,11 @@ const ViewShort = ({
         </div>
 
         {/* Download and Print Section */}
-        <div className="flex justify-center gap-4 mt-10 pt-5 border-t border-gray-200 flex-wrap">
+        <div className={`flex flex-col sm:flex-row justify-center ${windowWidth <= 768 ? 'gap-2' : 'gap-4'} ${windowWidth <= 768 ? 'mt-6 pt-4' : 'mt-10 pt-5'} border-t border-gray-200`}>
           <button 
             onClick={downloadPDF} 
             disabled={isDownloading}
-            className="inline-flex items-center gap-2 px-6 py-3 text-base min-w-[200px] justify-center bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`inline-flex items-center justify-center gap-2 ${windowWidth <= 768 ? 'px-4 py-2.5 text-sm w-full sm:w-auto' : 'px-6 py-3 text-base'} ${windowWidth <= 768 ? 'sm:min-w-[160px]' : 'min-w-[200px]'} bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
             title={isDownloading ? "Generating PDF..." : "Download CV as PDF file"}
           >
             {isDownloading ? (
@@ -935,7 +983,7 @@ const ViewShort = ({
           
           <button 
             onClick={handlePrint}
-            className="inline-flex items-center gap-2 px-6 py-3 text-base min-w-[200px] justify-center bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all"
+            className={`inline-flex items-center justify-center gap-2 ${windowWidth <= 768 ? 'px-4 py-2.5 text-sm w-full sm:w-auto' : 'px-6 py-3 text-base'} ${windowWidth <= 768 ? 'sm:min-w-[160px]' : 'min-w-[200px]'} bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all`}
             title="Open browser print dialog"
           >
             <i className="fas fa-print"></i>

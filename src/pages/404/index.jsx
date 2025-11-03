@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import MetaComponent from "../../components/common/MetaComponent";
 
 import teacherlinkLogo from "../../assets/teacherlink-logo.svg";
+import illustration404 from "../../assets/Illustrations/404.png";
 
 const metadata = {
   title: "Page Not Found | Return to TeacherLink Education Job Board",
@@ -19,7 +20,7 @@ const NotFoundPage = () => {
       >
         <div className="text-center max-w-lg mx-auto">
           {/* Logo */}
-          <div className="mb-12 transform transition-all duration-500 hover:scale-105">
+          <div className="mb-8 transform transition-all duration-500 hover:scale-105">
             <Link to="/" className="inline-block">
               <img
                 src={teacherlinkLogo}
@@ -29,11 +30,13 @@ const NotFoundPage = () => {
             </Link>
           </div>
 
-          {/* 404 Number */}
+          {/* 404 Illustration */}
           <div className="mb-8">
-            <h1 className="text-9xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 transform transition-all duration-700 hover:scale-110">
-              404
-            </h1>
+            <img
+              src={illustration404}
+              alt="404 Error"
+              className="w-full max-w-md mx-auto h-auto"
+            />
           </div>
 
           {/* Error Message */}

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../../../Context/AuthContext';
 import JobDetailsView from '../Shared/JobDetailsView';
+import noJobsIllustration from '../../../../assets/Illustrations/No jobs.png';
 
 // Confirmation Modal Component
 const ConfirmationModal = ({ 
@@ -489,24 +490,28 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
           {jobs.length === 0 ? (
             // Empty State
             <div className="text-center py-12">
-              <div className="text-5xl text-gray-300 mb-4">
-                <i className="la la-briefcase"></i>
+              <div className="flex flex-col items-center justify-center">
+                <img 
+                  src={noJobsIllustration} 
+                  alt="No jobs posted" 
+                  className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
+                />
+                <h6 className="text-gray-700 text-lg font-semibold mb-2">No Jobs Posted Yet</h6>
+                <p className="text-gray-500 mb-6">
+                  {searchQuery ? 
+                    'No jobs match your search criteria.' : 
+                    'You haven\'t posted any jobs yet. Start by creating your first job post.'
+                  }
+                </p>
+                {!searchQuery && onSwitchToCreateTab && (
+                  <button 
+                    className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-full hover:opacity-90 transition-opacity inline-flex items-center gap-2"
+                    onClick={onSwitchToCreateTab}
+                  >
+                    <i className="la la-plus"></i> Create New Job
+                  </button>
+                )}
               </div>
-              <h6 className="text-gray-500 text-lg font-semibold mb-2">No Jobs Posted Yet</h6>
-              <p className="text-gray-500 mb-6">
-                {searchQuery ? 
-                  'No jobs match your search criteria.' : 
-                  'You haven\'t posted any jobs yet. Start by creating your first job post.'
-                }
-              </p>
-              {!searchQuery && onSwitchToCreateTab && (
-                <button 
-                  className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-full hover:opacity-90 transition-opacity inline-flex items-center gap-2"
-                  onClick={onSwitchToCreateTab}
-                >
-                  <i className="la la-plus"></i> Create New Job
-                </button>
-              )}
             </div>
           ) : (
             // Job List

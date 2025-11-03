@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FiSearch, FiPlus } from 'react-icons/fi';
+import noDataIllustration from '../../../../../assets/Illustrations/No data found.png';
 
 const MessagesSidebar = ({ 
   people = [], 
@@ -117,7 +118,12 @@ const MessagesSidebar = ({
         {/* Empty State */}
         {people.length === 0 && inactiveJobs.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center p-6">
-            <p className="text-gray-400 text-sm">No conversations yet</p>
+            <img 
+              src={noDataIllustration} 
+              alt="No conversations" 
+              className="w-48 h-48 md:w-64 md:h-64 mb-4 mx-auto"
+            />
+            <p className="text-gray-400 text-sm font-medium">No conversations yet</p>
           </div>
         )}
       </div>

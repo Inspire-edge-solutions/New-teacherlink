@@ -30,8 +30,8 @@ const Field = ({ label, value, isUrl = false, icon: Icon }) => {
   if (!value) return null;
   
   const displayValue = Array.isArray(value) ? value.join(', ') : 
-                      typeof value === 'string' ? value.split(',').join(', ') : 
-                      value;
+  typeof value === 'string' ? value.split(',').join(', ') : 
+  value;
 
   return (
     <div className="mb-3">

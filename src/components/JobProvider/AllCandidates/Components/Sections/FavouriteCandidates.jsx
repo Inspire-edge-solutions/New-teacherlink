@@ -9,6 +9,7 @@ import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import CandidateApiService from '../shared/CandidateApiService';
 import { useAuth } from "../../../../../Context/AuthContext";
+import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
 import '../styles/candidate-highlight.css';
 
 // Profile Type Selection Modal for bulk operations
@@ -382,12 +383,19 @@ const FavouriteCandidates = ({
               </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-gray-600">
-            {isSearching 
-              ? 'No favourite candidates found matching your search.'
-              : 'You haven\'t marked any candidates as favourite yet.'
-            }
-          </p>
+          <div className="flex flex-col items-center justify-center">
+            <img 
+              src={noCandidateIllustration} 
+              alt="No favourite candidates" 
+              className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
+            />
+            <p className="text-gray-600 text-lg font-medium">
+              {isSearching 
+                ? 'No favourite candidates found matching your search.'
+                : 'You haven\'t marked any candidates as favourite yet.'
+              }
+            </p>
+          </div>
               </div>
             )}
 

@@ -10,6 +10,7 @@ import CandidateFilterPanel from '../shared/CandidateFilterPanel';
 import CandidateApiService from '../shared/CandidateApiService';
 import { parseLanguages, parseEducation } from '../../utils/candidateUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
+import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
 import '../styles/candidate-highlight.css';
 
 const AllCandidates = ({ 
@@ -560,17 +561,17 @@ const AllCandidates = ({
     <div className="widget-content">
       {/* Header with Search, Filter Button, and Records per Page */}
       <div className="widget-title mb-3">
-        <div className="flex justify-between items-center w-full gap-4">
-          <div className="flex-1 max-w-[50%]">
+        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center w-full gap-3 sm:gap-4">
+          <div className="flex-1 w-full sm:max-w-[50%]">
             <SearchBar 
               onSearch={handleSearch} 
               placeholder="Search candidates..." 
             />
-        </div>
+          </div>
           <div className="flex-shrink-0">
             <button 
               onClick={() => setShowFilters(true)}
-              className={`px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 ${
+              className={`w-full sm:w-auto px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 ${
                 activeFilters.size > 0
                   ? 'bg-gradient-brand text-white shadow-sm'
                   : 'bg-gradient-brand text-white hover:opacity-90'
@@ -584,8 +585,8 @@ const AllCandidates = ({
 
       {/* Candidates Count and Records per Page */}
       <div className="candidate-listing">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-3">
+          <h3 className="text-xl sm:text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
             {isSearching || activeFilters.size > 0
               ? `Found ${finalFilteredCandidates.length} candidate${finalFilteredCandidates.length !== 1 ? 's' : ''}`
               : `${candidates.length} Candidates Available`
@@ -596,7 +597,7 @@ const AllCandidates = ({
             onItemsPerPageChange={handleRecordsPerPageChange}
           />
         </div>
-          </div>
+      </div>
 
       {/* Candidates List */}
       {currentCandidates.length > 0 ? (
@@ -628,12 +629,19 @@ const AllCandidates = ({
               </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-gray-600">
-            {isSearching 
-              ? 'No candidates found matching your search.'
-              : 'No candidates available at the moment.'
-            }
-          </p>
+          <div className="flex flex-col items-center justify-center">
+            <img 
+              src={noCandidateIllustration} 
+              alt="No candidates" 
+              className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
+            />
+            <p className="text-gray-600 text-lg font-medium">
+              {isSearching 
+                ? 'No candidates found matching your search.'
+                : 'No candidates available at the moment.'
+              }
+            </p>
+          </div>
               </div>
             )}
 

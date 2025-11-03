@@ -233,7 +233,7 @@ const Content = () => {
         <div className="text-center py-12">
           <h5 className="text-xl font-semibold text-red-600 mb-4">Unable to load coin data</h5>
           <button 
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" 
+            className="px-4 py-2 bg-gradient-brand hover:bg-gradient-brand-hover text-white rounded-lg transition-colors" 
             onClick={fetchUserCoins}
           >
             Retry
@@ -290,7 +290,7 @@ const Content = () => {
               {/* View Coin History Button - Centered */}
               <div className="text-center mt-3 sm:mt-4">
                 <button 
-                  className="px-4 sm:px-6 py-2 bg-gradient-primary hover:bg-gradient-primary-hover text-white text-xs sm:text-sm rounded-lg transition-all font-medium"
+                  className="px-4 sm:px-6 py-2 bg-gradient-brand hover:bg-gradient-brand-hover text-white text-xs sm:text-sm rounded-lg transition-all font-medium"
                   onClick={handleHistoryClick}
                 >
                   View Coin History
@@ -325,7 +325,7 @@ const Content = () => {
               </div>
               
               <button 
-                className="px-4 sm:px-5 py-2 bg-gradient-primary hover:bg-gradient-primary-hover text-white text-xs sm:text-sm rounded-lg transition-all font-medium"
+                className="px-4 sm:px-5 py-2 bg-gradient-brand hover:bg-gradient-brand-hover text-white text-xs sm:text-sm rounded-lg transition-all font-medium"
                 onClick={fetchUserCoins}
                 disabled={isLoading}
               >
@@ -342,7 +342,7 @@ const Content = () => {
                 Apply coupon code or make payment to get coins!
               </p>
               <button 
-                className="px-4 sm:px-5 py-2 bg-gradient-primary hover:bg-gradient-primary-hover text-white text-xs sm:text-sm rounded-lg transition-all font-medium mx-auto" 
+                className="px-4 sm:px-5 py-2 bg-gradient-brand hover:bg-gradient-brand-hover text-white text-xs sm:text-sm rounded-lg transition-all font-medium mx-auto" 
                 onClick={fetchUserCoins}
                 disabled={isLoading}
               >
@@ -403,7 +403,7 @@ const Content = () => {
                   </div>
                   <div className="flex items-end">
                     <button 
-                      className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className="w-full px-4 py-2 bg-gradient-brand hover:bg-gradient-brand-hover text-white rounded-lg transition-colors"
                       onClick={filterHistory}
                     >
                       Search
@@ -438,7 +438,7 @@ const Content = () => {
               ) : filteredHistory.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gradient-primary text-white">
+                    <thead className="bg-gradient-brand text-white">
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Date & Time</th>
                         <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Reason</th>
@@ -491,7 +491,7 @@ const Content = () => {
             <div className="border-t px-6 py-4 flex justify-end">
               <button 
                 type="button" 
-                className="px-6 py-2 bg-gradient-primary hover:bg-gradient-primary-hover text-white rounded-lg transition-all font-medium" 
+                className="px-6 py-2 bg-gradient-brand hover:bg-gradient-brand-hover text-white rounded-lg transition-all font-medium" 
                 onClick={closeHistoryModal}
               >
                 Close
