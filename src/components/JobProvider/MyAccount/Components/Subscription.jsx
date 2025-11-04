@@ -4,8 +4,9 @@ import { toast } from "react-toastify";
 import { Skeleton } from "@mui/material";
 import Payment from "./Payments";
 import ModalPortal from "../../../common/ModalPortal";
+import Coupons from "./Coupons";
 import Referrals from "./Referrals";
-import noPaymentIllustration from "../../../../../assets/Illustrations/No payment.png";
+import noPaymentIllustration from "../../../../assets/Illustrations/No payment.png";
 
 // Success Modal
 const SuccessModal = ({ open, onClose, message }) => {
@@ -295,7 +296,7 @@ const Subscription = () => {
           headers: getAuthHeaders(),
           body: JSON.stringify({ 
             couponCode: headerCouponCode.trim(),
-            firebase_uid: user?.firebase_uid 
+            firebase_uid: firebase_uid 
           }),
         }
       );
@@ -427,6 +428,18 @@ const Subscription = () => {
                   <span className="hidden sm:inline">Refer organizations</span>
                   <span className="sm:hidden">Refer</span>
                 </button>
+                
+                <button
+                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium transition-all duration-200 text-sm sm:text-base ${
+                    activeTab === 'coupon' 
+                      ? 'bg-gradient-brand text-white shadow-md' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                  onClick={() => setActiveTab('coupon')}
+                >
+                  <span className="hidden sm:inline">Use Coupon</span>
+                  <span className="sm:hidden">Coupon</span>
+                </button>
               </div>
             </div>
             
@@ -455,6 +468,15 @@ const Subscription = () => {
               user={user} 
               onSuccess={handleSubscriptionSuccess}
               setModal={setModal}
+            />
+          )}
+          {activeTab === 'coupon' && (
+            <Coupons 
+              user={user} 
+              onSuccess={handleSubscriptionSuccess}
+              setModal={setModal}
+              fetchSubscription={fetchSubscription}
+              setActiveTab={setActiveTab}
             />
           )}
           {activeTab === 'subscription-details' && subscription && (

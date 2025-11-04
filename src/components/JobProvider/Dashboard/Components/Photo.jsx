@@ -109,14 +109,7 @@ const Photo = () => {
   };
 
   return (
-    <div className="bg-white p-4 sm:p-6 relative">
-      {/* ID Badge in top right */}
-      {organizationData?.id && (
-        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 text-xs sm:text-sm text-gray-600">
-          ID: <span className="font-semibold text-gray-800">{organizationData.id}</span>
-        </div>
-      )}
-
+    <div className="bg-white p-4 sm:p-6">
       {isLoading ? (
         <Box className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
           {/* Profile Photo Skeleton */}
@@ -164,10 +157,17 @@ const Photo = () => {
           </div>
 
           {/* Profile Info */}
-          <div className="flex-grow text-center sm:text-left">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">
-              {organizationData?.contact_person_name || user?.displayName || 'User Name'}
-            </h2>
+          <div className="flex-grow text-center sm:text-left min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:gap-4 mb-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 break-words">
+                {organizationData?.contact_person_name || user?.displayName || 'User Name'}
+              </h2>
+              {organizationData?.id && (
+                <div className="text-xs sm:text-sm text-gray-600 flex-shrink-0 mt-1 sm:mt-0">
+                  ID: <span className="font-semibold text-gray-800">{organizationData.id}</span>
+                </div>
+              )}
+            </div>
             <p className="text-sm sm:text-base text-gray-600 mb-1">
               {organizationData?.type || 'Organization Type'}
             </p>

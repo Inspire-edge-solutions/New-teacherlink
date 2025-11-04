@@ -1,151 +1,321 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MessagesSidebar from './Components/MessagesSidebar';
 import ChatHeader from './Components/ChatHeader';
 import ChatMessages from './Components/ChatMessages';
 import ChatInput from './Components/ChatInput';
-import emptyMessageImg from '../../../assets/backgrounds/errorimg.svg';
+import emptyMessageImg from '../../../assets/Illustrations/No-msgs.png';
+import useChat from '../../../hooks/useChat';
+import { useAuth } from '../../../Context/AuthContext';
 
 const MessagesComponent = () => {
-  // Test data - remove this when integrating with backend
-  const testPeople = [
-    {
-      id: 1,
-      name: 'Gen......',
-      avatar: 'https://via.placeholder.com/40',
-      lastMessage: 'Hahahaha!',
-      unreadCount: 0,
-      status: 'Online'
-    },
-    {
-      id: 2,
-      name: 'ABC Intl........',
-      avatar: 'https://via.placeholder.com/40',
-      lastMessage: 'Kyaaaa!!!!',
-      unreadCount: 0,
-      status: 'Online'
-    },
-    {
-      id: 3,
-      name: 'Hiking',
-      avatar: 'https://via.placeholder.com/40',
-      lastMessage: "It's just going to happen",
-      unreadCount: 0,
-      status: 'Offline'
-    }
-  ];
+  const { user } = useAuth();
+  const [showOrganisations, setShowOrganisations] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // Ensure we always have valid values for useChat hook
+  const currentUserId = user?.uid || 'temp_user_123';
+  const currentUserName = user?.displayName || 'Job Seeker';
+  const currentUserRole = 'jobseeker';
+  
+  // Initialize chat with current user data
+  const {
+    organisations,
+    conversations,
+    selectedChat,
+    messages,
+    isLoading,
+    error,
+    isConnected,
+    typingUsers,
+    messagesEndRef,
+    selectChat,
+    sendMessage,
+    sendTypingIndicator,
+    deleteMessage,
+    confirmDelete,
+    cancelDelete,
+    deleteModal,
+    editMessage,
+    confirmEdit,
+    cancelEdit,
+    updateEditText,
+    editModal,
+    startConversation,
+    loadOrganisations,
+    clearError
+  } = useChat(
+    currentUserId, // Firebase UID
+    currentUserName, // User name
+    currentUserRole // User role
+  );
 
-  const testInactiveJobs = [
-    {
-      id: 4,
-      name: 'Anil',
-      avatar: 'https://via.placeholder.com/40',
-      lastMessage: 'Yes Sure!',
-      unreadCount: 0
-    },
-    {
-      id: 5,
-      name: 'Genni',
-      avatar: 'https://via.placeholder.com/40',
-      lastMessage: 'Good!',
-      unreadCount: 0
-    },
-    {
-      id: 6,
-      name: 'Mary ma am',
-      avatar: 'https://via.placeholder.com/40',
-      lastMessage: 'Great!',
-      unreadCount: 0
-    },
-    {
-      id: 7,
-      name: 'Bill Gates',
-      avatar: 'https://via.placeholder.com/40',
-      lastMessage: 'See you!',
-      unreadCount: 0
-    },
-    {
-      id: 8,
-      name: 'Victoria H',
-      avatar: 'https://via.placeholder.com/40',
-      lastMessage: 'Have a nice day!',
-      unreadCount: 0
-    }
-  ];
-
-  const testMessages = [
-    { id: 1, text: 'Hey There!', isOwn: false, time: 'Today, 8:30pm' },
-    { id: 2, text: 'How are you?', isOwn: false, time: 'Today, 8:30pm' },
-    { id: 3, text: 'Hello!', isOwn: true, time: 'Today, 8:33pm', unread: true },
-    { id: 4, text: 'I am fine and how are you?', isOwn: true, time: 'Today, 8:34pm', unread: true },
-    { id: 5, text: 'I am doing well. Can we meet tomorrow?', isOwn: false, time: 'Today, 8:36pm' },
-    { id: 6, text: 'Yes Sure!', isOwn: true, time: 'Today, 8:58pm', unread: true }
-  ];
-
-  const [selectedChat, setSelectedChat] = useState(null);
-  const [people, setPeople] = useState(testPeople);
-  const [inactiveJobs, setInactiveJobs] = useState(testInactiveJobs);
-  const [messages, setMessages] = useState([]);
+  // Load organisations on component mount
+  useEffect(() => {
+    loadOrganisations();
+  }, [loadOrganisations]);
 
   const handleSelectChat = (chat) => {
-    setSelectedChat(chat);
-    // TODO: Fetch messages for selected chat from backend
-    // For now, load test messages
-    setMessages(testMessages);
+    console.log('🖱️ handleSelectChat called with:', chat);
+    console.log('🖱️ Chat details:', {
+      id: chat?.id,
+      conversationId: chat?.conversationId,
+      name: chat?.name,
+      teacherId: chat?.teacherId
+    });
+    // Force reload messages even if it's the same chat
+    // Clear selected chat first to ensure messages reload
+    if (selectedChat?.id === chat?.id || selectedChat?.conversationId === chat?.conversationId) {
+      console.log('🔄 Reselecting same chat - forcing reload');
+    }
+    selectChat(chat);
   };
 
   const handleSendMessage = (messageText) => {
-    // TODO: Send message to backend
-    const newMessage = {
-      id: Date.now(),
-      text: messageText,
-      isOwn: true,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      unread: false,
-    };
-    setMessages([...messages, newMessage]);
+    if (selectedChat && messageText.trim()) {
+      sendMessage(
+        messageText.trim(),
+        selectedChat.teacherId,
+        selectedChat.name
+      );
+    }
   };
 
+  const handleStartNewChat = () => {
+    setShowOrganisations(true);
+  };
+
+  const handleSelectOrganisation = (organisation) => {
+    startConversation(organisation);
+    setShowOrganisations(false);
+  };
+
+  // Transform conversations for display
+  const activeConversations = conversations.filter(conv => conv.unreadCount > 0 || conv.lastMessage);
+  const inactiveConversations = conversations.filter(conv => conv.unreadCount === 0 && !conv.lastMessage);
+
   return (
-    <div className="flex h-full bg-gray-50">
+    <>
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                Delete Message?
+              </h3>
+            </div>
+            
+            {/* Modal Body */}
+            <div className="px-6 py-4">
+              <p className="text-gray-600 mb-3">
+                This message will be deleted for everyone in the conversation. This action cannot be undone.
+              </p>
+              {deleteModal.messageText && (
+                <div className="bg-gray-50 rounded-md p-3 mb-3 border border-gray-200">
+                  <p className="text-sm text-gray-700 italic">
+                    "{deleteModal.messageText}"
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Message Modal */}
+      {editModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit Message
+              </h3>
+            </div>
+            
+            {/* Modal Body */}
+            <div className="px-6 py-4">
+              <textarea
+                value={editModal.messageText}
+                onChange={(e) => updateEditText(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                rows={4}
+                placeholder="Type your message here..."
+                autoFocus
+              />
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+              <button
+                onClick={cancelEdit}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmEdit}
+                disabled={!editModal.messageText || editModal.messageText.trim() === ''}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex h-full bg-gray-50 relative">
+        {/* Error Display */}
+        {error && (
+          <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 max-w-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">{error}</span>
+              <button 
+                onClick={clearError}
+                className="ml-2 text-white hover:text-gray-200"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Connection Status */}
+        {!isConnected && (
+          <div className="fixed top-4 left-4 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm">
+            Connecting to chat...
+          </div>
+        )}
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <MessagesSidebar
-        people={people}
-        inactiveJobs={inactiveJobs}
-        selectedChat={selectedChat}
-        onSelectChat={handleSelectChat}
-      />
+      <div className={`${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      } md:translate-x-0 fixed md:relative inset-y-0 left-0 z-50 md:z-auto transition-transform duration-300 ease-in-out`}>
+        <MessagesSidebar
+          people={activeConversations}
+          inactiveJobs={inactiveConversations}
+          selectedChat={selectedChat}
+          onSelectChat={(chat) => {
+            handleSelectChat(chat);
+            setSidebarOpen(false); // Close sidebar on mobile after selection
+          }}
+          organisations={organisations}
+          showOrganisations={showOrganisations}
+          onSelectOrganisation={handleSelectOrganisation}
+          onStartNewChat={handleStartNewChat}
+          isLoading={isLoading}
+          onCloseSidebar={() => setSidebarOpen(false)}
+        />
+      </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col min-h-0 w-full md:w-auto">
+        {/* Mobile Header with Menu Button */}
+        {selectedChat && (
+          <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="text-gray-600 hover:text-gray-900 p-2"
+              aria-label="Open sidebar"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base font-semibold text-gray-900 truncate">{selectedChat.name}</h3>
+            </div>
+          </div>
+        )}
         {selectedChat ? (
           <>
-            <ChatHeader chat={selectedChat} />
-            <ChatMessages messages={messages} />
-            <ChatInput onSendMessage={handleSendMessage} />
+            <ChatHeader 
+              chat={selectedChat} 
+              isConnected={isConnected}
+              typingUsers={typingUsers}
+            />
+            <ChatMessages 
+              messages={messages} 
+              messagesEndRef={messagesEndRef}
+              onTyping={sendTypingIndicator}
+              currentUserId={user?.uid}
+              onDeleteMessage={deleteMessage}
+              onEditMessage={editMessage}
+            />
+            <ChatInput 
+              onSendMessage={handleSendMessage}
+              disabled={!isConnected}
+            />
           </>
         ) : (
           // Empty State - No Active Message
-          <div className="flex-1 flex items-center justify-center bg-white">
-            <div className="text-center max-w-md px-6">
+          <div className="flex-1 flex items-center justify-center bg-white px-4 relative">
+            {/* Mobile Menu Button when no chat selected - positioned at top-left */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden absolute top-4 left-4 text-gray-600 hover:text-gray-900 p-2 z-10"
+              aria-label="Open sidebar"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            
+            <div className="text-center max-w-md w-full">
               {/* Illustration */}
               <div className="mb-6">
                 <img
                   src={emptyMessageImg}
                   alt="No messages"
-                  className="w-64 h-64 mx-auto"
+                  className="w-48 h-48 sm:w-64 sm:h-64 mx-auto"
                 />
               </div>
 
               {/* Text */}
-              <h2 className="text-2xl font-semibold text-red-500 mb-2">
+              <h2 className="text-xl sm:text-2xl font-semibold text-red-500 mb-2">
                 No Active Message
               </h2>
-              <p className="text-gray-500 mb-6">
-                Click on the chat to see full conversation
+              <p className="text-sm sm:text-base text-gray-500 mb-6 px-4">
+                Click on the chat to see full conversation or start a new one
               </p>
 
               {/* Button */}
-              <button className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition-colors">
+              <button 
+                onClick={handleStartNewChat}
+                className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition-colors text-sm sm:text-base"
+              >
                 Start a new chat
               </button>
             </div>
@@ -153,6 +323,7 @@ const MessagesComponent = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

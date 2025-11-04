@@ -3,20 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Skeleton } from "@mui/material";
-import InputWithTooltip from "../../services/InputWithTooltip";
 
 const API_FORGET = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/forget";
-const API_OTP_CREATE = "https://hmpffcv3r3.execute-api.ap-south-1.amazonaws.com/dev/otp/create";
 const API_OTP_VERIFY = "https://hmpffcv3r3.execute-api.ap-south-1.amazonaws.com/dev/otp/verify";
-
-// Auth headers like personalDetails.jsx
-const authHeaders = {
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  },
-};
 
 const ForgetPassword = () => {
   const [step, setStep] = useState(1);
@@ -49,7 +38,7 @@ const ForgetPassword = () => {
     return () => clearTimeout(timer);
   }, [resendTimer]);
 
-  // Step 1: Check email in backend (Firebase & users table) & send OTP if valid
+  // Step 1: Send OTP (backend handles all validation)
   const handleSendOTP = async (e) => {
     e.preventDefault();
     
@@ -61,70 +50,50 @@ const ForgetPassword = () => {
     
     setLoading(true);
     try {
-      console.log("Sending OTP for email:", email.trim());
+      const normalizedEmail = email.trim().toLowerCase();
+      console.log("Sending OTP request for email:", normalizedEmail);
       
-      // Get the user's firebase_uid for OTP creation (like personalDetails.jsx)
-      const userRes = await axios.get("https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login");
-      const users = userRes.data;
-      const user = users.find(u => u.email === email.trim().toLowerCase() && u.is_active === 1);
-      
-      if (!user) {
-        toast.error("Email not registered");
-        setLoading(false);
-        return;
-      }
-      
-      // Check if user is a Google account (they don't have passwords to reset)
-      if (user.is_google_account === 1) {
-        toast.error("This email is registered with Google. Please use 'Login with Google' instead of password reset.");
-        setLoading(false);
-        return;
-      }
-      
-      // Check if email exists using the forget password endpoint
-      const res = await axios.post(API_FORGET, { 
-        email: email.trim(),
+      // Use the forget password endpoint which handles all validation
+      // It will check Firebase Auth, users table, and send OTP - all in one call
+      const response = await axios.post(API_FORGET, {
+        email: normalizedEmail,
         action: "request"
       });
-      console.log("Email check response:", res.data);
       
-      if (res.data?.message) {
-        // Email exists, now send OTP using the OTP creation endpoint
-        const normalizedEmail = email.trim().toLowerCase();
-        const otpPayload = { 
-          email: normalizedEmail,
-          firebase_uid: user.firebase_uid 
-        };
-        console.log("Sending OTP with payload:", otpPayload);
-        console.log("Email for OTP creation:", JSON.stringify(otpPayload.email));
-        console.log("Firebase UID for OTP creation:", user.firebase_uid);
-        
-        const otpRes = await axios.post(API_OTP_CREATE, otpPayload, authHeaders);
-        console.log("OTP send response:", otpRes.data);
-        console.log("OTP send status:", otpRes.status);
-        
-        if (otpRes.data?.success) {
-          toast.success("OTP sent to your email.");
-          setStep(2);
-          setResendTimer(30); // 30 sec before allowing resend
-        } else {
-          toast.error(otpRes.data?.message || "Failed to send OTP");
-        }
+      console.log("Forget password response:", response.data);
+      
+      if (response.data?.message) {
+        toast.success("OTP sent to your email.");
+        setStep(2);
+        setResendTimer(30); // 30 sec before allowing resend
       } else {
-        toast.error("Email not registered");
+        toast.error("Failed to send OTP. Please try again.");
       }
     } catch (err) {
-      console.error("Send OTP error:", err.response?.data);
+      console.error("Send OTP error:", err);
+      console.error("Error response:", err.response?.data);
+      console.error("Error status:", err.response?.status);
+      console.error("Error message:", err.message);
       
-      // Handle rate limiting error
-      if (err.response?.data?.message?.includes("Too many OTP requests")) {
+      // Handle specific error messages from backend
+      if (err.response?.status === 404) {
+        toast.error("Email not registered. Please check your email or sign up.");
+      } else if (err.response?.status === 400) {
+        // Handle validation errors
+        const errorMsg = err.response?.data?.message || "Invalid request. Please check your email and try again.";
+        toast.error(errorMsg);
+      } else if (err.response?.data?.message?.includes("Too many OTP requests")) {
         toast.warning("OTP already sent. Please check your email.");
         setStep(2);
         setResendTimer(30); // 30 sec before allowing resend
       } else if (err.response?.data?.message) {
+        // Show the backend error message
         toast.error(err.response.data.message);
+      } else if (err.message) {
+        // Show network or other error messages
+        toast.error(err.message);
       } else {
-        toast.error("Email not registered");
+        toast.error("Failed to send OTP. Please try again.");
       }
     }
     setLoading(false);
@@ -142,18 +111,7 @@ const ForgetPassword = () => {
     
     setLoading(true);
     try {
-      // Get the user's firebase_uid for OTP verification (like personalDetails.jsx)
-      const userRes = await axios.get("https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login");
-      const users = userRes.data;
-      const user = users.find(u => u.email === email.trim().toLowerCase() && u.is_active === 1);
-      
-      if (!user) {
-        toast.error("User not found");
-        setLoading(false);
-        return;
-      }
-      
-      // Normalize email to lowercase to ensure consistency
+      // Normalize email and OTP
       const normalizedEmail = email.trim().toLowerCase();
       const normalizedOtp = otp.trim();
       
@@ -161,23 +119,14 @@ const ForgetPassword = () => {
         email: normalizedEmail, 
         otp: normalizedOtp
       };
-      console.log("Verifying OTP:", payload);
-      console.log("Email being sent:", JSON.stringify(payload.email));
-      console.log("OTP being sent:", JSON.stringify(payload.otp));
-      console.log("User found:", user.email);
-      console.log("Current timestamp:", new Date().toISOString());
+      console.log("Verifying OTP for email:", payload.email);
       
       const resp = await axios.post(API_OTP_VERIFY, payload);
       console.log("OTP verification response:", resp.data);
-      console.log("Full response status:", resp.status);
+      console.log("Response status:", resp.status);
       
-      // Check for different possible success indicators
-      console.log("Checking success conditions:");
-      console.log("resp.data?.success:", resp.data?.success);
-      console.log("resp.data?.status:", resp.data?.status);
-      console.log("resp.status:", resp.status);
-      
-      if (resp.data?.success === true || resp.data?.status === true || resp.status === 200) {
+      // Check if OTP is valid based on backend response
+      if (resp.data?.success === true || resp.data?.status === true) {
         toast.success("OTP verified successfully");
         setStep(3);
       } else {
@@ -185,10 +134,7 @@ const ForgetPassword = () => {
       }
     } catch (err) {
       console.error("OTP verification error:", err.response?.data);
-      console.error("Full error response:", err.response);
-      console.error("Error status:", err.response?.status);
-      console.error("Error message:", err.message);
-      toast.error(err.response?.data?.message || "Invalid OTP");
+      toast.error(err.response?.data?.message || "Invalid OTP. Please try again.");
     }
     setLoading(false);
   };
@@ -197,27 +143,28 @@ const ForgetPassword = () => {
   const handleResendOTP = async () => {
     setLoading(true);
     try {
-      // Get the user's firebase_uid for OTP creation (like personalDetails.jsx)
-      const userRes = await axios.get("https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login");
-      const users = userRes.data;
-      const user = users.find(u => u.email === email.trim().toLowerCase() && u.is_active === 1);
-      
-      if (!user) {
-        toast.error("User not found");
-        setLoading(false);
-        return;
-      }
-      
       const normalizedEmail = email.trim().toLowerCase();
-      const otpPayload = { 
+      console.log("Resending OTP for email:", normalizedEmail);
+      
+      // Use the forget password endpoint to resend OTP
+      const response = await axios.post(API_FORGET, {
         email: normalizedEmail,
-        firebase_uid: user.firebase_uid 
-      };
-      await axios.post(API_OTP_CREATE, otpPayload, authHeaders);
-      toast.success("OTP resent to your email.");
-      setResendTimer(30);
+        action: "request"
+      });
+      
+      if (response.data?.message) {
+        toast.success("OTP resent to your email.");
+        setResendTimer(30);
+      } else {
+        toast.error("Failed to resend OTP");
+      }
     } catch (err) {
-      toast.error("Failed to resend OTP");
+      console.error("Resend OTP error:", err);
+      if (err.response?.data?.message) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error("Failed to resend OTP");
+      }
     }
     setLoading(false);
   };
@@ -240,9 +187,12 @@ const ForgetPassword = () => {
 
     setLoading(true);
     try {
+      // Normalize email to lowercase to ensure consistency
+      const normalizedEmail = email.trim().toLowerCase();
+      
       // Update password using the forget password reset endpoint
       const payload = {
-        email: email.trim(),
+        email: normalizedEmail,
         newPassword,
         confirmPassword,
         action: "reset"
@@ -308,74 +258,62 @@ const ForgetPassword = () => {
       </div>
 
       {/* Right Section - Forget Password Form */}
-      <div className="w-full lg:w-1/2 bg-white flex items-center justify-center px-3 sm:px-4 md:px-6 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg">
-        <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-4 sm:mb-6 text-center lg:text-left">Reset Password</h2>
+      <div className="w-full lg:w-1/2 bg-white flex items-center justify-center px-3 sm:px-6 md:px-8 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg">
+        <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
+          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-black mb-4 sm:mb-6 text-center lg:text-left">Reset Password</h2>
           
           {!isCompleted ? (
             <>
               {step === 1 && (
                 <form onSubmit={handleSendOTP} className="space-y-4 sm:space-y-6 md:space-y-8">
-                  <InputWithTooltip label="Email" required>
-                    <div className="relative">
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Email"
-                        required
-                        autoComplete="email"
-                        className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-sm sm:text-base md:text-lg placeholder-black"
-                      />
-                    </div>
-                  </InputWithTooltip>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Email"
+                      required
+                      autoComplete="email"
+                      className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black"
+                    />
+                  </div>
                   
-                  {loading ? (
-                    <Skeleton variant="rectangular" width="100%" height={60} sx={{ borderRadius: 2 }} />
-                  ) : (
-                    <button 
-                      type="submit" 
-                      disabled={loading || !email.trim()}
-                      className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 text-sm sm:text-base md:text-lg"
-                    >
-                      Send OTP
-                    </button>
-                  )}
+                  <button 
+                    type="submit" 
+                    disabled={loading || !email.trim()}
+                    className="w-full bg-gradient-brand hover:opacity-90 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg md:text-xl"
+                  >
+                    {loading ? "Sending..." : "Send OTP"}
+                  </button>
                 </form>
               )}
 
               {step === 2 && (
                 <form onSubmit={handleVerifyOTP} className="space-y-4 sm:space-y-6 md:space-y-8">
-                  <InputWithTooltip label="Enter OTP" required>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
-                        placeholder="Enter OTP"
-                        required
-                        className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-sm sm:text-base md:text-lg placeholder-black text-center tracking-widest"
-                      />
-                    </div>
-                  </InputWithTooltip>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                      placeholder="Enter OTP"
+                      required
+                      className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black text-center tracking-widest"
+                    />
+                  </div>
                   
-                  {loading ? (
-                    <Skeleton variant="rectangular" width="100%" height={60} sx={{ borderRadius: 2 }} />
-                  ) : (
-                    <button 
-                      type="submit" 
-                      disabled={loading || !otp.trim()}
-                      className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 text-sm sm:text-base md:text-lg"
-                    >
-                      Verify OTP
-                    </button>
-                  )}
+                  <button 
+                    type="submit" 
+                    disabled={loading || !otp.trim()}
+                    className="w-full bg-gradient-brand hover:opacity-90 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg md:text-xl"
+                  >
+                    {loading ? "Verifying..." : "Verify OTP"}
+                  </button>
                   
                   <button
                     type="button"
                     disabled={resendTimer > 0 || loading}
                     onClick={handleResendOTP}
-                    className="w-full bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed text-gray-700 font-medium py-2 sm:py-3 md:py-4 px-4 rounded-lg transition-colors duration-200 text-sm sm:text-base md:text-lg"
+                    className="w-full bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed text-gray-700 font-medium py-2 sm:py-3 md:py-4 px-4 rounded-lg transition-colors duration-200 text-base sm:text-lg md:text-xl"
                   >
                     {resendTimer > 0 ? `Resend OTP (${resendTimer}s)` : 'Resend OTP'}
                   </button>
@@ -384,22 +322,20 @@ const ForgetPassword = () => {
 
               {step === 3 && (
                 <form onSubmit={handleResetPassword} className="space-y-4 sm:space-y-6 md:space-y-8">
-                  <InputWithTooltip label="New Password" required>
-                    <div className="relative">
-                      <input
-                        type="password"
-                        value={newPassword}
-                        onChange={e => setNewPassword(e.target.value)}
-                        placeholder="New Password"
-                        required
-                        className={`w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 focus:outline-none text-sm sm:text-base md:text-lg placeholder-black ${
-                          showValidationErrors && !passwordValidation.length 
-                            ? 'border-red-500' 
-                            : 'border-gray-300 focus:border-red-500'
-                        }`}
-                      />
-                    </div>
-                  </InputWithTooltip>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      placeholder="New Password"
+                      required
+                      className={`w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black ${
+                        showValidationErrors && !passwordValidation.length 
+                          ? 'border-red-500' 
+                          : 'border-gray-300 focus:border-red-500'
+                      }`}
+                    />
+                  </div>
                   
                   {showValidationErrors && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-2 sm:p-3">
@@ -413,22 +349,20 @@ const ForgetPassword = () => {
                     </div>
                   )}
                   
-                  <InputWithTooltip label="Confirm Password" required>
-                    <div className="relative">
-                      <input
-                        type="password"
-                        value={confirmPassword}
-                        onChange={e => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm Password"
-                        required
-                        className={`w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 focus:outline-none text-sm sm:text-base md:text-lg placeholder-black ${
-                          showValidationErrors && !passwordValidation.match 
-                            ? 'border-red-500' 
-                            : 'border-gray-300 focus:border-red-500'
-                        }`}
-                      />
-                    </div>
-                  </InputWithTooltip>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm Password"
+                      required
+                      className={`w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black ${
+                        showValidationErrors && !passwordValidation.match 
+                          ? 'border-red-500' 
+                          : 'border-gray-300 focus:border-red-500'
+                      }`}
+                    />
+                  </div>
                   
                   {showValidationErrors && !passwordValidation.match && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-2 sm:p-3">
@@ -439,17 +373,13 @@ const ForgetPassword = () => {
                     </div>
                   )}
                   
-                  {loading ? (
-                    <Skeleton variant="rectangular" width="100%" height={60} sx={{ borderRadius: 2 }} />
-                  ) : (
-                    <button 
-                      type="submit" 
-                      disabled={loading}
-                      className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 text-sm sm:text-base md:text-lg"
-                    >
-                      Change Password
-                    </button>
-                  )}
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full bg-gradient-brand hover:opacity-90 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg md:text-xl"
+                  >
+                    {loading ? "Changing Password..." : "Change Password"}
+                  </button>
                 </form>
               )}
             </>
@@ -466,7 +396,7 @@ const ForgetPassword = () => {
               </div>
               <button 
                 onClick={() => navigate('/login')}
-                className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-colors duration-200 text-sm sm:text-base md:text-lg"
+                className="w-full bg-gradient-brand hover:opacity-90 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 text-base sm:text-lg md:text-xl"
               >
                 Back to Login
               </button>

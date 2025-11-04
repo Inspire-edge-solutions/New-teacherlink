@@ -152,21 +152,28 @@ const Coupons = ({
 
       // 1. Get coupon details
       const couponRes = await fetch(
-        `https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coupon?coupon_code=${encodeURIComponent(enteredCode)}`
+        `https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/generateCoupon`
       );
-      const coupons = await couponRes.json();
-      if (!Array.isArray(coupons) || coupons.length === 0) {
+      const allCoupons = await couponRes.json();
+      couponData = Array.isArray(allCoupons)
+        ? allCoupons.find(
+            (c) =>
+              (c.coupon_code || "").toLowerCase() ===
+              enteredCode.toLowerCase()
+          )
+        : null;
+
+      if (!couponData) {
         toast.dismiss("coupon-process");
-        toast.error("Invalid coupon code.");
+        toast.error("Invalid coupon code. Please try again.");
         return;
       }
 
-      couponData = coupons[0];
-      couponFeature = couponData.feature;
+      couponUserType = couponData.user_type;
+      couponFeature = couponData.coupon_feature;
       couponValidFrom = couponData.valid_from;
       couponValidTo = couponData.valid_to;
-      couponCoinValue = Number(couponData.coin_value || 0);
-      couponUserType = couponData.user_type;
+      couponCoinValue = Number(couponData.coin_value);
 
       // 2. Get user type from login API
       const loginRes = await fetch(

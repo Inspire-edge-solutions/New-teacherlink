@@ -233,4 +233,3 @@ const CandidateCard = ({
 };
 
 export default CandidateCard;
-

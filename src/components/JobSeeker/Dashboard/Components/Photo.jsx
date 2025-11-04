@@ -90,14 +90,7 @@ const Photo = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-2 sm:p-3 relative">
-      {/* ID Badge in top right */}
-      {candidateId && (
-        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 text-sm sm:text-base text-gray-600">
-          ID: <span className="font-semibold text-gray-800">{candidateId}</span>
-        </div>
-      )}
-
+    <div className="bg-white rounded-lg shadow-md p-2 sm:p-3">
       {isLoading ? (
         <Box className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-3">
           {/* Profile Photo Skeleton */}
@@ -145,10 +138,17 @@ const Photo = () => {
           </div>
 
           {/* Profile Info */}
-          <div className="flex-grow text-center sm:text-left">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-0.5">
-              {personalData?.fullName || user?.displayName || user?.email?.split('@')[0] || 'User Name'}
-            </h2>
+          <div className="flex-grow text-center sm:text-left min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:gap-4 mb-0.5">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 break-words">
+                {personalData?.fullName || user?.displayName || user?.email?.split('@')[0] || 'User Name'}
+              </h2>
+              {candidateId && (
+                <div className="text-sm sm:text-base text-gray-600 flex-shrink-0 mt-1 sm:mt-0">
+                  ID: <span className="font-semibold text-gray-800">{candidateId}</span>
+                </div>
+              )}
+            </div>
             <p className="text-sm sm:text-base text-gray-600 mb-0.5">
               {personalData?.designation || 'Teacher'}
             </p>
