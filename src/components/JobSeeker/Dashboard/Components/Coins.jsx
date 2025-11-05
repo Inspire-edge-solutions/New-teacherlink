@@ -3,6 +3,7 @@ import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
 import axios from "axios";
 import coinsImage from "../../../../assets/coins.png";
+import noCoinsIllustration from "../../../../assets/Illustrations/No Coins.png";
 import { Skeleton, Box } from "@mui/material";
 
 const Content = () => {
@@ -297,7 +298,7 @@ const Content = () => {
 
         {/* Right Side - Available Coins (40% width) */}
         <div className="lg:col-span-2">
-          {coinData ? (
+          {coinData && coinData.coin_value > 0 ? (
             <div 
               className="rounded-[20px] p-4 sm:p-5 flex flex-col items-center justify-between gap-3 sm:gap-4 h-full"
               style={{ backgroundColor: '#FFDEE0' }}
@@ -323,7 +324,7 @@ const Content = () => {
           ) : (
             <div className="text-center py-6 sm:py-8 flex flex-col justify-center h-full">
               <div className="flex justify-center mb-3 sm:mb-4">
-                <img src={coinsImage} alt="No Coins" className="w-18 sm:w-22 h-auto opacity-50" />
+                <img src={noCoinsIllustration} alt="No Coins" className="w-48 sm:w-64 h-auto" />
               </div>
               <h5 className="text-base sm:text-lg font-semibold text-gray-700 mb-2">No Coins Available</h5>
               <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 px-2">

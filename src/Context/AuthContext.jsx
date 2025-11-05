@@ -157,8 +157,8 @@ export const AuthProvider = ({ children }) => {
       // Clear browser history
       window.history.replaceState({}, '', '/');
       
-      // Force a longer delay to ensure Firebase session is cleared
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Navigate to home page
+      window.location.href = '/home';
       
       toast.success('Logged out successfully');
       console.log("Logout completed successfully");

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 import CandidateCard from '../shared/CandidateCard';
 import CandidateDetail from '../shared/ViewFull';
 import ViewShort from '../shared/ViewShort';
@@ -20,6 +21,7 @@ const AppliedCandidates = ({
   onBackToList
 }) => {
   const { user, loading: userLoading } = useAuth();
+  const navigate = useNavigate();
 
   const [appliedCandidates, setAppliedCandidates] = useState([]);
   const [filteredCandidates, setFilteredCandidates] = useState([]);
@@ -148,6 +150,21 @@ const AppliedCandidates = ({
 
   useEffect(() => setCurrentPage(1), [filteredCandidates]);
 
+  // Auto-dismiss error message when user is not logged in
+  useEffect(() => {
+    if (!user && !userLoading) {
+      const timer = setTimeout(() => {
+        if (onBackToList) {
+          onBackToList();
+        } else {
+          navigate(-1);
+        }
+      }, 5000); // Auto-dismiss after 5 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [user, userLoading, onBackToList, navigate]);
+
   if (loading || userLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -164,7 +181,12 @@ const AppliedCandidates = ({
   if (!user) {
     return (
       <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-        <p className="text-red-800 text-center">Please log in to view candidates.</p>
+        <p className="text-red-800 text-center mb-2">
+          Please log in to view candidates.
+        </p>
+        <p className="text-red-600 text-center text-sm">
+          Redirecting you back in a few seconds...
+        </p>
       </div>
     );
   }

@@ -142,9 +142,6 @@ const Subscription = () => {
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
-  // Coupon code state
-  const [headerCouponCode, setHeaderCouponCode] = useState('');
-
   // Modal state
   const [modal, setModal] = useState({ open: false, type: "", message: "" });
 
@@ -281,42 +278,6 @@ const Subscription = () => {
     }
   };
 
-  // Handle header coupon application
-  const handleHeaderCouponApply = async () => {
-    if (!headerCouponCode.trim()) {
-      toast.error("Please enter a coupon code");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        "https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/coupon/apply",
-        {
-          method: 'POST',
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ 
-            couponCode: headerCouponCode.trim(),
-            firebase_uid: firebase_uid 
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success(data.message || "Coupon applied successfully!");
-        setHeaderCouponCode('');
-        // Refresh subscription data
-        fetchSubscription();
-      } else {
-        toast.error(data.message || "Invalid coupon code");
-      }
-    } catch (error) {
-      console.error('Error applying coupon:', error);
-      toast.error("Failed to apply coupon. Please try again.");
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
@@ -374,33 +335,14 @@ const Subscription = () => {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Header Section */}
         <div className="mb-6 sm:mb-8">
-          {/* Top Row - Title and Coupon Input */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
-            {/* Title */}
+          {/* Title */}
+          <div className="mb-4 sm:mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-center sm:text-left" style={{ background: 'linear-gradient(to right, #F34B58, #A1025D)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Subscription plans
             </h1>
-            
-            {/* Coupon Code Input */}
-            <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-              <input
-                type="text"
-                placeholder="Coupon code"
-                value={headerCouponCode}
-                onChange={(e) => setHeaderCouponCode(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleHeaderCouponApply()}
-                className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm sm:text-base"
-              />
-              <button 
-                onClick={handleHeaderCouponApply}
-                className="w-full sm:w-auto px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-all duration-200 font-medium text-sm sm:text-base whitespace-nowrap"
-              >
-                Apply
-              </button>
-            </div>
           </div>
           
-          {/* Bottom Row - Segmented Control and Payment History */}
+          {/* Segmented Control and Payment History */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
             {/* Segmented Control - Centered */}
             <div className={`flex justify-center ${activeTab === 'payment' ? 'w-full sm:flex-1' : 'w-full'}`}>

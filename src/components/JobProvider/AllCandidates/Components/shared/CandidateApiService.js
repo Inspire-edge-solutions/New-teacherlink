@@ -1,6 +1,6 @@
 import { toast } from "react-toastify";
 import axios from "axios";
-import { parseLanguages, parseEducation } from '../../utils/candidateUtils';
+import { parseLanguages, parseEducation } from '../utils/candidateUtils';
 
 // API Endpoints
 const API_ENDPOINTS = {

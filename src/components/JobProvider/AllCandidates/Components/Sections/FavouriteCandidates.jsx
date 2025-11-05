@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 import CandidateCard from '../shared/CandidateCard';
 import CandidateDetail from '../shared/ViewFull';
 import ViewShort from '../shared/ViewShort';
@@ -14,9 +15,9 @@ import '../styles/candidate-highlight.css';
 
 // Profile Type Selection Modal for bulk operations
 const ProfileTypeModal = ({ isOpen, onClose, onConfirm, selectedCount, isDownloading }) => {
-  if (!isOpen) return null;
-
   useEffect(() => {
+    if (!isOpen) return;
+    
     const handler = (e) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', handler);
     const prev = document.body.style.overflow;
@@ -25,7 +26,9 @@ const ProfileTypeModal = ({ isOpen, onClose, onConfirm, selectedCount, isDownloa
       window.removeEventListener('keydown', handler); 
       document.body.style.overflow = prev; 
     };
-  }, [onClose]);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
 
   return createPortal(
     <div
@@ -85,6 +88,7 @@ const FavouriteCandidates = ({
   onBackToList
 }) => {
   const { user, loading: userLoading } = useAuth();
+  const navigate = useNavigate();
 
   // Candidates data state
   const [allCandidates, setAllCandidates] = useState([]);
@@ -291,6 +295,22 @@ const FavouriteCandidates = ({
     setCurrentPage(1);
   }, [filteredCandidates]);
 
+  // Auto-dismiss error message when user is not logged in
+  // This hook must be called before any early returns to maintain hook order
+  useEffect(() => {
+    if (!user && !userLoading) {
+      const timer = setTimeout(() => {
+        if (onBackToList) {
+          onBackToList();
+        } else {
+          navigate(-1);
+        }
+      }, 5000); // Auto-dismiss after 5 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [user, userLoading, onBackToList, navigate]);
+
   // Loading state
   if (loading || userLoading) {
     return (
@@ -309,8 +329,11 @@ const FavouriteCandidates = ({
   if (!user) {
     return (
       <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-        <p className="text-red-800 text-center">
+        <p className="text-red-800 text-center mb-2">
           Please log in to view candidates.
+        </p>
+        <p className="text-red-600 text-center text-sm">
+          Redirecting you back in a few seconds...
         </p>
       </div>
     );

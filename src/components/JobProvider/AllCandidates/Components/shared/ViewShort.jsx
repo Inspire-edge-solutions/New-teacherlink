@@ -1,18 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useReactToPrint } from 'react-to-print';
 import { FaMapMarkerAlt, FaPhone, FaWhatsapp, FaEnvelope } from 'react-icons/fa';
 import '../styles/cv-pdf-print.css';
 import { AvatarImage } from '../utils/avatarUtils.jsx';
-import { 
-  cleanContentForPrint, 
-  generatePrintHTML,
-  generatePDF
-} from '../utils/printPdfUtils.jsx';
 import { useAuth } from "../../../../../Context/AuthContext";
 import { decodeCandidateData } from '../../../../../utils/dataDecoder';
 import CandidateApiService from './CandidateApiService';
+import { getPrintPageStyle } from '../utils/printStyles';
 
 const FULL_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/fullapi';
 const EDUCATION_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails';
@@ -95,6 +92,7 @@ const ViewShort = ({
   candidate, onBack
 }) => {
   const { user } = useAuth();
+  const printRef = useRef();
   const [isLoading, setIsLoading] = useState(true);
   const [profileData, setProfileData] = useState(null);
   const [educationData, setEducationData] = useState([]);
@@ -376,59 +374,28 @@ const ViewShort = ({
     }
   }, [candidateId]); // Only depend on the ID, not the callback functions
 
-  // Util for PDF/print image fetch
-  const getFreshImageUrl = async (firebase_uid) => {
-    try {
-      const params = { firebase_uid, action: "view" };
-      const { data } = await axios.get(IMAGE_API_URL, { params });
-      return data?.url || null;
-    } catch {
-      return null;
-    }
-  };
+  // React-to-print hook for printing
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `${profileData?.fullName || 'Candidate'}_CV`,
+    pageStyle: getPrintPageStyle(),
+    onPrintError: (error) => {
+      console.error('Print error:', error);
+      toast.error('Failed to print. Please try again.');
+    },
+  });
 
-  // Print
-  const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    const cvContainer = document.querySelector('.cv-container');
-    if (!cvContainer) {
-      alert('CV content not found');
+  // For PDF download, use the same print function but trigger browser print dialog
+  // Users can save as PDF from the print dialog by selecting "Save as PDF" as destination
+  const downloadPDF = () => {
+    if (!printRef.current) {
+      toast.error('Content not ready for downloading. Please wait a moment and try again.');
       return;
     }
-    const clonedContent = cvContainer.cloneNode(true);
-    cleanContentForPrint(clonedContent, isUnlocked);
-    const printContent = generatePrintHTML(
-      clonedContent.outerHTML,
-      profileData?.fullName || 'Candidate',
-      isUnlocked
-    );
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.onload = () => {
-      setTimeout(() => {
-        printWindow.focus();
-        printWindow.print();
-        setTimeout(() => {
-          printWindow.close();
-        }, 1000);
-      }, 500);
-    };
-  };
-
-  // PDF
-  const downloadPDF = async () => {
-    const cvElement = document.querySelector('.cv-container');
-    const result = await generatePDF({
-      cvElement,
-      profileData,
-      candidate,
-      getFreshImageUrl,
-      setIsDownloading,
-      isUnlocked
-    });
-    if (!result.success) {
-      alert('Could not generate PDF. Please try using the Print option instead. Error: ' + result.error);
-    }
+    setIsDownloading(true);
+    handlePrint();
+    // Note: The print dialog will open, user can select "Save as PDF" as destination
+    setTimeout(() => setIsDownloading(false), 1000);
   };
 
   if (!candidate) {
@@ -498,7 +465,7 @@ const ViewShort = ({
     return (
       <div className="mb-4 p-2.5 border-b border-gray-200">
         {total_experience_years !== undefined && total_experience_years !== null && (
-          <div><strong>Total Experience:</strong> {total_experience_years} Years {total_experience_months || 0} Months</div>
+          <div className="mb-2"><strong>Total Experience:</strong> {total_experience_years} Years {total_experience_months || 0} Months</div>
         )}
         {teaching_experience_years !== undefined && teaching_experience_years !== null && (
           <div><strong>Teaching Experience:</strong> {teaching_experience_years} Years {teaching_experience_months || 0} Months</div>
@@ -714,7 +681,7 @@ const ViewShort = ({
       />
 
       {/* Actual card content */}
-      <div className={`${windowWidth <= 768 ? 'max-w-full' : windowWidth <= 1024 ? 'max-w-[1000px]' : 'max-w-[1200px]'} mx-auto ${windowWidth <= 768 ? 'px-2 py-3' : windowWidth <= 1024 ? 'p-5' : 'p-6 md:p-8'} bg-white shadow-md rounded-lg overflow-hidden font-sans text-gray-800 relative`}>
+      <div ref={printRef} className={`cv-container ${windowWidth <= 768 ? 'max-w-full' : windowWidth <= 1024 ? 'max-w-[1000px]' : 'max-w-[1200px]'} mx-auto ${windowWidth <= 768 ? 'px-2 py-3' : windowWidth <= 1024 ? 'p-5' : 'p-6 md:p-8'} bg-white shadow-md rounded-lg overflow-hidden font-sans text-gray-800 relative`}>
         <div className={`${windowWidth <= 768 ? 'flex-col items-center text-center px-2 py-2' : 'flex flex-row items-start p-6'} bg-white border-b border-gray-200 mb-2.5`}>
           {/* Left Side: Profile Picture + Basic Info */}
           <div className={`flex ${windowWidth <= 768 ? 'flex-col' : ''} gap-5 ${windowWidth <= 768 ? 'mb-2 items-center' : 'w-1/2 pr-4'}`}>
@@ -792,8 +759,8 @@ const ViewShort = ({
             </div>
             
             {/* Phone Numbers - Responsive layout */}
-            <div className={`flex ${windowWidth <= 768 ? 'flex-col' : 'flex-row'} ${windowWidth <= 768 ? 'gap-2' : 'gap-4'} ${windowWidth <= 768 ? 'mb-2' : 'mb-2'}`}>
-              <div className="flex items-center flex-wrap gap-1.5">
+            <div className={`flex ${windowWidth <= 768 ? 'flex-col' : 'flex-row'} ${windowWidth <= 768 ? 'gap-2.5' : 'gap-5'} ${windowWidth <= 768 ? 'mb-2.5' : 'mb-3'}`}>
+              <div className="flex items-center flex-wrap gap-1.5 mb-1">
                 <FaPhone className="text-[#1a73e8] text-[13px] shrink-0" />
                 <span className="font-semibold shrink-0">Phone:</span>
                 <BlurWrapper isUnlocked={isUnlocked}>
@@ -806,7 +773,7 @@ const ViewShort = ({
                 </BlurWrapper>
               </div>
               
-              <div className="flex items-center flex-wrap gap-1.5">
+              <div className="flex items-center flex-wrap gap-1.5 mb-1">
                 <FaWhatsapp className="text-[#25D366] text-[13px] shrink-0" />
                 <span className="font-semibold shrink-0">WhatsApp:</span>
                 <BlurWrapper isUnlocked={isUnlocked}>
@@ -825,13 +792,13 @@ const ViewShort = ({
         <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : windowWidth <= 1024 ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-[300px,1fr]'} ${windowWidth <= 768 ? 'gap-4' : windowWidth <= 1024 ? 'gap-6' : 'gap-8'} mt-0`}>
           <div className={`bg-gray-100 ${windowWidth <= 768 ? 'px-2 py-3' : windowWidth <= 1024 ? 'p-4' : 'p-5'} lg:w-auto`}>
             <div className={`${windowWidth <= 768 ? 'mb-6' : 'mb-8'}`}>
-              <h2 className={`section-title text-center border-b border-black ${windowWidth <= 768 ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${windowWidth <= 768 ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>EDUCATION</h2>
+              <h2 className={`section-title text-center ${windowWidth <= 768 ? 'mb-3' : 'mb-4'} uppercase font-bold ${windowWidth <= 768 ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>EDUCATION</h2>
               {renderEducationBlocks()}
             </div>
           </div>
           <div className={`${windowWidth <= 768 ? 'px-2 py-3' : windowWidth <= 1024 ? 'p-4' : 'p-5'}`}>
             <div className={`${windowWidth <= 768 ? 'mb-6' : 'mb-8'}`}>
-              <h2 className={`section-title text-center border-b border-black ${windowWidth <= 768 ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${windowWidth <= 768 ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>
+              <h2 className={`section-title text-center ${windowWidth <= 768 ? 'mb-3' : 'mb-4'} uppercase font-bold ${windowWidth <= 768 ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>
                 WORK EXPERIENCE
               </h2>
               {getExperienceText()}
@@ -839,7 +806,7 @@ const ViewShort = ({
             </div>
             {jobPreferenceData && hasJobPreferencesData() && (
               <div className={`${windowWidth <= 768 ? 'mb-6' : 'mb-8'}`}>
-                <h2 className={`section-title text-center border-b border-black ${windowWidth <= 768 ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${windowWidth <= 768 ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>JOB PREFERENCES</h2>
+                <h2 className={`section-title text-center ${windowWidth <= 768 ? 'mb-3' : 'mb-4'} uppercase font-bold ${windowWidth <= 768 ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>JOB PREFERENCES</h2>
                 <div className={`mb-6 ${windowWidth <= 768 ? 'p-3' : windowWidth <= 1024 ? 'p-4' : 'p-5'} bg-[#f5f7fc] rounded-lg ${windowWidth <= 768 ? 'text-sm' : windowWidth <= 1024 ? 'text-[14px]' : 'text-base'} leading-relaxed`}>
                   {/* Two-column details grid */}
                   <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : windowWidth <= 1024 ? 'grid-cols-1' : 'grid-cols-2'} ${windowWidth <= 768 ? 'gap-x-0 gap-y-1' : windowWidth <= 1024 ? 'gap-x-3 gap-y-1.5' : 'gap-x-5 gap-y-1.5'}`}>
@@ -982,7 +949,20 @@ const ViewShort = ({
           </button>
           
           <button 
-            onClick={handlePrint}
+            onClick={(e) => {
+              e.preventDefault();
+              if (!printRef.current) {
+                toast.error('Content not ready for printing. Please wait a moment and try again.');
+                console.error('Print ref is null');
+                return;
+              }
+              console.log('Print button clicked, ref:', printRef.current);
+              if (handlePrint && typeof handlePrint === 'function') {
+                handlePrint();
+              } else {
+                console.error('handlePrint is not a function:', typeof handlePrint);
+              }
+            }}
             className={`inline-flex items-center justify-center gap-2 ${windowWidth <= 768 ? 'px-4 py-2.5 text-sm w-full sm:w-auto' : 'px-6 py-3 text-base'} ${windowWidth <= 768 ? 'sm:min-w-[160px]' : 'min-w-[200px]'} bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all`}
             title="Open browser print dialog"
           >

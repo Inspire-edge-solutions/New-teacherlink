@@ -840,6 +840,15 @@ const Coupons = ({
             </button>
           </div>
         </form>
+        <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-blue-50 rounded-lg">
+          <h4 className="font-semibold text-gray-800 mb-2 text-sm sm:text-base">How to use:</h4>
+          <ul className="text-gray-600 space-y-1 text-xs sm:text-sm">
+            <li>• Enter your coupon code in the field above</li>
+            <li>• Click "Apply Coupon" to redeem</li>
+            <li>• Coins will be added to your account instantly</li>
+            <li>• Each coupon can only be used once</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

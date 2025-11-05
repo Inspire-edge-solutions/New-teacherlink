@@ -8,7 +8,7 @@ import {
   parseCoreExpertise, 
   getLocationString,
   formatSalary
-} from '../../utils/candidateUtils';
+} from '../utils/candidateUtils.js';
 
 /**
  * Shared CandidateCard component used across all candidate sections
