@@ -2,7 +2,7 @@ import React from 'react'
 
 const RecruiterActionsComponent = () => {
   return (
-    <div>This is recruiter actions</div>
+    <div>This page is under development</div>
   )
 }
 

@@ -11,7 +11,8 @@ const API_ENDPOINTS = {
   IMAGE_API_URL: "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image",
   REDEEM_API: "https://mgwnmhp62h.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral",
   WHATSAPP_API: "https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp",
-  UNLOCK_API: "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/unlockCandidate"
+  UNLOCK_API: "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/unlockCandidate",
+  APPLIED_CANDIDATES_API: "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate"
 };
 
 // Utility function to get user ID
@@ -336,7 +337,127 @@ class CandidateApiService {
       return { success: false, error: error.message };
     }
   }
+
+  // Fetch applied candidates for a specific employer
+  static async fetchAppliedCandidates(user) {
+    if (!user) {
+      return [];
+    }
+
+    try {
+      const userId = getUserId(user);
+      
+      // First, fetch the employer's jobs to get their job_ids
+      // This is more reliable than relying on firebase_uid in the applyCandidate response
+      let userJobIds = [];
+      try {
+        const jobsResponse = await axios.get(
+          `https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes?firebase_uid=${userId}`
+        );
+        if (jobsResponse.status === 200 && Array.isArray(jobsResponse.data)) {
+          userJobIds = jobsResponse.data
+            .filter(job => 
+              String(job.firebase_uid) === String(userId) || 
+              String(job.user_id) === String(userId) ||
+              String(job.posted_by) === String(userId)
+            )
+            .map(job => job.id)
+            .filter(id => id != null);
+        }
+      } catch (jobsError) {
+        console.error('Error fetching user jobs:', jobsError);
+        // Fallback to firebase_uid matching if jobs API fails
+      }
+      
+      // Fetch applied candidates and full candidate profiles in parallel
+      const [appliedResponse, profilesResponse] = await Promise.all([
+        axios.get(API_ENDPOINTS.APPLIED_CANDIDATES_API),
+        axios.get(API_ENDPOINTS.FULL_API)
+      ]);
+
+      if (appliedResponse.status === 200 && Array.isArray(appliedResponse.data)) {
+        // Filter candidates who applied to jobs posted by current employer
+        // Method 1: Filter by job_id if we have the user's job IDs
+        // Method 2: Fallback to firebase_uid matching (old method)
+        let employerCandidates = [];
+        
+        if (userJobIds.length > 0) {
+          // Filter by job_id - more reliable
+          employerCandidates = appliedResponse.data.filter(
+            candidate => userJobIds.includes(candidate.job_id)
+          );
+        } else {
+          // Fallback: Filter by firebase_uid (old method)
+          employerCandidates = appliedResponse.data.filter(
+            candidate => String(candidate.firebase_uid) === String(userId)
+          );
+        }
+
+        // Create a map of candidate profiles for quick lookup
+        const profilesMap = new Map();
+        if (profilesResponse.status === 200 && Array.isArray(profilesResponse.data)) {
+          profilesResponse.data.forEach(profile => {
+            profilesMap.set(profile.firebase_uid, profile);
+          });
+        }
+
+        // Enrich applied candidates with profile data
+        // Keep ALL applications separate (same candidate can apply to multiple jobs)
+        const enrichedCandidates = employerCandidates.map(appliedCandidate => {
+          const profile = profilesMap.get(appliedCandidate.user_id);
+          
+          // Create a unique identifier for this application (job_id + user_id combination)
+          const applicationId = `${appliedCandidate.job_id}_${appliedCandidate.user_id}`;
+          
+          // Merge applied candidate data with profile data
+          // IMPORTANT: appliedCandidate.user_id is the candidate who applied
+          // appliedCandidate.firebase_uid is the employer who posted the job
+          const candidateUserId = appliedCandidate.user_id; // This is the candidate's ID
+          
+          // Determine the name - prioritize appliedCandidate.fullName from API
+          const candidateName = appliedCandidate.fullName || 
+                                appliedCandidate.name || 
+                                profile?.name || 
+                                profile?.fullName || 
+                                'Unknown Candidate';
+          
+          const enriched = {
+            ...(profile || {}),
+            // Override with correct candidate ID (must come after profile spread to ensure it's not overridden)
+            firebase_uid: candidateUserId, // Candidate's ID for photo fetching and other operations
+            user_id: candidateUserId, // Also store as user_id for clarity
+            // Keep application-specific data
+            job_id: appliedCandidate.job_id,
+            job_name: appliedCandidate.job_name,
+            applied_at: appliedCandidate.applied_at,
+            is_applied: appliedCandidate.is_applied,
+            application_status: appliedCandidate.status || appliedCandidate.application_status,
+            status: appliedCandidate.status || appliedCandidate.application_status,
+            // Create unique ID for this application entry
+            applicationId: applicationId,
+            // Use appliedCandidate.fullName first (from API), then profile, then fallback
+            fullName: candidateName,
+            name: candidateName
+          };
+
+          return enriched;
+        });
+
+        // Sort by application date (most recent first)
+        const sortedCandidates = enrichedCandidates.sort(
+          (a, b) => new Date(b.applied_at || 0) - new Date(a.applied_at || 0)
+        );
+
+        return sortedCandidates;
+      }
+
+      return [];
+    } catch (error) {
+      console.error('Error fetching applied candidates:', error);
+      toast.error("Could not load applied candidates. Please refresh.");
+      return [];
+    }
+  }
 }
 
 export default CandidateApiService;
-

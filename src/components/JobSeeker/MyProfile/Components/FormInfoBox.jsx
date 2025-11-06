@@ -904,7 +904,7 @@ const FormInfoBox = () => {
 
   // If a mode is selected, show the multi-step form or final view.
   return (
-    <div className="bg-white rounded-lg shadow-sm max-w-5xl mx-auto p-4 md:p-6" ref={profileBoxRef}>
+    <div className="bg-white rounded-lg shadow-sm max-w-5xl mx-auto p-4 md:p-6 overflow-x-hidden w-full" ref={profileBoxRef}>
       {/* Profile Completion Popup */}
       <ProfileCompletionPopup />
       

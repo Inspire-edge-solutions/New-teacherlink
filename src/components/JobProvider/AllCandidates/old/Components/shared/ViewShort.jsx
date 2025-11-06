@@ -1,17 +1,20 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
-import { toast } from 'react-toastify';
-import { useReactToPrint } from 'react-to-print';
 import { FaMapMarkerAlt, FaPhone, FaWhatsapp, FaEnvelope } from 'react-icons/fa';
+import '../styles/cv-style.css';
 import '../styles/cv-pdf-print.css';
+import '../styles/view.css';
 import { AvatarImage } from '../utils/avatarUtils.jsx';
-import { useAuth } from "../../../../../Context/AuthContext";
-import { decodeCandidateData } from '../../../../../utils/dataDecoder';
-import CandidateApiService from './CandidateApiService';
-import { getPrintPageStyle } from '../utils/printStyles';
+import { 
+  cleanContentForPrint, 
+  generatePrintHTML,
+  generatePDF
+} from '../utils/printPdfUtils.jsx';
+import { decodeCandidateData } from '../../../../../../utils/dataDecoder';
+import { useAuth } from '../../../../../../contexts/AuthContext';
 
-const FULL_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/fullapi';
+const FULL_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/candidate_details_byid';
 const EDUCATION_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails';
 const EXPERIENCE_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/workExperience';
 const JOB_PREFERENCE_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference';
@@ -23,6 +26,7 @@ const UNLOCK_COST = 50;
 const PERSONAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal';
 const UNLOCK_INFO_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/unlock_details';
 
+
 function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, unlockStatus, error }) {
   
 
@@ -30,49 +34,50 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
 
   // Portal modal content
   const modalContent = (
-    <div className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()}>
-        <button className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all" onClick={onClose}>
+    <div className="portal-modal-backdrop" onClick={onClose}>
+      <div className="portal-modal-container" onClick={(e) => e.stopPropagation()}>
+        <button className="portal-modal-close-btn" onClick={onClose}>
           &times;
         </button>
         
         {unlockStatus === "success" ? (
           <>
-            <div className="flex items-center justify-center my-5 animate-coinDrop">
+            <div className="coins-anim">
               <span role="img" aria-label="coin">🪙</span>
-              <span className="text-[#f7b901] font-bold text-xl ml-1.5">-50</span>
+              <span style={{ color: "#f7b901", fontWeight: "bold", fontSize: "20px", marginLeft: 6 }}>-50</span>
             </div>
-            <div className="text-[#2e7d32] text-xl font-semibold text-center my-4">Unlocked! <span role="img" aria-label="unlocked">🔓</span></div>
-            <div className="text-gray-500 text-sm text-center">Details unlocked successfully.</div>
+            <div className="unlock-success-text">Unlocked! <span role="img" aria-label="unlocked">🔓</span></div>
+            <div style={{ color: '#888', fontSize: 14, textAlign: "center" }}>Details unlocked successfully.</div>
           </>
         ) : unlockStatus === "error" ? (
           <>
-            <div className="flex items-center justify-center my-5 opacity-85 grayscale">
+            <div className="coins-anim" style={{ animation: "none", opacity: 0.85, filter: "grayscale(1)" }}>
               <span role="img" aria-label="coin">🪙</span>
-              <span className="text-[#d72660] font-bold text-xl ml-1.5">×</span>
+              <span style={{ color: "#d72660", fontWeight: "bold", fontSize: "20px", marginLeft: 6 }}>×</span>
             </div>
-            <div className="text-[#d32f2f] text-base font-medium text-center my-4">{error || "Could not unlock details."}</div>
+            <div className="unlock-error-text">{error || "Could not unlock details."}</div>
           </>
         ) : (
           <>
-            <div className="mb-4 mt-0.5">
-              <span className="font-semibold text-[17px]">Unlock candidate details?</span>
+            <div style={{ marginBottom: 15, marginTop: 2 }}>
+              <span style={{ fontWeight: 600, fontSize: 17 }}>Unlock candidate details?</span>
             </div>
-            <div className="text-gray-500 text-[15px] mb-1.5 text-center">
+            <div style={{ color: "#888", fontSize: 15, marginBottom: 6, textAlign: "center" }}>
               Available Coins: <b>{coinValue === null ? "..." : coinValue}</b>
             </div>
-            <div className="text-gray-800 text-[15px] mb-2.5 text-center">
+            <div style={{ color: "#333", fontSize: "15px", marginBottom: 10, textAlign: "center" }}>
               <span>Use <b>50 Coins</b> to view email, phone, WhatsApp, and social details.</span>
             </div>
-            <div className="text-red-600 text-[15px] mb-4 text-center">
+            <div style={{ color: "red", fontSize: 15, marginBottom: 15, textAlign: "center" }}>
               <i>Unlocked details remain visible for <b>30 days.</b></i>
             </div>
             <button 
-              className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none w-full justify-center mb-1.5"
+              className="unlock-btn-top"
+              style={{ width: "100%", justifyContent: "center", marginBottom: 6, fontSize: 16 }}
               disabled={loading}
               onClick={onUnlock}
             >
-              {loading ? "Unlocking..." : <>Unlock <span className="inline-flex items-center justify-center animate-bounce"><span role="img" aria-label="coin">🪙</span></span> 50</>}
+              {loading ? "Unlocking..." : <>Unlock <span className="coin-icon"><span role="img" aria-label="coin">🪙</span></span> 50</>}
             </button>
           </>
         )}
@@ -85,24 +90,19 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
 }
 
 const BlurWrapper = ({ children, isUnlocked }) => {
-  return isUnlocked ? children : <span className="blur-sm select-none cursor-not-allowed relative after:content-['🔒'] after:absolute after:-right-6 after:top-1/2 after:-translate-y-1/2 after:text-sm">{children}</span>;
+  return isUnlocked ? children : <span className="blurred-contact">{children}</span>;
 };
 
-// Cache for fetched candidate data to avoid re-fetching when navigating (shared with ViewFull)
-const candidateDataCache = new Map();
-
 const ViewShort = ({
-  candidate, 
-  onBack,
-  checkedProfiles = null,
-  onNext = null,
-  onPrevious = null,
-  isFirstProfile = true,
-  isLastProfile = true
+  candidate, onBack, onNext, onPrevious,
+  isFirstProfile, isLastProfile, checkedProfiles
 }) => {
   const { user } = useAuth();
-  const printRef = useRef();
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Decode the candidate data to ensure we have real firebase_uid for API calls
+  const decodedCandidate = decodeCandidateData(candidate);
+  const [error, setError] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [educationData, setEducationData] = useState([]);
   const [experienceData, setExperienceData] = useState({ mysqlData: [], dynamoData: [] });
@@ -114,7 +114,7 @@ const ViewShort = ({
 
   // Unlock logic state
   const userId = user?.firebase_uid || user?.uid;
-  const candidateId = candidate?.firebase_uid;
+  const candidateId = decodedCandidate?.firebase_uid;
   const unlockKey = `unlocked_${userId}_${candidateId}`;
   // Always compute initial unlock from localStorage
   const [isUnlocked, setIsUnlocked] = useState(() => localStorage.getItem(unlockKey) === '1');
@@ -160,29 +160,21 @@ const ViewShort = ({
         const found = Array.isArray(data) ? data.find(
           d => d.firebase_uid === userId
         ) : null;
-        setCoinValue(found?.coin_value ?? null);
-        
-        // Fetch unlock info if already unlocked
-        if (isUnlocked) {
-          try {
-            const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
-              firebase_uid: candidateId
-            });
-            if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
-              setUnlockedInfo(unlockInfoResponse.data[0]);
-            }
-          } catch (unlockError) {
-            console.error("Error fetching unlock info:", unlockError);
-          }
+
+        const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
+          firebase_uid: decodedCandidate.firebase_uid  // The candidate being unlocked
+        });
+        if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
+          setUnlockedInfo(unlockInfoResponse.data[0]);
         }
+
+        setCoinValue(found?.coin_value ?? null);
       } catch (e) {
-        const errorMsg = 'Could not check coins. Please try again.';
-        setUnlockError(errorMsg);
-        toast.error(errorMsg);
+        setUnlockError('Could not check coins. Try again.');
       }
     };
     if (userId && candidateId) checkUnlocked();
-  }, [userId, candidateId, unlockKey, isUnlocked]);
+  }, [userId, candidateId, unlockKey]);
 
   const handleUnlockClick = () => {
     setShowUnlockModal(true);
@@ -220,36 +212,22 @@ const ViewShort = ({
         coin_value: coins - UNLOCK_COST
       });
 
-      if (redeemResponse.status !== 200) {
-        throw new Error("Failed to deduct coins");
+        //call unlockinfo api
+    if(redeemResponse.status === 200){
+      const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
+        firebase_uid: decodedCandidate.firebase_uid  // The candidate being unlocked
+      });
+      if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
+        setUnlockedInfo(unlockInfoResponse.data[0]);
       }
-
-      // Mark candidate as unlocked in database FIRST (so it appears in unlocked list)
-      try {
-        await CandidateApiService.upsertCandidateAction(candidate, user, { unlocked_candidate: 1 });
-      } catch (dbError) {
-        console.error("Error updating unlock status in database:", dbError);
-        // Still continue - we'll try again, but don't fail the whole unlock
-      }
-
-      // Call unlock info API after successful unlock and database update
-      try {
-        const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
-          firebase_uid: candidateId
-        });
-        if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
-          setUnlockedInfo(unlockInfoResponse.data[0]);
-        }
-      } catch (unlockError) {
-        console.error("Error fetching unlock info:", unlockError);
-      }
+    }
 
       // Get organization ID for the current user
-      let orgId = null;
+      let candidateId = null;
       try {
         const orgResponse = await axios.get(`${ORGANISATION_API}?firebase_uid=${encodeURIComponent(userId)}`);
         if (orgResponse.status === 200 && Array.isArray(orgResponse.data) && orgResponse.data.length > 0) {
-          orgId = orgResponse.data[0].id;
+          candidateId = orgResponse.data[0].id;
         }
       } catch (orgError) {
         console.error("Error fetching organization data:", orgError);
@@ -268,7 +246,7 @@ const ViewShort = ({
       try {
         await axios.post(COIN_HISTORY_API, {
           firebase_uid: userId,
-          candidate_id: orgId,
+          candidate_id: candidateId,
           job_id: null,
           coin_value: coins - UNLOCK_COST,
           reduction: UNLOCK_COST,
@@ -300,82 +278,50 @@ const ViewShort = ({
 
   // Data fetchers
   const fetchProfilePhoto = useCallback(async () => {
-    if (!candidateId) return;
-    
-    // Check cache first
-    const cacheKey = `photo_${candidateId}`;
-    const cached = candidateDataCache.get(cacheKey);
-    if (cached !== undefined) {
-      setPhotoUrl(cached);
-      setPhotoError(cached === null);
-      return;
-    }
-    
     try {
+      if (!candidateId) return;
       const params = { firebase_uid: candidateId, action: "view" };
       const { data } = await axios.get(IMAGE_API_URL, { params });
       if (data?.url) {
-        candidateDataCache.set(cacheKey, data.url);
         setPhotoUrl(data.url);
         setPhotoError(false);
-      } else {
-        candidateDataCache.set(cacheKey, null);
-        setPhotoError(true);
       }
     } catch (error) {
-      candidateDataCache.set(cacheKey, null);
       setPhotoError(true);
     }
   }, [candidateId]);
 
   const fetchEducationData = useCallback(async () => {
     if (!candidateId) return;
-    
-    // Check cache first
-    const cacheKey = `education_${candidateId}`;
-    const cached = candidateDataCache.get(cacheKey);
-    if (cached) {
-      setEducationData(cached);
-      return;
-    }
-    
     try {
       const response = await axios.get(EDUCATION_API);
       if (response.status === 200 && Array.isArray(response.data)) {
         const candidateEducation = response.data.filter(edu => edu.firebase_uid === candidateId);
-        candidateDataCache.set(cacheKey, candidateEducation);
-        setEducationData(candidateEducation);
+        // Decode the education data
+        const decodedEducation = candidateEducation.map(edu => decodeCandidateData(edu));
+        setEducationData(decodedEducation);
       }
     } catch {}
   }, [candidateId]);
 
   const fetchProfileData = useCallback(async () => {
     if (!candidateId) return;
-    
-    // Check cache first
-    const cacheKey = `profile_${candidateId}`;
-    const cached = candidateDataCache.get(cacheKey);
-    if (cached) {
-      setProfileData(cached);
-      setIsLoading(false);
-      return;
-    }
-    
     setIsLoading(true);
+    setError(null);
     try {
-      const response = await axios.get(FULL_API, {
-        params: { firebase_uid: candidateId, t: Date.now() }
+      const response = await axios.post(FULL_API, {
+        firebase_uid: candidate.firebase_uid
+        
       });
-      if (response.status === 200 && Array.isArray(response.data)) {
-        const candidateRecord = response.data.find(r => r.firebase_uid === candidateId);
-        // Decode the data before setting it
-        const decodedRecord = decodeCandidateData(candidateRecord);
-        candidateDataCache.set(cacheKey, decodedRecord);
-        setProfileData(decodedRecord);
-      }
+      // if (response.status === 200 && Array.isArray(response.data)) {
+      //   const candidateRecord = response.data.find(r => r.firebase_uid === candidateId);
+        // Decode the profile data
+        // const decodedProfile = candidateRecord ? decodeCandidateData(candidateRecord) : null;
+        // setProfileData(decodedProfile);
+        setProfileData(response.data);
+      
     } catch (err) {
-      console.error('Error fetching profile data:', err.response?.data || err.message);
-      toast.error('Unable to load candidate profile. Please try again.');
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -383,15 +329,6 @@ const ViewShort = ({
 
   const fetchExperienceData = useCallback(async () => {
     if (!candidateId) return;
-    
-    // Check cache first
-    const cacheKey = `experience_${candidateId}`;
-    const cached = candidateDataCache.get(cacheKey);
-    if (cached) {
-      setExperienceData(cached);
-      return;
-    }
-    
     try {
       const response = await axios.get(EXPERIENCE_API);
       if (response.status === 200) {
@@ -399,72 +336,93 @@ const ViewShort = ({
         const candidateMysqlData = mysqlData.find(exp => exp.firebase_uid === candidateId) || null;
         const candidateDynamoData = dynamoData.find(exp => exp.firebase_uid === candidateId) || null;
         
-        const experienceDataObj = { 
-          mysqlData: candidateMysqlData || {},
-          dynamoData: candidateDynamoData || {}
-        };
+        // Decode the experience data
+        const decodedMysqlData = candidateMysqlData ? decodeCandidateData(candidateMysqlData) : {};
+        const decodedDynamoData = candidateDynamoData ? decodeCandidateData(candidateDynamoData) : {};
         
-        candidateDataCache.set(cacheKey, experienceDataObj);
-        setExperienceData(experienceDataObj);
+        setExperienceData({ 
+          mysqlData: decodedMysqlData,
+          dynamoData: decodedDynamoData
+        });
       }
     } catch {}
   }, [candidateId]);
 
   const fetchJobPreferenceData = useCallback(async () => {
     if (!candidateId) return;
-    
-    // Check cache first
-    const cacheKey = `jobPreference_${candidateId}`;
-    const cached = candidateDataCache.get(cacheKey);
-    if (cached !== undefined) {
-      setJobPreferenceData(cached);
-      return;
-    }
-    
     try {
       const response = await axios.get(JOB_PREFERENCE_API);
       if (response.status === 200 && Array.isArray(response.data)) {
         const candidatePreference = response.data.find(pref => pref.firebase_uid === candidateId);
-        candidateDataCache.set(cacheKey, candidatePreference || null);
-        setJobPreferenceData(candidatePreference);
+        // Decode the job preference data
+        const decodedPreference = candidatePreference ? decodeCandidateData(candidatePreference) : null;
+        setJobPreferenceData(decodedPreference);
       }
     } catch {}
   }, [candidateId]);
 
   useEffect(() => {
-    if (candidateId) {
-      // Check if we have cached data - if so, set loading to false immediately
-      const cacheKey = `profile_${candidateId}`;
-      const hasCachedProfile = candidateDataCache.has(cacheKey);
-      
-      if (!hasCachedProfile) {
-        setIsLoading(true);
-      }
-      
-      fetchProfileData();
-      fetchEducationData();
-      fetchExperienceData();
-      fetchJobPreferenceData();
-      fetchProfilePhoto();
-      
-      // If we had cached data, ensure loading is false
-      if (hasCachedProfile) {
-        setIsLoading(false);
-      }
+    fetchProfileData();
+    fetchEducationData();
+    fetchExperienceData();
+    fetchJobPreferenceData();
+    fetchProfilePhoto();
+  }, [fetchProfileData, fetchEducationData, fetchExperienceData, fetchJobPreferenceData, fetchProfilePhoto]);
+
+  // Util for PDF/print image fetch
+  const getFreshImageUrl = async (firebase_uid) => {
+    try {
+      const params = { firebase_uid, action: "view" };
+      const { data } = await axios.get(IMAGE_API_URL, { params });
+      return data?.url || null;
+    } catch {
+      return null;
     }
-  }, [candidateId, fetchProfileData, fetchEducationData, fetchExperienceData, fetchJobPreferenceData, fetchProfilePhoto]);
+  };
 
-  // React-to-print hook for printing
-  const handlePrint = useReactToPrint({
-    contentRef: printRef,
-    documentTitle: `${profileData?.fullName || 'Candidate'}_CV`,
-    pageStyle: getPrintPageStyle(),
-    onPrintError: (error) => {
-      console.error('Print error:', error);
-      toast.error('Failed to print. Please try again.');
-    },
-  });
+  // Print
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank');
+    const cvContainer = document.querySelector('.cv-container');
+    if (!cvContainer) {
+      alert('CV content not found');
+      return;
+    }
+    const clonedContent = cvContainer.cloneNode(true);
+    cleanContentForPrint(clonedContent, isUnlocked);
+    const printContent = generatePrintHTML(
+      clonedContent.outerHTML,
+      profileData?.fullName || 'Candidate',
+      isUnlocked
+    );
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+        setTimeout(() => {
+          printWindow.close();
+        }, 1000);
+      }, 500);
+    };
+  };
 
+  // PDF
+  const downloadPDF = async () => {
+    const cvElement = document.querySelector('.cv-container');
+    const result = await generatePDF({
+      cvElement,
+      profileData,
+      candidate,
+      getFreshImageUrl,
+      setIsDownloading,
+      isUnlocked
+    });
+    if (!result.success) {
+      alert('Could not generate PDF. Please try using the Print option instead. Error: ' + result.error);
+    }
+  };
 
   if (!candidate) {
     return (
@@ -479,6 +437,13 @@ const ViewShort = ({
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="alert alert-danger">
+        Error loading profile: {error}
       </div>
     );
   }
@@ -508,16 +473,16 @@ const ViewShort = ({
 
   const renderEducationBlocks = () => {
     if (!educationData || educationData.length === 0) {
-      return <div className="text-gray-600">No education details available</div>;
+      return <div>No education details available</div>;
     }
     return educationData.map((education, index) => (
-      <div key={`${education.education_type}-${index}`} className={`${windowWidth <= 768 ? 'mb-3' : 'mb-5'} p-4 bg-[#f5f7fc] rounded-lg`}>
-        <div className="text-base text-[#202124] mb-2.5 font-semibold">{getEducationTypeTitle(education.education_type)}</div>
+      <div key={`${education.education_type}-${index}`} className="education-block">
+        <div className="education-title">{getEducationTypeTitle(education.education_type)}</div>
         {education.yearOfPassing && (
-          <div className="my-1.5 text-gray-600 text-sm">Year of Passing: {education.yearOfPassing}</div>
+          <div className="education-detail">Year of Passing: {education.yearOfPassing}</div>
         )}
         {education.courseName && (
-          <div className="my-1.5 text-gray-600 text-sm">Course Name: {education.courseName}</div>
+          <div className="education-detail">Course Name: {education.courseName}</div>
         )}
       </div>
     ));
@@ -531,12 +496,12 @@ const ViewShort = ({
       return null;
     }
     return (
-      <div className="mb-4 p-2.5 border-b border-gray-200">
+      <div className="experience-summary">
         {total_experience_years !== undefined && total_experience_years !== null && (
-          <div className="mb-2"><strong>Total Experience:</strong> {total_experience_years} Years {total_experience_months || 0} Months</div>
+          <div>Total Experience: {total_experience_years} Years {total_experience_months || 0} Months</div>
         )}
         {teaching_experience_years !== undefined && teaching_experience_years !== null && (
-          <div><strong>Teaching Experience:</strong> {teaching_experience_years} Years {teaching_experience_months || 0} Months</div>
+          <div>Teaching Experience: {teaching_experience_years} Years {teaching_experience_months || 0} Months</div>
         )}
       </div>
     );
@@ -591,20 +556,34 @@ const ViewShort = ({
       }
       const location = [exp.city, exp.state, exp.country].filter(Boolean).join(', ');
       return (
-        <div key={index} className="mb-6 text-base leading-relaxed">
+        <div className="experience-block" key={index} style={{ 
+          marginBottom: '25px',
+          fontSize: '15px',
+          lineHeight: '1.5'
+        }}>
           {/* Organization and date row */}
-          <div className="flex justify-between font-bold mb-1">
-            <div className="text-base">{exp.organizationName}</div>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            fontWeight: 'bold',
+            marginBottom: '4px'
+          }}>
+            <div style={{ fontSize: '16px' }}>{exp.organizationName}</div>
             <div>
               {dateRange}
-              <span className="font-normal text-gray-600">{durationText}</span>
+              <span style={{ fontWeight: 'normal', color: '#555' }}>{durationText}</span>
             </div>
           </div>
-          <div className="mb-1.5 text-gray-600">{location}</div>
-          <div className="mb-1.5">
+          <div style={{ marginBottom: '6px', color: '#555' }}>{location}</div>
+          <div style={{ marginBottom: '6px' }}>
             {jobTypeText.join(' | ')}
           </div>
-          <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-x-5 gap-y-1.5`}>
+          <div style={{ 
+            display: 'grid',
+            gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr',
+            columnGap: '20px',
+            rowGap: '5px'
+          }}>
             <div>
               <strong>Designation:</strong> {designation}
             </div>
@@ -717,27 +696,21 @@ const ViewShort = ({
   return (
     <div>
       {/* PROFILE ACTIONS BAR - TOP */}
-      <div className={`flex flex-col sm:flex-row justify-between items-stretch sm:items-center ${windowWidth <= 768 ? 'mb-4' : 'mb-6'} w-full ${windowWidth <= 768 ? 'gap-2' : 'gap-4'} ${windowWidth <= 768 ? 'px-1' : 'px-2'}`}>
-        {/* Left side: Profile counter or Unlock button */}
-        <div className="flex items-center gap-2">
-          {checkedProfiles && checkedProfiles.candidates && checkedProfiles.candidates.length > 1 && (
-            <span className={`${windowWidth <= 768 ? 'text-sm' : 'text-base'} font-medium text-gray-700 whitespace-nowrap`}>
-              Profile {checkedProfiles.currentIndex + 1} of {checkedProfiles.candidates.length}
-            </span>
-          )}
-          {!isUnlocked && !checkedProfiles && (
-            <button 
-              className={`inline-flex items-center justify-center gap-2.5 ${windowWidth <= 768 ? 'px-4 py-2.5 text-sm' : 'px-6 py-3 text-base'} bg-gradient-brand text-white border-none rounded-lg font-semibold cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none ${windowWidth <= 768 ? 'w-full sm:w-auto sm:min-w-[150px]' : 'min-w-[170px]'} flex-shrink-0`}
-              onClick={handleUnlockClick}
-              disabled={isUnlocked}
-            >
-              <span role="img" aria-label="coin" className="inline-flex items-center justify-center animate-bounce">💰</span>
-              Unlock Details
-            </button>
-          )}
-        </div>
-        <div className={`${windowWidth <= 768 ? 'w-full sm:w-auto sm:ml-auto' : 'ml-auto'}`}>
-          <button className={`w-full sm:w-auto ${windowWidth <= 768 ? 'px-3 py-2 text-sm' : 'px-4 py-2.5 text-base'} bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-colors whitespace-nowrap`} onClick={onBack}>
+      <div className="profile-actions">
+        {/* SHOW Unlock button only if not unlocked */}
+        {!isUnlocked && (
+          <button 
+            className="unlock-btn-top"
+            style={{ minWidth: 170 }}
+            onClick={handleUnlockClick}
+            disabled={isUnlocked}
+          >
+            <span role="img" aria-label="coin" className="coin-icon">💰</span>
+            Unlock Details
+          </button>
+        )}
+        <div className="back-button">
+          <button className="btn btn-warning" onClick={onBack}>
             Back to List
           </button>
         </div>
@@ -756,156 +729,171 @@ const ViewShort = ({
       />
 
       {/* Actual card content */}
-      <div ref={printRef} className={`cv-container ${windowWidth <= 768 ? 'max-w-full' : windowWidth <= 1024 ? 'max-w-[1000px]' : 'max-w-[1200px]'} mx-auto ${windowWidth <= 768 ? 'px-2 py-3' : windowWidth <= 1024 ? 'p-5' : 'p-6 md:p-8'} bg-white shadow-md rounded-lg overflow-hidden font-sans text-gray-800 relative`}>
-        <div className={`${windowWidth <= 768 ? 'flex-col items-center text-center px-2 py-2' : 'flex flex-row items-start p-6'} bg-white border-b border-gray-200 mb-2.5`}>
-          {/* Left Side: Profile Picture + Basic Info */}
-          <div className={`flex ${windowWidth <= 768 ? 'flex-col' : ''} gap-5 ${windowWidth <= 768 ? 'mb-2 items-center' : 'w-1/2 pr-4 min-w-0'}`}>
-            {/* Profile Picture */}
-            <div className={`profile-photo ${windowWidth <= 768 ? 'w-[100px] h-[100px] mb-2.5' : 'w-[100px] h-[100px]'} rounded-full overflow-hidden border-[3px] border-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.1)] ${windowWidth <= 768 ? 'm-0' : 'mr-2.5'} shrink-0`}>
-              <AvatarImage
-                src={photoUrl}
-                alt={`${profileData.fullName || 'User'}'s profile photo`}
-                gender={profileData.gender}
-                className="w-full h-full object-cover"
-                style={{ 
-                  border: 'none',
-                  transform: 'scale(1.4) translateY(7%)',
-                  transformOrigin: 'center'
-                }}
-              />
-            </div>
-            
-            {/* Basic Information */}
-            <div className="flex-1 min-w-0 overflow-hidden">
-              <h1 className={`candidate-name ${windowWidth <= 768 ? 'text-xl mb-1' : windowWidth <= 1024 ? 'text-2xl mb-1.5' : 'text-3xl mb-2'} bg-gradient-brand bg-clip-text text-transparent break-words`}>
-                {profileData.fullName || 'Candidate Name'}
-              </h1>
+      <div className="cv-container">
+        {checkedProfiles && checkedProfiles.candidates?.length > 1 && (
+          <div className="profile-counter">
+            Profile {checkedProfiles.currentIndex + 1} of {checkedProfiles.candidates.length}
+          </div>
+        )}
+
+        <div className="cv-header">
+          <div className="cv-profile-photo">
+            <AvatarImage
+              src={photoUrl}
+              alt={`${profileData.fullName || 'User'}'s profile photo`}
+              gender={profileData.gender}
+            />
+          </div>
+          <div className="header-content" style={{ flex: 1, paddingLeft: '20px' }}>
+            <h1 className="candidate-name">{profileData.fullName || 'Candidate Name'}</h1>
+            <div className="personal-meta" style={{ marginBottom: '8px' }}>
+              {profileData.gender && <span>{profileData.gender}</span>}
+              {profileData.dateOfBirth && (
+                <span style={{ marginLeft: '15px' }}>
+                  DOB: {new Date(profileData.dateOfBirth).toLocaleDateString('en-US', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric' 
+                  })}
+                </span>
+              )}
               
-              {/* Personal Details */}
-              <div className={`${windowWidth <= 768 ? 'text-sm mb-2' : windowWidth <= 1024 ? 'text-[14px] mb-2.5' : 'text-[15px] mb-3'} text-gray-600 break-words`}>
-                {profileData.gender && <span>{profileData.gender}</span>}
-                {profileData.dateOfBirth && (
-                  <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
-                )}
-                {(() => {
-                  // Calculate total experience similar to getExperienceText
-                  if (!experienceData?.mysqlData) return null;
-                  const teachingYears = experienceData.mysqlData.teaching_experience_years || 0;
-                  const teachingMonths = experienceData.mysqlData.teaching_experience_months || 0;
-                  const nonTeachingYears = experienceData.mysqlData.non_teaching_experience_years || 0;
-                  const nonTeachingMonths = experienceData.mysqlData.non_teaching_experience_months || 0;
-                  let totalYears = experienceData.mysqlData.total_experience_years;
-                  let totalMonths = experienceData.mysqlData.total_experience_months;
-                  
-                  if (totalYears === undefined || totalMonths === undefined) {
-                    const rawTotalMonths = (teachingMonths + nonTeachingMonths);
-                    totalMonths = rawTotalMonths % 12;
-                    const extraYears = Math.floor(rawTotalMonths / 12);
-                    totalYears = teachingYears + nonTeachingYears + extraYears;
-                  }
-                  
-                  if (totalYears > 0 || totalMonths > 0) {
-                    return (
-                      <span> | Experience: {totalYears} Years {totalMonths || 0} Months</span>
-                    );
-                  }
-                  return null;
-                })()}
-              </div>
-              
-              {/* Email */}
-              {(profileData.email || unlockedInfo?.email) && (
-                <div className={`flex items-center gap-1.5 ${windowWidth <= 768 ? 'text-sm' : windowWidth <= 1024 ? 'text-[14px]' : 'text-[15px]'} min-w-0`}>
-                  <FaEnvelope className="text-gray-400 shrink-0" />
+                <div className="email-link" style={{ display: 'flex', alignItems: 'center', marginTop: '4px' }}>
+                  <FaEnvelope style={{ marginRight: '5px', color: '#A9A9A9' }} />
                   <BlurWrapper isUnlocked={isUnlocked}>
-                    <a href={isUnlocked ? `mailto:${unlockedInfo?.email || profileData.email}` : undefined} className={`no-underline text-[#1967d2] break-words ${!isUnlocked ? 'pointer-events-none' : ''}`}>
-                      {isUnlocked && unlockedInfo?.email ? unlockedInfo.email : (profileData.email || 'N/A')}
+                    <a href={isUnlocked ? `mailto:${unlockedInfo?.email}` : undefined} style={{ pointerEvents: isUnlocked ? 'auto' : 'none', color: "#1766af" }}>
+                      {unlockedInfo?.email||'N/A'}
                     </a>
                   </BlurWrapper>
                 </div>
-              )}
+            
             </div>
-          </div>
-          
-          {/* Right Side: Contact Information */}
-          <div className={`font-sans ${windowWidth <= 768 ? 'text-[13px] w-full' : 'text-sm w-1/2'} leading-[1.4] ${windowWidth <= 768 ? 'mt-2' : 'pl-4'} min-w-0`}>
-            {/* Address Information */}
-            <div className={`flex ${windowWidth <= 768 ? 'flex-col' : 'flex-col'} ${windowWidth <= 768 ? 'gap-2' : 'gap-1.5'} ${windowWidth <= 768 ? 'mb-2' : 'mb-2'}`}>
-              <div className={`flex items-start ${windowWidth <= 768 ? 'flex-col sm:flex-row sm:items-center' : 'flex-wrap'} gap-1.5`}>
-                <div className="flex items-center flex-shrink-0">
-                  <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
-                  <span className="font-semibold shrink-0">Present:</span>
+
+            {/* Contact Information - Optimized Layout */}
+            <div className="contact-grid" style={{ 
+              display: 'grid',
+              gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr',
+              gap: '15px',
+              fontFamily: 'Arial, sans-serif',
+              fontSize: '14px'
+            }}>
+              {/* Left Column - Addresses */}
+              <div className="address-column">
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                  <FaMapMarkerAlt style={{ marginRight: '8px', color: '#e74c3c', fontSize: '16px' }} /> 
+                  <span><strong>Present:</strong> {profileData.present_state_name || 'N/A'}</span>
                 </div>
-                <span className={`${windowWidth <= 768 ? 'break-words ml-6 sm:ml-0' : 'break-words'}`}>
-                  {profileData.present_state_name || 'N/A'}
-                </span>
-              </div>
-              
-              {profileData.permanent_state_name && (
-                <div className={`flex items-start ${windowWidth <= 768 ? 'flex-col sm:flex-row sm:items-center' : 'flex-wrap'} gap-1.5`}>
-                  <div className="flex items-center flex-shrink-0">
-                    <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
-                    <span className="font-semibold shrink-0">Permanent:</span>
+                {profileData.permanent_state_name && (
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <FaMapMarkerAlt style={{ marginRight: '8px', color: '#95a5a6', fontSize: '16px' }} />
+                    <span><strong>Permanent:</strong> {profileData.permanent_state_name}</span>
                   </div>
-                  <span className={`${windowWidth <= 768 ? 'break-words ml-6 sm:ml-0' : 'break-words'}`}>
-                    {profileData.permanent_state_name}
+                )}
+              </div>
+
+              {/* Right Column - Phone Numbers */}
+              <div className="phone-column">
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                  <FaPhone style={{ marginRight: '8px', color: '#1a73e8', fontSize: '16px' }} />
+                  <span><strong>Phone:</strong>{" "}
+                    <BlurWrapper isUnlocked={isUnlocked}>
+                      {isUnlocked
+                        ? unlockedInfo?.phone_number || "N/A"
+                        : unlockedInfo?.phone_number
+                          ? <span style={{ letterSpacing: "1px" }}>{unlockedInfo?.phone_number.replace(/\d/g, "•")}</span>
+                          : "N/A"
+                      }
+                    </BlurWrapper>
                   </span>
                 </div>
-              )}
-            </div>
-            
-            {/* Phone Numbers - Responsive layout */}
-            <div className={`flex ${windowWidth <= 768 ? 'flex-col' : 'flex-row'} ${windowWidth <= 768 ? 'gap-2.5' : 'gap-5'} ${windowWidth <= 768 ? 'mb-2.5' : 'mb-3'}`}>
-              <div className="flex items-center flex-wrap gap-1.5 mb-1">
-                <FaPhone className="text-[#1a73e8] text-[13px] shrink-0" />
-                <span className="font-semibold shrink-0">Phone:</span>
-                <BlurWrapper isUnlocked={isUnlocked}>
-                  {isUnlocked
-                    ? unlockedInfo?.phone_number || profileData.callingNumber || "N/A"
-                    : (unlockedInfo?.phone_number || profileData.callingNumber)
-                      ? <span className="tracking-wide break-all">{(unlockedInfo?.phone_number || profileData.callingNumber).replace(/\d/g, "•")}</span>
-                      : "N/A"
-                  }
-                </BlurWrapper>
-              </div>
-              
-              <div className="flex items-center flex-wrap gap-1.5 mb-1">
-                <FaWhatsapp className="text-[#25D366] text-[13px] shrink-0" />
-                <span className="font-semibold shrink-0">WhatsApp:</span>
-                <BlurWrapper isUnlocked={isUnlocked}>
-                  {isUnlocked
-                    ? unlockedInfo?.whatsup_number || profileData.whatsappNumber || "N/A"
-                    : (unlockedInfo?.whatsup_number || profileData.whatsappNumber)
-                      ? <span className="tracking-wide break-all">{(unlockedInfo?.whatsup_number || profileData.whatsappNumber).replace(/\d/g, "•")}</span>
-                      : "N/A"
-                  }
-                </BlurWrapper>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <FaWhatsapp style={{ marginRight: '8px', color: '#25D366', fontSize: '16px' }} />
+                  <span><strong>WhatsApp:</strong>{" "}
+                    <BlurWrapper isUnlocked={isUnlocked}>
+                      {isUnlocked
+                        ? unlockedInfo?.whatsup_number || "N/A"
+                        : unlockedInfo?.whatsup_number
+                          ? <span style={{ letterSpacing: "1px" }}>{unlockedInfo?.whatsup_number.replace(/\d/g, "•")}</span>
+                          : "N/A"
+                      }
+                    </BlurWrapper>
+                  </span>
+                </div>
               </div>
             </div>
+
+            {/* Additional Info Row */}
+            {(profileData.aadharNumber || profileData.panNumber) && (
+              <div className="additional-info" style={{ 
+                marginTop: '10px',
+                display: 'grid',
+                gridTemplateColumns: windowWidth <= 768 ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '8px',
+                fontSize: '13px',
+                color: '#666'
+              }}>
+                {profileData.aadharNumber && (
+                  <div><strong>Aadhar:</strong> {profileData.aadharNumber}</div>
+                )}
+                {profileData.panNumber && (
+                  <div><strong>PAN:</strong> {profileData.panNumber}</div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : windowWidth <= 1024 ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-[300px,1fr]'} ${windowWidth <= 768 ? 'gap-4' : windowWidth <= 1024 ? 'gap-6' : 'gap-8'} mt-0`}>
-          <div className={`bg-gray-100 ${windowWidth <= 768 ? 'px-2 py-3' : windowWidth <= 1024 ? 'p-4' : 'p-5'} lg:w-auto`}>
-            <div className={`${windowWidth <= 768 ? 'mb-6' : 'mb-8'}`}>
-              <h2 className={`section-title text-center ${windowWidth <= 768 ? 'mb-3' : 'mb-4'} uppercase font-bold ${windowWidth <= 768 ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>EDUCATION</h2>
+        <div className="cv-body">
+          <div className="cv-sidebar">
+            <div className="cv-section education-section">
+              <h2 className="section-title" style={{ 
+                fontSize: '18px',
+                borderBottom: '2px solid #1967d2',
+                paddingBottom: '8px',
+                marginBottom: '15px',
+                fontWeight: '700',
+                color: '#1967d2',
+                textTransform: 'uppercase',
+                textAlign: 'left'
+              }}>EDUCATION</h2>
               {renderEducationBlocks()}
             </div>
           </div>
-          <div className={`${windowWidth <= 768 ? 'px-2 py-3' : windowWidth <= 1024 ? 'p-4' : 'p-5'}`}>
-            <div className={`${windowWidth <= 768 ? 'mb-6' : 'mb-8'}`}>
-              <h2 className={`section-title text-center ${windowWidth <= 768 ? 'mb-3' : 'mb-4'} uppercase font-bold ${windowWidth <= 768 ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>
+          <div className="cv-main">
+            <div className="cv-section experience-section">
+              <h2 className="section-title" style={{ 
+                textAlign: 'center',
+                borderBottom: '1px solid #000',
+                marginBottom: '15px',
+                paddingBottom: '5px',
+                textTransform: 'uppercase',
+                fontWeight: 'bold',
+                fontSize: '18px',
+                color: '#1967d2'
+              }}>
                 WORK EXPERIENCE
               </h2>
               {getExperienceText()}
               {renderExperienceBlocks()}
             </div>
             {jobPreferenceData && hasJobPreferencesData() && (
-              <div className={`${windowWidth <= 768 ? 'mb-6' : 'mb-8'}`}>
-                <h2 className={`section-title text-center ${windowWidth <= 768 ? 'mb-3' : 'mb-4'} uppercase font-bold ${windowWidth <= 768 ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>JOB PREFERENCES</h2>
-                <div className={`mb-6 ${windowWidth <= 768 ? 'p-3' : windowWidth <= 1024 ? 'p-4' : 'p-5'} bg-[#f5f7fc] rounded-lg ${windowWidth <= 768 ? 'text-sm' : windowWidth <= 1024 ? 'text-[14px]' : 'text-base'} leading-relaxed`}>
+              <div className="cv-section job-preferences">
+                <h2 className="section-title">Job Preferences</h2>
+                <div className="job-preferences-block" style={{ 
+                  marginBottom: '25px',
+                  padding: '20px',
+                  background: '#f5f7fc',
+                  borderRadius: '8px',
+                  fontSize: '15px',
+                  lineHeight: '1.5'
+                }}>
                   {/* Two-column details grid */}
-                  <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : windowWidth <= 1024 ? 'grid-cols-1' : 'grid-cols-2'} ${windowWidth <= 768 ? 'gap-x-0 gap-y-1' : windowWidth <= 1024 ? 'gap-x-3 gap-y-1.5' : 'gap-x-5 gap-y-1.5'}`}>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr',
+                    columnGap: '20px',
+                    rowGap: '5px'
+                  }}>
                     {/* Basic Job Information */}
                     {jobPreferenceData.Job_Type && (
                       <div>
@@ -1021,62 +1009,63 @@ const ViewShort = ({
           </div>
         </div>
 
+        <div className="navigation-buttons mt-4 text-center">
+          <div className="btn-group" role="group" aria-label="Profile navigation">
+            {!isFirstProfile && (
+              <button 
+                onClick={onPrevious}
+                className="theme-btn btn-style-one"
+                type="button"
+              >
+                <i className="fas fa-arrow-left me-2"></i>
+                Previous Profile
+              </button>
+            )}
+            {!isLastProfile && (
+              <button 
+                onClick={onNext}
+                className="theme-btn btn-style-two ms-3"
+                type="button"
+              >
+                Next Profile
+                <i className="fas fa-arrow-right ms-2"></i>
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Download and Print Section */}
-        <div className={`flex flex-col sm:flex-row justify-center ${windowWidth <= 768 ? 'gap-2' : 'gap-4'} ${windowWidth <= 768 ? 'mt-6 pt-4' : 'mt-10 pt-5'} border-t border-gray-200`}>
+        <div className="download-section">
           <button 
-            onClick={() => {
-              if (!printRef.current) {
-                toast.error('Content not ready. Please wait a moment and try again.');
-                return;
-              }
-              setIsDownloading(true);
-              if (handlePrint && typeof handlePrint === 'function') {
-                handlePrint();
-              } else {
-                console.error('handlePrint is not a function:', typeof handlePrint);
-                toast.error('Print function not available. Please try again.');
-              }
-              setTimeout(() => setIsDownloading(false), 1000);
-            }}
+            onClick={downloadPDF} 
             disabled={isDownloading}
-            className={`inline-flex items-center justify-center gap-2 ${windowWidth <= 768 ? 'px-4 py-2.5 text-sm w-full sm:w-auto' : 'px-6 py-3 text-base'} ${windowWidth <= 768 ? 'sm:min-w-[160px]' : 'min-w-[200px]'} bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
-            title={isDownloading ? "Opening print dialog..." : "Download or Print CV"}
+            className="btn btn-primary"
+            title={isDownloading ? "Generating PDF..." : "Download CV as PDF file"}
           >
             {isDownloading ? (
               <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Opening...
+                <div className="spinner-border spinner-border-sm" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                Generating PDF...
               </>
             ) : (
               <>
                 <i className="fas fa-download"></i>
-                Download/Print
+                Download PDF
               </>
             )}
           </button>
+          
+          <button 
+            onClick={handlePrint}
+            className="btn btn-outline-secondary"
+            title="Open browser print dialog"
+          >
+            <i className="fas fa-print"></i>
+            Print
+          </button>
         </div>
-
-        {/* Previous/Next Navigation - Bottom */}
-        {checkedProfiles && checkedProfiles.candidates && checkedProfiles.candidates.length > 1 && (
-          <div className={`flex flex-row justify-center items-center gap-3 ${windowWidth <= 768 ? 'mt-4 mb-2' : 'mt-6 mb-4'}`}>
-            <button
-              onClick={onPrevious}
-              disabled={isFirstProfile}
-              className={`inline-flex items-center justify-center gap-2 ${windowWidth <= 768 ? 'px-4 py-2.5 text-sm' : 'px-6 py-3 text-base'} bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all whitespace-nowrap font-medium`}
-              title="Previous Profile"
-            >
-              ← Previous
-            </button>
-            <button
-              onClick={onNext}
-              disabled={isLastProfile}
-              className={`inline-flex items-center justify-center gap-2 ${windowWidth <= 768 ? 'px-4 py-2.5 text-sm' : 'px-6 py-3 text-base'} bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all whitespace-nowrap font-medium`}
-              title="Next Profile"
-            >
-              Next →
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

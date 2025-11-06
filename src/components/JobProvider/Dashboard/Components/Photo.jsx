@@ -157,13 +157,15 @@ const Photo = () => {
           </div>
 
           {/* Profile Info */}
-          <div className="flex-grow text-center sm:text-left min-w-0">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:gap-4 mb-1">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 break-words">
-                {organizationData?.contact_person_name || user?.displayName || 'User Name'}
-              </h2>
+          <div className="flex-grow text-center sm:text-left min-w-0 w-full">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:gap-3 mb-1">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 break-words overflow-wrap-anywhere">
+                  {organizationData?.contact_person_name || user?.displayName || 'User Name'}
+                </h2>
+              </div>
               {organizationData?.id && (
-                <div className="text-xs sm:text-sm text-gray-600 flex-shrink-0 mt-1 sm:mt-0">
+                <div className="text-xs sm:text-sm text-gray-600 flex-shrink-0 mt-1 sm:mt-0 whitespace-nowrap">
                   ID: <span className="font-semibold text-gray-800">{organizationData.id}</span>
                 </div>
               )}

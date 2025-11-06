@@ -397,14 +397,48 @@ const ActiveJobs = ({
   const confirmPostSameJob = async () => {
     try {
       const jobData = { ...selectedJob };
-      delete jobData.id; // Remove ID to create new job
-      delete jobData.created_at; // Remove created date
+      // Remove ID and created date to create new job
+      delete jobData.id;
+      delete jobData.created_at;
+      
+      // Reset approval/rejection fields for new job posting
+      // Explicitly remove any existing approval fields to ensure clean state
+      delete jobData.isRejected;
+      delete jobData.isApproved;
+      delete jobData.response;
+      delete jobData.approved_by;
+      delete jobData.approved_email;
+      delete jobData.job_updated;
+      delete jobData.isBlocked;
+      delete jobData.is_closed;
+      delete jobData.reason;
+      
+      // Set approval fields to 0 for pending approval (new job should be pending)
+      jobData.isApproved = 0;
+      jobData.isRejected = 0;  // Explicitly set to 0 - should be pending, not rejected
+      jobData.response = 0;
+      jobData.approved_by = "";
+      jobData.approved_email = "";
+      jobData.job_updated = 0;
+      jobData.isBlocked = 0;
+      jobData.is_closed = 0;
+      
+      // Debug: Log what we're sending
+      console.log("=== POST SAME JOB DEBUG ===");
+      console.log("isRejected value being sent:", jobData.isRejected);
+      console.log("Full job data:", JSON.stringify(jobData, null, 2));
+      console.log("=== END DEBUG ===");
       
       const response = await axios.post(
         "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes",
         [jobData],
         { headers: { "Content-Type": "application/json" } }
       );
+      
+      // Debug: Check what was returned from the API
+      console.log("=== API RESPONSE DEBUG ===");
+      console.log("API Response:", response.data);
+      console.log("=== END RESPONSE DEBUG ===");
       
       toast.success('Job posted successfully!');
       setShowConfirmDialog(false);

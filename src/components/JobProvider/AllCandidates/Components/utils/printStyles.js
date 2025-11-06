@@ -12,11 +12,26 @@ export const getPrintPageStyle = () => `
       print-color-adjust: exact;
       -webkit-print-color-adjust: exact;
     }
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .print-wrapper-hidden {
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      z-index: auto !important;
+      pointer-events: auto !important;
+      display: block !important;
+    }
     button {
       display: none !important;
     }
     .download-section,
-    .profile-actions {
+    .profile-actions,
+    .demo-resume-heading {
       display: none !important;
     }
     .cv-container {
@@ -139,6 +154,15 @@ export const getPrintPageStyle = () => `
     p, div, span {
       line-height: 1.5 !important;
     }
+    /* Ensure emails and long text don't truncate in print */
+    a[href^="mailto:"],
+    a[href^="mailto:"] * {
+      white-space: normal !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      word-break: break-all !important;
+      overflow-wrap: break-word !important;
+    }
     /* Reduce padding in content blocks */
     .p-3, .p-4, .p-5, .p-6, .p-8 {
       padding: 8px !important;
@@ -150,6 +174,18 @@ export const getPrintPageStyle = () => `
     .py-2, .py-3, .py-2\.5 {
       padding-top: 4px !important;
       padding-bottom: 4px !important;
+    }
+    /* Page breaks for multiple profiles */
+    .candidate-profile-page {
+      page-break-after: always !important;
+      page-break-inside: avoid !important;
+    }
+    .candidate-profile-page:last-child {
+      page-break-after: auto !important;
+    }
+    /* Ensure each profile starts on a new page */
+    .candidate-profile-page + .candidate-profile-page {
+      page-break-before: always !important;
     }
   }
 `;

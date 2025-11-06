@@ -1,5 +1,5 @@
 import React from 'react';
-import { AiOutlineEye, AiOutlineFileText, AiOutlineSave, AiFillSave, AiOutlineHeart, AiFillHeart } from 'react-icons/ai';
+import { AiOutlineEye, AiOutlineFileText, AiOutlineSave, AiFillSave, AiOutlineHeart, AiFillHeart, AiOutlineMessage } from 'react-icons/ai';
 import { FaBriefcase, FaWallet, FaMapMarkerAlt, FaGraduationCap, FaStar } from 'react-icons/fa';
 import { AvatarImage } from '../utils/avatarUtils.jsx';
 import { 
@@ -24,6 +24,7 @@ const CandidateCard = ({
   onViewShort,
   onSave,
   onToggleFavourite,
+  onMessage,
   showCheckbox = false,
   isChecked = false,
   onCheckboxChange,
@@ -80,9 +81,15 @@ const CandidateCard = ({
               <h3 className="text-base sm:text-lg font-bold text-gray-800 leading-tight truncate">
                 {candidate.fullName || candidate.name || 'Name not available'}
               </h3>
-              {candidate.designation && (
+              {(candidate.job_name || candidate.designation) && (
                 <p className="text-xs sm:text-sm text-gray-600 mt-0.5 truncate">
-                  {candidate.designation}
+                  {candidate.job_name ? (
+                    <>
+                      Applied for <span className="font-semibold">{candidate.job_name}</span>
+                    </>
+                  ) : (
+                    candidate.designation
+                  )}
                 </p>
               )}
             </div>
@@ -155,6 +162,19 @@ const CandidateCard = ({
                 ) : (
                   <AiOutlineHeart className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
                 )}
+              </button>
+              
+              {/* Message Icon */}
+              <button
+                className="group relative p-2.5 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-indigo-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-indigo-200"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMessage && onMessage(candidate);
+                }}
+                title="Message Candidate"
+                disabled={loading}
+              >
+                <AiOutlineMessage className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
               </button>
             </div>
           </div>

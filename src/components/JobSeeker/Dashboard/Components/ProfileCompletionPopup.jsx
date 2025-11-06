@@ -4,7 +4,7 @@ import { getCompletionStatus, getNextSteps } from '../../../../utils/profileComp
 import { Link } from 'react-router-dom';
 import { FaTimes, FaExclamationTriangle, FaCheckCircle, FaArrowRight, FaUserEdit } from 'react-icons/fa';
 import axios from 'axios';
-import './profileCompletionPopup.css';
+import ModalPortal from '../../../common/ModalPortal';
 
 const ProfileCompletionPopup = () => {
   console.log('ProfileCompletionPopup component rendered');
@@ -315,93 +315,166 @@ const ProfileCompletionPopup = () => {
    }
 
   const status = getCompletionStatus(completionData.percentage);
-  const nextSteps = getNextSteps(completionData.missingSections, completionData.selectedMode);
+  
+  // Filter out Social Media and Additional Information from display (but they're still counted in percentage)
+  const sectionsToHide = ['Social Media', 'Additional Information'];
+  const displayMissingSections = completionData.missingSections.filter(
+    section => !sectionsToHide.includes(section.name)
+  );
+  const displayCompletedSections = completionData.completedSections.filter(
+    section => !sectionsToHide.includes(section.name)
+  );
+  
+  const nextSteps = getNextSteps(displayMissingSections, completionData.selectedMode);
+
+  // Helper function to get status badge classes
+  const getStatusBadgeClasses = (statusText) => {
+    const statusLower = statusText.toLowerCase().replace(/\s+/g, '-');
+    const statusClasses = {
+      'not-started': 'bg-red-50 text-red-600 border-red-200',
+      'just-started': 'bg-orange-50 text-orange-600 border-orange-200',
+      'in-progress': 'bg-yellow-50 text-yellow-600 border-yellow-200',
+      'almost-there': 'bg-green-50 text-green-600 border-green-200',
+      'nearly-complete': 'bg-blue-50 text-blue-600 border-blue-200',
+      'complete': 'bg-green-50 text-green-600 border-green-200',
+    };
+    return statusClasses[statusLower] || 'bg-gray-50 text-gray-600 border-gray-200';
+  };
 
   return (
-    <div className="profile-completion-popup-overlay">
-      <div className="profile-completion-popup">
-        <div className="popup-header">
-          <div className="popup-title">
-            <FaUserEdit className="title-icon" />
-            <h3>Complete Your Profile</h3>
+    <ModalPortal>
+      <style>{`
+        .profile-popup-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .profile-popup-scrollbar::-webkit-scrollbar-track {
+          background: #F0D8D9;
+          border-radius: 10px;
+          margin: 8px 0;
+        }
+        .profile-popup-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #F34B58 0%, #A1025D 100%);
+          border-radius: 10px;
+          border: 2px solid #F0D8D9;
+        }
+        .profile-popup-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, #db2777 0%, #dc2626 100%);
+          border: 2px solid #F0D8D9;
+        }
+        .profile-popup-scrollbar::-webkit-scrollbar-thumb:active {
+          background: linear-gradient(180deg, #A1025D 0%, #F34B58 100%);
+        }
+        /* Firefox scrollbar */
+        .profile-popup-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #F34B58 #F0D8D9;
+        }
+      `}</style>
+      <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 animate-fadeIn" onClick={handleDismiss}>
+        <div 
+          className="bg-[#F0D8D9] rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-200 animate-slideUp profile-popup-scrollbar"
+          onClick={(e) => e.stopPropagation()}
+        >
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-white mx-4 mt-4 rounded-t-xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-brand rounded-lg">
+              <FaUserEdit className="text-white text-lg" />
+            </div>
+            <h3 className="m-0 text-xl font-semibold text-gray-800">Complete Your Profile</h3>
           </div>
-          <button className="close-button" onClick={handleDismiss}>
+          <button 
+            className="bg-transparent border-none text-gray-400 text-lg cursor-pointer p-2 rounded-full transition-all duration-200 flex items-center justify-center hover:bg-gray-100 hover:text-gray-600"
+            onClick={handleDismiss}
+            aria-label="Close"
+          >
             <FaTimes />
           </button>
         </div>
 
-                 <div className="popup-content">
-           <div className="completion-summary">
-             <div className="progress-section">
-               <div className="both-progress-circles">
-                 <div className="progress-circle short-profile">
-                   <div className="progress-percentage">{completionData.easyMode.percentage}%</div>
-                   <div className="progress-label">Short Profile</div>
-                   <div className="progress-sections">{completionData.easyMode.completedSections} of {completionData.easyMode.totalSections} sections</div>
-                 </div>
-                 <div className="progress-circle complete-profile">
-                   <div className="progress-percentage">{completionData.fullMode.percentage}%</div>
-                   <div className="progress-label">Complete Profile</div>
-                   <div className="progress-sections">{completionData.fullMode.completedSections} of {completionData.fullMode.totalSections} sections</div>
-                 </div>
-               </div>
-                               <div className="progress-status">
-                  <div className="status-badges">
-                    <div className={`status-badge ${getCompletionStatus(completionData.easyMode.percentage).text.toLowerCase().replace(' ', '-')}`}>
-                      Short Profile - {getCompletionStatus(completionData.easyMode.percentage).text}
-                    </div>
-                    <div className={`status-badge ${getCompletionStatus(completionData.fullMode.percentage).text.toLowerCase().replace(' ', '-')}`}>
-                      Complete Profile - {getCompletionStatus(completionData.fullMode.percentage).text}
-                    </div>
+        <div className="p-6 bg-white mx-4 mb-4 rounded-xl">
+          <div className="mb-6">
+            <div className="flex flex-col items-center gap-5">
+              <div className="flex gap-6 sm:gap-8 justify-center flex-wrap">
+                <Link 
+                  to="/seeker/my-profile" 
+                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-r from-[#F34B58] to-[#A1025D] flex flex-col items-center justify-center text-white font-bold shadow-lg transition-all duration-300 cursor-pointer hover:scale-110 hover:shadow-xl active:scale-105 no-underline"
+                  onClick={handleDismiss}
+                >
+                  <div className="text-xl sm:text-2xl font-bold leading-none">{completionData.easyMode.percentage}%</div>
+                  <div className="text-[10px] sm:text-xs font-semibold mt-1 opacity-90">Short Profile</div>
+                  <div className="text-[8px] sm:text-[10px] opacity-80 mt-0.5 text-center px-1">
+                    {completionData.easyMode.completedSections} of {completionData.easyMode.totalSections} sections
                   </div>
-                  <p className="status-description">
-                    {completionData.percentage === 0 
-                      ? "Let's get started with your profile! Choose between Short Profile (4 sections) or Complete Profile (6 sections)." 
-                      : completionData.percentage < 50 
-                      ? "You're making good progress! Keep going to complete your profile." 
-                      : completionData.percentage < 100 
-                      ? "Almost there! Just a few more details needed to complete your profile." 
-                      : "Your profile is complete!"}
-                  </p>
+                </Link>
+                <Link 
+                  to="/seeker/my-profile" 
+                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-r from-[#A1025D] to-[#F34B58] flex flex-col items-center justify-center text-white font-bold shadow-lg transition-all duration-300 cursor-pointer hover:scale-110 hover:shadow-xl active:scale-105 no-underline"
+                  onClick={handleDismiss}
+                >
+                  <div className="text-xl sm:text-2xl font-bold leading-none">{completionData.fullMode.percentage}%</div>
+                  <div className="text-[10px] sm:text-xs font-semibold mt-1 opacity-90">Complete Profile</div>
+                  <div className="text-[8px] sm:text-[10px] opacity-80 mt-0.5 text-center px-1">
+                    {completionData.fullMode.completedSections} of {completionData.fullMode.totalSections} sections
+                  </div>
+                </Link>
+              </div>
+              <div className="flex-1 w-full">
+                <div className="flex flex-wrap justify-center gap-2 mb-2">
+                  <span className={`inline-block px-3 py-1.5 rounded-full text-xs font-semibold border uppercase tracking-wide whitespace-nowrap ${getStatusBadgeClasses(getCompletionStatus(completionData.easyMode.percentage).text)}`}>
+                    Short Profile - {getCompletionStatus(completionData.easyMode.percentage).text}
+                  </span>
+                  <span className={`inline-block px-3 py-1.5 rounded-full text-xs font-semibold border uppercase tracking-wide whitespace-nowrap ${getStatusBadgeClasses(getCompletionStatus(completionData.fullMode.percentage).text)}`}>
+                    Complete Profile - {getCompletionStatus(completionData.fullMode.percentage).text}
+                  </span>
                 </div>
-             </div>
-           </div>
+                <p className="m-0 text-gray-500 text-sm sm:text-base leading-relaxed text-center">
+                  {completionData.percentage === 0 
+                    ? "Let's get started with your profile! Choose between Short Profile (4 sections) or Complete Profile (6 sections)." 
+                    : completionData.percentage < 50 
+                    ? "You're making good progress! Keep going to complete your profile." 
+                    : completionData.percentage < 100 
+                    ? "Almost there! Just a few more details needed to complete your profile." 
+                    : "Your profile is complete!"}
+                </p>
+              </div>
+            </div>
+          </div>
 
-          <div className="completion-details">
-            {completionData.missingSections.length > 0 ? (
-              <div className="missing-sections">
-                <h4>Missing Information:</h4>
-                <div className="sections-list">
-                  {completionData.missingSections.map((section, index) => (
-                    <div key={index} className="missing-section">
-                      <FaExclamationTriangle className="warning-icon" />
-                      <span>{section.name}</span>
+          <div className="mb-6">
+            {displayMissingSections.length > 0 ? (
+              <div>
+                <h4 className="m-0 mb-4 text-base sm:text-lg font-semibold text-gray-800">Missing Information:</h4>
+                <div className="flex flex-col gap-2">
+                  {displayMissingSections.map((section, index) => (
+                    <div key={index} className="flex items-center gap-2.5 p-3 bg-orange-50 text-orange-800 border-l-4 border-orange-400 rounded-lg">
+                      <FaExclamationTriangle className="text-orange-500 text-sm flex-shrink-0" />
+                      <span className="text-sm sm:text-base">{section.name}</span>
                     </div>
                   ))}
                 </div>
               </div>
-            ) : (
-              <div className="completed-sections">
-                <h4>Great job! All sections are complete:</h4>
-                <div className="sections-list">
-                  {completionData.completedSections.map((section, index) => (
-                    <div key={index} className="completed-section">
-                      <FaCheckCircle className="success-icon" />
-                      <span>{section.name}</span>
+            ) : displayCompletedSections.length > 0 ? (
+              <div>
+                <h4 className="m-0 mb-4 text-base sm:text-lg font-semibold text-gray-800">Great job! All sections are complete:</h4>
+                <div className="flex flex-col gap-2">
+                  {displayCompletedSections.map((section, index) => (
+                    <div key={index} className="flex items-center gap-2.5 p-3 bg-green-50 text-green-800 border-l-4 border-green-500 rounded-lg">
+                      <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
+                      <span className="text-sm sm:text-base">{section.name}</span>
                     </div>
                   ))}
                 </div>
               </div>
-            )}
+            ) : null}
 
             {nextSteps.length > 0 && (
-              <div className="next-steps">
-                <h4>Next Steps:</h4>
-                <ul className="steps-list">
+              <div className="mt-5 pt-5 border-t border-gray-200">
+                <h4 className="m-0 mb-3 text-base sm:text-lg font-semibold text-gray-800">Next Steps:</h4>
+                <ul className="list-none p-0 m-0">
                   {nextSteps.map((step, index) => (
-                    <li key={index} className="step-item">
-                      <FaArrowRight className="step-icon" />
-                      {step}
+                    <li key={index} className="flex items-center gap-2.5 py-2 text-sm sm:text-base text-gray-700">
+                      <FaArrowRight className="text-[#F34B58] text-xs mt-0.5 flex-shrink-0" />
+                      <span>{step}</span>
                     </li>
                   ))}
                 </ul>
@@ -410,23 +483,34 @@ const ProfileCompletionPopup = () => {
           </div>
         </div>
 
-        <div className="popup-actions">
-          <button className="btn-secondary" onClick={handleDismiss}>
+        <div className="flex gap-3 p-4 sm:p-6 border-t border-gray-200 bg-white mx-4 mb-4 rounded-b-xl">
+          <button 
+            className="flex-1 px-5 py-3 bg-gray-100 text-gray-600 border border-gray-300 rounded-lg text-sm sm:text-base font-semibold cursor-pointer transition-all duration-200 text-center hover:bg-gray-200 hover:text-gray-700"
+            onClick={handleDismiss}
+          >
             Remind me later
           </button>
-          <button className="btn-primary" onClick={handleCompleteProfile}>
+          <button 
+            className="flex-1 px-5 py-3 bg-gradient-brand text-white rounded-lg text-sm sm:text-base font-semibold cursor-pointer transition-all duration-200 shadow-lg text-center hover:bg-gradient-primary-hover hover:shadow-xl hover:-translate-y-0.5"
+            onClick={handleCompleteProfile}
+          >
             Complete Profile Now
           </button>
         </div>
         
         {/* Add a small refresh button for testing */}
-        <div className="popup-footer">
-          <button className="refresh-button" onClick={handleRefresh} title="Refresh completion status">
+        <div className="p-2 sm:p-4 text-center border-t border-gray-200 bg-white mx-4 mb-4 rounded-b-xl">
+          <button 
+            className="bg-transparent border-none text-gray-400 text-xs sm:text-sm cursor-pointer px-3 py-1.5 rounded-md transition-all duration-200 hover:bg-gray-100 hover:text-gray-600"
+            onClick={handleRefresh} 
+            title="Refresh completion status"
+          >
             ↻ Refresh
           </button>
         </div>
+        </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 };
 

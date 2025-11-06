@@ -1,15 +1,14 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
-import { toast } from 'react-toastify';
-import { useReactToPrint } from 'react-to-print';
+import '../styles/cv-style.css';
 import '../styles/cv-pdf-print.css';
+import '../styles/view.css';
 import { FaMapMarkerAlt, FaPhone, FaWhatsapp, FaFacebook, FaLinkedin, FaEnvelope } from 'react-icons/fa';
 import { AvatarImage } from '../utils/avatarUtils.jsx';
-import { useAuth } from "../../../../../Context/AuthContext";
-import { decodeCandidateData } from '../../../../../utils/dataDecoder';
-import CandidateApiService from './CandidateApiService';
-import { getPrintPageStyle } from '../utils/printStyles';
+import { cleanContentForPrint, generatePrintHTML, generatePDF } from '../utils/printPdfUtils.jsx';
+import { decodeCandidateData } from '../../../../../../utils/dataDecoder';
+import { useAuth } from "../../../../../../contexts/AuthContext";
 
 const IMAGE_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image";
 const FULL_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/candidate_details_byid';
@@ -23,7 +22,6 @@ const COIN_HISTORY_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.co
 const ORGANISATION_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation';
 const PERSONAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal';
 const UNLOCK_INFO_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/unlock_details';
-
 // -- Unlock Modal Component with Portal-based display
 function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, unlockStatus, error }) {
   // Simple coin icon for animation
@@ -33,50 +31,51 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
 
   // Portal modal content
   const modalContent = (
-    <div className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()}>
-        <button className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all" onClick={onClose}>
+    <div className="portal-modal-backdrop" onClick={onClose}>
+      <div className="portal-modal-container" onClick={(e) => e.stopPropagation()}>
+        <button className="portal-modal-close-btn" onClick={onClose}>
           &times;
         </button>
         
         {unlockStatus === "success" ? (
           <>
-            <div className="flex items-center justify-center my-5 animate-coinDrop">
+            <div className="coins-anim">
               <span role="img" aria-label="coin">🪙</span>
-              <span className="text-[#f7b901] font-bold text-xl ml-1.5">-50</span>
+              <span style={{ color: "#f7b901", fontWeight: "bold", fontSize: "20px", marginLeft: 6 }}>-50</span>
             </div>
-            <div className="text-[#2e7d32] text-xl font-semibold text-center my-4">Unlocked! <span role="img" aria-label="unlocked">🔓</span></div>
-            <div className="text-gray-500 text-sm text-center">Details unlocked successfully.</div>
+            <div className="unlock-success-text">Unlocked! <span role="img" aria-label="unlocked">🔓</span></div>
+            <div style={{ color: '#888', fontSize: 14, textAlign: "center" }}>Details unlocked successfully.</div>
           </>
         ) : unlockStatus === "error" ? (
           <>
-            <div className="flex items-center justify-center my-5 opacity-85 grayscale">
+            <div className="coins-anim" style={{ animation: "none", opacity: 0.85, filter: "grayscale(1)" }}>
               <span role="img" aria-label="coin">🪙</span>
-              <span className="text-[#d72660] font-bold text-xl ml-1.5">×</span>
+              <span style={{ color: "#d72660", fontWeight: "bold", fontSize: "20px", marginLeft: 6 }}>×</span>
             </div>
-            <div className="text-[#d32f2f] text-base font-medium text-center my-4">{error || "Could not unlock details."}</div>
+            <div className="unlock-error-text">{error || "Could not unlock details."}</div>
           </>
         ) : (
           <>
-            <div className="mb-4 mt-0.5">
-              <span className="font-semibold text-[17px]">Unlock candidate details?</span>
+            <div style={{ marginBottom: 15, marginTop: 2 }}>
+              <span style={{ fontWeight: 600, fontSize: 17 }}>Unlock candidate details?</span>
             </div>
-            <div className="text-gray-500 text-[15px] mb-1.5 text-center">
+            <div style={{ color: "#888", fontSize: 15, marginBottom: 6, textAlign: "center" }}>
               Available Coins: <b>{coinValue === null ? "..." : coinValue}</b>
             </div>
-            <div className="text-gray-800 text-[15px] mb-2.5 text-center">
+            <div style={{ color: "#333", fontSize: "15px", marginBottom: 10, textAlign: "center" }}>
               <span>Use <b>50 Coins</b> to view email, phone, WhatsApp, and social details.</span>
             </div>
             
-            <div className="text-red-600 text-[15px] mb-4 text-center">
+            <div style={{ color: "red", fontSize: 15, marginBottom: 15, textAlign: "center" }}>
               <i>Unlocked details remain visible for <b>30 days.</b></i>
             </div>
             <button 
-              className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none w-full justify-center mb-1.5"
+              className="unlock-btn-top"
+              style={{ width: "100%", justifyContent: "center", marginBottom: 6, fontSize: 16 }}
               disabled={loading}
               onClick={onUnlock}
             >
-              {loading ? "Unlocking..." : <>Unlock <span className="inline-flex items-center justify-center animate-bounce"><span role="img" aria-label="coin">🪙</span></span> 50</>}
+              {loading ? "Unlocking..." : <>Unlock <span className="coin-icon"><span role="img" aria-label="coin">🪙</span></span> 50</>}
             </button>
           </>
         )}
@@ -89,13 +88,46 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
 }
 
 const BlurWrapper = ({ children, isUnlocked }) => {
-  if (isUnlocked) {
-    return <>{children}</>;
-  }
+  return isUnlocked ? children : <span className="blurred-contact">{children}</span>;
+};
+
+  
+
+const Field = ({ label, value }) => {
+  if (!value) return null;
+  const displayValue = Array.isArray(value) ? value.join(', ') : 
+                    typeof value === 'string' ? value.split(',').join(', ') : 
+                    value;
   return (
-    <span className="blur-sm select-none cursor-not-allowed relative after:content-['🔒'] after:absolute after:-right-6 after:top-1/2 after:-translate-y-1/2 after:text-sm">
-      {children}
-    </span>
+    <div className="form-group col-12 mb-3">
+      <div className="input-wrapper" style={{ position: 'relative' }}>
+        <div className="form-control" style={{ 
+          padding: '12px 15px',
+          backgroundColor: '#f8f9fa',
+          border: '1px solid #dee2e6',
+          borderRadius: '6px',
+          minHeight: '48px',
+          display: 'flex',
+          alignItems: 'center',
+          fontSize: '14px',
+          lineHeight: '1.4'
+        }}>
+          {displayValue}
+        </div>
+        <span className="custom-tooltip" style={{
+          position: 'absolute',
+          top: '-8px',
+          left: '12px',
+          backgroundColor: '#fff',
+          padding: '0 8px',
+          fontSize: '12px',
+          fontWeight: '600',
+          color: '#1967d2',
+          zIndex: 1,
+          borderRadius: '4px'
+        }}>{label}</span>
+      </div>
+    </div>
   );
 };
 
@@ -125,21 +157,13 @@ const hasValidContent = (value1, value2) => {
   return checkArray(value1) || checkArray(value2) || checkString(value1) || checkString(value2);
 };
 
-// Cache for fetched candidate data to avoid re-fetching when navigating
-const candidateDataCache = new Map();
-
-function CandidateDetail({ 
-  candidate, 
-  onBack,
-  checkedProfiles = null,
-  onNext = null,
-  onPrevious = null,
-  isFirstProfile = true,
-  isLastProfile = true
-}) {
+function CandidateDetail({ candidate, onBack, onNext, onPrevious, isFirstProfile, isLastProfile, checkedProfiles }) {
   const { user } = useAuth();
-  const printRef = useRef();
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Decode the candidate data (firebase_uid stays as plain text)
+  const decodedCandidate = decodeCandidateData(candidate);
+  const [error, setError] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [educationData, setEducationData] = useState([]);
   const [experienceData, setExperienceData] = useState({ mysqlData: {}, dynamoData: [] });
@@ -148,6 +172,9 @@ function CandidateDetail({
   const [socialLinks, setSocialLinks] = useState({ facebook: "", linkedin: "" });
   const [photoUrl, setPhotoUrl] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [unlockedInfo , setUnlockedInfo] = useState(null);
+
+  
 
   // --- Unlock state
   const userId = user?.firebase_uid || user?.uid;
@@ -177,7 +204,6 @@ function CandidateDetail({
   const [showUnlock, setShowUnlock] = useState(false);
   const [showCoinAnim, setShowCoinAnim] = useState(false);
   const [photoError, setPhotoError] = useState(false);
-  const [unlockedInfo, setUnlockedInfo] = useState(null);
     
   
   
@@ -215,27 +241,18 @@ function CandidateDetail({
         const found = Array.isArray(data) ? data.find(
           d => d.firebase_uid === userId
         ) : null;
-        setCoinValue(found?.coin_value ?? null);
         
-        // Fetch unlock info if already unlocked
-        if (isUnlocked) {
-          try {
-            const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
-              firebase_uid: candidate.firebase_uid
-            });
-            if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
-              setUnlockedInfo(unlockInfoResponse.data[0]);
-            }
-          } catch (unlockError) {
-            console.error("Error fetching unlock info:", unlockError);
+          const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
+            firebase_uid: decodedCandidate.firebase_uid  // The candidate being unlocked
+          });
+          if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
+            setUnlockedInfo(unlockInfoResponse.data[0]);
           }
-        }
         
+        setCoinValue(found?.coin_value ?? null);
         setShowUnlock(true);
       } catch (e) {
-      const errorMsg = 'Could not check coins. Please try again.';
-      setUnlockError(errorMsg);
-      toast.error(errorMsg);
+        setUnlockError('Could not check coins. Try again.');
         setShowUnlock(true);
       } finally {
         if (!cancelled) setCheckingCoins(false);
@@ -249,7 +266,7 @@ function CandidateDetail({
       setCheckingCoins(false);
     }
     return () => { cancelled = true; };
-  }, [userId, candidateId, isUnlocked]);
+  }, [userId, candidateId]);
 
   const handleUnlockDetails = async () => {
     setUnlockError('');
@@ -285,9 +302,9 @@ function CandidateDetail({
       }, 2000);
     } catch (e) {
       setUnlockStatus("error");
-      let msg = "Failed to unlock candidate details.";
+      let msg = "Something went wrong.";
       if (e?.response?.status === 500) {
-        msg = "Server error. Please try again later.";
+        msg = "Internal server error. Please try again.";
       }
       setUnlockError(msg);
       setUnlockLoading(false);
@@ -306,8 +323,6 @@ function CandidateDetail({
     if (windowWidth <= 992) return tablet;
     return desktop;
   };
-  const isMobile = windowWidth <= 768;
-  const isTablet = windowWidth > 768 && windowWidth <= 1024;
 
 
   // Fetch coins on modal open
@@ -329,7 +344,8 @@ function CandidateDetail({
   };
 
   // -- Actual unlock logic (with animation, error handling)
-  const handleConfirmUnlock = async () => {
+  const handleConfirmUnlock = async (firebase_uid) => {
+    debugger;
     setUnlockLoading(true);
     setUnlockError("");
     setUnlockStatus("");
@@ -347,52 +363,38 @@ function CandidateDetail({
         return;
       }
 
-      // 2. Subtract 50 coins via PUT
+      // 2. Subtract 20 coins via PUT
       const redeemResponse = await axios.put(REDEEM_API, {
         firebase_uid: userId,
         coin_value: coins - 50
       });
 
-      if (redeemResponse.status !== 200) {
-        throw new Error("Failed to deduct coins");
+      //call unlockinfo api
+    if(redeemResponse.status === 200){
+      const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
+        firebase_uid: decodedCandidate.firebase_uid  // The candidate being unlocked
+      });
+      if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
+        setUnlockedInfo(unlockInfoResponse.data[0]);
       }
+    }
 
-      // 3. Mark candidate as unlocked in database FIRST (so it appears in unlocked list)
-      try {
-        await CandidateApiService.upsertCandidateAction(candidate, user, { unlocked_candidate: 1 });
-      } catch (dbError) {
-        console.error("Error updating unlock status in database:", dbError);
-        // Still continue - we'll try again, but don't fail the whole unlock
-      }
-
-      // 4. Call unlock info API after successful unlock and database update
-      try {
-        const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
-          firebase_uid: candidate.firebase_uid
-        });
-        if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
-          setUnlockedInfo(unlockInfoResponse.data[0]);
-        }
-      } catch (unlockError) {
-        console.error("Error fetching unlock info:", unlockError);
-      }
-
-      // 5. Get organization ID for the current user
-      let orgId = null;
+      // 3. Get organization ID for the current user
+      let candidateId = null;
       try {
         const orgResponse = await axios.get(`${ORGANISATION_API}?firebase_uid=${encodeURIComponent(userId)}`);
         if (orgResponse.status === 200 && Array.isArray(orgResponse.data) && orgResponse.data.length > 0) {
-          orgId = orgResponse.data[0].id;
+          candidateId = orgResponse.data[0].id;
         }
       } catch (orgError) {
         console.error("Error fetching organization data:", orgError);
       }
 
-      // 6. Record coin history with unblocked_candidate_id and unblocked_candidate_name from /personal
+      // 4. Record coin history with unblocked_candidate_id and unblocked_candidate_name from /personal
       let unblocked_candidate_id = null;
       let unblocked_candidate_name = null;
       try {
-        const personalRes = await axios.get(PERSONAL_API, { params: { firebase_uid: candidate.firebase_uid } });
+        const personalRes = await axios.get(PERSONAL_API, { params: { firebase_uid: decodedCandidate.firebase_uid } });
         if (personalRes.status === 200 && Array.isArray(personalRes.data) && personalRes.data.length > 0) {
           unblocked_candidate_id = personalRes.data[0].id;
           unblocked_candidate_name = personalRes.data[0].fullName;
@@ -401,7 +403,7 @@ function CandidateDetail({
       try {
         await axios.post(COIN_HISTORY_API, {
           firebase_uid: userId,
-          candidate_id: orgId,
+          candidate_id: candidateId,
           job_id: null,
           coin_value: coins - 50,
           reduction: 50,
@@ -447,58 +449,69 @@ function CandidateDetail({
     }
   };
 
-  // React-to-print hook for printing
-  const handlePrint = useReactToPrint({
-    contentRef: printRef,
-    documentTitle: `${candidate?.fullName || candidate?.name || 'Candidate'}_CV`,
-    pageStyle: getPrintPageStyle(),
-    onPrintError: (error) => {
-      console.error('Print error:', error);
-      toast.error('Failed to print. Please try again.');
-    },
-  });
+  const getFreshImageUrl = async (firebase_uid) => {
+    try {
+      const params = { firebase_uid, action: "view" };
+      const { data } = await axios.get(IMAGE_API_URL, { params });
+      return data?.url || null;
+    } catch (error) {
+      console.error("Error getting fresh image URL:", error);
+      return null;
+    }
+  };
 
-  // For PDF download, use the same print function but trigger browser print dialog
-  // Users can save as PDF from the print dialog by selecting "Save as PDF" as destination
-  const downloadPDF = () => {
-    if (!printRef.current) {
-      toast.error('Content not ready for downloading. Please wait a moment and try again.');
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank');
+    const cvContainer = document.querySelector('.cv-container');
+    if (!cvContainer) {
+      alert('CV content not found');
       return;
     }
-    setIsDownloading(true);
-    handlePrint();
-    // Note: The print dialog will open, user can select "Save as PDF" as destination
-    setTimeout(() => setIsDownloading(false), 1000);
+    const clonedContent = cvContainer.cloneNode(true);
+    cleanContentForPrint(clonedContent, isUnlocked);
+    const printContent = generatePrintHTML(
+      clonedContent.outerHTML,
+      profileData?.fullName || 'Candidate',
+      isUnlocked
+    );
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+        setTimeout(() => {
+          printWindow.close();
+        }, 1000);
+      }, 500);
+    };
+  };
+
+  const downloadPDF = async () => {
+    const cvElement = document.querySelector('.cv-container');
+    const result = await generatePDF({
+      cvElement,
+      profileData,
+      candidate,
+      getFreshImageUrl,
+      setIsDownloading,
+      isUnlocked
+    });
+    if (!result.success) {
+      alert('Could not generate PDF. Please try using the Print option instead. Error: ' + result.error);
+    }
   };
 
   const fetchProfilePhoto = useCallback(async () => {
-    if (!candidate?.firebase_uid) return;
-    
-    // Check cache first
-    const cacheKey = `photo_${candidate.firebase_uid}`;
-    const cached = candidateDataCache.get(cacheKey);
-    if (cached !== undefined) {
-      setPhotoUrl(cached);
-      setPhotoError(cached === null);
-      return;
-    }
-    
     try {
-      const params = { firebase_uid: candidate.firebase_uid, action: "view" };
+      if (!decodedCandidate?.firebase_uid) return;
+      const params = { firebase_uid: decodedCandidate.firebase_uid, action: "view" };
       const { data } = await axios.get(IMAGE_API_URL, { params });
       if (data?.url) {
-        // Cache the URL
-        candidateDataCache.set(cacheKey, data.url);
         setPhotoUrl(data.url);
         setPhotoError(false);
-      } else {
-        // Cache null if no URL
-        candidateDataCache.set(cacheKey, null);
-        setPhotoError(true);
       }
     } catch (error) {
-      // Cache null on error
-      candidateDataCache.set(cacheKey, null);
       setPhotoError(true);
       if (error.response?.status !== 404) {
         console.log("Error loading profile photo");
@@ -508,138 +521,97 @@ function CandidateDetail({
 
   const fetchSocialLinks = useCallback(async () => {
     if (!candidate?.firebase_uid) return;
-    
-    // Check cache first
-    const cacheKey = `socialLinks_${candidate.firebase_uid}`;
-    const cached = candidateDataCache.get(cacheKey);
-    if (cached) {
-      setSocialLinks(cached);
-      return;
-    }
-    
     try {
       const response = await axios.get(SOCIAL_API, {
-        params: { firebase_uid: candidate.firebase_uid }
+        params: { firebase_uid: decodedCandidate.firebase_uid }
       });
       if (response.status === 200 && response.data.length > 0) {
         const record = response.data[0];
-        const links = {
+        setSocialLinks({
           facebook: record.facebook || "",
           linkedin: record.linkedin || ""
-        };
-        // Cache the data
-        candidateDataCache.set(cacheKey, links);
-        setSocialLinks(links);
+        });
       }
     } catch (err) {}
   }, [candidate]);
 
   const fetchEducationData = useCallback(async () => {
     if (!candidate?.firebase_uid) return;
-    
-    // Check cache first
-    const cacheKey = `education_${candidate.firebase_uid}`;
-    const cached = candidateDataCache.get(cacheKey);
-    if (cached) {
-      setEducationData(cached);
-      return;
-    }
-    
     try {
       const response = await axios.get(EDUCATION_API);
       if (response.status === 200 && Array.isArray(response.data)) {
-        const candidateEducation = response.data.filter(edu => edu.firebase_uid === candidate.firebase_uid);
-        // Cache the data
-        candidateDataCache.set(cacheKey, candidateEducation);
-        setEducationData(candidateEducation);
+        const candidateEducation = response.data.filter(edu => edu.firebase_uid === decodedCandidate.firebase_uid);
+        // Decode the education data
+        const decodedEducation = candidateEducation.map(edu => decodeCandidateData(edu));
+        setEducationData(decodedEducation);
       }
     } catch (err) {}
   }, [candidate]);
 
   const fetchProfileData = useCallback(async () => {
     if (!candidate?.firebase_uid) return;
-    
-    // Check cache first
-    const cacheKey = `profile_${candidate.firebase_uid}`;
-    const cached = candidateDataCache.get(cacheKey);
-    if (cached) {
-      setProfileData(cached);
-      setIsLoading(false);
-      return;
-    }
-    
     setIsLoading(true);
+    setError(null);
     try {
       const response = await axios.post(FULL_API, {
         firebase_uid: candidate.firebase_uid
+        // params: { firebase_uid: decodedCandidate.firebase_uid, t: Date.now() }
       });
+      // if (response.status === 200 && Array.isArray(response.data)) {
+      //   const candidateRecord = response.data.find(r => 
+      //     r.firebase_uid === decodedCandidate.firebase_uid || 
+      //     (r.email && r.email.toLowerCase() === candidate.email?.toLowerCase())
+      // );
+        console.log(response.data);
+        // Decode the profile data
+        // const decodedProfile = candidateRecord ? decodeCandidateData(candidateRecord) : null;
+        setProfileData(response.data);
       
-      // Decode the data before setting it
-      let decodedData;
-      if (Array.isArray(response.data)) {
-        // Find the matching candidate record from array
-        const candidateRecord = response.data.find(r => r.firebase_uid === candidate.firebase_uid) || response.data[0];
-        decodedData = decodeCandidateData(candidateRecord);
-      } else {
-        decodedData = decodeCandidateData(response.data);
-      }
-      
-      // Cache the data
-      candidateDataCache.set(cacheKey, decodedData);
-      setProfileData(decodedData);
+      //}
     } catch (err) {
-      console.error('Error fetching profile data:', err.response?.data || err.message);
-      toast.error('Unable to load candidate profile. Please try again.');
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
   }, [candidate]);
+  //console.log(profileData);
 
   const fetchExperienceData = useCallback(async () => {
     if (!candidate?.firebase_uid) return;
-    
-    // Check cache first
-    const cacheKey = `experience_${candidate.firebase_uid}`;
-    const cached = candidateDataCache.get(cacheKey);
-    if (cached) {
-      setExperienceData(cached);
-      return;
-    }
-    
     try {
       const response = await axios.get(EXPERIENCE_API);
       if (response.status === 200) {
         const { mysqlData, dynamoData } = response.data;
         const candidateMysqlData = Array.isArray(mysqlData) 
-          ? mysqlData.find(exp => exp.firebase_uid === candidate.firebase_uid) 
+          ? mysqlData.find(exp => exp.firebase_uid === decodedCandidate.firebase_uid) 
           : null;
         let candidateDynamoData = null;
         if (Array.isArray(dynamoData)) {
-          candidateDynamoData = dynamoData.find(exp => exp.firebase_uid === candidate.firebase_uid);
+          candidateDynamoData = dynamoData.find(exp => exp.firebase_uid === decodedCandidate.firebase_uid);
         } else if (dynamoData && typeof dynamoData === 'object') {
-          if (dynamoData.firebase_uid === candidate.firebase_uid) {
+          if (dynamoData.firebase_uid === decodedCandidate.firebase_uid) {
             candidateDynamoData = dynamoData;
           }
         }
         
-        const experienceDataObj = {
-          mysqlData: candidateMysqlData || {
+        // Decode the experience data
+        const decodedMysqlData = candidateMysqlData ? decodeCandidateData(candidateMysqlData) : {
           teaching_experience_years: 0,
           teaching_experience_months: 0,
           non_teaching_experience_years: 0,
           non_teaching_experience_months: 0,
           total_experience_years: 0,
           total_experience_months: 0
-          },
-          dynamoData: candidateDynamoData || { experienceEntries: [] }
         };
+        const decodedDynamoData = candidateDynamoData ? decodeCandidateData(candidateDynamoData) : { experienceEntries: [] };
         
-        // Cache the data
-        candidateDataCache.set(cacheKey, experienceDataObj);
-        setExperienceData(experienceDataObj);
+        setExperienceData({
+          mysqlData: decodedMysqlData,
+          dynamoData: decodedDynamoData
+        });
       }
     } catch (err) {
-      const defaultData = { 
+      setExperienceData({ 
         mysqlData: {
           teaching_experience_years: 0,
           teaching_experience_months: 0,
@@ -649,56 +621,33 @@ function CandidateDetail({
           total_experience_months: 0
         }, 
         dynamoData: { experienceEntries: [] } 
-      };
-      candidateDataCache.set(cacheKey, defaultData);
-      setExperienceData(defaultData);
+      });
     }
   }, [candidate]);
 
   const fetchJobPreferenceData = useCallback(async () => {
     if (!candidate?.firebase_uid) return;
-    
-    // Check cache first
-    const cacheKey = `jobPreference_${candidate.firebase_uid}`;
-    const cached = candidateDataCache.get(cacheKey);
-    if (cached !== undefined) {
-      setJobPreferenceData(cached);
-      return;
-    }
-    
     try {
       const response = await axios.get(JOB_PREFERENCE_API);
       if (response.status === 200 && Array.isArray(response.data)) {
-        const candidatePreference = response.data.find(pref => pref.firebase_uid === candidate.firebase_uid);
-        // Cache the data (including null)
-        candidateDataCache.set(cacheKey, candidatePreference || null);
-        setJobPreferenceData(candidatePreference);
+        const candidatePreference = response.data.find(pref => pref.firebase_uid === decodedCandidate.firebase_uid);
+        // Decode the job preference data
+        const decodedPreference = candidatePreference ? decodeCandidateData(candidatePreference) : null;
+        setJobPreferenceData(decodedPreference);
       }
     } catch (err) {}
   }, [candidate]);
 
   const fetchAdditionalInfo = useCallback(async () => {
     if (!candidate?.firebase_uid) return;
-    
-    // Check cache first
-    const cacheKey = `additionalInfo_${candidate.firebase_uid}`;
-    const cached = candidateDataCache.get(cacheKey);
-    if (cached !== undefined) {
-      setAdditionalInfo1(cached);
-      return;
-    }
-    
     try {
       const [response1, response2] = await Promise.all([
         axios.get(ADDITIONAL_INFO1_API),
         axios.get(ADDITIONAL_INFO1_API)
       ]);
       if (response1.status === 200 && Array.isArray(response1.data)) {
-        const candidateInfo1 = response1.data.find(info => info.firebase_uid === candidate.firebase_uid);
-        const infoData = candidateInfo1 || null;
-        // Cache the data (including null)
-        candidateDataCache.set(cacheKey, infoData);
-        setAdditionalInfo1(infoData);
+        const candidateInfo1 = response1.data.find(info => info.firebase_uid === decodedCandidate.firebase_uid);
+        setAdditionalInfo1(candidateInfo1 || null);
       }
     } catch (err) {}
   }, [candidate]);
@@ -715,7 +664,7 @@ function CandidateDetail({
         return;
       }
 
-      const params = { firebase_uid: candidate.firebase_uid, action: "view" };
+      const params = { firebase_uid: decodedCandidate.firebase_uid, action: "view" };
       const { data } = await axios.get(VIDEO_API_URL, { params });
       
       if (data?.url) {
@@ -740,7 +689,7 @@ function CandidateDetail({
         return;
       }
 
-      const params = { firebase_uid: candidate.firebase_uid, action: "view" };
+      const params = { firebase_uid: decodedCandidate.firebase_uid, action: "view" };
       const { data } = await axios.get(RESUME_API_URL, { params });
       
       if (data?.url) {
@@ -759,14 +708,6 @@ function CandidateDetail({
 
   useEffect(() => {
     if (candidate?.firebase_uid) {
-      // Check if we have cached data - if so, set loading to false immediately
-      const cacheKey = `profile_${candidate.firebase_uid}`;
-      const hasCachedProfile = candidateDataCache.has(cacheKey);
-      
-      if (!hasCachedProfile) {
-        setIsLoading(true);
-      }
-      
       fetchProfileData();
       fetchEducationData();
       fetchExperienceData();
@@ -774,13 +715,17 @@ function CandidateDetail({
       fetchAdditionalInfo();
       fetchProfilePhoto();
       fetchSocialLinks();
-      
-      // If we had cached data, ensure loading is false
-      if (hasCachedProfile) {
-        setIsLoading(false);
-      }
     }
-  }, [candidate?.firebase_uid, fetchProfileData, fetchEducationData, fetchExperienceData, fetchJobPreferenceData, fetchAdditionalInfo, fetchProfilePhoto, fetchSocialLinks]);
+  }, [
+    fetchProfileData,
+    fetchEducationData,
+    fetchExperienceData,
+    fetchJobPreferenceData,
+    fetchAdditionalInfo,
+    fetchProfilePhoto,
+    fetchSocialLinks,
+    candidate
+  ]);
   if (!candidate?.firebase_uid) {
     return (
       <div className="alert alert-warning text-center">
@@ -795,6 +740,14 @@ function CandidateDetail({
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="alert alert-danger">
+        Error loading profile: {error}
       </div>
     );
   }
@@ -860,17 +813,17 @@ function CandidateDetail({
       if (education.courseDuration) additionalInfo.push(`Duration: ${education.courseDuration}`);
       if (education.specialization) additionalInfo.push(`${education.specialization}`);
       return (
-        <div className={`${isMobile ? 'mb-3' : 'mb-5'} p-4 bg-[#f5f7fc] rounded-lg`} key={index}>
-          <div className="text-base text-[#202124] mb-2.5 font-semibold">{educationType}</div>
-          <div>
+        <div className="education-block" key={index}>
+          <div className="education-title">{educationType}</div>
+          <div className="education-details">
             {details.map((detail, i) => (
-              <div key={i} className="my-1.5 text-gray-600 text-sm">{detail}</div>
+              <div key={i} className="education-detail">{detail}</div>
             ))}
-            <div className="text-sm text-gray-500 mt-1">
+            <div className="education-meta">
               {additionalInfo.join(' | ')}
             </div>
             {education.coreSubjects && (
-              <div className="mt-2 text-sm">
+              <div className="core-subjects">
                 <strong>Core Subjects:</strong> {
                   Array.isArray(education.coreSubjects) 
                     ? education.coreSubjects.join(', ') 
@@ -904,7 +857,7 @@ function CandidateDetail({
   const getExperienceText = () => {
     if (!experienceData?.mysqlData) {
       return (
-        <div className="mb-4 p-2.5 border-b border-gray-200">
+        <div style={{ marginBottom: '15px', padding: '10px', borderBottom: '1px solid #eee' }}>
           <div><strong>Total Teaching Experience</strong>: Not specified</div>
           <div><strong>Total Experience (Teaching + Non-Teaching)</strong>: Not specified</div>
         </div>
@@ -923,8 +876,8 @@ function CandidateDetail({
       totalYears = teachingYears + nonTeachingYears + extraYears;
     }
     return (
-      <div className="mb-4 p-2.5 border-b border-gray-200">
-        <div className="mb-2"><strong>Total Teaching Experience</strong>: {teachingYears} Years & {teachingMonths} months</div>
+      <div style={{ marginBottom: '15px', padding: '10px', borderBottom: '1px solid #eee' }}>
+        <div><strong>Total Teaching Experience</strong>: {teachingYears} Years & {teachingMonths} months</div>
         <div><strong>Total Experience (Teaching + Non-Teaching)</strong>: {totalYears} Years & {totalMonths} months</div>
       </div>
     );
@@ -935,7 +888,14 @@ function CandidateDetail({
                          experienceData.dynamoData.experienceEntries.length > 0;
     if (!hasExperience) {
       return (
-        <div className="p-4 text-center text-gray-600 bg-gray-50 rounded-lg mb-5">
+        <div className="no-experience-message" style={{ 
+          padding: '15px', 
+          textAlign: 'center', 
+          color: '#555',
+          backgroundColor: '#f9f9f9',
+          borderRadius: '8px',
+          marginBottom: '20px'
+        }}>
           No work experience information available
         </div>
       );
@@ -981,19 +941,33 @@ function CandidateDetail({
       }
       const location = [exp.city, exp.state, exp.country].filter(Boolean).join(', ');
       return (
-        <div key={index} className="mb-6 text-base leading-relaxed">
-          <div className="flex justify-between font-bold mb-1">
-            <div className="text-base">{exp.organizationName}</div>
+        <div className="experience-block" key={index} style={{ 
+          marginBottom: '25px',
+          fontSize: '15px',
+          lineHeight: '1.5'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            fontWeight: 'bold',
+            marginBottom: '4px'
+          }}>
+            <div style={{ fontSize: '16px' }}>{exp.organizationName}</div>
             <div>
               {dateRange}
-              <span className="font-normal text-gray-600">{durationText}</span>
+              <span style={{ fontWeight: 'normal', color: '#555' }}>{durationText}</span>
             </div>
           </div>
-          <div className="mb-1.5 text-gray-600">{location}</div>
-          <div className="mb-1.5">
+          <div style={{ marginBottom: '6px', color: '#555' }}>{location}</div>
+          <div style={{ marginBottom: '6px' }}>
             {jobTypeText.join(' | ')}
           </div>
-          <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1' : 'grid-cols-2'} ${isMobile ? 'gap-x-0 gap-y-1' : isTablet ? 'gap-x-3 gap-y-1.5' : 'gap-x-5 gap-y-1.5'}`}>
+          <div style={{ 
+            display: 'grid',
+            gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr',
+            columnGap: '20px',
+            rowGap: '5px'
+          }}>
             <div>
               <strong>Designation:</strong> {designation}
             </div>
@@ -1071,16 +1045,32 @@ function CandidateDetail({
       const value = experienceData.mysqlData[key];
       return value === 1 || value === '1' || value === true || value === 'true' || value === 'yes' || value === 'Yes';
     };
-    const isMobile = windowWidth <= 768;
-    const isTablet = windowWidth > 768 && windowWidth <= 1024;
     return (
-      <div className={`${isMobile ? 'mb-6 p-3' : isTablet ? 'mb-7 p-3.5' : 'mb-8 p-4'} bg-gray-50 rounded-lg`}>
-        <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>WORK EXPOSURE</h2>
-        <div className={`flex flex-wrap ${isMobile ? 'gap-2' : isTablet ? 'gap-2.5' : 'gap-2.5'}`}>
+      <div className="work-exposure" style={{ marginBottom: '30px', padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+        <h6 className="work-exposure-title" style={{ marginBottom: '15px', color: '#1967d2', borderBottom: '1px solid #ddd', paddingBottom: '8px' }}>Work Exposure</h6>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
           {workTypes.map(type => (
-            <div key={type.key} style={{ flex: `0 0 ${columnWidth}` }} className={`bg-white rounded-md ${isMobile ? 'p-2' : isTablet ? 'p-2.5' : 'p-2.5'} shadow-sm flex justify-between items-center`}>
-              <div className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>{type.label}</div>
-              <div className={`${isMobile ? 'w-5 h-5 text-xs' : 'w-6 h-6'} rounded-full flex items-center justify-center ${isWorkTypeEnabled(type.key) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+            <div key={type.key} style={{ 
+              flex: `0 0 ${columnWidth}`,
+              backgroundColor: 'white', 
+              borderRadius: '6px',
+              padding: '10px', 
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div style={{ fontSize: '14px', fontWeight: '500' }}>{type.label}</div>
+              <div style={{ 
+                width: '24px', 
+                height: '24px', 
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: isWorkTypeEnabled(type.key) ? '#e6f7ed' : '#fdf1f0',
+                color: isWorkTypeEnabled(type.key) ? '#34a853' : '#ea4335'
+              }}>
                 {isWorkTypeEnabled(type.key) ? '✓' : '×'}
               </div>
             </div>
@@ -1106,25 +1096,58 @@ function CandidateDetail({
         : 'none';
     };
 
-    const LanguageItem = ({ label, languages }) => {
-      const isMobile = windowWidth <= 768;
-      return (
-        <div className={`language-item flex ${isMobile ? 'mb-2 py-1' : 'mb-1.5 py-1'} flex-row items-start flex-wrap`}>
-          <span className={`font-semibold mr-2 text-gray-800 ${isMobile ? 'text-base' : 'text-[16px]'} min-w-fit`}>
-            {label}:
-          </span>
-          <span className={`${isMobile ? 'text-base' : 'text-[16px]'} leading-[1.5] flex-1 text-gray-700 font-medium`}>
-            {languages.length > 0 ? languages.join(', ') : <span className="text-gray-500 italic font-normal">None</span>}
-          </span>
-        </div>
-      );
-    };
-
     return (
       <div>
-        <LanguageItem label="Speak" languages={speakLanguages} />
-        <LanguageItem label="Read" languages={readLanguages} />
-        <LanguageItem label="Write" languages={writeLanguages} />
+        <div style={{ 
+          borderBottom: '1px solid #ccc',
+          marginBottom: '10px'
+        }}></div>
+        <div>
+          <div style={{ 
+            display: 'flex',
+            marginBottom: '4px',
+            alignItems: 'center'
+          }}>
+            <span style={{ 
+              width: '80px',
+              color: '#202124'
+            }}>Speak</span>
+            <span style={{ 
+              flex: 1,
+              paddingLeft: '20px',
+              color: '#333'
+            }}>{displayLanguages(speakLanguages)}</span>
+          </div>
+          <div style={{ 
+            display: 'flex',
+            marginBottom: '4px',
+            alignItems: 'center'
+          }}>
+            <span style={{ 
+              width: '80px',
+              color: '#202124'
+            }}>Read</span>
+            <span style={{ 
+              flex: 1,
+              paddingLeft: '20px',
+              color: '#333'
+            }}>{displayLanguages(readLanguages)}</span>
+          </div>
+          <div style={{ 
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <span style={{ 
+              width: '80px',
+              color: '#202124'
+            }}>Write</span>
+            <span style={{ 
+              flex: 1,
+              paddingLeft: '20px',
+              color: '#333'
+            }}>{displayLanguages(writeLanguages)}</span>
+          </div>
+        </div>
       </div>
     );
   };
@@ -1150,12 +1173,25 @@ function CandidateDetail({
     const InfoItem = ({ label, value }) => {
       if (!value) return null;
       return (
-        <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
-          <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold ${isMobile ? 'text-[13px]' : 'text-sm'} text-gray-800 shrink-0`}>
-            {label}:
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: windowWidth <= 576 ? 'column' : 'row',
+          marginBottom: '8px'
+        }}>
+          <span style={{ 
+            width: windowWidth <= 576 ? '100%' : '170px', 
+            fontWeight: 'bold',
+            marginBottom: windowWidth <= 576 ? '4px' : '0',
+            color: '#333'
+          }}>
+            {label}
           </span>
-          <span className={`${isMobile ? 'text-[13px]' : 'text-sm'} leading-[1.4] ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600`}>
-            {value}
+          <span style={{ 
+            display: 'flex',
+            flex: 1,
+            paddingLeft: windowWidth <= 576 ? '0' : '8px'
+          }}>
+            {windowWidth > 576 ? ': ' : ''}{value}
           </span>
         </div>
       );
@@ -1182,40 +1218,64 @@ function CandidateDetail({
     };
 
     return (
-      <>
-        {/* Optimized grid layout for better space utilization */}
-        <div className={`${isMobile ? 'block' : 'grid'} ${isMobile ? '' : isTablet ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} ${isMobile ? 'gap-0' : isTablet ? 'gap-x-3 gap-y-0' : 'gap-x-4 gap-y-0'}`}>
-          {additionalInfo1?.religion && (
-            <InfoItem label="Religion" value={additionalInfo1.religion} />
-          )}
-          {additionalInfo1?.marital_status && (
-            <InfoItem label="Marital Status" value={additionalInfo1.marital_status} />
-          )}
-          {additionalInfo1?.computer_skills && (
-            <InfoItem label="Computer skills" value={formatComputerSkills()} />
-          )}
-          {additionalInfo1?.accounting_knowledge !== undefined && (
-            <InfoItem 
-              label="Accounting Knowledge" 
-              value={isPositiveValue(additionalInfo1.accounting_knowledge) ? 'Yes' : 'No'} 
-            />
-          )}
-          {additionalInfo1?.citizenship && (
-            <InfoItem label="Citizenship" value={additionalInfo1.citizenship} />
-          )}
-          {additionalInfo1?.differently_abled && (
-            <InfoItem label="Differently abled" value={additionalInfo1.differently_abled} />
-          )}
-          {additionalInfo1?.certifications && (
-            <InfoItem label="Certifications" value={additionalInfo1.certifications} />
-          )}
-          {additionalInfo1?.accomplishments && (
-            <InfoItem label="Accomplishments" value={additionalInfo1.accomplishments} />
-          )}
+      <div className="additional-information" style={{ 
+        marginBottom: '30px', 
+        padding: '15px', 
+        backgroundColor: '#f9f9f9', 
+        borderRadius: '8px'
+      }}>
+        <h6 className="info-title" style={{ 
+          marginBottom: '15px', 
+          color: '#1967d2', 
+          borderBottom: '1px solid #ddd', 
+          paddingBottom: '8px' 
+        }}>
+          Additional Information
+        </h6>
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: '10px'
+        }}>
+          <div style={{ 
+            flex: '1 1 300px',
+            minWidth: windowWidth <= 768 ? '100%' : '0'
+          }}>
+            {additionalInfo1?.religion && (
+              <InfoItem label="Religion" value={additionalInfo1.religion} />
+            )}
+            {additionalInfo1?.marital_status && (
+              <InfoItem label="Marital Status" value={additionalInfo1.marital_status} />
+            )}
+            {additionalInfo1?.computer_skills && (
+              <InfoItem label="Computer skills" value={formatComputerSkills()} />
+            )}
+            {additionalInfo1?.accounting_knowledge !== undefined && (
+              <InfoItem 
+                label="Accounting Knowledge" 
+                value={isPositiveValue(additionalInfo1.accounting_knowledge) ? 'Yes' : 'No'} 
+              />
+            )}
+          </div>
+          <div style={{ 
+            flex: '1 1 300px',
+            minWidth: windowWidth <= 768 ? '100%' : '0'
+          }}>
+            {additionalInfo1?.citizenship && (
+              <InfoItem label="Citizenship" value={additionalInfo1.citizenship} />
+            )}
+            {additionalInfo1?.differently_abled && (
+              <InfoItem label="Differently abled" value={additionalInfo1.differently_abled} />
+            )}
+            {additionalInfo1?.certifications && (
+              <InfoItem label="Certifications" value={additionalInfo1.certifications} />
+            )}
+            {additionalInfo1?.accomplishments && (
+              <InfoItem label="Accomplishments" value={additionalInfo1.accomplishments} />
+            )}
+          </div>
         </div>
-        
-        {/* Full width items for longer content */}
-        <div className={`${isMobile ? 'mt-2' : 'mt-[5px]'} w-full`}>
+        <div style={{ marginTop: windowWidth <= 768 ? '5px' : '15px' }}>
           {additionalInfo1?.projects && (
             <InfoItem label="Projects" value={additionalInfo1.projects} />
           )}
@@ -1226,7 +1286,7 @@ function CandidateDetail({
             <InfoItem label="Anything more about yourself" value={additionalInfo1.additional_info} />
           )}
         </div>
-      </>
+      </div>
     );
   };
 
@@ -1319,7 +1379,7 @@ function CandidateDetail({
 
   // ----- MAIN JSX -----
   return (
-    <div ref={printRef} className={`cv-container ${isMobile ? 'max-w-full' : isTablet ? 'max-w-[1000px]' : 'max-w-[1200px]'} mx-auto ${isMobile ? 'px-2 py-3' : isTablet ? 'p-5' : 'p-6 md:p-8'} bg-white shadow-md rounded-lg overflow-hidden font-sans text-gray-800 relative`}>
+    <div className="cv-container">
       {/* Unlock Modal */}
       <UnlockModal
         isOpen={showUnlockModal}
@@ -1331,201 +1391,227 @@ function CandidateDetail({
         unlockStatus={unlockStatus}
         error={unlockError}
       />
-      {/* Navigation */}
-      <div className={`flex flex-col sm:flex-row justify-between items-stretch sm:items-center ${isMobile ? 'mb-4' : 'mb-6'} w-full ${isMobile ? 'gap-2' : 'gap-4'} ${isMobile ? 'px-1' : 'px-2'}`}>
-        {/* Left side: Profile counter or Unlock button */}
-        <div className="flex items-center gap-2">
-          {checkedProfiles && checkedProfiles.candidates && checkedProfiles.candidates.length > 1 && (
-            <span className={`${isMobile ? 'text-sm' : 'text-base'} font-medium text-gray-700 whitespace-nowrap`}>
-              Profile {checkedProfiles.currentIndex + 1} of {checkedProfiles.candidates.length}
-            </span>
-          )}
-          {!isUnlocked && !checkedProfiles && (
-            <button 
-              className={`inline-flex items-center justify-center gap-2.5 ${isMobile ? 'px-4 py-2.5 text-sm' : 'px-6 py-3 text-base'} bg-gradient-brand text-white border-none rounded-lg font-semibold cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none ${isMobile ? 'w-full sm:w-auto sm:min-w-[180px]' : 'w-[250px]'} flex-shrink-0`}
-              onClick={handleUnlockClick}
-              disabled={isUnlocked}
-            >
-              <span role="img" aria-label="coin" className="inline-flex items-center justify-center animate-bounce">💰</span>
-              Unlock Details
-            </button>
-          )}
+      {/* Profile counter for navigation between multiple profiles */}
+      {checkedProfiles && checkedProfiles.candidates?.length > 1 && (
+        <div className="profile-counter">
+          Profile {checkedProfiles.currentIndex + 1} of {checkedProfiles.candidates.length}
         </div>
-        <div className={`${isMobile ? 'w-full sm:w-auto sm:ml-auto' : 'ml-auto'} flex gap-2.5 items-center`}>
-          <button onClick={handleBack} className={`w-full sm:w-auto ${isMobile ? 'px-3 py-2 text-sm' : 'px-4 py-2.5 text-base'} bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all whitespace-nowrap font-medium`}>
+      )}
+      {/* Navigation */}
+      <div className="profile-actions">
+        {/* SHOW Unlock button only if not unlocked */}
+        {!isUnlocked && (
+          <button 
+            className="unlock-btn-top"
+            onClick={handleUnlockClick}
+            disabled={isUnlocked}
+          >
+            <span role="img" aria-label="coin" className="coin-icon">💰</span>
+            Unlock Details
+          </button>
+        )}
+        <div className="back-button">
+          <button onClick={handleBack} className="btn btn-warning">
             Back to List
           </button>
+          {/* Navigation buttons for multiple profiles */}
+          {(onNext || onPrevious) && (
+            <div className="navigation-buttons" style={{ marginLeft: '10px', display: 'inline-flex', gap: '10px' }}>
+              {onPrevious && !isFirstProfile && (
+                <button onClick={onPrevious} className="btn btn-outline-secondary">
+                  <i className="fas fa-chevron-left me-1"></i>Previous
+                </button>
+              )}
+              {onNext && !isLastProfile && (
+                <button onClick={onNext} className="btn btn-outline-secondary">
+                  Next<i className="fas fa-chevron-right ms-1"></i>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Header Section with Photo and Basic Info */}
-      <div className={`${isMobile ? 'flex-col items-center text-center px-2 py-2' : isTablet ? 'flex flex-row items-start p-4' : 'flex flex-row items-start p-6'} bg-white border-b border-gray-200 mb-2.5`}>
-        {/* Left Side: Profile Picture + Basic Info */}
-        <div className={`flex ${isMobile ? 'flex-col' : ''} ${isMobile ? 'gap-3' : 'gap-5'} ${isMobile ? 'mb-2 items-center' : isTablet ? 'w-1/2 pr-4 min-w-0' : 'w-1/2 pr-6 min-w-0'}`}>
-          {/* Profile Picture */}
-          <div className={`profile-photo ${isMobile ? 'w-[100px] h-[100px] mb-2.5' : isTablet ? 'w-[110px] h-[110px]' : 'w-[120px] h-[120px]'} rounded-full overflow-hidden border-[3px] border-gray-100 shadow-[0_0_10px_rgba(0,0,0,0.1)] ${isMobile ? 'm-0' : 'mr-2.5'} shrink-0`}>
-            <AvatarImage
-              src={photoUrl}
-              alt={`${candidate?.fullName || candidate?.name || 'User'}'s profile photo`}
-              name={candidate?.fullName || candidate?.name}
-              gender={profileData?.gender || candidate?.gender}
-              className="w-full h-full object-cover"
-              style={{ 
-                border: 'none',
-                transform: 'scale(1.4) translateY(7%)',
-                transformOrigin: 'center'
-              }}
-            />
-          </div>
-          
-          {/* Basic Information */}
-          <div className="flex-1 min-w-0 overflow-hidden">
-            <h1 className={`candidate-name ${isMobile ? 'text-xl mb-1' : isTablet ? 'text-2xl mb-1.5' : 'text-3xl mb-2'} bg-gradient-brand bg-clip-text text-transparent break-words`}>
-              {candidate?.fullName || candidate?.name || 'Candidate Name'}
-            </h1>
+      <div className="cv-header">
+        <div className="cv-profile-photo">
+          <AvatarImage
+            src={photoUrl}
+            alt={`${profileData?.fullName || 'User'}'s profile photo`}
+            name={profileData?.fullName}
+            gender={profileData?.gender}
+          />
+        </div>
+        {/* Header Content */}
+        <div className="header-content" style={{ flex: 1, paddingLeft: '20px' }}>
+          <h1 className="candidate-name">{profileData?.fullName || 'Candidate Name'}</h1>
+          <div className="personal-meta" style={{ marginBottom: '8px' }}>
+          {profileData?.gender && <span>{profileData.gender}</span>}
+            {profileData?.dateOfBirth && (
+              <span style={{ marginLeft: '15px' }}>
+                DOB: {new Date(profileData.dateOfBirth).toLocaleDateString('en-US', { 
+                  day: '2-digit', month: '2-digit', year: 'numeric' 
+                })}
+              </span>
+            )}
             
-            {/* Personal Details */}
-            <div className={`${isMobile ? 'text-sm mb-2' : isTablet ? 'text-[14px] mb-2.5' : 'text-[15px] mb-3'} text-gray-600 break-words`}>
-              {profileData?.gender && <span>{profileData.gender}</span>}
-              {profileData?.dateOfBirth && (
-                <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
-              )}
-              {(() => {
-                // Calculate total experience similar to getExperienceText
-                if (!experienceData?.mysqlData) return null;
-                const teachingYears = experienceData.mysqlData.teaching_experience_years || 0;
-                const teachingMonths = experienceData.mysqlData.teaching_experience_months || 0;
-                const nonTeachingYears = experienceData.mysqlData.non_teaching_experience_years || 0;
-                const nonTeachingMonths = experienceData.mysqlData.non_teaching_experience_months || 0;
-                let totalYears = experienceData.mysqlData.total_experience_years;
-                let totalMonths = experienceData.mysqlData.total_experience_months;
-                
-                if (totalYears === undefined || totalMonths === undefined) {
-                  const rawTotalMonths = (teachingMonths + nonTeachingMonths);
-                  totalMonths = rawTotalMonths % 12;
-                  const extraYears = Math.floor(rawTotalMonths / 12);
-                  totalYears = teachingYears + nonTeachingYears + extraYears;
-                }
-                
-                if (totalYears > 0 || totalMonths > 0) {
-                  return (
-                    <span> | Experience: {totalYears} Years {totalMonths || 0} Months</span>
-                  );
-                }
-                return null;
-              })()}
-            </div>
-            
-            {/* Email */}
-            {(profileData?.email || unlockedInfo?.email) && (
-              <div className={`flex items-center gap-1.5 ${isMobile ? 'text-sm' : isTablet ? 'text-[14px]' : 'text-[15px]'} min-w-0`}>
-                <FaEnvelope className="text-gray-400 shrink-0" />
+              <div className="email-link" style={{ display: 'flex', alignItems: 'center', marginTop: '4px' }}>
+                <FaEnvelope style={{ marginRight: '5px', color: '#A9A9A9' }} />
                 <BlurWrapper isUnlocked={isUnlocked}>
-                  <a href={isUnlocked ? `mailto:${unlockedInfo?.email || profileData?.email}` : undefined} className={`no-underline text-[#1967d2] break-words ${!isUnlocked ? 'pointer-events-none' : ''}`}>
-                    {isUnlocked && unlockedInfo?.email ? unlockedInfo.email : (profileData?.email || 'N/A')}
+                  <a href={isUnlocked ? `mailto:${unlockedInfo?.email}` : undefined} style={{ pointerEvents: isUnlocked ? 'auto' : 'none', color: "#1766af" }}>
+                    {unlockedInfo?.email||'N/A'}
                   </a>
                 </BlurWrapper>
               </div>
-            )}
-          </div>
-        </div>
-        
-        {/* Right Side: Contact Information */}
-        <div className={`font-sans ${isMobile ? 'text-[13px] w-full' : 'text-sm w-1/2'} leading-[1.4] ${isMobile ? 'mt-2' : isTablet ? 'pl-4' : 'pl-6'} min-w-0`}>
-          {/* Address Information */}
-          <div className={`flex ${isMobile ? 'flex-row' : 'flex-col'} ${isMobile ? 'gap-[15px]' : 'gap-2'} ${isMobile ? 'mb-2 flex-wrap' : 'mb-2.5'}`}>
-            <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'} mb-1`}>
-              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
-              <span className="font-semibold mr-1.5 shrink-0">Present:</span>
-              <span className={`${isMobile ? 'overflow-hidden text-ellipsis whitespace-nowrap max-w-[280px]' : 'break-words'}`}>
-                {[
-                  profileData?.present_city_name,
-                  profileData?.present_state_name,
-                  profileData?.present_country_name
-                ].filter(Boolean).join(', ') || 'N/A'}
-              </span>
-            </div>
             
-            <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'} mb-1`}>
-              <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
-              <span className="font-semibold mr-1.5 shrink-0">Permanent:</span>
-              <span className={`${isMobile ? 'overflow-hidden text-ellipsis whitespace-nowrap max-w-[280px]' : 'break-words'}`}>
-                {[
-                  profileData?.permanent_city_name,
-                  profileData?.permanent_state_name,
-                  profileData?.permanent_country_name
-                ].filter(Boolean).join(', ') || 'N/A'}
-              </span>
-            </div>
           </div>
-          
-          {/* Phone Numbers - Responsive layout */}
-          <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} ${isMobile ? 'gap-2.5' : isTablet ? 'gap-4' : 'gap-5'} ${isMobile ? 'mb-2.5' : 'mb-3'}`}>
-            <div className="flex items-center gap-1.5 flex-nowrap">
-              <FaPhone className="text-[#1a73e8] text-[13px] shrink-0" />
-              <span className="font-semibold shrink-0 whitespace-nowrap">Phone:</span>
-              <BlurWrapper isUnlocked={isUnlocked}>
-                {isUnlocked
-                  ? unlockedInfo?.phone_number || profileData?.callingNumber || "N/A"
-                  : (unlockedInfo?.phone_number || profileData?.callingNumber)
-                    ? <span className="tracking-wide">{(unlockedInfo?.phone_number || profileData?.callingNumber).replace(/\d/g, "•")}</span>
-                    : "N/A"
-                }
-              </BlurWrapper>
+          {/* Contact Information - Optimized Layout */}
+          <div className="contact-grid" style={{ display: 'grid', gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr', gap: '15px', fontFamily: 'Arial, sans-serif', fontSize: '14px' }}>
+
+            {/* Left Column - Addresses */}
+            <div className="address-column">
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                <FaMapMarkerAlt style={{ marginRight: '8px', color: '#e74c3c', fontSize: '16px' }} /> 
+                <span><strong>Present:</strong> {profileData.present_state_name || 'N/A'}</span>
+              </div>
+              {profileData.permanent_state_name && (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <FaMapMarkerAlt style={{ marginRight: '8px', color: '#95a5a6', fontSize: '16px' }} />
+                  <span><strong>Permanent:</strong> {profileData.permanent_state_name}</span>
+                </div>
+              )}
             </div>
-             
-            <div className="flex items-center gap-1.5 flex-nowrap">
-              <FaWhatsapp className="text-[#25D366] text-[13px] shrink-0" />
-              <span className="font-semibold shrink-0 whitespace-nowrap">WhatsApp:</span>
-              <BlurWrapper isUnlocked={isUnlocked}>
-                {isUnlocked
-                  ? unlockedInfo?.whatsup_number || profileData?.whatsappNumber || "N/A"
-                  : (unlockedInfo?.whatsup_number || profileData?.whatsappNumber)
-                    ? <span className="tracking-wide">{(unlockedInfo?.whatsup_number || profileData?.whatsappNumber).replace(/\d/g, "•")}</span>
-                    : "N/A"
-                }
-              </BlurWrapper>
-            </div>
+            {/* Right Column - Phone Numbers */}
+            <div className="phone-column">
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+            <FaPhone style={{ marginRight: '8px', color: '#1a73e8', fontSize: '16px' }} />
+  <span>
+    <strong>Phone:</strong>{" "}
+    <BlurWrapper isUnlocked={isUnlocked}>
+  {isUnlocked
+    ? unlockedInfo?.phone_number || "N/A"
+    : unlockedInfo?.phone_number
+      ? <span style={{ letterSpacing: "1px" }}>{unlockedInfo.phone_number.replace(/\d/g, "•")}</span>
+      : "N/A"
+  }
+</BlurWrapper>
+  </span>
+</div>
+
+  <div style={{ display: 'flex', alignItems: 'center' }}>
+    <FaWhatsapp style={{ marginRight: '8px', color: '#25D366', fontSize: '16px' }} />
+    <span>
+    <strong>WhatsApp:</strong>{" "}
+    <BlurWrapper isUnlocked={isUnlocked}>
+      {isUnlocked
+        ? unlockedInfo?.whatsup_number || "N/A"
+        : unlockedInfo?.whatsup_number
+          ? <span style={{ letterSpacing: "1px" }}>{unlockedInfo.whatsup_number.replace(/\d/g, "•")}</span>
+          : "N/A"
+      }
+    </BlurWrapper>
+  </span>
+  </div>
+</div>
+
           </div>
-          
-          {/* Social Links */}
+          {/* Additional Info Row */}
+          {(profileData.aadharNumber || profileData.panNumber) && (
+            <div className="additional-info" style={{ 
+              marginTop: '10px',
+              display: 'grid',
+              gridTemplateColumns: windowWidth <= 768 ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '8px',
+              fontSize: '13px',
+              color: '#666'
+            }}>
+              {profileData.aadharNumber && (
+                <div><strong>Aadhar:</strong> {profileData.aadharNumber}</div>
+              )}
+              {profileData.panNumber && (
+                <div><strong>PAN:</strong> {profileData.panNumber}</div>
+              )}
+            </div>
+          )}
+          {/* Social Links Row */}
           {(socialLinks.facebook || socialLinks.linkedin) && (
-            <div className={`flex ${isMobile ? 'flex-col gap-2' : 'flex-col gap-1.5'} items-start`}>
+            <div className="social-links" style={{ 
+              marginTop: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              flexWrap: 'wrap'
+            }}>
+              <span style={{ 
+                fontSize: '13px', 
+                fontWeight: 'bold', 
+                color: '#666',
+                marginRight: '4px'
+              }}>Social Links:</span>
+              <div style={{ 
+                display: 'flex', 
+                gap: '16px',
+                flexWrap: 'wrap',
+                flex: 1
+              }}>
               {socialLinks?.facebook && (
-                <div className="flex items-start flex-wrap gap-1.5">
-                  <FaFacebook className="text-[#385898] text-[13px] shrink-0 mt-0.5" /> 
-                  <span className="font-semibold shrink-0">Facebook:</span>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                  <FaFacebook style={{ marginRight: '7px', color: '#1877f2', fontSize: '16px' }} />
                   <BlurWrapper isUnlocked={isUnlocked}>
-                    <a href={isUnlocked ? socialLinks.facebook : undefined} className={`no-underline text-[#385898] break-all ${!isUnlocked ? 'pointer-events-none' : ''}`}>
+                    <a href={isUnlocked ? socialLinks.facebook : undefined} style={{ pointerEvents: isUnlocked ? 'auto' : 'none', color: "#1877f2" }}>
                       {socialLinks.facebook}
                     </a>
                   </BlurWrapper>
                 </div>
               )}
-              
               {socialLinks?.linkedin && (
-                <div className="flex items-start flex-wrap gap-1.5">
-                  <FaLinkedin className="text-[#0077b5] text-[13px] shrink-0 mt-0.5" /> 
-                  <span className="font-semibold shrink-0">LinkedIn:</span>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <FaLinkedin style={{ marginRight: '7px', color: '#0077b5', fontSize: '16px' }} />
                   <BlurWrapper isUnlocked={isUnlocked}>
-                    <a href={isUnlocked ? socialLinks.linkedin : undefined} className={`no-underline text-[#0077b5] break-all ${!isUnlocked ? 'pointer-events-none' : ''}`}>
+                    <a href={isUnlocked ? socialLinks.linkedin : undefined} style={{ pointerEvents: isUnlocked ? 'auto' : 'none', color: "#0077b5" }}>
                       {socialLinks.linkedin}
                     </a>
                   </BlurWrapper>
                 </div>
               )}
+              </div>
             </div>
           )}
 
           {/* Candidate Materials Icons - Only show when unlocked */}
           {isUnlocked && (
-            <div className="mt-3 flex items-center gap-3 flex-wrap demo-resume-section">
-              <span className="text-xs font-bold text-gray-600 mr-1 demo-resume-heading">Demo & Resume:</span>
+            <div className="candidate-materials-icons" style={{
+              marginTop: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              flexWrap: 'wrap'
+            }}>
+              <span style={{ 
+                fontSize: '13px', 
+                fontWeight: 'bold', 
+                color: '#666',
+                marginRight: '4px'
+              }}>Demo & Resume:</span>
               
               {/* Demo Video Icon */}
               <button 
                 onClick={handleViewVideo}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-brand hover:opacity-90 text-white border-none rounded text-xs cursor-pointer transition-colors"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 10px',
+                  background: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
                 title="View Demo Video"
               >
                 <span role="img" aria-label="video">🎥</span>
@@ -1535,7 +1621,21 @@ function CandidateDetail({
               {/* Resume Icon */}
               <button 
                 onClick={handleViewResume}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-green-600 hover:bg-green-700 text-white border-none rounded text-xs cursor-pointer transition-colors"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 10px',
+                  background: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#1e7e34'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
                 title="View Resume/CV"
               >
                 <span role="img" aria-label="resume">📄</span>
@@ -1547,14 +1647,14 @@ function CandidateDetail({
       </div>
 
       {/* Body Section - Two column layout */}
-      <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-[300px,1fr]'} ${isMobile ? 'gap-4' : isTablet ? 'gap-6' : 'gap-8'} mt-0`}>
+      <div className="cv-body" style={{ marginTop: '0' }}>
         {/* Left Sidebar */}
-        <div className={`bg-gray-100 ${isMobile ? 'px-2 py-3' : isTablet ? 'p-4' : 'p-5'} lg:w-auto`}>
+        <div className="cv-sidebar">
           {/* Education Section */}
           {educationData && educationData.length > 0 && (
-            <div className={`${isMobile ? 'mb-6' : 'mb-8'}`}>
-              <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>EDUCATION</h2>
-              <div>
+            <div className="cv-section education-section">
+              <h2 className="section-title">Education</h2>
+              <div className="education-content">
                 {renderEducationBlocks()}
               </div>
             </div>
@@ -1562,11 +1662,11 @@ function CandidateDetail({
         </div>
 
         {/* Right Main Content */}
-        <div className={`${isMobile ? 'px-2 py-3' : isTablet ? 'p-4' : 'p-5'}`}>
+        <div className="cv-main">
           {/* Experience Section */}
-          <div className={`${isMobile ? 'mb-6' : 'mb-8'} mt-0 pt-0`}>
-            <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>WORK EXPERIENCE</h2>
-            <div>
+          <div className="cv-section experience-section" style={{ marginTop: '0', paddingTop: '0' }}>
+            <h2 className="section-title" style={{ marginTop: '0' }}>Work Experience</h2>
+            <div className="experience-content">
               {getExperienceText()}
               {renderExperienceBlocks()}
             </div>
@@ -1577,11 +1677,23 @@ function CandidateDetail({
 
           {/* Job Preferences Section */}
           {hasJobPreferencesData() && (
-            <div className={`${isMobile ? 'mb-6' : 'mb-8'}`}>
-              <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>JOB PREFERENCES</h2>
-              <div className={`mb-6 ${isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-5'} bg-[#f5f7fc] rounded-lg ${isMobile ? 'text-sm' : 'text-base'} leading-relaxed`}>
+            <div className="cv-section job-preferences">
+              <h2 className="section-title">Job Preferences</h2>
+              <div className="job-preferences-block" style={{ 
+                marginBottom: '25px',
+                padding: '20px',
+                background: '#f5f7fc',
+                borderRadius: '8px',
+                fontSize: '15px',
+                lineHeight: '1.5'
+              }}>
                 {/* Two-column details grid */}
-                <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1' : 'grid-cols-2'} ${isMobile ? 'gap-x-0 gap-y-1' : isTablet ? 'gap-x-3 gap-y-1.5' : 'gap-x-5 gap-y-1.5'}`}>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: windowWidth <= 768 ? '1fr' : '1fr 1fr',
+                  columnGap: '20px',
+                  rowGap: '5px'
+                }}>
                   {/* Basic Job Information */}
                   {jobPreferenceData.Job_Type && (
                     <div>
@@ -1697,9 +1809,9 @@ function CandidateDetail({
 
           {/* Language Proficiency */}
           {languages && languages.length > 0 && (
-            <div className={`${isMobile ? 'mb-3' : 'mb-4'}`}>
-              <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>LANGUAGE PROFICIENCY</h2>
-              <div className={`${isMobile ? 'bg-white rounded-lg p-3 border border-gray-200' : 'bg-gray-50 rounded-lg p-3 border border-gray-200'}`}>
+            <div className="cv-section">
+              <h2 className="section-title">Language Proficiency</h2>
+              <div style={{ padding: '15px' }}>
                 {renderLanguageProficiency()}
               </div>
             </div>
@@ -1707,72 +1819,48 @@ function CandidateDetail({
 
           {/* Additional Information */}
           {additionalInfo1 && (
-            <div className={`mb-[30px] ${isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-[15px]'} bg-gray-50 rounded-lg border border-gray-200`}>
-              <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>
-                ADDITIONAL INFORMATION
-              </h2>
-              {renderAdditionalInfo()}
+            <div className="cv-section">
+              <h2 className="section-title">Additional Information</h2>
+              <div style={{ padding: '15px' }}>
+                {renderAdditionalInfo()}
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {/* Download and Print Section */}
-      <div className={`flex flex-col sm:flex-row justify-center ${isMobile ? 'gap-2' : 'gap-4'} ${isMobile ? 'mt-6 pt-4' : 'mt-10 pt-5'} border-t border-gray-200`}>
+      <div className="download-section">
         <button 
-          onClick={() => {
-            if (!printRef.current) {
-              toast.error('Content not ready. Please wait a moment and try again.');
-              return;
-            }
-            setIsDownloading(true);
-            if (handlePrint && typeof handlePrint === 'function') {
-              handlePrint();
-            } else {
-              console.error('handlePrint is not a function:', typeof handlePrint);
-              toast.error('Print function not available. Please try again.');
-            }
-            setTimeout(() => setIsDownloading(false), 1000);
-          }}
+          onClick={downloadPDF} 
           disabled={isDownloading}
-          className={`inline-flex items-center justify-center gap-2 ${isMobile ? 'px-4 py-2.5 text-sm w-full sm:w-auto' : 'px-6 py-3 text-base'} ${isMobile ? 'sm:min-w-[160px]' : 'min-w-[200px]'} bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
-          title={isDownloading ? "Opening print dialog..." : "Download or Print CV"}
+          className="btn btn-primary"
+          title={isDownloading ? "Generating PDF..." : "Download CV as PDF file"}
         >
           {isDownloading ? (
             <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              Opening...
+              <div className="spinner-border spinner-border-sm" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              Generating PDF...
             </>
           ) : (
             <>
               <i className="fas fa-download"></i>
-              Download/Print
+              Download PDF
             </>
           )}
         </button>
+        
+        <button 
+          onClick={handlePrint}
+          className="btn btn-outline-secondary"
+          title="Open browser print dialog"
+        >
+          <i className="fas fa-print"></i>
+          Print
+        </button>
       </div>
-
-      {/* Previous/Next Navigation - Bottom */}
-      {checkedProfiles && checkedProfiles.candidates && checkedProfiles.candidates.length > 1 && (
-        <div className={`flex flex-row justify-center items-center gap-3 ${isMobile ? 'mt-4 mb-2' : 'mt-6 mb-4'}`}>
-          <button
-            onClick={onPrevious}
-            disabled={isFirstProfile}
-            className={`inline-flex items-center justify-center gap-2 ${isMobile ? 'px-4 py-2.5 text-sm' : 'px-6 py-3 text-base'} bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all whitespace-nowrap font-medium`}
-            title="Previous Profile"
-          >
-            ← Previous
-          </button>
-          <button
-            onClick={onNext}
-            disabled={isLastProfile}
-            className={`inline-flex items-center justify-center gap-2 ${isMobile ? 'px-4 py-2.5 text-sm' : 'px-6 py-3 text-base'} bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all whitespace-nowrap font-medium`}
-            title="Next Profile"
-          >
-            Next →
-          </button>
-        </div>
-      )}
     </div>
   );
 }

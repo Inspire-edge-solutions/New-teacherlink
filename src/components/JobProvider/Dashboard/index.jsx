@@ -2,6 +2,7 @@ import React, { useState, useEffect, lazy, Suspense } from 'react'
 import { Grow, Paper, Skeleton, Box } from '@mui/material'
 import Photo from './Components/Photo'
 import Coins from './Components/Coins'
+import ProfileCompletionPopup from './Components/ProfileCompletionPopup'
 
 const DashboardComponent = () => {
   const [checked, setChecked] = useState(false);
@@ -44,6 +45,9 @@ const DashboardComponent = () => {
 
   return (
     <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4 space-y-3 sm:space-y-4">
+      {/* Profile Completion Popup */}
+      <ProfileCompletionPopup />
+      
       {/* Top Row: Profile Card + Profile Completion */}
       <div className="grid grid-cols-1 lg:grid-cols-[607fr_419fr] gap-3 sm:gap-4">
         <Grow

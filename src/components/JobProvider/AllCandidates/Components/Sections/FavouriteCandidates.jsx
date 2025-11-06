@@ -112,6 +112,10 @@ const FavouriteCandidates = ({
 
   // Candidate photos
   const [candidatePhotos, setCandidatePhotos] = useState({});
+
+  // Message modal state
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [candidateToMessage, setCandidateToMessage] = useState(null);
   
   // Bulk selection state
   const [selectedCandidates, setSelectedCandidates] = useState(new Set());
@@ -231,6 +235,33 @@ const FavouriteCandidates = ({
   const handleViewShort = (candidate) => {
     console.log('FavouriteCandidates: Viewing short profile:', candidate.firebase_uid);
     onViewCandidate && onViewCandidate(candidate, 'short');
+  };
+
+  // Handle message candidate - show modal
+  const handleMessage = (candidate) => {
+    console.log('FavouriteCandidates: Messaging candidate:', candidate.firebase_uid);
+    setCandidateToMessage(candidate);
+    setShowMessageModal(true);
+  };
+
+  // Handle "Ok" button - close modal, stay on page
+  const handleMessageModalOk = () => {
+    setShowMessageModal(false);
+    setCandidateToMessage(null);
+  };
+
+  // Handle "Continue Single" button - redirect to messages
+  const handleMessageModalContinue = () => {
+    if (candidateToMessage) {
+      navigate('/provider/messages', { 
+        state: { 
+          selectedCandidate: candidateToMessage,
+          startConversation: true 
+        } 
+      });
+    }
+    setShowMessageModal(false);
+    setCandidateToMessage(null);
   };
 
   // Function to scroll to a specific candidate
@@ -398,6 +429,7 @@ const FavouriteCandidates = ({
                   onViewShort={handleViewShort}
                   onSave={handleSaveCandidate}
                   onToggleFavourite={handleToggleFavourite}
+                  onMessage={handleMessage}
                   candidatePhoto={candidatePhotos[candidateId]}
                 />
                       );
@@ -446,6 +478,50 @@ const FavouriteCandidates = ({
         selectedCount={selectedCandidates.size}
         isDownloading={isDownloading}
       />
+
+      {/* Message Modal */}
+      {showMessageModal && (
+        <div 
+          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+          onClick={handleMessageModalOk}
+        >
+          <div 
+            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all" 
+              onClick={handleMessageModalOk}
+            >
+              &times;
+            </button>
+            
+            <div className="mb-4 mt-0.5">
+              <h3 className="font-semibold text-[18px] mb-4 text-center text-gray-800">
+                Message Candidate
+              </h3>
+              <p className="text-gray-600 text-[15px] mb-6 text-center leading-relaxed">
+                If you want to send bulk message, add candidate to favourite
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button 
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                onClick={handleMessageModalOk}
+              >
+                Ok
+              </button>
+              <button 
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl"
+                onClick={handleMessageModalContinue}
+              >
+                Continue Single
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

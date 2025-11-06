@@ -1030,11 +1030,14 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
 
     try {
       // Add admin approval fields to the job data
+      // Explicitly remove any existing isRejected from previewData to ensure clean state
+      const { isRejected: _, isApproved: __, ...cleanPreviewData } = previewData;
+      
       const jobDataWithApproval = {
-        ...previewData,
+        ...cleanPreviewData,
         // Admin approval fields - set to 0 for pending approval
         isApproved: 0,
-        isRejected: 0,
+        isRejected: 0,  // Explicitly set to 0 - should be pending, not rejected
         response: 0,
         approved_by: "",
         approved_email: "",
@@ -1044,11 +1047,22 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
       
       const payload = [jobDataWithApproval];
       
+      // Debug: Log what we're sending to verify isRejected is 0
+      console.log("=== JOB POST DEBUG ===");
+      console.log("isRejected value being sent:", jobDataWithApproval.isRejected);
+      console.log("Full payload:", JSON.stringify(payload, null, 2));
+      console.log("=== END DEBUG ===");
+      
       const postJobRes = await axios.post(
         "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes",
         payload,
         { headers: { "Content-Type": "application/json" } }
       );
+      
+      // Debug: Check what was returned from the API
+      console.log("=== API RESPONSE DEBUG ===");
+      console.log("API Response:", postJobRes.data);
+      console.log("=== END RESPONSE DEBUG ===");
       
       let recentJobId = null;
       try {

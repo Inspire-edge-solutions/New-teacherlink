@@ -166,9 +166,9 @@ const LoginWithSocial = () => {
         // Navigate based on user type
         const userType = data.user.user_type;
         const redirectPath = userType === "Employer"
-          ? "/employers-dashboard/dashboard"
+          ? "/provider/dashboard"
           : userType === "Candidate"
-            ? "/candidates-dashboard/dashboard"
+            ? "/seeker/dashboard"
             : "/";
         
         console.log("Redirecting to:", redirectPath);

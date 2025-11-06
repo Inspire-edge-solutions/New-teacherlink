@@ -9,6 +9,7 @@ import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import CandidateApiService from '../shared/CandidateApiService';
 import { useAuth } from "../../../../../Context/AuthContext";
+import useBulkCandidateActions from '../hooks/useBulkCandidateActions';
 import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
 import '../styles/candidate-highlight.css';
 
@@ -39,33 +40,111 @@ const UnlockedCandidates = ({
   const [isSearching, setIsSearching] = useState(false);
   const [candidatePhotos, setCandidatePhotos] = useState({});
 
+  // Get unlocked candidates from localStorage (backward compatibility)
+  // This matches the old implementation's logic
+  const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
+    if (!user) return [];
+    
+    const userId = user.firebase_uid || user.uid;
+    if (!userId) return [];
+    
+    const unlockedCandidateIds = [];
+    
+    // Check all localStorage keys for unlocked candidates
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(`unlocked_${userId}_`)) {
+        try {
+          const stored = localStorage.getItem(key);
+          if (!stored) continue;
+          
+          const parsed = JSON.parse(stored);
+          
+          if (parsed.unlocked && parsed.timestamp) {
+            const unlockTime = new Date(parsed.timestamp);
+            const now = new Date();
+            const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
+            
+            // Only include if unlocked within 30 days (matching old implementation)
+            if (daysDiff <= 30) {
+              const candidateId = key.replace(`unlocked_${userId}_`, '');
+              if (candidateId) {
+                unlockedCandidateIds.push(candidateId);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error parsing localStorage item:', key, error);
+          // Continue to next item if parsing fails
+        }
+      }
+    }
+    
+    return unlockedCandidateIds;
+  }, [user]);
+
   const fetchUnlockedCandidates = useCallback(async () => {
     try {
       setLoading(true);
+      
+      // Fetch both candidates and user preferences from database
       const [fullCandidates, prefs] = await Promise.all([
         CandidateApiService.fetchCandidates(),
         CandidateApiService.fetchUserCandidatePreferences(user)
       ]);
       
-      const onlyUnlocked = fullCandidates.filter(c => 
-        prefs.unlockedCandidates.includes(c.firebase_uid)
-      );
+      // Get unlocked candidate IDs from localStorage (backward compatibility)
+      const localStorageUnlockedIds = getUnlockedCandidatesFromLocalStorage();
+      
+      // Get unlocked candidate IDs from database
+      const databaseUnlockedIds = prefs.unlockedCandidates || [];
+      
+      // Merge both sources (remove duplicates using Set)
+      const allUnlockedIds = new Set([
+        ...localStorageUnlockedIds,
+        ...databaseUnlockedIds
+      ]);
+      
+      // Filter candidates that are in either localStorage OR database unlocked list
+      const onlyUnlocked = fullCandidates.filter(c => {
+        const candidateId = c.firebase_uid;
+        return candidateId && allUnlockedIds.has(candidateId);
+      });
       
       setUnlockedCandidates(onlyUnlocked);
       setFilteredCandidates(onlyUnlocked);
       setSavedCandidates(prefs.savedCandidates);
       setFavouriteCandidates(prefs.favouriteCandidates);
       
+      // Fetch photos for unlocked candidates
       const photos = await CandidateApiService.fetchCandidatePhotos(onlyUnlocked);
       setCandidatePhotos(photos);
-      } catch (error) {
+      
+    } catch (error) {
       console.error('Error fetching unlocked candidates:', error);
-      setUnlockedCandidates([]);
-      setFilteredCandidates([]);
-      } finally {
-      setLoading(false);
+      // On error, try to fallback to localStorage only
+      try {
+        const localStorageUnlockedIds = getUnlockedCandidatesFromLocalStorage();
+        if (localStorageUnlockedIds.length > 0) {
+          const fullCandidates = await CandidateApiService.fetchCandidates();
+          const fallbackUnlocked = fullCandidates.filter(c => 
+            localStorageUnlockedIds.includes(c.firebase_uid)
+          );
+          setUnlockedCandidates(fallbackUnlocked);
+          setFilteredCandidates(fallbackUnlocked);
+        } else {
+          setUnlockedCandidates([]);
+          setFilteredCandidates([]);
+        }
+      } catch (fallbackError) {
+        console.error('Error in fallback fetch:', fallbackError);
+        setUnlockedCandidates([]);
+        setFilteredCandidates([]);
       }
-  }, [user]);
+    } finally {
+      setLoading(false);
+    }
+  }, [user, getUnlockedCandidatesFromLocalStorage]);
 
   useEffect(() => {
     if (!user && !userLoading) {
@@ -122,6 +201,39 @@ const UnlockedCandidates = ({
     }
   };
 
+  // Pagination calculations (needed before checkbox handlers)
+  const indexOfLastCandidate = currentPage * candidatesPerPage;
+  const indexOfFirstCandidate = indexOfLastCandidate - candidatesPerPage;
+  const currentCandidates = filteredCandidates.slice(indexOfFirstCandidate, indexOfLastCandidate);
+  const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage);
+
+  // Use the bulk candidate actions hook
+  const {
+    selectedCandidates,
+    selectAll,
+    bulkViewMode,
+    checkedProfiles,
+    isPreparingPrint,
+    handleCheckboxChange,
+    handleSelectAll,
+    handleClearSelection,
+    handleViewCompleteProfiles,
+    handleViewShortProfiles,
+    handleViewPrevious,
+    handleViewNext,
+    handleBackFromView,
+    handlePrintDownload,
+    renderBulkView,
+    renderActionButtons,
+    renderPrintWrapper,
+    renderProfileTypeModal
+  } = useBulkCandidateActions({
+    filteredCandidates,
+    currentCandidates,
+    getCandidateId: (candidate) => candidate.firebase_uid,
+    documentTitlePrefix: 'Selected Unlocked Candidates'
+  });
+
   const handleViewFull = (candidate) => {
     onViewCandidate && onViewCandidate(candidate, 'full');
   };
@@ -149,11 +261,6 @@ const UnlockedCandidates = ({
   useEffect(() => {
     if (onBackFromCandidateView) onBackFromCandidateView(handleBackFromCandidateView);
   }, [onBackFromCandidateView, handleBackFromCandidateView]);
-
-  const indexOfLastCandidate = currentPage * candidatesPerPage;
-  const indexOfFirstCandidate = indexOfLastCandidate - candidatesPerPage;
-  const currentCandidates = filteredCandidates.slice(indexOfFirstCandidate, indexOfLastCandidate);
-  const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage);
 
   useEffect(() => setCurrentPage(1), [filteredCandidates]);
 
@@ -199,7 +306,13 @@ const UnlockedCandidates = ({
     );
   }
 
-  // If viewing a candidate detail, show the detail view
+  // If viewing selected profiles in sequence (bulk view mode)
+  const bulkView = renderBulkView();
+  if (bulkView) {
+    return bulkView;
+  }
+
+  // If viewing a single candidate detail (from parent TabDisplay)
   if (viewMode === 'detail' && selectedCandidate) {
     if (viewType === 'full') {
       return <CandidateDetail candidate={selectedCandidate} onBack={onBackToList} />;
@@ -207,6 +320,7 @@ const UnlockedCandidates = ({
       return <ViewShort candidate={selectedCandidate} onBack={onBackToList} />;
     }
   }
+
 
   return (
     <div className="widget-content">
@@ -223,16 +337,38 @@ const UnlockedCandidates = ({
       </div>
 
       <div className="mb-3">
-        <h3 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
-          {isSearching
-            ? `Found ${filteredCandidates.length} unlocked candidate${filteredCandidates.length !== 1 ? 's' : ''}`
-            : `${unlockedCandidates.length} Unlocked Candidate${unlockedCandidates.length !== 1 ? 's' : ''}`
-          }
-        </h3>
-            </div>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-2 mb-2 sm:mb-0">
+          <h3 className="text-lg sm:text-xl md:text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 shrink-0">
+            {isSearching
+              ? `Found ${filteredCandidates.length} unlocked candidate${filteredCandidates.length !== 1 ? 's' : ''}`
+              : `${unlockedCandidates.length} Unlocked Candidate${unlockedCandidates.length !== 1 ? 's' : ''}`
+            }
+          </h3>
+          {renderActionButtons()}
+        </div>
+      </div>
 
       {currentCandidates.length > 0 ? (
         <div className="candidates-results">
+          {/* Select All Checkbox */}
+          <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="selectAllUnlockedCandidates"
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                checked={selectAll}
+                onChange={handleSelectAll}
+              />
+              <label htmlFor="selectAllUnlockedCandidates" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
+                Select All Candidates on This Page
+                {selectedCandidates.size > 0 && (
+                  <span className="text-gray-500 ml-2">({selectedCandidates.size} total selected)</span>
+                )}
+              </label>
+            </div>
+          </div>
+
           <div className="candidates-list">
             {currentCandidates.map((candidate) => {
               const candidateId = candidate.firebase_uid;
@@ -245,14 +381,17 @@ const UnlockedCandidates = ({
                   loading={loading}
                   onViewFull={handleViewFull}
                   onViewShort={handleViewShort}
-              onSave={handleSaveCandidate}
-              onToggleFavourite={handleToggleFavourite}
+                  onSave={handleSaveCandidate}
+                  onToggleFavourite={handleToggleFavourite}
                   candidatePhoto={candidatePhotos[candidateId]}
+                  showCheckbox={true}
+                  isChecked={selectedCandidates.has(candidateId)}
+                  onCheckboxChange={handleCheckboxChange}
                 />
               );
             })}
-                </div>
-              </div>
+          </div>
+        </div>
       ) : (
         <div className="text-center py-12">
           <div className="flex flex-col items-center justify-center">
@@ -282,6 +421,12 @@ const UnlockedCandidates = ({
           currentPageEnd={Math.min(indexOfLastCandidate, filteredCandidates.length)}
         />
       )}
+
+      {/* Hidden Print Wrapper - renders all selected profiles for printing */}
+      {renderPrintWrapper()}
+
+      {/* Profile Type Selection Modal for Print/Download */}
+      {renderProfileTypeModal()}
     </div>
   );
 };
