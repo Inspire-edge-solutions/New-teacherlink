@@ -270,7 +270,7 @@ const ProfileCompletionPopup = () => {
   const handleCompleteProfile = () => {
     setShowPopup(false);
     // Navigate to profile page
-    window.location.href = '/candidates-dashboard/my-profile';
+    window.location.href = '/seeker/my-profile';
   };
 
   const handleRefresh = () => {

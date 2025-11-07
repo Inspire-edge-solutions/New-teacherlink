@@ -5,6 +5,7 @@ import axios from "axios";
 import coinsImage from "../../../../assets/coins.png";
 import noCoinsIllustration from "../../../../assets/Illustrations/No Coins.png";
 import { Skeleton, Box } from "@mui/material";
+import ModalPortal from "../../../common/ModalPortal";
 
 const Content = () => {
   const { user } = useAuth();
@@ -345,138 +346,140 @@ const Content = () => {
 
       {/* Coin History Modal */}
       {showHistoryModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4" onClick={closeHistoryModal}>
-          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="border-b px-6 py-4">
-              <h5 className="text-xl font-bold text-gray-800">Coin Transaction History</h5>
-            </div>
-            
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-              {/* Filter Section */}
-              <div className="mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Month:</label>
-                    <select 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={selectedMonth}
-                      onChange={(e) => setSelectedMonth(e.target.value)}
-                    >
-                      <option value="">All Months</option>
-                      <option value="1">January</option>
-                      <option value="2">February</option>
-                      <option value="3">March</option>
-                      <option value="4">April</option>
-                      <option value="5">May</option>
-                      <option value="6">June</option>
-                      <option value="7">July</option>
-                      <option value="8">August</option>
-                      <option value="9">September</option>
-                      <option value="10">October</option>
-                      <option value="11">November</option>
-                      <option value="12">December</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Year:</label>
-                    <select 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(e.target.value)}
-                    >
-                      <option value="">All Years</option>
-                      {Array.from({ length: currentYear - 2024 }, (_, i) => 2025 + i).map(year => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex items-end">
-                    <button 
-                      className="w-full px-6 py-2 bg-gradient-brand hover:bg-gradient-brand-hover text-white text-sm rounded-lg transition-all font-medium"
-                      onClick={filterHistory}
-                    >
-                      Search
-                    </button>
-                  </div>
-                </div>
+        <ModalPortal>
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4" onClick={closeHistoryModal}>
+            <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div className="border-b px-6 py-4">
+                <h5 className="text-xl font-bold text-gray-800">Coin Transaction History</h5>
               </div>
-
-              {/* History Table */}
-              {historyLoading ? (
-                <div className="space-y-4">
-                  {/* Table Header Skeleton */}
-                  <div className="bg-gray-100 rounded-lg p-4">
-                    <div className="grid grid-cols-7 gap-4">
-                      {Array.from({ length: 7 }).map((_, index) => (
-                        <Skeleton key={index} variant="text" width="100%" height={20} />
-                      ))}
+              
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+                {/* Filter Section */}
+                <div className="mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">Month:</label>
+                      <select 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(e.target.value)}
+                      >
+                        <option value="">All Months</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">Year:</label>
+                      <select 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(e.target.value)}
+                      >
+                        <option value="">All Years</option>
+                        {Array.from({ length: currentYear - 2024 }, (_, i) => 2025 + i).map(year => (
+                          <option key={year} value={year}>{year}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex items-end">
+                      <button 
+                        className="w-full px-6 py-2 bg-gradient-brand hover:bg-gradient-brand-hover text-white text-sm rounded-lg transition-all font-medium"
+                        onClick={filterHistory}
+                      >
+                        Search
+                      </button>
                     </div>
                   </div>
-                  
-                  {/* Table Rows Skeleton */}
-                  {Array.from({ length: 3 }).map((_, rowIndex) => (
-                    <div key={rowIndex} className="bg-white border rounded-lg p-4">
+                </div>
+
+                {/* History Table */}
+                {historyLoading ? (
+                  <div className="space-y-4">
+                    {/* Table Header Skeleton */}
+                    <div className="bg-gray-100 rounded-lg p-4">
                       <div className="grid grid-cols-7 gap-4">
-                        {Array.from({ length: 7 }).map((_, colIndex) => (
-                          <Skeleton key={colIndex} variant="text" width="100%" height={16} />
+                        {Array.from({ length: 7 }).map((_, index) => (
+                          <Skeleton key={index} variant="text" width="100%" height={20} />
                         ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-              ) : filteredHistory.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gradient-primary text-white">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Date & Time</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Reason</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Coin Value</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Reduction</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Candidate ID</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Job ID</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Payment ID</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredHistory.map((transaction, index) => (
-                        <tr key={transaction.id || index} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 whitespace-nowrap text-sm">{formatDateTime(transaction.created_at)}</td>
-                          <td className="px-4 py-3 text-sm">{transaction.reason || 'N/A'}</td>
-                          <td className="px-4 py-3 text-sm font-bold">🪙 {transaction.coin_value?.toLocaleString() || 0}</td>
-                          <td className="px-4 py-3 text-sm text-red-600">{transaction.reduction ? `-${transaction.reduction}` : 'N/A'}</td>
-                          <td className="px-4 py-3 text-sm">{transaction.candidate_id || 'N/A'}</td>
-                          <td className="px-4 py-3 text-sm">{transaction.job_id || 'N/A'}</td>
-                          <td className="px-4 py-3 text-sm">{transaction.payment_id || 'N/A'}</td>
+                    
+                    {/* Table Rows Skeleton */}
+                    {Array.from({ length: 3 }).map((_, rowIndex) => (
+                      <div key={rowIndex} className="bg-white border rounded-lg p-4">
+                        <div className="grid grid-cols-7 gap-4">
+                          {Array.from({ length: 7 }).map((_, colIndex) => (
+                            <Skeleton key={colIndex} variant="text" width="100%" height={16} />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : filteredHistory.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gradient-brand text-white">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Date & Time</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Reason</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Coin Value</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Reduction</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Candidate ID</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Job ID</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Payment ID</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <h6 className="text-lg font-semibold text-gray-600 mb-2">No Coins Transactions</h6>
-                  <p className="text-gray-500">
-                    {selectedMonth || selectedYear 
-                      ? "No transactions found for the selected filter criteria."
-                      : "No transaction history available."
-                    }
-                  </p>
-                </div>
-              )}
-            </div>
-            
-            <div className="border-t px-6 py-4 flex justify-end">
-              <button 
-                type="button" 
-                className="px-6 py-2 bg-gradient-brand hover:bg-gradient-brand-hover text-white rounded-lg transition-all font-medium" 
-                onClick={closeHistoryModal}
-              >
-                Close
-              </button>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {filteredHistory.map((transaction, index) => (
+                          <tr key={transaction.id || index} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm">{formatDateTime(transaction.created_at)}</td>
+                            <td className="px-4 py-3 text-sm">{transaction.reason || 'N/A'}</td>
+                            <td className="px-4 py-3 text-sm font-bold">🪙 {transaction.coin_value?.toLocaleString() || 0}</td>
+                            <td className="px-4 py-3 text-sm text-red-600">{transaction.reduction ? `-${transaction.reduction}` : 'N/A'}</td>
+                            <td className="px-4 py-3 text-sm">{transaction.candidate_id || 'N/A'}</td>
+                            <td className="px-4 py-3 text-sm">{transaction.job_id || 'N/A'}</td>
+                            <td className="px-4 py-3 text-sm">{transaction.payment_id || 'N/A'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <h6 className="text-lg font-semibold text-gray-600 mb-2">No Coins Transactions</h6>
+                    <p className="text-gray-500">
+                      {selectedMonth || selectedYear 
+                        ? "No transactions found for the selected filter criteria."
+                        : "No transaction history available."
+                      }
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="border-t px-6 py-4 flex justify-end">
+                <button 
+                  type="button" 
+                  className="px-6 py-2 bg-gradient-brand hover:bg-gradient-brand-hover text-white rounded-lg transition-all font-medium" 
+                  onClick={closeHistoryModal}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </>
   );

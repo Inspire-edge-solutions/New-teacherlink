@@ -174,6 +174,15 @@ const Coupons = ({
       couponValidFrom = couponData.valid_from;
       couponValidTo = couponData.valid_to;
       couponCoinValue = Number(couponData.coin_value);
+      const coinExpiry = couponData.coin_expiry;
+
+      // CLIENT-SIDE VALIDATION: Check for negative coin values
+      if (couponCoinValue <= 0) {
+        toast.dismiss("coupon-process");
+        toast.error("Invalid coupon: Coin value must be positive. Please contact support.");
+        console.error("Negative coin value detected:", couponCoinValue);
+        return;
+      }
 
       // 2. Get user type from login API
       const loginRes = await fetch(
@@ -182,7 +191,7 @@ const Coupons = ({
       const loginUsers = await loginRes.json();
       const loginUser = Array.isArray(loginUsers)
         ? loginUsers.find((u) => (u.firebase_uid || u.uid) === firebase_uid)
-        : null;
+        : loginUsers;
       if (!loginUser) {
         toast.dismiss("coupon-process");
         toast.error("User not found.");
@@ -190,102 +199,426 @@ const Coupons = ({
       }
       loginUserType = (loginUser.user_type || "").toLowerCase();
 
-      // 3. Validate user type
-      const couponUserTypeLower = (couponUserType || "").toLowerCase();
-      if (couponUserTypeLower !== loginUserType) {
-        toast.dismiss("coupon-process");
-        toast.error("This coupon is not valid for your user type.");
-        return;
-      }
+      // SPECIAL HANDLING FOR 'Inaugural2025' AND 'TEACHER2025' COUPONS
+      const isInaugural2025 = enteredCode.toLowerCase() === "inaugural2025";
+      const isTeacher2025 = enteredCode.toLowerCase() === "teacher2025";
+      const isSpecialCoupon = isInaugural2025 || isTeacher2025;
 
-      // 4. Check if coupon is already used
-      const redeemRes = await fetch(
-        `https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral?firebase_uid=${encodeURIComponent(firebase_uid)}`
-      );
-      const redeemRows = await redeemRes.json();
-      if (Array.isArray(redeemRows) && redeemRows.length > 0) {
-        const existingRecord = redeemRows[0];
-        if (existingRecord.coupon_code === enteredCode) {
+      if (!isSpecialCoupon) {
+        const couponUserTypeLower = (couponUserType || "").toLowerCase();
+        if (!couponUserTypeLower || couponUserTypeLower !== loginUserType) {
           toast.dismiss("coupon-process");
-          toast.warning("You have already used this coupon code.");
+          toast.error("This coupon is not valid for your user type.");
           return;
+        }
+      } else {
+        if (isInaugural2025) {
+          console.log("🎉 Special coupon 'Inaugural2025' detected - skipping user_type validation");
+        } else {
+          console.log("🎉 Special coupon 'TEACHER2025' detected - skipping user_type validation");
         }
       }
 
-      // 5. Validate coupon dates
-      const now = new Date();
-      const validFromDate = new Date(couponValidFrom.replace(" ", "T"));
-      const validToDate = new Date(couponValidTo.replace(" ", "T"));
-      if (now < validFromDate || now > validToDate) {
+      // STANDARDIZED API ENDPOINTS
+      const REDEEM_GENERAL_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral";
+      const REDEEM_UNIQUE_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemUnique";
+      const REDEEM_SAME_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemSame";
+
+      // 3. Check if coupon is already used and gather existing data
+      const generalRes = await fetch(
+        `${REDEEM_GENERAL_API}?firebase_uid=${encodeURIComponent(firebase_uid)}`
+      );
+      const generalData = await generalRes.json();
+
+      const today = new Date();
+      const validFromDate = new Date(couponValidFrom);
+      const validToDate = new Date(couponValidTo);
+
+      if (today < validFromDate || today > validToDate) {
         toast.dismiss("coupon-process");
         toast.error("This coupon is not valid at this time.");
         return;
       }
 
-      // 6. Get existing coin value
-      let existingCoinValue = 0;
-      let existingValidTo = null;
-      let existingRecord = null;
-      if (Array.isArray(redeemRows) && redeemRows.length > 0) {
-        existingRecord = redeemRows[0];
-        existingCoinValue = Number(existingRecord.coin_value || 0);
-        existingValidTo = existingRecord.valid_to
-          ? new Date(existingRecord.valid_to.replace(" ", "T"))
-          : null;
-      }
+      let alreadyUsedThisCoupon = false;
+      let userGeneralRow = null;
+      let alreadyHasGeneral = false;
+      let prevCoinValue = 0;
+      let userGeneralValidTo = null;
+      let userGeneralRedeemValid = null;
+      let userGeneralExpired = false;
+      let userIsRefer = false;
 
-      // 7. Calculate new coin value and validity
-      const newCoinValue = existingCoinValue + couponCoinValue;
-      let newValidTo = validToDate;
-      if (existingValidTo && existingValidTo > validToDate) {
-        newValidTo = existingValidTo;
-      }
-
-      // 8. Prepare payload for redeemGeneral
-      const redeemPayload = {
-        firebase_uid,
-        coupon_code: enteredCode,
-        coin_value: newCoinValue,
-        valid_from: couponValidFrom,
-        valid_to: newValidTo.toISOString().slice(0, 19).replace("T", " "),
-        redeem_at: now.toISOString().slice(0, 19).replace("T", " "),
-        redeem_valid: couponValidTo,
-        is_coupon: 1,
-        is_refer: existingRecord?.is_refer || 0,
-        is_razor_pay: existingRecord?.is_razor_pay || 0,
-        sended_by: "",
-        sended_email: "",
-      };
-
-      // 9. Update redeemGeneral
-      const method = existingRecord ? "PUT" : "POST";
-      const redeemUpdateRes = await fetch(
-        "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral",
-        {
-          method,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(redeemPayload),
+      if (Array.isArray(generalData) && generalData.length > 0) {
+        alreadyUsedThisCoupon = generalData.some(
+          (row) => (row.coupon_code || "").toLowerCase() === enteredCode.toLowerCase()
+        );
+        userGeneralRow = generalData[0];
+        alreadyHasGeneral = true;
+        prevCoinValue = Number(userGeneralRow.coin_value) || 0;
+        userGeneralValidTo = userGeneralRow.valid_to;
+        userGeneralRedeemValid = userGeneralRow.redeem_valid;
+        userIsRefer = !!userGeneralRow.is_refer;
+        if (userGeneralValidTo && new Date(userGeneralValidTo) < today) {
+          userGeneralExpired = true;
+          prevCoinValue = 0;
         }
-      );
-
-      if (!redeemUpdateRes.ok) {
-        throw new Error("Failed to update redeemGeneral");
       }
 
-      // 10. Add to coin_history
-      await addCoinHistoryEntry(couponCoinValue);
+      if (alreadyUsedThisCoupon) {
+        toast.dismiss("coupon-process");
+        toast.warning("You have already used this coupon code.");
+        return;
+      }
 
-      // 11. Send RCS message
-      await sendRcsCouponMessage(couponCoinValue);
+      if (alreadyHasGeneral) {
+        const redeemValidDate = userGeneralRedeemValid
+          ? new Date(userGeneralRedeemValid)
+          : null;
+        const existingValidToDate = userGeneralValidTo
+          ? new Date(userGeneralValidTo)
+          : null;
+
+        if (existingValidToDate && existingValidToDate < today) {
+          if (!redeemValidDate || redeemValidDate < today) {
+            try {
+              const resetResponse = await fetch(REDEEM_GENERAL_API, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  firebase_uid,
+                  coin_value: 0,
+                  ...(userIsRefer ? { is_refer: 1 } : {}),
+                }),
+              });
+
+              if (!resetResponse.ok) {
+                const errorData = await resetResponse.json();
+                if (resetResponse.status === 400 && errorData.message?.includes("negative")) {
+                  toast.dismiss("coupon-process");
+                  toast.error("Error: Invalid coin value detected. Please contact support.");
+                  return;
+                }
+                throw new Error(`HTTP ${resetResponse.status}: ${errorData.message || "Unknown error"}`);
+              }
+
+              toast.dismiss("coupon-process");
+              toast.error("Your coupon is expired. Coin value reset to zero.");
+              if (fetchSubscription) {
+                await fetchSubscription();
+              }
+              setCouponCode("");
+              setPendingCouponCode("");
+              if (setActiveTab) {
+                setActiveTab("subscription-details");
+              }
+              return;
+            } catch (error) {
+              console.error("Error resetting coin value:", error);
+              toast.dismiss("coupon-process");
+              toast.error("Error processing expired coupon. Please try again.");
+              return;
+            }
+          }
+        }
+      }
+
+      let popupMsg = "";
+      let coinsToAdd = couponCoinValue;
+      let totalCoinsToUpdate = couponCoinValue;
+
+      const now = new Date();
+      const redeem_at = now.toISOString().slice(0, 19).replace("T", " ");
+
+      // Calculate redeem_valid based on coin_expiry from coupon data
+      let redeemValidDays = 30; // Default 30 days if coin_expiry is not specified
+      if (coinExpiry && !isNaN(coinExpiry)) {
+        redeemValidDays = coinExpiry * 30; // Convert months to days (1 month = 30 days)
+      }
+
+      const redeem_valid = new Date(
+        now.getTime() + redeemValidDays * 24 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 19)
+        .replace("T", " ");
+
+      const newValidToDate = new Date(couponValidTo);
+      const existingValidToDate = userGeneralValidTo
+        ? new Date(userGeneralValidTo)
+        : null;
+      let finalValidTo;
+      if (existingValidToDate && existingValidToDate > newValidToDate) {
+        finalValidTo = existingValidToDate.toISOString().slice(0, 19).replace("T", " ");
+      } else {
+        finalValidTo = newValidToDate.toISOString().slice(0, 19).replace("T", " ");
+      }
+
+      let coinsForWhatsapp = couponCoinValue;
+
+      if (couponFeature === "Unique") {
+        if (alreadyHasGeneral && !userGeneralExpired) {
+          toast.dismiss("coupon-process");
+          toast.error(
+            "You already have a coupon applied. Unique coupons are for one-time use per user."
+          );
+          return;
+        }
+
+        try {
+          const generalResponse = await fetch(REDEEM_GENERAL_API, {
+            method: alreadyHasGeneral ? "PUT" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              firebase_uid,
+              coupon_code: enteredCode,
+              coin_value: couponCoinValue,
+              valid_from: couponValidFrom,
+              valid_to: finalValidTo,
+              is_coupon: 1,
+              redeem_at,
+              redeem_valid,
+              ...(userIsRefer ? { is_refer: 1 } : {}),
+            }),
+          });
+
+          if (!generalResponse.ok) {
+            const errorData = await generalResponse.json();
+            if (generalResponse.status === 400 && errorData.message?.includes("negative")) {
+              toast.dismiss("coupon-process");
+              toast.error("Error: Invalid coin value detected. Please contact support.");
+              return;
+            }
+            throw new Error(`HTTP ${generalResponse.status}: ${errorData.message || "Unknown error"}`);
+          }
+
+          const uniqueResponse = await fetch(REDEEM_UNIQUE_API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              firebase_uid,
+              coupon_code: enteredCode,
+              coin_value: couponCoinValue,
+              valid_from: couponValidFrom,
+              valid_to: finalValidTo,
+              is_coupon: 1,
+              redeem_at,
+              redeem_valid,
+              ...(userIsRefer ? { is_refer: 1 } : {}),
+            }),
+          });
+
+          if (!uniqueResponse.ok) {
+            const errorData = await uniqueResponse.json();
+            if (uniqueResponse.status === 400 && errorData.message?.includes("negative")) {
+              toast.dismiss("coupon-process");
+              toast.error("Error: Invalid coin value detected. Please contact support.");
+              return;
+            }
+            throw new Error(`HTTP ${uniqueResponse.status}: ${errorData.message || "Unknown error"}`);
+          }
+
+          await addCoinHistoryEntry(couponCoinValue);
+
+          popupMsg = `Congrats!! You get ${couponCoinValue} coins!!`;
+        } catch (error) {
+          console.error("Error processing Unique coupon:", error);
+          toast.dismiss("coupon-process");
+          toast.error("Error processing coupon. Please try again.");
+          return;
+        }
+      } else if (couponFeature === "Same") {
+        if (alreadyHasGeneral && !userGeneralExpired) {
+          coinsToAdd = couponCoinValue;
+          totalCoinsToUpdate = prevCoinValue + coinsToAdd;
+
+          if (totalCoinsToUpdate < 0) {
+            toast.dismiss("coupon-process");
+            toast.error("Error: Total coin value cannot be negative. Please contact support.");
+            return;
+          }
+
+          try {
+            const generalResponse = await fetch(REDEEM_GENERAL_API, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                firebase_uid,
+                coupon_code: enteredCode,
+                coin_value: totalCoinsToUpdate,
+                valid_from: couponValidFrom,
+                valid_to: finalValidTo,
+                is_coupon: 1,
+                redeem_at,
+                redeem_valid,
+                ...(userIsRefer ? { is_refer: 1 } : {}),
+              }),
+            });
+
+            if (!generalResponse.ok) {
+              const errorData = await generalResponse.json();
+              if (generalResponse.status === 400 && errorData.message?.includes("negative")) {
+                toast.dismiss("coupon-process");
+                toast.error("Error: Invalid coin value detected. Please contact support.");
+                return;
+              }
+              throw new Error(`HTTP ${generalResponse.status}: ${errorData.message || "Unknown error"}`);
+            }
+
+            const sameResponse = await fetch(REDEEM_SAME_API, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                firebase_uid,
+                coupon_code: enteredCode,
+                coin_value: couponCoinValue,
+                valid_from: couponValidFrom,
+                valid_to: finalValidTo,
+                is_coupon: 1,
+                redeem_at,
+                redeem_valid,
+                ...(userIsRefer ? { is_refer: 1 } : {}),
+              }),
+            });
+
+            if (!sameResponse.ok) {
+              const errorData = await sameResponse.json();
+              if (sameResponse.status === 400 && errorData.message?.includes("negative")) {
+                toast.dismiss("coupon-process");
+                toast.error("Error: Invalid coin value detected. Please contact support.");
+                return;
+              }
+              throw new Error(`HTTP ${sameResponse.status}: ${errorData.message || "Unknown error"}`);
+            }
+
+            await addCoinHistoryEntry(coinsToAdd);
+
+            coinsForWhatsapp = coinsToAdd;
+            popupMsg = `Congrats! You get ${coinsToAdd} coins, now you have ${totalCoinsToUpdate} coins!!`;
+          } catch (error) {
+            console.error("Error processing Same coupon:", error);
+            toast.dismiss("coupon-process");
+            toast.error("Error processing coupon. Please try again.");
+            return;
+          }
+        } else {
+          try {
+            const generalResponse = await fetch(REDEEM_GENERAL_API, {
+              method: alreadyHasGeneral ? "PUT" : "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                firebase_uid,
+                coupon_code: enteredCode,
+                coin_value: couponCoinValue,
+                valid_from: couponValidFrom,
+                valid_to: finalValidTo,
+                is_coupon: 1,
+                redeem_at,
+                redeem_valid,
+                ...(userIsRefer ? { is_refer: 1 } : {}),
+              }),
+            });
+
+            if (!generalResponse.ok) {
+              const errorData = await generalResponse.json();
+              if (generalResponse.status === 400 && errorData.message?.includes("negative")) {
+                toast.dismiss("coupon-process");
+                toast.error("Error: Invalid coin value detected. Please contact support.");
+                return;
+              }
+              throw new Error(`HTTP ${generalResponse.status}: ${errorData.message || "Unknown error"}`);
+            }
+
+            const sameResponse = await fetch(REDEEM_SAME_API, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                firebase_uid,
+                coupon_code: enteredCode,
+                coin_value: couponCoinValue,
+                valid_from: couponValidFrom,
+                valid_to: finalValidTo,
+                is_coupon: 1,
+                redeem_at,
+                redeem_valid,
+                ...(userIsRefer ? { is_refer: 1 } : {}),
+              }),
+            });
+
+            if (!sameResponse.ok) {
+              const errorData = await sameResponse.json();
+              if (sameResponse.status === 400 && errorData.message?.includes("negative")) {
+                toast.dismiss("coupon-process");
+                toast.error("Error: Invalid coin value detected. Please contact support.");
+                return;
+              }
+              throw new Error(`HTTP ${sameResponse.status}: ${errorData.message || "Unknown error"}`);
+            }
+
+            await addCoinHistoryEntry(couponCoinValue);
+
+            popupMsg = `Congrats!! You get ${couponCoinValue} coins!!`;
+          } catch (error) {
+            console.error("Error processing Same coupon:", error);
+            toast.dismiss("coupon-process");
+            toast.error("Error processing coupon. Please try again.");
+            return;
+          }
+        }
+      } else {
+        console.log(`🎉 Processing special coupon feature: ${couponFeature}`);
+
+        try {
+          const generalResponse = await fetch(REDEEM_GENERAL_API, {
+            method: alreadyHasGeneral ? "PUT" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              firebase_uid,
+              coupon_code: enteredCode,
+              coin_value: couponCoinValue,
+              valid_from: couponValidFrom,
+              valid_to: finalValidTo,
+              is_coupon: 1,
+              redeem_at,
+              redeem_valid,
+              ...(userIsRefer ? { is_refer: 1 } : {}),
+            }),
+          });
+
+          if (!generalResponse.ok) {
+            const errorData = await generalResponse.json();
+            if (generalResponse.status === 400 && errorData.message?.includes("negative")) {
+              toast.dismiss("coupon-process");
+              toast.error("Error: Invalid coin value detected. Please contact support.");
+              return;
+            }
+            throw new Error(`HTTP ${generalResponse.status}: ${errorData.message || "Unknown error"}`);
+          }
+
+          await addCoinHistoryEntry(couponCoinValue);
+
+          popupMsg = `Congrats!! You get ${couponCoinValue} coins!!`;
+        } catch (error) {
+          console.error(`Error processing ${couponFeature} coupon:`, error);
+          toast.dismiss("coupon-process");
+          toast.error("Error processing coupon. Please try again.");
+          return;
+        }
+      }
+
+      await sendRcsCouponMessage(coinsForWhatsapp);
 
       toast.dismiss("coupon-process");
-      toast.success(`Coupon applied successfully! You received ${couponCoinValue} coins.`);
-      
       setCouponCode("");
       setPendingCouponCode("");
-      
-      if (fetchSubscription) fetchSubscription();
+
+      if (fetchSubscription) await fetchSubscription();
       if (setActiveTab) setActiveTab("payment");
+
+      toast.success(popupMsg);
+      setTimeout(() => {
+        window.location.href = "/provider/dashboard";
+      }, 1200);
     } catch (err) {
       toast.dismiss("coupon-process");
       toast.error("Error applying coupon. Please try again.");

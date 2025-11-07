@@ -872,7 +872,7 @@ const Education = forwardRef(({
               )}
               {degreeName && (
               <div className="w-full relative">
-                <InputWithTooltip label="Degree Name">
+                <InputWithTooltip label="Degree Name" required>
                   <select
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                     style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
@@ -1058,7 +1058,7 @@ const Education = forwardRef(({
               )}
               {masterName && (
               <div className="w-full relative">
-                <InputWithTooltip label="Master Degree Name">
+                <InputWithTooltip label="Master Degree Name" required>
                   <select
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                     style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
@@ -2030,9 +2030,6 @@ const Education = forwardRef(({
 
       // In Full Mode, validate additional Grade 10 mandatory fields (those with purple highlighting)
       if (!isEasyMode) {
-      if (!grade10Data.percentage || grade10Data.percentage.trim() === "") {
-        errors.push("Please enter Grade 10 grade/percentage");
-      }
       if (!grade10Data.mode || grade10Data.mode.trim() === "") {
         errors.push("Please select Grade 10 mode of study");
       }
@@ -2044,7 +2041,7 @@ const Education = forwardRef(({
         const data = edu.data;
 
         switch (type) {
-                      case "grade12":
+            case "grade12":
             // Only validate fields that are actually visible
             if (grade12courseStatus && !data.courseStatus) {
               errors.push("Please select Grade 12 course status");

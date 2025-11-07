@@ -704,6 +704,9 @@ const Coupons = ({
       await fetchSubscription();
       setActiveTab("subscription-details");
       toast.success(popupMsg);
+      setTimeout(() => {
+        window.location.href = "/seeker/dashboard";
+      }, 1200);
     } catch (err) {
       toast.dismiss("coupon-process");
       toast.error("Error processing coupon. Please try again later.");

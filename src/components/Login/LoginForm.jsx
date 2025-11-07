@@ -6,8 +6,8 @@ import LoginWithSocial from "./LoginWithSocial";
 import { getFirebaseErrorMessage } from "../../utils/firebaseErrorMessages";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { cleanupModals } from "../../utils/modalCleanup";
-import { Skeleton } from "@mui/material";
 import InputWithTooltip from "../../services/InputWithTooltip";
+import LoadingState from "../common/LoadingState";
 
 const API_URL = "https://2u7ec1e22c.execute-api.ap-south-1.amazonaws.com/staging/users";
 const PERSONAL_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal";
@@ -338,15 +338,19 @@ const LoginForm = () => {
               </div>
             </div>
 
-            {/* Right Section - Loading Spinner */}
+            {/* Right Section - Enhanced Loading Experience */}
             <div className="w-full lg:w-1/2 flex items-center justify-center px-3 sm:px-6 md:px-8 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg">
-              <div className="w-full max-w-xs sm:max-w-sm md:max-w-md space-y-5">
-                <p className="text-center text-red-600 font-large">Logging you in…</p>
-                <Skeleton variant="text" height={40} />
-                <Skeleton variant="rectangular" height={56} sx={{ borderRadius: 1 }} />
-                <Skeleton variant="rectangular" height={56} sx={{ borderRadius: 1 }} />
-                <Skeleton variant="rectangular" height={56} sx={{ borderRadius: 1 }} />
-                <Skeleton variant="rectangular" height={48} sx={{ borderRadius: 1 }} />
+              <div className="relative w-full max-w-md">
+                <LoadingState
+                  title="Hold tight, educator!"
+                  subtitle="We’re opening your Teacherlink dashboard right now."
+                  layout="card"
+                  className="shadow-xl"
+                >
+                  <p className="mt-6 text-sm text-slate-600 text-center">
+                    One moment while we prepare your workspace.
+                  </p>
+                </LoadingState>
               </div>
             </div>
           </>
