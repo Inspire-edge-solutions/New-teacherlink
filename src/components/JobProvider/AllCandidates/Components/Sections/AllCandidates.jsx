@@ -13,6 +13,7 @@ import { parseLanguages, parseEducation } from '../utils/candidateUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
 import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
 import '../styles/candidate-highlight.css';
+import LoadingState from '../../../../common/LoadingState';
 
 const AllCandidates = ({ 
   onViewCandidate, 
@@ -574,13 +575,11 @@ const AllCandidates = ({
   // Loading state
   if (loading || userLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
-            <span className="sr-only">Loading...</span>
-          </div>
-          <p className="mt-2 text-gray-600">Loading candidates...</p>
-        </div>
+      <div className="py-12">
+        <LoadingState
+          title="Loading candidate directory…"
+          subtitle="We’re assembling the candidate list so you can review them."
+        />
       </div>
     );
   }

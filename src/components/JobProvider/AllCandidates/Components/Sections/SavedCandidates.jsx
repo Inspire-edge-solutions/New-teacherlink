@@ -11,6 +11,7 @@ import CandidateApiService from '../shared/CandidateApiService';
 import { useAuth } from "../../../../../Context/AuthContext";
 import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
 import '../styles/candidate-highlight.css';
+import LoadingState from '../../../../common/LoadingState';
 
 const SavedCandidates = ({ 
   onViewCandidate, 
@@ -204,13 +205,11 @@ const SavedCandidates = ({
 
   if (loading || userLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent" role="status">
-            <span className="sr-only">Loading...</span>
-          </div>
-          <p className="mt-2 text-gray-600">Loading saved candidates...</p>
-        </div>
+      <div className="py-12">
+        <LoadingState
+          title="Bringing in your saved candidates…"
+          subtitle="We’re retrieving candidate profiles you’ve bookmarked so you can review them."
+        />
       </div>
     );
   }

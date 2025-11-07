@@ -6,7 +6,6 @@ import LoginWithSocial from "./LoginWithSocial";
 import { getFirebaseErrorMessage } from "../../utils/firebaseErrorMessages";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { cleanupModals } from "../../utils/modalCleanup";
-import Spinner from "../../utils/spinner/Spinner";
 import { Skeleton } from "@mui/material";
 import InputWithTooltip from "../../services/InputWithTooltip";
 

@@ -7,7 +7,6 @@ import axios from 'axios';
 import ModalPortal from '../../../common/ModalPortal';
 
 const ProfileCompletionPopup = () => {
-  console.log('ProfileCompletionPopup component rendered');
   const { user } = useAuth();
   const [showPopup, setShowPopup] = useState(false);
   const [completionData, setCompletionData] = useState(null);
@@ -15,23 +14,16 @@ const ProfileCompletionPopup = () => {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    console.log('ProfileCompletionPopup useEffect triggered, user:', user?.uid);
     if (user?.uid) {
-      console.log('User UID found, calling checkProfileCompletion');
       checkProfileCompletion();
-    } else {
-      console.log('No user UID available');
     }
   }, [user]);
 
   const checkProfileCompletion = async () => {
-    console.log('checkProfileCompletion called with user UID:', user?.uid);
     if (!user?.uid) {
-      console.log('No user UID, returning early');
       return;
     }
 
-    console.log('Starting profile completion check...');
     setLoading(true);
     try {
       const authHeaders = {
@@ -65,8 +57,6 @@ const ProfileCompletionPopup = () => {
          axios.get(`https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/additional_info2`, { params: { firebase_uid: user.uid }, ...authHeaders }).catch(() => ({ data: [] })),
          axios.get(`https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/languages`, { params: { firebase_uid: user.uid }, ...authHeaders }).catch(() => ({ data: [] }))
        ]);
-
-       
 
       // Use the same completion calculation logic as dashboard ProfileCompletion
       const addressData = [...(presentAddressRes.data || []), ...(permanentAddressRes.data || [])];
@@ -249,33 +239,18 @@ const ProfileCompletionPopup = () => {
         fullMode: { percentage: fullModePercentage, completedSections: fullModeCompleted, totalSections: 6 }
       };
       
-             setCompletionData(completionDataToSet);
-      
-                    console.log('Profile completion calculated:', { percentage, easyModePercentage, fullModePercentage });
+      setCompletionData(completionDataToSet);
        
        // Show popup if either profile type is incomplete
        if (easyModePercentage < 100 || fullModePercentage < 100) {
          // Check if user has dismissed this popup recently
          const lastDismissed = localStorage.getItem(`profilePopupDismissed_${user.uid}`);
          const shouldShow = !lastDismissed || (Date.now() - parseInt(lastDismissed)) > (24 * 60 * 60 * 1000); // 24 hours
-         
-         console.log('Popup visibility check:', { 
-           lastDismissed, 
-           shouldShow, 
-           easyModePercentage, 
-           fullModePercentage,
-           easyIncomplete: easyModePercentage < 100,
-           fullIncomplete: fullModePercentage < 100
-         });
-         
+
          if (shouldShow) {
-           console.log('Setting popup to show - one or both profiles incomplete');
            setShowPopup(true);
-         } else {
-           console.log('Popup dismissed recently, not showing');
          }
        } else {
-         console.log('Both profiles are 100% complete, not showing popup');
        }
 
      } catch (error) {
@@ -307,10 +282,7 @@ const ProfileCompletionPopup = () => {
     checkProfileCompletion();
   };
 
-     console.log('Render condition check:', { loading, hasCompletionData: !!completionData, showPopup, dismissed });
-   
    if (loading || !completionData || !showPopup || dismissed) {
-     console.log('Returning null, not rendering popup');
      return null;
    }
 

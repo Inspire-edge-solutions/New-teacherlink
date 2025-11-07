@@ -600,57 +600,65 @@ const Education = forwardRef(({
 
   // Helper function to get minimum year based on previous education level
   const getMinimumYearForLevel = (educationType, currentIndex = null) => {
+    const baseYear = 1960;
+
     // Grade 10 has no minimum (base level)
     if (educationType === "grade10") {
-      return 1960;
+      return baseYear;
     }
 
-    // Grade 12 minimum = Grade 10 year (if exists)
+    // Grade 12 minimum = (Grade 10 year + 2) if Grade 10 exists
     if (educationType === "grade12") {
-      const grade10Year = parseInt(grade10Data.yearOfPassing);
-      return grade10Year && !isNaN(grade10Year) ? grade10Year : 1960;
+      const grade10Year = parseInt(grade10Data.yearOfPassing, 10);
+      if (!Number.isNaN(grade10Year)) {
+        return grade10Year + 2;
+      }
+      return baseYear;
     }
 
     // For other levels, find the maximum year from all previous levels
-    let maxPreviousYear = 1960;
-    
+    let maxPreviousYear = null;
+
+    const updateMaxYear = (rawYear) => {
+      const parsedYear = parseInt(rawYear, 10);
+      if (!Number.isNaN(parsedYear)) {
+        maxPreviousYear = maxPreviousYear === null ? parsedYear : Math.max(maxPreviousYear, parsedYear);
+      }
+    };
+
     // Always check Grade 10 first
-    const grade10Year = parseInt(grade10Data.yearOfPassing);
-    if (grade10Year && !isNaN(grade10Year)) {
-      maxPreviousYear = Math.max(maxPreviousYear, grade10Year);
-    }
+    updateMaxYear(grade10Data.yearOfPassing);
 
     // Check all additional education entries (including Grade 12)
     additionalEducation.forEach((entry, idx) => {
       // Skip current entry if checking for same type
       if (currentIndex !== null && idx >= currentIndex) return;
-      
+
       // Skip if entry type doesn't exist or data doesn't exist
       if (!entry.type || !entry.data) return;
-      
+
       // Get year from either yearOfPassing or yearOfCompletion (doctorate uses yearOfCompletion)
-      // Note: year is stored in entry.data, not directly in entry
       const entryYearStr = entry.data.yearOfPassing || entry.data.yearOfCompletion || "";
-      const entryYear = parseInt(entryYearStr);
-      
-      if (entryYearStr && !isNaN(entryYear)) {
+      const entryYear = parseInt(entryYearStr, 10);
+
+      if (entryYearStr && !Number.isNaN(entryYear)) {
         // Determine hierarchy: grade12 < degree < masterDegree < doctorate
         const currentLevel = getEducationLevelOrder(educationType);
         const entryLevel = getEducationLevelOrder(entry.type);
-        
+
         // Only consider entries that come BEFORE this level in hierarchy
-        // For example: 
-        // - If current is "degree" (level 3), consider "grade12" (level 2) and "grade10" (level 1)
-        // - If current is "nttMtt" (level 2), consider "grade10" (level 1) and "grade12" (level 2) if it exists
-        // - If current is "certificate" (level 3), consider "grade12" (level 2) and "grade10" (level 1)
         // Use <= for same-level entries that come before in the array (e.g., multiple grade12 entries)
         if (entryLevel < currentLevel || (entryLevel === currentLevel && idx < currentIndex)) {
-          maxPreviousYear = Math.max(maxPreviousYear, entryYear);
+          updateMaxYear(entryYear);
         }
       }
     });
 
-    return maxPreviousYear;
+    if (maxPreviousYear !== null) {
+      return maxPreviousYear + 1;
+    }
+
+    return baseYear;
   };
 
   // Helper to get numeric order for education levels (lower = earlier in sequence)
@@ -821,7 +829,7 @@ const Education = forwardRef(({
             )}
             {grade12mode && (
               <div className="w-full relative">
-                <InputWithTooltip label="Mode of Study">
+                <InputWithTooltip label="Mode of Study" required>
                   <select
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                     style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
@@ -1005,9 +1013,9 @@ const Education = forwardRef(({
                   </InputWithTooltip>
                 </div>
               )}
-              {degreeMode && (
+            {degreeMode && (
                 <div className="w-full relative">
-                  <InputWithTooltip label="Mode of Study">
+                  <InputWithTooltip label="Mode of Study" required>
                     <select
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                       style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
@@ -1191,7 +1199,7 @@ const Education = forwardRef(({
               )}
               {masterMode && (
                 <div className="w-full relative">
-                  <InputWithTooltip label="Mode of Study">
+                  <InputWithTooltip label="Mode of Study" required>
                     <select
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                       style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
@@ -1323,7 +1331,7 @@ const Education = forwardRef(({
               )}
               {doctorateMode && (
                 <div className="w-full relative">
-                  <InputWithTooltip label="Mode of Study">
+                  <InputWithTooltip label="Mode of Study" required>
                     <select
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                       style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
@@ -1480,7 +1488,7 @@ const Education = forwardRef(({
                     </InputWithTooltip>
                   </div>
                   <div className="w-full relative">
-                    <InputWithTooltip label="Mode of Study">
+                    <InputWithTooltip label="Mode of Study" required>
                       <select
                         className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                         style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
@@ -1666,7 +1674,7 @@ const Education = forwardRef(({
               )}
               {bEdMode && (
                 <div className="w-full relative">
-                  <InputWithTooltip label="Mode of Study">
+                  <InputWithTooltip label="Mode of Study" required>
                     <select
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                       style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
@@ -1795,7 +1803,7 @@ const Education = forwardRef(({
               )}
               {certificateMode && (
                 <div className="w-full relative">
-                  <InputWithTooltip label="Mode of Study">
+                  <InputWithTooltip label="Mode of Study" required>
                     <select
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                       style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
@@ -1985,7 +1993,7 @@ const Education = forwardRef(({
                     </InputWithTooltip>
                   </div>
                   <div className="w-full relative">
-                    <InputWithTooltip label="Mode of Study">
+                    <InputWithTooltip label="Mode of Study" required>
                       <select
                         className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                         style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
@@ -2022,9 +2030,12 @@ const Education = forwardRef(({
 
       // In Full Mode, validate additional Grade 10 mandatory fields (those with purple highlighting)
       if (!isEasyMode) {
-        if (!grade10Data.percentage || grade10Data.percentage.trim() === "") {
-          errors.push("Please enter Grade 10 grade/percentage");
-        }
+      if (!grade10Data.percentage || grade10Data.percentage.trim() === "") {
+        errors.push("Please enter Grade 10 grade/percentage");
+      }
+      if (!grade10Data.mode || grade10Data.mode.trim() === "") {
+        errors.push("Please select Grade 10 mode of study");
+      }
       }
 
       // Validate additional education entries - check mandatory fields based on visibility props
@@ -2444,11 +2455,12 @@ const Education = forwardRef(({
                 </InputWithTooltip>
               </div>
               <div className="w-full">
-                <InputWithTooltip label="Mode of Study">
+                <InputWithTooltip label="Mode of Study" required>
                   <div className="relative">
                     <select
                       value={grade10Data.mode || ""}
                       onChange={(e) => handleGrade10Change("mode", e.target.value)}
+                      required
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                       style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', backgroundImage: 'none' }}
                     >

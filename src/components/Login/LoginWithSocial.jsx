@@ -357,7 +357,15 @@ const LoginWithSocial = () => {
     <>
       <div className="w-full">
         {loading ? (
-          <Skeleton variant="rectangular" width="100%" height={50} sx={{ borderRadius: 2 }} />
+          <button
+            className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-300 text-gray-500 font-medium rounded-lg transition-all duration-200 disabled:opacity-80 disabled:cursor-not-allowed"
+            type="button"
+            disabled
+            aria-live="polite"
+          >
+            <FcGoogle className="w-5 h-5 animate-pulse" />
+            Connecting to Google…
+          </button>
         ) : (
           <button
             className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"

@@ -16,6 +16,7 @@ import { toast } from "react-toastify";
 import MediaUpload from "./MediaUpload";
 import ProfileCompletionPopup from "../../Dashboard/Components/ProfileCompletionPopup";
 import axios from "axios";
+import LoadingState from '../../../common/LoadingState';
 
 
 const FormInfoBox = () => {
@@ -794,7 +795,15 @@ const FormInfoBox = () => {
   }
 
   if (!steps.length) {
-    return <div className="bg-white rounded-lg p-4 shadow-sm">Loading profile form...</div>;
+    return (
+      <div className="py-12">
+        <LoadingState
+          title="Loading your profile builder…"
+          subtitle="We’re preparing the form so you can complete or edit your profile details."
+          layout="card"
+        />
+      </div>
+    );
   }
 
   const renderCurrentStep = () => {

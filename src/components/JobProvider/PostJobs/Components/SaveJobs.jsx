@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../../../Context/AuthContext';
 import JobDetailsView from '../Shared/JobDetailsView';
 import noDataIllustration from '../../../../assets/Illustrations/No data found.png';
+import LoadingState from '../../../common/LoadingState';
 
 const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
   const { user } = useAuth();
@@ -389,13 +390,11 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
 
   if (loading) {
     return (
-      <div className="w-full max-w-full">
-        <div className="text-center py-12">
-          <div className="inline-block w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" role="status">
-            <span className="sr-only">Loading...</span>
-          </div>
-          <p className="mt-2 text-gray-600">Loading saved jobs...</p>
-        </div>
+      <div className="w-full max-w-full py-12">
+        <LoadingState
+          title="Loading saved drafts…"
+          subtitle="We’re fetching the job drafts you’ve saved so you can edit or post them."
+        />
       </div>
     );
   }

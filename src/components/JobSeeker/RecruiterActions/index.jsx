@@ -1,9 +1,3 @@
-import React from 'react'
+import RecruiterActions from './components/RecruiterActions';
 
-const RecruiterActionsComponent = () => {
-  return (
-    <div>This page is under development</div>
-  )
-}
-
-export default RecruiterActionsComponent
+export default RecruiterActions;

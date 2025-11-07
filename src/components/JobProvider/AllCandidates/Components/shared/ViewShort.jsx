@@ -10,6 +10,7 @@ import { useAuth } from "../../../../../Context/AuthContext";
 import { decodeCandidateData } from '../../../../../utils/dataDecoder';
 import CandidateApiService from './CandidateApiService';
 import { getPrintPageStyle } from '../utils/printStyles';
+import LoadingState from '../../../../common/LoadingState';
 
 const FULL_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/fullapi';
 const EDUCATION_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails';
@@ -475,10 +476,11 @@ const ViewShort = ({
   }
   if (isLoading) {
     return (
-      <div className="text-center p-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
+      <div className="py-12">
+        <LoadingState
+          title="Loading candidate snapshot…"
+          subtitle="We’re gathering the latest profile details for this candidate."
+        />
       </div>
     );
   }

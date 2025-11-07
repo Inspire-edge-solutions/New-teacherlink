@@ -25,10 +25,20 @@ const selectStyles = {
     ...base,
     color: '#9ca3af',
   }),
+  menuPortal: (base) => ({
+    ...base,
+    zIndex: 9999,
+  }),
+  menu: (base) => ({
+    ...base,
+    zIndex: 9999,
+  }),
 };
 
 const Address = forwardRef(({ className, permanentCity, presentCity, formData: parentFormData, updateFormData }, ref) => {
   const { user } = useAuth();
+
+  const menuPortalTarget = typeof window !== "undefined" ? document.body : null;
 
   // ========== CSC Data ==========
   const [countries, setCountries] = useState([]);
@@ -484,6 +494,8 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
                     onChange={(option) => handleAddressChange("permanentAddress", "country", option)}
                     isClearable={false}
                     styles={selectStyles}
+                    menuPortalTarget={menuPortalTarget}
+                    menuPosition="fixed"
                   />
                 </InputWithTooltip>
               </div>
@@ -501,6 +513,8 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
                     isDisabled={!localFormData.permanentAddress.country}
                     isClearable={false}
                     styles={selectStyles}
+                    menuPortalTarget={menuPortalTarget}
+                    menuPosition="fixed"
                   />
                 </InputWithTooltip>
               </div>
@@ -518,6 +532,8 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
                       isDisabled={!localFormData.permanentAddress.state}
                       isClearable={false}
                       styles={selectStyles}
+                      menuPortalTarget={menuPortalTarget}
+                      menuPosition="fixed"
                     />
                   </InputWithTooltip>
                 </div>
@@ -557,6 +573,8 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
                       onChange={(option) => handleAddressChange("presentAddress", "country", option)}
                       isClearable={false}
                       styles={selectStyles}
+                      menuPortalTarget={menuPortalTarget}
+                      menuPosition="fixed"
                     />
                   </InputWithTooltip>
                 </div>
@@ -574,6 +592,8 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
                       isDisabled={!localFormData.presentAddress.country}
                       isClearable={false}
                       styles={selectStyles}
+                      menuPortalTarget={menuPortalTarget}
+                      menuPosition="fixed"
                     />
                   </InputWithTooltip>
                 </div>
@@ -591,6 +611,8 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
                         isDisabled={!localFormData.presentAddress.state}
                         isClearable={false}
                         styles={selectStyles}
+                        menuPortalTarget={menuPortalTarget}
+                        menuPosition="fixed"
                       />
                     </InputWithTooltip>
                   </div>

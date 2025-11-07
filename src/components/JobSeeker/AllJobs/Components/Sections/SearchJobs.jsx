@@ -13,6 +13,7 @@ import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import { toast } from "react-toastify";
 import { useAuth } from "../../../../../Context/AuthContext";
 import InputWithTooltip from "../../../../services/InputWithTooltip";
+import LoadingState from '../../../../common/LoadingState';
 
 // Additional API endpoints for specific functionality
 const JOB_PREFERENCES_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference";
@@ -1278,11 +1279,12 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
   if (loading) {
     return (
       <div className="widget-content">
-        <div className="loading-container">
-          <div className="spinner-border text-primary" role="status">
-            <span className="sr-only">Loading...</span>
-          </div>
-          <p>Loading jobs...</p>
+        <div className="py-10">
+          <LoadingState
+            title="Searching for jobs…"
+            subtitle="We’re applying your filters to find roles that match your criteria."
+            layout="card"
+          />
         </div>
       </div>
     );

@@ -13,6 +13,7 @@ import { searchJobs } from '../../utils/searchUtils';
 import { formatQualification } from '../../utils/formatUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
 import noJobsIllustration from '../../../../../assets/Illustrations/No jobs.png';
+import LoadingState from '../../../../common/LoadingState';
 
 // Additional API endpoints for specific functionality
 const JOB_PREFERENCE_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference";
@@ -769,11 +770,12 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
   if (loading || userLoading) {
     return (
       <div className="widget-content">
-        <div className="loading-container text-center py-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="sr-only">Loading...</span>
-          </div>
-          <p className="mt-2">Loading jobs...</p>
+        <div className="py-10">
+          <LoadingState
+            title="Finding the best matches for you…"
+            subtitle="We’re analysing your profile and preferences to surface the most relevant jobs."
+            layout="card"
+          />
         </div>
       </div>
     );

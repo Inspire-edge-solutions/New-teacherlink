@@ -97,6 +97,13 @@ const TabDisplay = () => {
 
   console.log('TabDisplay rendered - activeTab:', activeTab); // Debug log
 
+  const handleChangeTab = (tabId) => {
+    if (!tabId || activeTab === tabId) return;
+    setActiveTab(tabId);
+    setViewMode('list');
+    setSelectedJob(null);
+  };
+
   return (
     <div>
       {/* Tab Navigation - Separate Container */}
@@ -113,10 +120,7 @@ const TabDisplay = () => {
                 }`}
                 onClick={() => {
                   console.log('Tab clicked:', tab.id); // Debug log
-                  setActiveTab(tab.id);
-                  // Reset to list view when switching tabs
-                  setViewMode('list');
-                  setSelectedJob(null);
+                  handleChangeTab(tab.id);
                 }}
               >
                 {tab.label}
@@ -142,6 +146,7 @@ const TabDisplay = () => {
                       activeTab === 'applied' ? handleAppliedJobsBackHandler :
                       undefined
                     }
+                    onNavigateToTab={handleChangeTab}
                   />
           )}
         </div>

@@ -1,13 +1,40 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useAuth } from "../../../../Context/AuthContext";
 // CSS imports removed - all styles converted to Tailwind CSS
 import { FaMapMarkerAlt, FaPhone, FaWhatsapp, FaEnvelope } from 'react-icons/fa';
 import { decodeCandidateData } from '../../../../utils/dataDecoder';
+import LoadingState from '../../../common/LoadingState';
 
 // Define a base64 encoded default avatar as a data URI
 const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='120' height='120'%3E%3Ccircle cx='12' cy='7' r='5' fill='%23ccc'/%3E%3Cpath d='M3 19c0-4.1 3.4-8 9-8s9 3.9 9 8H3z' fill='%23ccc'/%3E%3C/svg%3E";
+
+const hasMeaningfulFields = (data, excludedKeys = []) => {
+  if (!data) return false;
+
+  if (Array.isArray(data)) {
+    return data.some((item) => hasMeaningfulFields(item, excludedKeys));
+  }
+
+  if (typeof data !== 'object') {
+    if (typeof data === 'string') return data.trim() !== '';
+    return data !== undefined && data !== null;
+  }
+
+  return Object.keys(data).some((key) => {
+    if (excludedKeys.includes(key)) return false;
+    const value = data[key];
+
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string') return value.trim() !== '';
+    if (typeof value === 'number') return true;
+    if (typeof value === 'boolean') return value;
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === 'object') return Object.keys(value).length > 0;
+    return false;
+  });
+};
 
 const FULL_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/fullapi';
 const EDUCATION_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails';
@@ -26,6 +53,7 @@ function EasyView({ onViewAttempt }) {
   const [photoUrl, setPhotoUrl] = useState(null);
   const [photoError, setPhotoError] = useState(false);
   const [dataCheckComplete, setDataCheckComplete] = useState(false);
+  const noDataToastShownRef = useRef(false);
   
   // Add a useEffect for responsive handling
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -223,31 +251,36 @@ function EasyView({ onViewAttempt }) {
     loadAllData();
   }, [fetchProfileData, fetchEducationData, fetchExperienceData, fetchJobPreferenceData, fetchProfilePhoto]);
 
+  const shouldShowEmptyState = useMemo(() => {
+    const profileHasData = hasMeaningfulFields(profileData, [
+      'firebase_uid',
+      'hasPartialData',
+      'hasEducation',
+      'hasExperience',
+      'hasJobPreferences'
+    ]);
+
+    const educationExists = Array.isArray(educationData) && educationData.length > 0;
+    const mysqlExperienceExists = hasMeaningfulFields(experienceData?.mysqlData || {});
+    const dynamoExperienceExists = Array.isArray(experienceData?.dynamoData?.experienceEntries) &&
+      experienceData.dynamoData.experienceEntries.length > 0;
+    const jobPreferenceExists = hasMeaningfulFields(jobPreferenceData, ['firebase_uid']);
+
+    const hasAnyAssociatedData = educationExists || mysqlExperienceExists || dynamoExperienceExists || jobPreferenceExists;
+
+    return !profileData?.hasPartialData && !profileHasData && !hasAnyAssociatedData;
+  }, [profileData, educationData, experienceData, jobPreferenceData]);
+
   useEffect(() => {
-    // Only check after loading is complete AND data check is complete AND we have a definitive answer about profile data
-    if (!isLoading && dataCheckComplete && profileData !== null) {
-      // Check if profileData is empty or has no meaningful data
-      const hasNoData = !profileData || 
-                       Object.keys(profileData).length === 0 || 
-                       (Object.keys(profileData).length === 1 && Object.prototype.hasOwnProperty.call(profileData, 'firebase_uid'));
-      
-      // Also check if user has any data in other tables
-      const hasAnyData = educationData.length > 0 || 
-                        (experienceData.mysqlData && Object.keys(experienceData.mysqlData).length > 0) ||
-                        (experienceData.dynamoData && experienceData.dynamoData.length > 0) ||
-                        jobPreferenceData;
-      
-      if (hasNoData && !profileData?.hasPartialData && !hasAnyData) {
-        console.log('No profile data found - showing message');
-        toast.info('No profile data found. Please complete your profile information.');
-        if (onViewAttempt) onViewAttempt(); // Notify parent component
-      } else if (profileData?.hasPartialData || hasAnyData) {
-        console.log('Data found (partial or other tables) - not showing error message');
-      } else {
-        console.log('Full profile data found - not showing error message');
-      }
+    if (!isLoading && dataCheckComplete && shouldShowEmptyState && !noDataToastShownRef.current) {
+      toast.info('No profile data found. Please complete your profile information.');
+      noDataToastShownRef.current = true;
     }
-  }, [isLoading, dataCheckComplete, profileData, educationData, experienceData, jobPreferenceData, onViewAttempt]);
+
+    if (!shouldShowEmptyState) {
+      noDataToastShownRef.current = false;
+    }
+  }, [isLoading, dataCheckComplete, shouldShowEmptyState]);
 
   if (!user?.uid) {
     return (
@@ -259,10 +292,11 @@ function EasyView({ onViewAttempt }) {
 
   if (isLoading) {
     return (
-      <div className="text-center p-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
+      <div className="py-12">
+        <LoadingState
+          title="Preparing your quick profile view…"
+          subtitle="We’re gathering your saved information and formatting it for display."
+        />
       </div>
     );
   }
@@ -276,12 +310,8 @@ function EasyView({ onViewAttempt }) {
   }
 
   // If no profile data, don't render anything but stay on the page
-  if (!profileData || Object.keys(profileData).length === 0) {
-    return <div></div>;  // Return empty div to stay on page
-  }
-  
   // If user has partial data, show a message encouraging completion
-  if (profileData.hasPartialData) {
+  if (profileData?.hasPartialData) {
     return (
       <div className="profile-container">
         <div className="alert alert-info text-center">
@@ -296,6 +326,30 @@ function EasyView({ onViewAttempt }) {
         </div>
       </div>
     );
+  }
+
+  if (!isLoading && dataCheckComplete && shouldShowEmptyState) {
+    return (
+      <div className="profile-container flex flex-col items-center justify-center py-12 px-4 text-center">
+        <div className="max-w-md w-full bg-[#F0D8D9] border border-dashed border-gray-300 rounded-xl p-8 shadow-sm">
+          <h4 className="text-xl font-semibold text-gray-800 mb-3">No Profile Data Yet</h4>
+          <p className="text-sm text-gray-600 mb-6">
+            We couldn&apos;t find any profile details to show. Please complete your profile to view it here.
+          </p>
+          <button
+            type="button"
+            onClick={() => onViewAttempt && onViewAttempt()}
+            className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 rounded-lg font-medium text-white bg-gradient-brand hover:bg-gradient-brand-hover transition-all duration-200"
+          >
+            Back to Profile Selection
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profileData) {
+    return null;
   }
 
   const formatDate = (date) => {

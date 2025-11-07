@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from "../../../../Context/AuthContext";
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaMapMarkerAlt, FaPhone, FaWhatsapp, FaFacebook, FaLinkedin, FaEnvelope } from 'react-icons/fa';
 import { decodeCandidateData } from '../../../../utils/dataDecoder';
+import LoadingState from '../../../common/LoadingState';
 
 // Define a base64 encoded default avatar as a data URI
 const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='120' height='120'%3E%3Ccircle cx='12' cy='7' r='5' fill='%23ccc'/%3E%3Cpath d='M3 19c0-4.1 3.4-8 9-8s9 3.9 9 8H3z' fill='%23ccc'/%3E%3C/svg%3E";
@@ -17,6 +18,32 @@ const EXPERIENCE_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/
 const JOB_PREFERENCE_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference';
 const ADDITIONAL_INFO_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/additional_info1';
 const SOCIAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/socialProfile';
+
+const hasMeaningfulFields = (data, excludedKeys = []) => {
+  if (!data) return false;
+
+  if (Array.isArray(data)) {
+    return data.some((item) => hasMeaningfulFields(item, excludedKeys));
+  }
+
+  if (typeof data !== 'object') {
+    if (typeof data === 'string') return data.trim() !== '';
+    return data !== undefined && data !== null;
+  }
+
+  return Object.keys(data).some((key) => {
+    if (excludedKeys.includes(key)) return false;
+    const value = data[key];
+
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string') return value.trim() !== '';
+    if (typeof value === 'number') return true;
+    if (typeof value === 'boolean') return value;
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === 'object') return Object.keys(value).length > 0;
+    return false;
+  });
+};
 
 const Section = ({ title, children }) => (
   <div className="default-form">
@@ -92,9 +119,10 @@ function Fullview({ onViewAttempt, formData }) {
   const [jobPreferenceData, setJobPreferenceData] = useState(null);
   const [additionalInfo, setAdditionalInfo] = useState(null);
   const [socialLinks, setSocialLinks] = useState({ facebook: "", linkedin: "" });
-  const [shouldRedirect, setShouldRedirect] = useState(false);
   const [photoUrl, setPhotoUrl] = useState(null);
   const [photoError, setPhotoError] = useState(false);
+  const noDataToastShownRef = useRef(false);
+  const errorToastShownRef = useRef(false);
 
   // Enhanced responsive handling with better breakpoints
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -358,11 +386,49 @@ function Fullview({ onViewAttempt, formData }) {
   }, [formData, fetchProfileData, fetchEducationData, fetchExperienceData, 
       fetchJobPreferenceData, fetchAdditionalInfo, fetchProfilePhoto, fetchSocialLinks]);
 
+  const shouldShowEmptyState = useMemo(() => {
+    const profileHasData = hasMeaningfulFields(profileData, [
+      'firebase_uid',
+      'hasPartialData',
+      'hasEducation',
+      'hasExperience',
+      'hasJobPreferences',
+      'hasAdditionalInfo1',
+      'hasAdditionalInfo2',
+      'hasSocial'
+    ]);
+
+    const educationExists = Array.isArray(educationData) && educationData.length > 0;
+    const mysqlExperienceExists = hasMeaningfulFields(experienceData?.mysqlData || {});
+    const dynamoExperienceExists = Array.isArray(experienceData?.dynamoData?.experienceEntries) &&
+      experienceData.dynamoData.experienceEntries.length > 0;
+    const jobPreferenceExists = hasMeaningfulFields(jobPreferenceData, ['firebase_uid']);
+    const additionalInfoExists = hasMeaningfulFields(additionalInfo);
+    const socialLinksExists = hasMeaningfulFields(socialLinks);
+
+    const hasAnyAssociatedData = educationExists || mysqlExperienceExists || dynamoExperienceExists || jobPreferenceExists || additionalInfoExists || socialLinksExists;
+
+    return !profileData?.hasPartialData && !profileHasData && !hasAnyAssociatedData;
+  }, [profileData, educationData, experienceData, jobPreferenceData, additionalInfo, socialLinks]);
+
+  useEffect(() => {
+    if (!isLoading && !error && shouldShowEmptyState && !noDataToastShownRef.current) {
+      toast.info("No profile data found. Please complete your profile information.");
+      noDataToastShownRef.current = true;
+    }
+
+    if (!shouldShowEmptyState) {
+      noDataToastShownRef.current = false;
+    }
+  }, [isLoading, error, shouldShowEmptyState]);
+
   useEffect(() => {
     if (!isLoading) {
       if (error) {
-        toast.error("Error loading profile data");
-        setShouldRedirect(true);
+        if (!errorToastShownRef.current) {
+          toast.error("Error loading profile data");
+          errorToastShownRef.current = true;
+        }
       } else if (profileData !== null) {
         // Check if profileData is empty or has no meaningful data
         const hasNoData = !profileData || 
@@ -371,22 +437,19 @@ function Fullview({ onViewAttempt, formData }) {
         
         if (hasNoData && !profileData?.hasPartialData) {
           console.log('No profile data found (Fullview) - showing message');
-          toast.info("No profile data found. Please complete your profile information.");
-          setShouldRedirect(true);
+          if (!noDataToastShownRef.current) {
+            toast.info("No profile data found. Please complete your profile information.");
+            noDataToastShownRef.current = true;
+          }
         } else if (profileData?.hasPartialData) {
           console.log('Partial data found (Fullview) - not showing error message');
         } else {
           console.log('Full profile data found (Fullview) - not showing error message');
+          noDataToastShownRef.current = false;
         }
       }
     }
   }, [isLoading, error, profileData]);
-
-  useEffect(() => {
-    if (shouldRedirect) {
-      onViewAttempt();
-    }
-  }, [shouldRedirect, onViewAttempt]);
 
   if (!user) {
     return (
@@ -398,20 +461,55 @@ function Fullview({ onViewAttempt, formData }) {
 
   if (isLoading) {
     return (
-      <div className="text-center p-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
+      <div className="py-16">
+        <LoadingState
+          title="Assembling your full profile…"
+          subtitle="We’re compiling every section of your profile and formatting it for the detailed view."
+        />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="profile-container flex flex-col items-center justify-center py-12 px-4 text-center">
+        <div className="max-w-md w-full bg-[#F0D8D9] border border-dashed border-gray-300 rounded-xl p-8 shadow-sm">
+          <h4 className="text-xl font-semibold text-gray-800 mb-3">Unable to Load Profile</h4>
+          <p className="text-sm text-gray-600 mb-4">{error}</p>
+          <button
+            type="button"
+            onClick={() => onViewAttempt && onViewAttempt()}
+            className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 rounded-lg font-medium text-white bg-gradient-brand hover:bg-gradient-brand-hover transition-all duration-200"
+          >
+            Back to Profile Selection
+          </button>
         </div>
       </div>
     );
   }
 
-  if (error || !profileData || Object.keys(profileData).length === 0) {
-    return null;
+  if (!isLoading && shouldShowEmptyState) {
+    return (
+      <div className="profile-container flex flex-col items-center justify-center py-12 px-4 text-center">
+        <div className="max-w-md w-full bg-[#F0D8D9] border border-dashed border-gray-300 rounded-xl p-8 shadow-sm">
+          <h4 className="text-xl font-semibold text-gray-800 mb-3">No Profile Data Yet</h4>
+          <p className="text-sm text-gray-600 mb-6">
+            We couldn&apos;t find any profile details to show. Please complete your profile to view it here.
+          </p>
+          <button
+            type="button"
+            onClick={() => onViewAttempt && onViewAttempt()}
+            className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 rounded-lg font-medium text-white bg-gradient-brand hover:bg-gradient-brand-hover transition-all duration-200"
+          >
+            Back to Profile Selection
+          </button>
+        </div>
+      </div>
+    );
   }
   
   // If user has partial data, show a message encouraging completion
-  if (profileData.hasPartialData) {
+  if (profileData?.hasPartialData) {
     return (
       <div className="profile-container">
         <div className="alert alert-info text-center">
@@ -426,6 +524,10 @@ function Fullview({ onViewAttempt, formData }) {
         </div>
       </div>
     );
+  }
+
+  if (!profileData) {
+    return null;
   }
 
   const formatDate = (date) => {

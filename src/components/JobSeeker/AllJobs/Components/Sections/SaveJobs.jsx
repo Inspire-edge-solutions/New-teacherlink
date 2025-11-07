@@ -13,6 +13,7 @@ import { searchJobs } from '../../utils/searchUtils';
 import { formatQualification } from '../../utils/formatUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
 import noJobsIllustration from '../../../../../assets/Illustrations/No jobs.png';
+import LoadingState from '../../../../common/LoadingState';
 
 // API Endpoints
 const FAV_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteJobs';
@@ -22,7 +23,7 @@ const ORG_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/org
 const WHATSAPP_API = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp';
 const RCS_API = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/rcsMessage';
 
-const SaveJobs = ({ onViewJob, onBackFromJobView }) => {
+const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
   const { user, loading: userLoading } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
@@ -476,11 +477,12 @@ const SaveJobs = ({ onViewJob, onBackFromJobView }) => {
   if (loading || userLoading) {
     return (
       <div className="widget-content">
-        <div className="loading-container text-center py-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="sr-only">Loading...</span>
-          </div>
-          <p className="mt-2">Loading saved jobs...</p>
+        <div className="py-10">
+          <LoadingState
+            title="Retrieving your saved jobs…"
+            subtitle="We’re pulling in the roles you saved so you can pick up where you left off."
+            layout="card"
+          />
         </div>
       </div>
     );
@@ -565,11 +567,11 @@ const SaveJobs = ({ onViewJob, onBackFromJobView }) => {
                 You haven't saved any jobs yet. Browse jobs and save the ones you're interested in.
               </p>
               <button
-                className="btn btn-primary"
+                className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg font-medium text-white bg-gradient-brand hover:bg-gradient-brand-hover transition-all duration-200"
                 onClick={() => {
-                  // Optional: navigate to all jobs tab
-                  const allJobsTab = document.querySelector('[data-tab="all"]');
-                  if (allJobsTab) allJobsTab.click();
+                  if (onNavigateToTab) {
+                    onNavigateToTab('all');
+                  }
                 }}
               >
                 Browse Jobs

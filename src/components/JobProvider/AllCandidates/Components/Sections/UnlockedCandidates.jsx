@@ -12,6 +12,7 @@ import { useAuth } from "../../../../../Context/AuthContext";
 import useBulkCandidateActions from '../hooks/useBulkCandidateActions';
 import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
 import '../styles/candidate-highlight.css';
+import LoadingState from '../../../../common/LoadingState';
 
 const UnlockedCandidates = ({ 
   onViewCandidate, 
@@ -282,13 +283,11 @@ const UnlockedCandidates = ({
 
   if (loading || userLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent" role="status">
-            <span className="sr-only">Loading...</span>
-          </div>
-          <p className="mt-2 text-gray-600">Loading unlocked candidates...</p>
-        </div>
+      <div className="py-12">
+        <LoadingState
+          title="Loading unlocked candidates…"
+          subtitle="We’re pulling the candidate profiles you’ve unlocked so you can follow up."
+        />
       </div>
     );
   }

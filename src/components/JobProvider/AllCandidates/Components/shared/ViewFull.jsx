@@ -10,6 +10,7 @@ import { useAuth } from "../../../../../Context/AuthContext";
 import { decodeCandidateData } from '../../../../../utils/dataDecoder';
 import CandidateApiService from './CandidateApiService';
 import { getPrintPageStyle } from '../utils/printStyles';
+import LoadingState from '../../../../common/LoadingState';
 
 const IMAGE_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image";
 const FULL_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/candidate_details_byid';
@@ -791,10 +792,11 @@ function CandidateDetail({
 
   if (isLoading) {
     return (
-      <div className="text-center p-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
+      <div className="py-12">
+        <LoadingState
+          title="Preparing full candidate profile…"
+          subtitle="We’re stitching together every section so you can review the complete profile."
+        />
       </div>
     );
   }

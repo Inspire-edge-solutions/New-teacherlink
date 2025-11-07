@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../../../Context/AuthContext";
 import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import { FaBuilding, FaUser, FaPhone, FaEnvelope, FaMapMarkerAlt, FaGlobe, FaIdCard, FaFacebook, FaTwitter, FaLinkedin, FaInstagram, FaWhatsapp } from 'react-icons/fa';
+import LoadingState from '../../../common/LoadingState';
 
 //------------------------------------------------
 // Helper functions: map countries/states/cities by ID
@@ -247,10 +248,12 @@ const ViewProfile = () => {
   if (loading || isLoading) {
     return (
       <div className="widget-content">
-        <div className="p-3 text-center">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
+        <div className="py-10">
+          <LoadingState
+            title="Loading your organisation profile…"
+            subtitle="We’re assembling your organisation’s details so you can review them."
+            layout="card"
+          />
         </div>
       </div>
     );

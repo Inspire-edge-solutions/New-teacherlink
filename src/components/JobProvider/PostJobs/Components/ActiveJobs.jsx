@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../../../Context/AuthContext';
 import JobDetailsView from '../Shared/JobDetailsView';
 import noJobsIllustration from '../../../../assets/Illustrations/No jobs.png';
+import LoadingState from '../../../common/LoadingState';
 
 // Confirmation Modal Component
 const ConfirmationModal = ({ 
@@ -533,13 +534,11 @@ const ActiveJobs = ({
 
   if (loading) {
     return (
-      <div className="w-full max-w-full">
-        <div className="text-center py-12">
-          <div className="inline-block w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" role="status">
-            <span className="sr-only">Loading...</span>
-          </div>
-          <p className="mt-2 text-gray-600">Loading active jobs...</p>
-        </div>
+      <div className="w-full max-w-full py-12">
+        <LoadingState
+          title="Loading your active postings…"
+          subtitle="We’re collecting the jobs currently live so you can manage them here."
+        />
       </div>
     );
   }

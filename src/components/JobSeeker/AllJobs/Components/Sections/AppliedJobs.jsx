@@ -12,6 +12,7 @@ import { useAuth } from "../../../../../Context/AuthContext";
 import { formatQualification } from '../../utils/formatUtils';
 import ViewJobs from "../ViewJobs";
 import noJobsIllustration from '../../../../../assets/Illustrations/No jobs.png';
+import LoadingState from '../../../../common/LoadingState';
 
 // API Endpoints
 const APPLY_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate';
@@ -315,11 +316,12 @@ const AppliedJobs = () => {
   if (loading || userLoading) {
     return (
       <div className="widget-content">
-        <div className="loading-container text-center py-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="sr-only">Loading...</span>
-          </div>
-          <p className="mt-2">Loading jobs...</p>
+        <div className="py-10">
+          <LoadingState
+            title="Loading your applied jobs…"
+            subtitle="We’re collecting the jobs you’ve applied to so you can review them here."
+            layout="card"
+          />
         </div>
       </div>
     );

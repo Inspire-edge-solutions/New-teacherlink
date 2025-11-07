@@ -17,6 +17,7 @@ import { formatQualification } from '../../utils/formatUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
 import noJobsIllustration from '../../../../../assets/Illustrations/No jobs.png';
 import '../styles/job-highlight.css';
+import LoadingState from '../../../../common/LoadingState';
 
 // Additional API endpoints for specific functionality
 const EDUCATION_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails";
@@ -1146,11 +1147,12 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
   if (loading || userLoading) {
     return (
       <div className="widget-content">
-        <div className="loading-container text-center py-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="sr-only">Loading...</span>
-          </div>
-          <p className="mt-2">Loading jobs...</p>
+        <div className="py-10">
+          <LoadingState
+            title="Loading all job listings…"
+            subtitle="We’re compiling the latest openings so you can explore what’s new."
+            layout="card"
+          />
         </div>
       </div>
     );
