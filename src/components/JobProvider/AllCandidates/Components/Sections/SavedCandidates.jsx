@@ -12,6 +12,7 @@ import { useAuth } from "../../../../../Context/AuthContext";
 import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
 import '../styles/candidate-highlight.css';
 import LoadingState from '../../../../common/LoadingState';
+import { HiOutlineArrowRight } from 'react-icons/hi';
 
 const SavedCandidates = ({ 
   onViewCandidate, 
@@ -19,12 +20,12 @@ const SavedCandidates = ({
   selectedCandidate,
   viewType,
   viewMode,
-  onBackToList
+  onBackToList,
+  onNavigateTab
 }) => {
   const { user, loading: userLoading } = useAuth();
   const navigate = useNavigate();
 
-  const [allCandidates, setAllCandidates] = useState([]);
   const [savedCandidates, setSavedCandidates] = useState([]);
   const [filteredCandidates, setFilteredCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,10 +41,45 @@ const SavedCandidates = ({
   
   const [isSearching, setIsSearching] = useState(false);
   const [candidatePhotos, setCandidatePhotos] = useState({});
+  const [unlockedCandidateIds, setUnlockedCandidateIds] = useState([]);
 
   // Message modal state
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [candidateToMessage, setCandidateToMessage] = useState(null);
+  const [showUnlockPrompt, setShowUnlockPrompt] = useState(false);
+  const [candidateToUnlock, setCandidateToUnlock] = useState(null);
+
+  const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
+    if (!user) return [];
+    const userId = user.firebase_uid || user.uid;
+    if (!userId) return [];
+
+    const unlockedIds = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(`unlocked_${userId}_`)) {
+        try {
+          const stored = localStorage.getItem(key);
+          if (!stored) continue;
+          const parsed = JSON.parse(stored);
+          if (parsed?.unlocked && parsed?.timestamp) {
+            const unlockTime = new Date(parsed.timestamp);
+            const now = new Date();
+            const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
+            if (daysDiff <= 30) {
+              const candidateId = key.replace(`unlocked_${userId}_`, '');
+              if (candidateId) {
+                unlockedIds.push(candidateId);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('SavedCandidates: Error parsing localStorage entry', key, error);
+        }
+      }
+    }
+    return unlockedIds;
+  }, [user]);
 
   const fetchSavedCandidates = useCallback(async () => {
     try {
@@ -57,11 +93,15 @@ const SavedCandidates = ({
         prefs.savedCandidates.includes(c.firebase_uid)
       );
       
-      setAllCandidates(fullCandidates);
       setSavedCandidates(onlySaved);
       setFilteredCandidates(onlySaved);
       setFavouriteCandidates(prefs.favouriteCandidates);
       setDownloadedCandidates(prefs.downloadedCandidates);
+      const combinedUnlocked = new Set([
+        ...getUnlockedCandidatesFromLocalStorage().map(String),
+        ...(prefs.unlockedCandidates || []).map(String)
+      ]);
+      setUnlockedCandidateIds(Array.from(combinedUnlocked));
       
       const photos = await CandidateApiService.fetchCandidatePhotos(onlySaved);
       setCandidatePhotos(photos);
@@ -69,10 +109,11 @@ const SavedCandidates = ({
       console.error('Error fetching saved candidates:', error);
       setSavedCandidates([]);
       setFilteredCandidates([]);
+      setUnlockedCandidateIds(getUnlockedCandidatesFromLocalStorage().map(String));
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, getUnlockedCandidatesFromLocalStorage]);
 
   useEffect(() => {
     if (!user && !userLoading) {
@@ -129,15 +170,55 @@ const SavedCandidates = ({
     onViewCandidate && onViewCandidate(candidate, 'full');
   };
 
+  const buildMessagingCandidate = useCallback((candidate) => {
+    if (!candidate) return null;
+    return {
+      firebase_uid: candidate.firebase_uid,
+      id: candidate.firebase_uid,
+      fullName: candidate.fullName || candidate.name || 'Candidate',
+      name: candidate.name || candidate.fullName || 'Candidate',
+      state: candidate.present_state_name || candidate.state || candidate.permanent_state_name || null,
+      city: candidate.present_city_name || candidate.city || candidate.permanent_city_name || null,
+      email: candidate.email || null,
+      phone: candidate.callingNumber || null,
+      photoUrl: candidatePhotos[candidate.firebase_uid] || candidate.profile_picture || null
+    };
+  }, [candidatePhotos]);
+
   const handleViewShort = (candidate) => {
     onViewCandidate && onViewCandidate(candidate, 'short');
   };
 
   // Handle message candidate - show modal
   const handleMessage = (candidate) => {
-    console.log('SavedCandidates: Messaging candidate:', candidate.firebase_uid);
-    setCandidateToMessage(candidate);
+    if (!candidate) return;
+    const candidateId = String(candidate.firebase_uid || '');
+    const isUnlocked = candidateId && unlockedCandidateIds.includes(candidateId);
+
+    if (!isUnlocked) {
+      console.log('SavedCandidates: Candidate not unlocked, prompting unlock:', candidateId);
+      setCandidateToUnlock(candidate);
+      setShowUnlockPrompt(true);
+      return;
+    }
+
+    console.log('SavedCandidates: Messaging candidate:', candidateId);
+    const messagingCandidate = buildMessagingCandidate(candidate);
+    setCandidateToMessage({ original: candidate, messaging: messagingCandidate });
     setShowMessageModal(true);
+  };
+
+  const handleUnlockPromptClose = () => {
+    setShowUnlockPrompt(false);
+    setCandidateToUnlock(null);
+  };
+
+  const handleUnlockPromptViewProfile = () => {
+    if (candidateToUnlock) {
+      handleViewFull(candidateToUnlock);
+    }
+    setShowUnlockPrompt(false);
+    setCandidateToUnlock(null);
   };
 
   // Handle "Ok" button - close modal, stay on page
@@ -148,12 +229,13 @@ const SavedCandidates = ({
 
   // Handle "Continue Single" button - redirect to messages
   const handleMessageModalContinue = () => {
-    if (candidateToMessage) {
-      navigate('/provider/messages', { 
-        state: { 
-          selectedCandidate: candidateToMessage,
-          startConversation: true 
-        } 
+    if (candidateToMessage?.messaging) {
+      navigate('/provider/messages', {
+        state: {
+          selectedCandidate: candidateToMessage.messaging,
+          startConversation: true
+        },
+        replace: false
       });
     }
     setShowMessageModal(false);
@@ -208,7 +290,7 @@ const SavedCandidates = ({
       <div className="py-12">
         <LoadingState
           title="Bringing in your saved candidates…"
-          subtitle="We’re retrieving candidate profiles you’ve bookmarked so you can review them."
+          subtitle="We’re retrieving the profiles you’ve bookmarked so you can review them."
         />
       </div>
     );
@@ -285,11 +367,11 @@ const SavedCandidates = ({
               </div>
       ) : (
         <div className="text-center py-12">
-          <div className="flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center justify-center gap-4">
             <img 
               src={noCandidateIllustration} 
               alt="No saved candidates" 
-              className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
+              className="w-64 h-64 md:w-80 md:h-80 mb-2 mx-auto"
             />
             <p className="text-gray-600 text-lg font-medium">
               {isSearching 
@@ -297,8 +379,24 @@ const SavedCandidates = ({
                 : 'You haven\'t saved any candidates yet.'
               }
             </p>
+            {!isSearching && (
+              <button
+                className="px-4 py-2 bg-gradient-brand text-white rounded-lg text-sm font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500"
+                onClick={() => {
+                  if (onNavigateTab) {
+                    onNavigateTab('all');
+                    return;
+                  }
+                  const allTab = document.querySelector('[data-tab=\"all\"]');
+                  if (allTab) allTab.click();
+                }}
+              >
+                <span>Browse All Candidates</span>
+                <HiOutlineArrowRight className="text-lg" />
+              </button>
+            )}
           </div>
-              </div>
+        </div>
             )}
 
       {filteredCandidates.length > candidatesPerPage && (
@@ -311,6 +409,50 @@ const SavedCandidates = ({
           currentPageStart={indexOfFirstCandidate + 1}
           currentPageEnd={Math.min(indexOfLastCandidate, filteredCandidates.length)}
         />
+      )}
+
+      {/* Unlock Prompt Modal */}
+      {showUnlockPrompt && candidateToUnlock && (
+        <div
+          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+          onClick={handleUnlockPromptClose}
+        >
+          <div
+            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
+              onClick={handleUnlockPromptClose}
+            >
+              &times;
+            </button>
+
+            <div className="mb-4 mt-0.5 text-center">
+              <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+                Unlock Candidate
+              </h3>
+              <p className="text-gray-600 text-[15px] leading-relaxed">
+                To message {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, please unlock their contact details first. View the profile to unlock and access messaging.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                onClick={handleUnlockPromptClose}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl"
+                onClick={handleUnlockPromptViewProfile}
+              >
+                View Profile
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Message Modal */}

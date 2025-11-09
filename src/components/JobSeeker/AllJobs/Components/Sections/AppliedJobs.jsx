@@ -12,6 +12,8 @@ import { useAuth } from "../../../../../Context/AuthContext";
 import { formatQualification } from '../../utils/formatUtils';
 import ViewJobs from "../ViewJobs";
 import noJobsIllustration from '../../../../../assets/Illustrations/No jobs.png';
+import useJobMessaging from '../hooks/useJobMessaging';
+import JobMessagingModals from '../shared/JobMessagingModals';
 import LoadingState from '../../../../common/LoadingState';
 
 // API Endpoints
@@ -274,6 +276,54 @@ const AppliedJobs = () => {
   const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
   const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
 
+  const isJobApplied = useCallback(() => true, []);
+
+  const handleViewJob = useCallback((job) => {
+    if (!job) return;
+    console.log('AppliedJobs: Viewing job:', job.id);
+    setLastSelectedJobId(job.id);
+    setSelectedJob(job);
+  }, []);
+
+  const {
+    selectedJobs,
+    showMessageModal,
+    jobToMessage,
+    handleMessage,
+    handleMessageModalOk,
+    handleMessageModalContinue,
+    showApplyPrompt,
+    jobToApplyPrompt,
+    handleApplyPromptClose,
+    handleApplyPromptApplyJob,
+    showBulkMessageModal,
+    handleCloseBulkMessageModal,
+    bulkChannel,
+    bulkMessage,
+    bulkMessageChars,
+    bulkError,
+    coinBalance,
+    handleChannelSelect,
+    handleBulkMessageChange,
+    handlePrepareBulkSend,
+    showConfirmModal,
+    bulkSummary,
+    handleCancelConfirmation,
+    handleConfirmSend,
+    isSendingBulk,
+    showInsufficientCoinsModal,
+    requiredCoins,
+    handleCloseInsufficientCoinsModal,
+    handleRechargeNavigate
+  } = useJobMessaging({
+    user,
+    filteredJobs,
+    currentJobs,
+    getJobId,
+    isJobApplied,
+    onViewJob: handleViewJob
+  });
+
   const getVisiblePageNumbers = () => {
     const delta = 2;
     const range = [];
@@ -318,8 +368,8 @@ const AppliedJobs = () => {
       <div className="widget-content">
         <div className="py-10">
           <LoadingState
-            title="Loading your applied jobs…"
-            subtitle="We’re collecting the jobs you’ve applied to so you can review them here."
+            title="Loading applied jobs…"
+            subtitle="We’re gathering the positions you’ve already applied to so you can track progress."
             layout="card"
           />
         </div>
@@ -376,12 +426,6 @@ const AppliedJobs = () => {
   };
 
   // Function to handle viewing a job
-  const handleViewJob = (job) => {
-    console.log('AppliedJobs: Viewing job:', job.id);
-    setLastSelectedJobId(job.id);
-    setSelectedJob(job);
-  };
-
   return (
     <div className="widget-content">
       {selectedJob ? (
@@ -421,7 +465,8 @@ const AppliedJobs = () => {
                         onViewJob={handleViewJob}
                         onSaveJob={handleSaveJob}
                         onFavouriteJob={handleFavouriteJob}
-                        onApplyClick={null} // No apply button in AppliedJobs
+                        onMessage={handleMessage}
+                        messageDisabled={false}
                       />
                     );
                   })}
@@ -453,6 +498,37 @@ const AppliedJobs = () => {
           />
         </>
       )}
+
+      <JobMessagingModals
+        showApplyPrompt={showApplyPrompt}
+        jobToApplyPrompt={jobToApplyPrompt}
+        onApplyPromptClose={handleApplyPromptClose}
+        onApplyPromptApply={handleApplyPromptApplyJob}
+        showMessageModal={showMessageModal}
+        jobToMessage={jobToMessage}
+        onMessageModalOk={handleMessageModalOk}
+        onMessageModalContinue={handleMessageModalContinue}
+        showBulkMessageModal={showBulkMessageModal}
+        bulkChannel={bulkChannel}
+        bulkMessage={bulkMessage}
+        bulkMessageChars={bulkMessageChars}
+        coinBalance={coinBalance}
+        selectedCount={selectedJobs.size}
+        bulkError={bulkError}
+        onChannelSelect={handleChannelSelect}
+        onBulkMessageChange={handleBulkMessageChange}
+        onCloseBulkMessageModal={handleCloseBulkMessageModal}
+        onPrepareBulkSend={handlePrepareBulkSend}
+        showConfirmModal={showConfirmModal}
+        bulkSummary={bulkSummary}
+        isSendingBulk={isSendingBulk}
+        onCancelConfirmation={handleCancelConfirmation}
+        onConfirmSend={handleConfirmSend}
+        showInsufficientCoinsModal={showInsufficientCoinsModal}
+        requiredCoins={requiredCoins}
+        onCloseInsufficientCoinsModal={handleCloseInsufficientCoinsModal}
+        onRechargeNavigate={handleRechargeNavigate}
+      />
     </div>
   );
 };

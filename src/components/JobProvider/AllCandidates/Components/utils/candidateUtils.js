@@ -58,7 +58,7 @@ export const parseEducation = (educationJson) => {
   if (!educationJson) return { types: [], subjects: [] };
   
   try {
-    const types = [];
+    const typesSet = new Set();
     const subjects = [];
     
     // Match JSON objects in the string - handles nested objects
@@ -78,11 +78,46 @@ export const parseEducation = (educationJson) => {
         const detail = JSON.parse(cleanObj);
         
         // Check for various possible field names for education type
-        const educationType = detail.education_type || detail.educationType || 
-                            detail.type || detail.degree || detail.degreeName;
-        if (educationType && typeof educationType === 'string') {
-          types.push(educationType.trim());
-        }
+        const pushValue = (value) => {
+          if (value == null) return;
+          if (Array.isArray(value)) {
+            value.forEach(pushValue);
+            return;
+          }
+          const stringValue = value.toString().trim();
+          if (stringValue) {
+            typesSet.add(stringValue);
+          }
+        };
+
+        const typeCandidates = [
+          detail.education_type,
+          detail.educationType,
+          detail.type,
+          detail.education_category,
+          detail.category,
+          detail.level,
+          detail.education_level
+        ];
+        typeCandidates.forEach(pushValue);
+
+        const qualificationCandidates = [
+          detail.degree,
+          detail.degreeName,
+          detail.degree_name,
+          detail.course,
+          detail.course_name,
+          detail.courseName,
+          detail.program,
+          detail.program_name,
+          detail.qualification,
+          detail.qualification_name,
+          detail.specialization_name,
+          detail.specialization,
+          detail.major,
+          detail.stream
+        ];
+        qualificationCandidates.forEach(pushValue);
           
         // Check for various possible field names for core subjects
         let subjectList = detail.coreSubjects || detail.core_subjects || 
@@ -117,7 +152,7 @@ export const parseEducation = (educationJson) => {
       }
     });
     
-    return { types, subjects };
+    return { types: Array.from(typesSet), subjects };
   } catch (error) {
     console.error('Error parsing education details:', error);
     return { types: [], subjects: [] };

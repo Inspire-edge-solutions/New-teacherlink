@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { IoLocationOutline } from "react-icons/io5";
 import { BsBriefcase, BsCash, BsMortarboard } from "react-icons/bs";
 import { AiOutlineEye, AiOutlineSave, AiOutlineHeart, AiFillHeart } from "react-icons/ai";
+import { HiOutlineArrowRight } from "react-icons/hi";
 import ApplyModal from '../shared/ApplyModal';
 import JobCard from '../shared/JobCard';
 import JobApiService from '../shared/JobApiService';
@@ -13,6 +14,8 @@ import { searchJobs } from '../../utils/searchUtils';
 import { formatQualification } from '../../utils/formatUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
 import noJobsIllustration from '../../../../../assets/Illustrations/No jobs.png';
+import useJobMessaging from '../hooks/useJobMessaging';
+import JobMessagingModals from '../shared/JobMessagingModals';
 import LoadingState from '../../../../common/LoadingState';
 
 // API Endpoints
@@ -23,7 +26,7 @@ const ORG_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/org
 const WHATSAPP_API = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp';
 const RCS_API = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/rcsMessage';
 
-const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
+const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateTab }) => {
   const { user, loading: userLoading } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
@@ -121,6 +124,18 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
 
   // JobID generator - always use .id from backend
   const getJobId = (job) => Number(job.id);
+
+  // Pagination calculations
+  const indexOfLastJob = currentPage * jobsPerPage;
+  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
+  const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
+  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
+
+  // Helper to check if job applied
+  const isJobApplied = useCallback(
+    (job) => appliedJobs.includes(getJobId(job)),
+    [appliedJobs, getJobId]
+  );
 
   // POST or PUT to backend for favourite (by id and added_by for current user only)
   const upsertJobAction = async (job, { favroute_jobs }) => {
@@ -234,6 +249,58 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
     }
   };
 
+  const handleViewJob = useCallback((job) => {
+    if (job?.is_closed === 1) {
+      toast.error("This job is closed and cannot be viewed");
+      return;
+    }
+    onViewJob && onViewJob(job);
+  }, [onViewJob]);
+
+  const {
+    selectedJobs,
+    selectAll,
+    handleCheckboxChange,
+    handleSelectAll,
+    showMessageModal,
+    jobToMessage,
+    handleMessage,
+    handleMessageModalOk,
+    handleMessageModalContinue,
+    showApplyPrompt,
+    jobToApplyPrompt,
+    handleApplyPromptClose,
+    handleApplyPromptApplyJob,
+    showBulkMessageModal,
+    handleOpenBulkMessageModal,
+    handleCloseBulkMessageModal,
+    bulkChannel,
+    bulkMessage,
+    bulkMessageChars,
+    bulkError,
+    coinBalance,
+    handleChannelSelect,
+    handleBulkMessageChange,
+    handlePrepareBulkSend,
+    showConfirmModal,
+    bulkSummary,
+    handleCancelConfirmation,
+    handleConfirmSend,
+    isSendingBulk,
+    showInsufficientCoinsModal,
+    requiredCoins,
+    handleCloseInsufficientCoinsModal,
+    handleRechargeNavigate
+  } = useJobMessaging({
+    user,
+    filteredJobs,
+    currentJobs,
+    getJobId,
+    isJobApplied,
+    onViewJob: handleViewJob,
+    onApplyJob: handleApplyClick
+  });
+
   // Function to scroll to a specific job
   const scrollToJob = (jobId) => {
     if (!jobId) {
@@ -288,16 +355,6 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
       onBackFromJobView(handleBackFromJobView);
     }
   }, [onBackFromJobView, handleBackFromJobView]);
-
-  // === VIEW JOB ===
-  const handleViewJob = (job) => {
-    if (job.is_closed === 1) {
-      toast.error("This job is closed and cannot be viewed");
-      return;
-    }
-    console.log('FavouriteJobs: Viewing job:', job.id);
-    onViewJob && onViewJob(job);
-  };
 
   // ===== RCS Sending Function =====
   const sendRcsApply = async ({ phone, userName, orgName }) => {
@@ -417,34 +474,6 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
     }
   };
 
-  // Pagination logic
-  const indexOfLastJob = currentPage * jobsPerPage;
-  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
-  const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
-  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
-
-  const getVisiblePageNumbers = () => {
-    const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
-    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
-      range.push(i);
-    }
-    if (currentPage - delta > 2) {
-      rangeWithDots.push(1, '...');
-    } else {
-      rangeWithDots.push(1);
-    }
-    rangeWithDots.push(...range);
-    if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push('...', totalPages);
-    } else {
-      rangeWithDots.push(totalPages);
-    }
-    return rangeWithDots;
-  };
-  const pageNumbers = totalPages <= 10 ? Array.from({ length: totalPages }, (_, i) => i + 1) : getVisiblePageNumbers();
-
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
 
@@ -466,8 +495,8 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
       <div className="widget-content">
         <div className="py-10">
           <LoadingState
-            title="Checking your favourite jobs…"
-            subtitle="We’re pulling the jobs you’ve bookmarked so you can review them here."
+            title="Loading favourite jobs…"
+            subtitle="We’re gathering the roles you marked as favourites so you can return to them quickly."
             layout="card"
           />
         </div>
@@ -503,6 +532,34 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
 
         {currentJobs.length > 0 ? (
           <div className="job-results">
+            <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="selectAllFavouriteJobs"
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    checked={selectAll}
+                    onChange={handleSelectAll}
+                  />
+                  <label htmlFor="selectAllFavouriteJobs" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
+                    Select All Jobs on This Page
+                    {selectedJobs.size > 0 && (
+                      <span className="text-gray-500 ml-2">({selectedJobs.size} total selected)</span>
+                    )}
+                  </label>
+                </div>
+                {selectedJobs.size > 0 && (
+                  <button
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-brand rounded-lg shadow-lg hover:opacity-90 transition-all"
+                    onClick={handleOpenBulkMessageModal}
+                  >
+                    <span role="img" aria-label="message">💬</span>
+                    Send Message
+                  </button>
+                )}
+              </div>
+            </div>
             <div className="job-list">
               {currentJobs.map((job, index) => {
                 const jobId = getJobId(job);
@@ -521,6 +578,12 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
                     onSaveJob={handleSaveJob}
                     onFavouriteJob={handleRemoveFromFavourites}
                     onApplyClick={handleApplyClick}
+                    onMessage={handleMessage}
+                    showCheckbox={true}
+                    isChecked={selectedJobs.has(String(jobId))}
+                    onCheckboxChange={handleCheckboxChange}
+                    messageDisabled={!isApplied}
+                    messageTooltip={!isApplied ? 'Apply to message this institute' : ''}
                   />
                 );
               })}
@@ -553,14 +616,18 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
                 You haven't marked any jobs as favourites yet. Star the jobs you love most to find them easily later.
               </p>
               <button
-                className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg font-medium text-white bg-gradient-brand hover:bg-gradient-brand-hover transition-all duration-200"
+                className="px-4 py-2 bg-gradient-brand text-white rounded-lg text-sm font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500"
                 onClick={() => {
-                  if (onNavigateToTab) {
-                    onNavigateToTab('all');
+                  if (onNavigateTab) {
+                    onNavigateTab('all');
+                    return;
                   }
+                  const allJobsTab = document.querySelector('[data-tab="all"]');
+                  if (allJobsTab) allJobsTab.click();
                 }}
               >
-                Find Your Dream Jobs
+                <span>Find Your Dream Jobs</span>
+                <HiOutlineArrowRight className="text-lg" />
               </button>
             </div>
           </div>
@@ -588,6 +655,37 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
           error={applyError}
         />
       </div>
+
+      <JobMessagingModals
+        showApplyPrompt={showApplyPrompt}
+        jobToApplyPrompt={jobToApplyPrompt}
+        onApplyPromptClose={handleApplyPromptClose}
+        onApplyPromptApply={handleApplyPromptApplyJob}
+        showMessageModal={showMessageModal}
+        jobToMessage={jobToMessage}
+        onMessageModalOk={handleMessageModalOk}
+        onMessageModalContinue={handleMessageModalContinue}
+        showBulkMessageModal={showBulkMessageModal}
+        bulkChannel={bulkChannel}
+        bulkMessage={bulkMessage}
+        bulkMessageChars={bulkMessageChars}
+        coinBalance={coinBalance}
+        selectedCount={selectedJobs.size}
+        bulkError={bulkError}
+        onChannelSelect={handleChannelSelect}
+        onBulkMessageChange={handleBulkMessageChange}
+        onCloseBulkMessageModal={handleCloseBulkMessageModal}
+        onPrepareBulkSend={handlePrepareBulkSend}
+        showConfirmModal={showConfirmModal}
+        bulkSummary={bulkSummary}
+        isSendingBulk={isSendingBulk}
+        onCancelConfirmation={handleCancelConfirmation}
+        onConfirmSend={handleConfirmSend}
+        showInsufficientCoinsModal={showInsufficientCoinsModal}
+        requiredCoins={requiredCoins}
+        onCloseInsufficientCoinsModal={handleCloseInsufficientCoinsModal}
+        onRechargeNavigate={handleRechargeNavigate}
+      />
     </div>
   );
 };

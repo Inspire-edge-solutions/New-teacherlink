@@ -6,9 +6,12 @@ import ChatInput from './Components/ChatInput';
 import emptyMessageImg from '../../../assets/Illustrations/No-msgs.png';
 import useChat from '../../../hooks/useChat';
 import { useAuth } from '../../../Context/AuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const MessagesComponent = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [showOrganisations, setShowOrganisations] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
@@ -53,6 +56,39 @@ const MessagesComponent = () => {
   useEffect(() => {
     loadOrganisations();
   }, [loadOrganisations]);
+
+  useEffect(() => {
+    const state = location.state;
+    if (!state || !state.selectedInstitute || !state.startConversation) {
+      return;
+    }
+
+    const institute = state.selectedInstitute;
+    let isCancelled = false;
+
+    const timer = setTimeout(() => {
+      (async () => {
+        try {
+          if (!isCancelled) {
+            await startConversation(institute);
+            setShowOrganisations(false);
+            setSidebarOpen(false);
+          }
+        } catch (err) {
+          console.error('Error starting conversation from navigation state:', err);
+        } finally {
+          if (!isCancelled) {
+            navigate('.', { replace: true, state: {} });
+          }
+        }
+      })();
+    }, 150);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
+  }, [location.state, startConversation, navigate]);
 
   const handleSelectChat = (chat) => {
     console.log('🖱️ handleSelectChat called with:', chat);
@@ -314,7 +350,7 @@ const MessagesComponent = () => {
               {/* Button */}
               <button 
                 onClick={handleStartNewChat}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition-colors text-sm sm:text-base"
+                className="bg-gradient-brand hover:bg-gradient-brand-hover text-white px-6 py-3 rounded-lg transition-colors text-sm sm:text-base"
               >
                 Start a new chat
               </button>

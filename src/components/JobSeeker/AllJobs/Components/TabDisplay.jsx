@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import AllJobs from './Sections/AllJobs';
 import SaveJobs from './Sections/SaveJobs';
 import FavouriteJobs from './Sections/FavouriteJobs';
@@ -59,30 +59,53 @@ const TabDisplay = () => {
   };
 
   // Store the back handlers from job components
-  const handleAllJobsBackHandler = (handler) => {
-    console.log('handleAllJobsBackHandler called, storing handler:', !!handler);
-    setAllJobsBackHandler(() => handler);
-  };
+  const handleAllJobsBackHandler = useCallback((handler) => {
+    setAllJobsBackHandler((prev) => {
+      if (prev === handler) return prev;
+      console.log('handleAllJobsBackHandler called, storing handler:', !!handler);
+      return handler;
+    });
+  }, []);
 
 
-  const handleSaveJobsBackHandler = (handler) => {
-    console.log('handleSaveJobsBackHandler called, storing handler:', !!handler);
-    setSaveJobsBackHandler(() => handler);
-  };
+  const handleSaveJobsBackHandler = useCallback((handler) => {
+    setSaveJobsBackHandler((prev) => {
+      if (prev === handler) return prev;
+      console.log('handleSaveJobsBackHandler called, storing handler:', !!handler);
+      return handler;
+    });
+  }, []);
 
-  const handleFavouriteJobsBackHandler = (handler) => {
-    console.log('handleFavouriteJobsBackHandler called, storing handler:', !!handler);
-    setFavouriteJobsBackHandler(() => handler);
-  };
+  const handleFavouriteJobsBackHandler = useCallback((handler) => {
+    setFavouriteJobsBackHandler((prev) => {
+      if (prev === handler) return prev;
+      console.log('handleFavouriteJobsBackHandler called, storing handler:', !!handler);
+      return handler;
+    });
+  }, []);
 
-  const handleRecommendedJobsBackHandler = (handler) => {
-    console.log('handleRecommendedJobsBackHandler called, storing handler:', !!handler);
-    setRecommendedJobsBackHandler(() => handler);
-  };
+  const handleRecommendedJobsBackHandler = useCallback((handler) => {
+    setRecommendedJobsBackHandler((prev) => {
+      if (prev === handler) return prev;
+      console.log('handleRecommendedJobsBackHandler called, storing handler:', !!handler);
+      return handler;
+    });
+  }, []);
 
-  const handleAppliedJobsBackHandler = (handler) => {
-    console.log('handleAppliedJobsBackHandler called, storing handler:', !!handler);
-    setAppliedJobsBackHandler(() => handler);
+  const handleAppliedJobsBackHandler = useCallback((handler) => {
+    setAppliedJobsBackHandler((prev) => {
+      if (prev === handler) return prev;
+      console.log('handleAppliedJobsBackHandler called, storing handler:', !!(handler));
+      return handler;
+    });
+  }, []);
+
+  const handleNavigateToTab = (tabId) => {
+    if (!tabId) return;
+    console.log('Navigating to tab:', tabId);
+    setActiveTab(tabId);
+    setViewMode('list');
+    setSelectedJob(null);
   };
 
   const tabs = [
@@ -96,13 +119,6 @@ const TabDisplay = () => {
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || AllJobs;
 
   console.log('TabDisplay rendered - activeTab:', activeTab); // Debug log
-
-  const handleChangeTab = (tabId) => {
-    if (!tabId || activeTab === tabId) return;
-    setActiveTab(tabId);
-    setViewMode('list');
-    setSelectedJob(null);
-  };
 
   return (
     <div>
@@ -118,10 +134,7 @@ const TabDisplay = () => {
                     ? 'bg-gradient-brand text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
-                onClick={() => {
-                  console.log('Tab clicked:', tab.id); // Debug log
-                  handleChangeTab(tab.id);
-                }}
+                onClick={() => handleNavigateToTab(tab.id)}
               >
                 {tab.label}
               </button>
@@ -146,7 +159,7 @@ const TabDisplay = () => {
                       activeTab === 'applied' ? handleAppliedJobsBackHandler :
                       undefined
                     }
-                    onNavigateToTab={handleChangeTab}
+                    onNavigateTab={handleNavigateToTab}
                   />
           )}
         </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiSearch, FiPlus, FiX, FiMapPin } from 'react-icons/fi';
+import LoadingState from '../../../common/LoadingState';
 
 const MessagesSidebar = ({ 
   people = [], 
@@ -107,15 +108,21 @@ const MessagesSidebar = ({
                     onSelectOrganisation(null);
                     navigate('/seeker/all-jobs');
                   }}
-                  className="w-full px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors font-medium text-sm flex items-center justify-center gap-2"
+                  className="w-full px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-brand-hover transition-colors font-medium text-sm flex items-center justify-center gap-2"
                 >
                   <FiPlus size={16} />
                   Add more Favourite jobs
                 </button>
               </div>
-              <div className="max-h-80 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto min-h-0">
                 {isLoading ? (
-                  <div className="p-4 text-center text-gray-500">Loading institutions...</div>
+                  <div className="p-4">
+                    <LoadingState
+                      title="Loading institutions…"
+                      subtitle="We’re pulling your favourite organisations so you can start a conversation."
+                      layout="card"
+                    />
+                  </div>
                 ) : organisations.length > 0 ? (
                   organisations
                     .filter(org => !org.isBlocked)
@@ -162,7 +169,7 @@ const MessagesSidebar = ({
                         onSelectOrganisation(null);
                         navigate('/seeker/all-jobs');
                       }}
-                      className="w-full px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors font-medium"
+                      className="w-full px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-brand-hover transition-colors font-medium"
                     >
                       Go to All Jobs
                     </button>

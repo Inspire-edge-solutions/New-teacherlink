@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiSearch, FiPlus, FiClock, FiUser, FiSlash, FiUnlock, FiX } from 'react-icons/fi';
+import LoadingState from "../../../common/LoadingState";
 
 const MessagesSidebar = ({ 
   people = [], 
@@ -213,7 +214,13 @@ const MessagesSidebar = ({
               {/* Scrollable Candidate List */}
               <div className="flex-1 overflow-y-auto min-h-0">
                 {isLoading ? (
-                  <div className="p-4 text-center text-gray-500">Loading candidates...</div>
+                  <div className="p-4">
+                    <LoadingState
+                      title="Loading favourite candidates…"
+                      subtitle="We’re gathering the candidates you’ve bookmarked so you can message them."
+                      layout="card"
+                    />
+                  </div>
                 ) : candidates.length > 0 ? (
                   candidates
                     .filter(candidate => {
@@ -266,8 +273,12 @@ const MessagesSidebar = ({
         )}
         {/* Loading State */}
         {isLoading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+          <div className="px-4 py-6">
+            <LoadingState
+              title="Loading candidate conversations…"
+              subtitle="We’re fetching your recent chats so you can pick up where you left off."
+              layout="card"
+            />
           </div>
         )}
 

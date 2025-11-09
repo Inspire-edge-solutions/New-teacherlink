@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../Context/AuthContext';
 import useChat from '../../../hooks/useChat';
 import MessagesSidebar from './Components/MessagesSidebar';
@@ -12,6 +13,8 @@ const MessagesComponent = () => {
   const messagesEndRef = useRef(null);
   const [showCandidates, setShowCandidates] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
   
   // Ensure we always have valid values for useChat hook
   const currentUserId = user?.uid || 'temp_provider_123';
@@ -69,6 +72,40 @@ const MessagesComponent = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    const state = location.state;
+    if (!state || !state.selectedCandidate || !state.startConversation) {
+      return;
+    }
+
+    const candidate = state.selectedCandidate;
+
+    let isCancelled = false;
+
+    const timer = setTimeout(() => {
+      (async () => {
+        try {
+          if (!isCancelled) {
+            await startConversation(candidate);
+            setShowCandidates(false);
+            setSidebarOpen(false);
+          }
+        } catch (err) {
+          console.error('Error starting conversation from navigation state:', err);
+        } finally {
+          if (!isCancelled) {
+            navigate('.', { replace: true, state: {} });
+          }
+        }
+      })();
+    }, 150);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
+  }, [location.state, startConversation, navigate]);
 
   const handleSelectChat = (chat) => {
     selectChat(chat);

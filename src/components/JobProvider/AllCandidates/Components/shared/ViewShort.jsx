@@ -227,7 +227,7 @@ const ViewShort = ({
 
       // Mark candidate as unlocked in database FIRST (so it appears in unlocked list)
       try {
-        await CandidateApiService.upsertCandidateAction(candidate, user, { unlocked_candidate: 1 });
+        await CandidateApiService.upsertCandidateAction(candidate, user, { unblocked_candidate: 1 });
       } catch (dbError) {
         console.error("Error updating unlock status in database:", dbError);
         // Still continue - we'll try again, but don't fail the whole unlock

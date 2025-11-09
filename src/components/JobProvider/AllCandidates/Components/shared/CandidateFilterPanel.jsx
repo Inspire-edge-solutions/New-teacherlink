@@ -2,21 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Select from 'react-select';
 import { GetCountries, GetState, GetCity } from 'react-country-state-city';
-import axios from 'axios';
-import { toast } from "react-toastify";
-import { useAuth } from "../../../../../Context/AuthContext";
 import InputWithTooltip from "../../../../../services/InputWithTooltip";
 
-const CandidateFilterPanel = ({ 
-  isOpen, 
-  onClose, 
-  onApplyFilters, 
+const CandidateFilterPanel = ({
+  isOpen,
+  onClose,
+  onApplyFilters,
   onResetFilters,
   activeFiltersCount = 0,
-  initialOptions = {}
+  initialOptions = {},
+  optionsLoading = {}
 }) => {
-  const { user } = useAuth();
-  
   // Initialize filters with saved values or defaults
   const defaultFilters = {
     country: null,
@@ -25,45 +21,41 @@ const CandidateFilterPanel = ({
     languages: [],
     education: [],
     coreSubjects: [],
+    coreExpertise: [],
     jobTypes: [],
     grades: [],
     curriculum: [],
     designations: [],
     gender: [],
-    teachingExperience: [0, 30],
-    otherTeachingExperience: [],
     noticePeriod: [],
-    jobSearchStatus: [],
-    jobShiftPreferences: [],
     online: null,
-    offline: null,
-    tutionPreferences: [],
     min_salary: '',
-    max_salary: ''
+    max_salary: '',
+    min_experience: '',
+    max_experience: ''
   };
 
   const [filters, setFilters] = useState(() => {
     try {
       const saved = localStorage.getItem('candidateFilters');
-      return saved ? JSON.parse(saved) : defaultFilters;
+      return saved ? { ...defaultFilters, ...JSON.parse(saved) } : { ...defaultFilters };
     } catch (error) {
       console.error('Error loading saved filters:', error);
-      return defaultFilters;
+      return { ...defaultFilters };
     }
   });
 
-  // Location options state
   const [locationOptions, setLocationOptions] = useState({
     countries: [],
     states: [],
     cities: []
   });
 
-  // Loading states
-  const [isLoading, setIsLoading] = useState({
-    locations: false
-  });
-
+  const loadingState = {
+    languages: optionsLoading.languages || false,
+    education: optionsLoading.education || false,
+    constants: optionsLoading.constants || false
+  };
   // Static filter options
   const filterOptions = {
     jobTypes: [
@@ -83,28 +75,10 @@ const CandidateFilterPanel = ({
       { value: '2 months', label: '2 months' },
       { value: '3 months', label: '3 months' }
     ],
-    jobSearchStatusOptions: [
-      { value: 'Active', label: 'Actively Looking' },
-      { value: 'Passive', label: 'Passively Looking' },
-      { value: 'Not Looking', label: 'Not Looking' }
-    ],
-    jobShiftOptions: [
-      { value: 'Morning', label: 'Morning' },
-      { value: 'Afternoon', label: 'Afternoon' },
-      { value: 'Evening', label: 'Evening' },
-      { value: 'Night', label: 'Night' },
-      { value: 'Flexible', label: 'Flexible' }
-    ],
     onlineOfflineOptions: [
       { value: 'Online', label: 'Online' },
       { value: 'Offline', label: 'Offline' },
       { value: 'Hybrid', label: 'Hybrid' }
-    ],
-    tutionPreferenceOptions: [
-      { value: 'Home Tuition', label: 'Home Tuition' },
-      { value: 'Online Tuition', label: 'Online Tuition' },
-      { value: 'Group Tuition', label: 'Group Tuition' },
-      { value: 'Private Tuition', label: 'Private Tuition' }
     ]
   };
 
@@ -132,41 +106,40 @@ const CandidateFilterPanel = ({
   // Load countries on component mount
   useEffect(() => {
     GetCountries().then((countryData) => {
-      const countries = countryData.map(country => ({
+      const countries = countryData.map((country) => ({
         value: country.id,
         label: country.name
       }));
 
-      setLocationOptions(prev => ({
+      setLocationOptions((prev) => ({
         ...prev,
         countries
       }));
     });
   }, []);
 
-  // Update states when country changes
   useEffect(() => {
-    if (filters.country) {
-      GetState(filters.country.value).then((stateData) => {
-        const states = stateData.map(state => ({
+    const countryValue = filters.country?.value;
+    if (typeof countryValue === 'number') {
+      GetState(countryValue).then((stateData) => {
+        const states = stateData.map((state) => ({
           value: state.id,
           label: state.name
         }));
 
-        setLocationOptions(prev => ({
+        setLocationOptions((prev) => ({
           ...prev,
           states
         }));
 
-        // Reset state and city selections
-        setFilters(prev => ({
+        setFilters((prev) => ({
           ...prev,
           state: null,
           city: null
         }));
       });
     } else {
-      setLocationOptions(prev => ({
+      setLocationOptions((prev) => ({
         ...prev,
         states: [],
         cities: []
@@ -174,28 +147,28 @@ const CandidateFilterPanel = ({
     }
   }, [filters.country]);
 
-  // Update cities when state changes
   useEffect(() => {
-    if (filters.country && filters.state) {
-      GetCity(filters.country.value, filters.state.value).then((cityData) => {
-        const cities = cityData.map(city => ({
+    const countryValue = filters.country?.value;
+    const stateValue = filters.state?.value;
+    if (typeof countryValue === 'number' && typeof stateValue === 'number') {
+      GetCity(countryValue, stateValue).then((cityData) => {
+        const cities = cityData.map((city) => ({
           value: city.name,
           label: city.name
         }));
 
-        setLocationOptions(prev => ({
+        setLocationOptions((prev) => ({
           ...prev,
           cities
         }));
 
-        // Reset city selection
-        setFilters(prev => ({
+        setFilters((prev) => ({
           ...prev,
           city: null
         }));
       });
     } else {
-      setLocationOptions(prev => ({
+      setLocationOptions((prev) => ({
         ...prev,
         cities: []
       }));
@@ -232,7 +205,7 @@ const CandidateFilterPanel = ({
 
   // Handle reset filters
   const handleReset = () => {
-    setFilters(defaultFilters);
+    setFilters({ ...defaultFilters });
     try {
       localStorage.removeItem('candidateFilters');
     } catch (error) {
@@ -319,6 +292,7 @@ const CandidateFilterPanel = ({
                   isClearable
                   styles={selectStyles}
                   menuPortalTarget={document.body}
+                  isLoading={loadingState.languages}
                 />
               </InputWithTooltip>
             </div>
@@ -335,6 +309,7 @@ const CandidateFilterPanel = ({
                   isClearable
                   styles={selectStyles}
                   menuPortalTarget={document.body}
+                  isLoading={loadingState.education}
                 />
               </InputWithTooltip>
             </div>
@@ -351,6 +326,24 @@ const CandidateFilterPanel = ({
                   isClearable
                   styles={selectStyles}
                   menuPortalTarget={document.body}
+                  isLoading={loadingState.constants}
+                />
+              </InputWithTooltip>
+            </div>
+
+            {/* Core Expertise */}
+            <div>
+              <InputWithTooltip label="Core Expertise">
+                <Select
+                  value={filters.coreExpertise}
+                  onChange={(value) => handleFilterChange('coreExpertise', value)}
+                  options={initialOptions.coreExpertise || []}
+                  placeholder="Core Expertise"
+                  isMulti
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                  isLoading={loadingState.constants}
                 />
               </InputWithTooltip>
             </div>
@@ -383,6 +376,7 @@ const CandidateFilterPanel = ({
                   isClearable
                   styles={selectStyles}
                   menuPortalTarget={document.body}
+                  isLoading={loadingState.constants}
                 />
               </InputWithTooltip>
             </div>
@@ -399,6 +393,7 @@ const CandidateFilterPanel = ({
                   isClearable
                   styles={selectStyles}
                   menuPortalTarget={document.body}
+                  isLoading={loadingState.constants}
                 />
               </InputWithTooltip>
             </div>
@@ -415,6 +410,7 @@ const CandidateFilterPanel = ({
                   isClearable
                   styles={selectStyles}
                   menuPortalTarget={document.body}
+                  isLoading={loadingState.constants}
                 />
               </InputWithTooltip>
             </div>
@@ -451,38 +447,6 @@ const CandidateFilterPanel = ({
               </InputWithTooltip>
             </div>
 
-            {/* Job Search Status */}
-            <div>
-              <InputWithTooltip label="Job Search Status">
-                <Select
-                  value={filters.jobSearchStatus}
-                  onChange={(value) => handleFilterChange('jobSearchStatus', value)}
-                  options={filterOptions.jobSearchStatusOptions}
-                  placeholder="Job Search Status"
-                  isMulti
-                  isClearable
-                  styles={selectStyles}
-                  menuPortalTarget={document.body}
-                />
-              </InputWithTooltip>
-            </div>
-
-            {/* Job Shift Preferences */}
-            <div>
-              <InputWithTooltip label="Job Shift Preferences">
-                <Select
-                  value={filters.jobShiftPreferences}
-                  onChange={(value) => handleFilterChange('jobShiftPreferences', value)}
-                  options={filterOptions.jobShiftOptions}
-                  placeholder="Job Shift Preferences"
-                  isMulti
-                  isClearable
-                  styles={selectStyles}
-                  menuPortalTarget={document.body}
-                />
-              </InputWithTooltip>
-            </div>
-
             {/* Online/Offline */}
             <div>
               <InputWithTooltip label="Online/Offline">
@@ -491,22 +455,6 @@ const CandidateFilterPanel = ({
                   onChange={(value) => handleFilterChange('online', value)}
                   options={filterOptions.onlineOfflineOptions}
                   placeholder="Online/Offline"
-                  isClearable
-                  styles={selectStyles}
-                  menuPortalTarget={document.body}
-                />
-              </InputWithTooltip>
-            </div>
-
-            {/* Tuition Preferences */}
-            <div>
-              <InputWithTooltip label="Tuition Preferences">
-                <Select
-                  value={filters.tutionPreferences}
-                  onChange={(value) => handleFilterChange('tutionPreferences', value)}
-                  options={filterOptions.tutionPreferenceOptions}
-                  placeholder="Tuition Preferences"
-                  isMulti
                   isClearable
                   styles={selectStyles}
                   menuPortalTarget={document.body}
@@ -537,6 +485,35 @@ const CandidateFilterPanel = ({
                   value={filters.max_salary}
                   onChange={handleInputChange}
                   placeholder="Maximum Salary"
+                />
+              </InputWithTooltip>
+            </div>
+
+            {/* Experience Range */}
+            <div>
+              <InputWithTooltip label="Min Experience (years)">
+                <input
+                  type="number"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  name="min_experience"
+                  value={filters.min_experience}
+                  onChange={handleInputChange}
+                  placeholder="Minimum Experience"
+                  min="0"
+                />
+              </InputWithTooltip>
+            </div>
+
+            <div>
+              <InputWithTooltip label="Max Experience (years)">
+                <input
+                  type="number"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-none shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  name="max_experience"
+                  value={filters.max_experience}
+                  onChange={handleInputChange}
+                  placeholder="Maximum Experience"
+                  min="0"
                 />
               </InputWithTooltip>
             </div>

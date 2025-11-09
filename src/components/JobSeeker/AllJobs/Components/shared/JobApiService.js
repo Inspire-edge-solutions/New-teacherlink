@@ -1,4 +1,5 @@
 import { toast } from "react-toastify";
+import axios from "axios";
 
 // API Endpoints
 const API_ENDPOINTS = {
@@ -38,9 +39,24 @@ const sortJobsByRecency = (jobs) => {
 // Format phone number correctly with +91 prefix
 const formatPhone = (phone) => {
   if (!phone) return "";
-  let clean = phone.replace(/[^\d+]/g, ""); // remove hidden chars
-  if (!clean.startsWith("+")) clean = `+91${clean}`;
-  return clean;
+
+  let clean = String(phone).replace(/\D/g, "");
+
+  if (clean.length === 0) return "";
+
+  // Already has country code (like 91XXXXXXXXXX)
+  if (clean.length === 12 && clean.startsWith("91")) {
+    return `+${clean}`;
+  }
+
+  // Allow 10-digit numbers in production as well
+  if (clean.length === 10) {
+    clean = `91${clean}`;
+    return `+${clean}`;
+  }
+
+  // Last resort fallback
+  return `+${clean}`;
 };
 
 class JobApiService {
@@ -330,6 +346,250 @@ class JobApiService {
       });
     } catch (error) {
       console.error('Error recording coin history:', error);
+    }
+  }
+
+  static _ensureOrganisationCache() {
+    if (!this._organisationDetailsCache) {
+      this._organisationDetailsCache = new Map();
+    }
+    return this._organisationDetailsCache;
+  }
+
+  static _ensureUserProfileCache() {
+    if (!this._userMessagingProfileCache) {
+      this._userMessagingProfileCache = new Map();
+    }
+    return this._userMessagingProfileCache;
+  }
+
+  static async fetchOrganisationDetails(firebaseUid) {
+    if (!firebaseUid) return null;
+    const cache = this._ensureOrganisationCache();
+    if (cache.has(firebaseUid)) {
+      return cache.get(firebaseUid);
+    }
+    try {
+      const response = await fetch(`${API_ENDPOINTS.ORG_API}?firebase_uid=${firebaseUid}`);
+      const data = await response.json();
+      const organisation = Array.isArray(data) && data.length > 0 ? data[0] : null;
+      cache.set(firebaseUid, organisation);
+      return organisation;
+    } catch (error) {
+      console.error('Error fetching organisation details:', error);
+      return null;
+    }
+  }
+
+  static async fetchUserLoginDetails(userId) {
+    if (!userId) return null;
+    const cache = this._ensureUserProfileCache();
+    if (cache.has(`login_${userId}`)) {
+      return cache.get(`login_${userId}`);
+    }
+    try {
+      const response = await fetch(`${API_ENDPOINTS.LOGIN_API}?firebase_uid=${userId}`);
+      const data = await response.json();
+      const details = Array.isArray(data) && data.length > 0 ? data[0] : null;
+      cache.set(`login_${userId}`, details);
+      return details;
+    } catch (error) {
+      console.error('Error fetching user login details:', error);
+      return null;
+    }
+  }
+
+  static async getUserMessagingProfile(user) {
+    const userId = getUserId(user);
+    if (!userId) {
+      return {
+        name: 'Candidate',
+        email: 'candidate@teacherlink.in'
+      };
+    }
+
+    const cache = this._ensureUserProfileCache();
+    if (cache.has(userId)) {
+      return cache.get(userId);
+    }
+
+    try {
+      const [personalDetails, loginDetails] = await Promise.all([
+        this.getUserPersonalDetails(user),
+        this.fetchUserLoginDetails(userId)
+      ]);
+
+      const name = personalDetails?.fullName || personalDetails?.name || loginDetails?.name || loginDetails?.fullName || 'Candidate';
+      const email = loginDetails?.email || loginDetails?.official_email || personalDetails?.email || 'candidate@teacherlink.in';
+
+      const profile = {
+        name,
+        email
+      };
+      cache.set(userId, profile);
+      return profile;
+    } catch (error) {
+      console.error('Error preparing user messaging profile:', error);
+      return {
+        name: 'Candidate',
+        email: 'candidate@teacherlink.in'
+      };
+    }
+  }
+
+  static async sendWhatsAppMessageToInstitute(job, user, message) {
+    if (!job || !user) {
+      throw new Error('Missing job or user for WhatsApp messaging');
+    }
+    const trimmedMessage = (message || '').trim();
+    if (!trimmedMessage) {
+      throw new Error('Message cannot be empty');
+    }
+
+    const profile = await this.getUserMessagingProfile(user);
+    const organisation = await this.fetchOrganisationDetails(job.firebase_uid);
+    const organisationLogin = await this.fetchUserLoginDetails(job.firebase_uid);
+
+    const instituteName = profile?.name || organisationLogin?.name || organisation?.organization_name || organisation?.name || job.institute_name || job.school_name || 'Candidate';
+    const rawPhone =
+      organisation?.contact_person_phone1 ||
+      organisation?.contact_person_phone2 ||
+      organisation?.phone ||
+      organisation?.contact_number ||
+      organisation?.official_contact ||
+      organisationLogin?.phone_number ||
+      organisationLogin?.whatsapp_number ||
+      organisationLogin?.contactNumber ||
+      job.institution_phone ||
+      job.contact_number ||
+      job.phone ||
+      job.primary_phone;
+    const phone = formatPhone(rawPhone);
+
+    if (!phone) {
+      throw new Error(`No phone number available for ${instituteName}`);
+    }
+
+    const payload = {
+        phone,
+        templateName: 'candidate_bluking',
+        language: 'en',
+        bodyParams: [
+          { type: 'text', text: instituteName || 'Candidate' },
+          { type: 'text', text: trimmedMessage }
+        ],
+        sent_by: profile.name || 'Candidate',
+        sent_email: profile.email || 'candidate@teacherlink.in'
+      };
+
+    try {
+      await axios.post(API_ENDPOINTS.WHATSAPP_API, payload);
+    } catch (error) {
+      const status = error?.response?.status;
+      const data = error?.response?.data;
+      const reason =
+        data?.message ||
+        data?.error ||
+        data?.details ||
+        data ||
+        error?.message ||
+        'Unknown error';
+
+      console.error('Failed to send WhatsApp message to institute:', {
+        status,
+        data,
+        payload,
+        stack: error?.stack
+      });
+
+      throw new Error(`WhatsApp API error${status ? ` (status ${status})` : ''}: ${reason}`);
+    }
+  }
+
+  static async sendRCSMessageToInstitute(job, user, message) {
+    if (!job || !user) {
+      throw new Error('Missing job or user for RCS messaging');
+    }
+    const trimmedMessage = (message || '').trim();
+    if (!trimmedMessage) {
+      throw new Error('Message cannot be empty');
+    }
+
+    const profile = await this.getUserMessagingProfile(user);
+    const organisation = await this.fetchOrganisationDetails(job.firebase_uid);
+    const organisationLogin = await this.fetchUserLoginDetails(job.firebase_uid);
+
+    const rawPhone =
+      organisation?.contact_person_phone1 ||
+      organisation?.contact_person_phone2 ||
+      organisation?.phone ||
+      organisation?.contact_number ||
+      organisation?.official_contact ||
+      organisationLogin?.phone_number ||
+      organisationLogin?.whatsapp_number ||
+      organisationLogin?.contactNumber ||
+      job.institution_phone ||
+      job.contact_number ||
+      job.phone ||
+      job.primary_phone;
+    const phone = formatPhone(rawPhone);
+
+    if (!phone) {
+      throw new Error('No phone number available for institute');
+    }
+
+    const payload = {
+        contactId: phone,
+        templateName: 'bluk_institute',
+        customParam: {
+          NAME: profile.name || 'Candidate',
+          MESSAGE: trimmedMessage
+        },
+        sent_by: profile.name || 'Candidate',
+        sent_email: profile.email || 'candidate@teacherlink.in'
+      };
+
+    try {
+      await axios.post(API_ENDPOINTS.RCS_API, payload);
+    } catch (error) {
+      const status = error?.response?.status;
+      const data = error?.response?.data;
+      const reason =
+        data?.message ||
+        data?.error ||
+        data?.details ||
+        data ||
+        error?.message ||
+        'Unknown error';
+
+      console.error('Failed to send RCS message to institute:', {
+        status,
+        data,
+        payload,
+        stack: error?.stack
+      });
+      throw new Error(`RCS API error${status ? ` (status ${status})` : ''}: ${reason}`);
+    }
+  }
+
+  static async updateUserCoins(user, newBalance) {
+    const userId = getUserId(user);
+    if (!userId) {
+      throw new Error('User not authenticated');
+    }
+
+    try {
+      await fetch(API_ENDPOINTS.REDEEM_API, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firebase_uid: userId,
+          coin_value: Number(newBalance) || 0
+        })
+      });
+    } catch (error) {
+      console.error('Error updating user coins:', error);
+      throw new Error('Failed to update coin balance');
     }
   }
 }

@@ -9,11 +9,286 @@ import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import CandidateFilterPanel from '../shared/CandidateFilterPanel';
 import CandidateApiService from '../shared/CandidateApiService';
-import { parseLanguages, parseEducation } from '../utils/candidateUtils';
+import useCandidateFilterOptions from '../shared/useCandidateFilterOptions';
+import { parseEducation, parseLanguages } from '../utils/candidateUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
 import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
 import '../styles/candidate-highlight.css';
 import LoadingState from '../../../../common/LoadingState';
+
+const normalizeString = (value) =>
+  (value ?? '')
+    .toString()
+    .toLowerCase()
+    .trim();
+
+const normalizeComparisonValue = (value) =>
+  (value ?? '')
+    .toString()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .trim();
+
+const toArray = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter(Boolean);
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return [];
+
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed.filter(Boolean);
+      }
+    } catch {
+      // ignore parse errors
+    }
+
+    return trimmed
+      .split(/[,;|]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [value].filter(Boolean);
+};
+
+const buildCandidateSubjects = (candidate) => {
+  const subjects = new Set();
+  const { subjects: parsedSubjects } = parseEducation(candidate.education_details_json);
+  parsedSubjects.forEach((subject) => subject && subjects.add(subject));
+
+  [
+    candidate.teaching_subjects,
+    candidate.teaching_administrative_subjects,
+    candidate.subjects_taught,
+    candidate.teaching_coreExpertise,
+    candidate.teaching_administrative_coreExpertise,
+    candidate.core_subjects
+  ].forEach((source) => {
+    toArray(source).forEach((subject) => subjects.add(subject));
+  });
+
+  return Array.from(subjects);
+};
+
+const buildCandidateGrades = (candidate) => {
+  const grades = new Set();
+  [
+    candidate.teaching_grades,
+    candidate.teaching_administrative_grades,
+    candidate.grades_taught
+  ].forEach((source) => {
+    toArray(source).forEach((grade) => grades.add(grade));
+  });
+  return Array.from(grades);
+};
+
+const buildCandidateCurriculum = (candidate) => {
+  const curriculum = new Set();
+  [
+    candidate.teaching_curriculum,
+    candidate.administrative_curriculum,
+    candidate.teaching_administrative_curriculum,
+    candidate.curriculum_taught
+  ].forEach((source) => {
+    toArray(source).forEach((entry) => curriculum.add(entry));
+  });
+  return Array.from(curriculum);
+};
+
+const buildCandidateDesignations = (candidate) => {
+  const designations = new Set();
+  [
+    candidate.teaching_designations,
+    candidate.administrative_designations,
+    candidate.teaching_administrative_designations,
+    candidate.designation
+  ].forEach((source) => {
+    toArray(source).forEach((entry) => designations.add(entry));
+  });
+  return Array.from(designations);
+};
+
+const mapNoticeValueToLabel = (value) => {
+  const normalized = normalizeString(value);
+  if (!normalized) return null;
+
+  const mappings = new Map([
+    ['immediate', 'Immediate'],
+    ['less_than_15', '15 days'],
+    ['15days', '15 days'],
+    ['15 days', '15 days'],
+    ['lessthan1month', '1 month'],
+    ['1month', '1 month'],
+    ['1 month', '1 month'],
+    ['2months', '2 months'],
+    ['2 months', '2 months'],
+    ['3months', '3 months'],
+    ['3 months', '3 months']
+  ]);
+
+  if (mappings.has(normalized)) {
+    return mappings.get(normalized);
+  }
+
+  const numeric = parseFloat(normalized);
+  if (!Number.isNaN(numeric)) {
+    if (numeric === 0) return 'Immediate';
+    if (numeric <= 0.5) return '15 days';
+    if (numeric <= 1) return '1 month';
+    if (numeric <= 2) return '2 months';
+    if (numeric <= 3) return '3 months';
+  }
+
+  return null;
+};
+
+const parseSalaryRange = (value) => {
+  if (value === null || value === undefined || value === '') return null;
+
+  if (typeof value === 'number') {
+    return { min: value, max: value };
+  }
+
+  const raw = value.toString().toLowerCase().trim();
+  if (!raw) return null;
+
+  const numbers = raw.match(/(\d+(\.\d+)?)/g)?.map((n) => parseFloat(n)) || [];
+  const hasK = raw.includes('k');
+  const hasLakh = raw.includes('lac') || raw.includes('lakh') || raw.includes('l');
+
+  const convert = (num) => {
+    if (Number.isNaN(num)) return null;
+    if (hasK) return num * 1000;
+    if (hasLakh || num <= 25) return num * 100000;
+    return num;
+  };
+
+  if (numbers.length >= 2) {
+    const [first, second] = numbers.map(convert);
+    if (first != null && second != null) {
+      return {
+        min: Math.min(first, second),
+        max: Math.max(first, second)
+      };
+    }
+  }
+
+  if (numbers.length === 1) {
+    const converted = convert(numbers[0]);
+    if (converted != null) {
+      if (raw.includes('less')) {
+        return { min: 0, max: converted };
+      }
+      if (raw.includes('more') || raw.includes('above') || raw.includes('greater')) {
+        return { min: converted, max: Infinity };
+      }
+      return { min: converted, max: converted };
+    }
+  }
+
+  return null;
+};
+
+const candidateHasModeAvailability = (candidate, mode) => {
+  const onlineFields = [
+    'full_time_online',
+    'part_time_weekdays_online',
+    'part_time_weekends_online',
+    'part_time_vacations_online',
+    'school_college_university_online',
+    'coaching_institute_online',
+    'Ed_TechCompanies_online',
+    'Home_Tutor_online',
+    'Private_Tutor_online',
+    'Group_Tutor_online',
+    'tuitions_2_online',
+    'Private_Tutions_online_online'
+  ];
+
+  const offlineFields = [
+    'full_time_offline',
+    'part_time_weekdays_offline',
+    'part_time_weekends_offline',
+    'part_time_vacations_offline',
+    'school_college_university_offline',
+    'coaching_institute_offline',
+    'Ed_TechCompanies_offline',
+    'Home_Tutor_offline',
+    'Private_Tutor_offline',
+    'Group_Tutor_offline',
+    'tuitions_2_offline'
+  ];
+
+  const fieldsToCheck = mode === 'online' ? onlineFields : offlineFields;
+  return fieldsToCheck.some((field) => {
+    const value = candidate[field];
+    if (value === undefined || value === null) return false;
+    const normalized = normalizeString(value);
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  });
+};
+
+const candidateSalaryWithinRange = (candidate, minSalary, maxSalary) => {
+  const range = parseSalaryRange(candidate.expected_salary);
+  if (!range) return false;
+
+  const candidateMin = range.min ?? range.max ?? 0;
+  const candidateMax = range.max ?? range.min ?? 0;
+
+  const minTarget = minSalary ?? 0;
+  const maxTarget = maxSalary ?? Infinity;
+
+  return candidateMax >= minTarget && candidateMin <= maxTarget;
+};
+
+const parseSalaryInput = (value) => {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const parseExperienceInput = (value) => {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const getCandidateExperienceYears = (candidate) => {
+  const sources = [
+    candidate.total_experience_years,
+    candidate.total_experience,
+    candidate.overall_experience,
+    candidate.teaching_experience_years
+  ];
+
+  for (const source of sources) {
+    const parsed = parseExperienceInput(source);
+    if (parsed !== null) {
+      return parsed;
+    }
+  }
+
+  return null;
+};
+
+const buildCandidateCoreExpertise = (candidate) => {
+  const expertise = new Set();
+  [
+    candidate.teaching_coreExpertise,
+    candidate.teaching_core_expertise,
+    candidate.core_expertise,
+    candidate.teaching_administrative_coreExpertise,
+    candidate.teaching_administrative_core_expertise
+  ].forEach((source) => {
+    toArray(source).forEach((item) => expertise.add(item));
+  });
+
+  return Array.from(expertise);
+};
 
 const AllCandidates = ({ 
   onViewCandidate, 
@@ -28,13 +303,13 @@ const AllCandidates = ({
 
   // Candidates data state
   const [candidates, setCandidates] = useState([]);
-  const [filteredCandidates, setFilteredCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   
   // User preferences state
   const [savedCandidates, setSavedCandidates] = useState([]);
   const [favouriteCandidates, setFavouriteCandidates] = useState([]);
   const [downloadedCandidates, setDownloadedCandidates] = useState([]);
+  const [unlockedCandidateIds, setUnlockedCandidateIds] = useState([]);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -55,9 +330,49 @@ const AllCandidates = ({
   // Candidate photos
   const [candidatePhotos, setCandidatePhotos] = useState({});
 
+  const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
+    if (!user) return [];
+
+    const userId = user.firebase_uid || user.uid;
+    if (!userId) return [];
+
+    const unlockedIds = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(`unlocked_${userId}_`)) continue;
+
+      try {
+        const stored = localStorage.getItem(key);
+        if (!stored) continue;
+
+        const parsed = JSON.parse(stored);
+        if (!parsed?.unlocked || !parsed?.timestamp) continue;
+
+        const unlockTime = new Date(parsed.timestamp);
+        const now = new Date();
+        const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
+
+        if (Number.isFinite(daysDiff) && daysDiff <= 30) {
+          const candidateId = key.replace(`unlocked_${userId}_`, '');
+          if (candidateId) {
+            unlockedIds.push(String(candidateId));
+          }
+        }
+      } catch (error) {
+        console.error('AllCandidates: Error parsing localStorage entry', key, error);
+      }
+    }
+
+    return unlockedIds;
+  }, [user]);
+
   // Message modal state
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [candidateToMessage, setCandidateToMessage] = useState(null);
+  const [showUnlockPrompt, setShowUnlockPrompt] = useState(false);
+  const [candidateToUnlock, setCandidateToUnlock] = useState(null);
+
+const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidateFilterOptions();
 
   // Filter options state
   const [filterOptions, setFilterOptions] = useState({
@@ -67,6 +382,7 @@ const AllCandidates = ({
     languages: [],
     education: [],
     coreSubjects: [],
+    coreExpertise: [],
     jobTypes: [
       { value: 'administration', label: 'Administration' },
       { value: 'teaching', label: 'Teaching' },
@@ -95,10 +411,7 @@ const AllCandidates = ({
       );
       
       setCandidates(approvedCandidates);
-      setFilteredCandidates(approvedCandidates);
-      
-      // Extract filter options from candidates
-      extractFilterOptions(approvedCandidates);
+      setSearchResults([]);
       
       // Fetch photos for visible candidates
       const photos = await CandidateApiService.fetchCandidatePhotos(approvedCandidates);
@@ -107,97 +420,139 @@ const AllCandidates = ({
       console.error('Error fetching candidates:', err);
       toast.error('Failed to load candidates. Please try again later.');
       setCandidates([]);
-      setFilteredCandidates([]);
+      setSearchResults([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Extract Filter Options from Data
-  const extractFilterOptions = (data) => {
-    const newOptions = {
-      countries: new Set(),
-      states: new Set(),
-      cities: new Set(),
-      languages: new Set(),
-      education: new Set(),
-      coreSubjects: new Set(),
-      grades: new Set(),
-      curriculum: new Set(),
-      designations: new Set(),
-      expRange: [0, 30],
-      salRange: [0, 200000]
-    };
-
-    data.forEach(candidate => {
-      // Location data
-      if (candidate.permanent_country_name) {
-        newOptions.countries.add(candidate.permanent_country_name.trim());
-      }
-      if (candidate.permanent_state_name) {
-        newOptions.states.add(candidate.permanent_state_name.trim());
-      }
-      if (candidate.permanent_city_name) {
-        newOptions.cities.add(candidate.permanent_city_name.trim());
-      }
-      
-      // Languages
-      try {
-        if (candidate.languages) {
-          const languageList = parseLanguages(candidate.languages);
-          languageList.forEach(lang => {
-            if (lang) newOptions.languages.add(lang);
-          });
-        }
-      } catch (error) {
-        console.error('Error parsing languages for filter options:', error);
-        // Silent error - don't disrupt user experience for filter option parsing
-      }
-      
-      // Education and subjects
-      if (candidate.education_details_json) {
-        try {
-          const { types, subjects } = parseEducation(candidate.education_details_json);
-          types.forEach(type => {
-            if (type) newOptions.education.add(type);
-          });
-          subjects.forEach(subject => {
-            if (subject) newOptions.coreSubjects.add(subject);
-          });
-      } catch (error) {
-          console.error('Error parsing education for filter options:', error);
-          // Silent error - don't disrupt user experience for filter option parsing
-        }
-      }
-      
-      // Other fields
-      if (candidate.grades_taught?.trim()) {
-        newOptions.grades.add(candidate.grades_taught.trim());
-      }
-      if (candidate.curriculum_taught?.trim()) {
-        newOptions.curriculum.add(candidate.curriculum_taught.trim());
-      }
-      if (candidate.designation?.trim()) {
-        newOptions.designations.add(candidate.designation.trim());
+  const formatSetWithBaseOptions = useCallback((set, baseOptions = []) => {
+    const map = new Map();
+    baseOptions.forEach((option) => {
+      const key = option?.value ?? option?.label;
+      if (key) {
+        map.set(key, { value: option.value ?? key, label: option.label ?? key });
       }
     });
-    
-    const formatOptions = (set) => Array.from(set).filter(Boolean).map(value => ({ value, label: value }));
-    setFilterOptions(prev => ({
-      ...prev,
-      countries: formatOptions(newOptions.countries),
-      states: formatOptions(newOptions.states),
-      cities: formatOptions(newOptions.cities),
-      languages: formatOptions(newOptions.languages),
-      education: formatOptions(newOptions.education),
-      coreSubjects: formatOptions(newOptions.coreSubjects),
-      grades: formatOptions(newOptions.grades),
-      curriculum: formatOptions(newOptions.curriculum),
-      designations: formatOptions(newOptions.designations),
-      expRange: newOptions.expRange,
-      salRange: newOptions.salRange
-    }));
-  };
+    set.forEach((value) => {
+      if (!value) return;
+      if (!map.has(value)) {
+        map.set(value, { value, label: value });
+      }
+    });
+    return Array.from(map.values());
+  }, []);
+
+  const initializeSetFromOptions = useCallback((options = []) => {
+    const set = new Set();
+    options.forEach((option) => {
+      const key = option?.value ?? option?.label;
+      if (key) set.add(key);
+    });
+    return set;
+  }, []);
+
+  const extractFilterOptions = useCallback(
+    (data, baseOptions) => {
+      const countrySet = new Set();
+      const stateSet = new Set();
+      const citySet = new Set();
+      const languageSet = initializeSetFromOptions(baseOptions.languages);
+      const educationSet = initializeSetFromOptions(baseOptions.education);
+      const coreSubjectSet = initializeSetFromOptions(baseOptions.coreSubjects);
+      const coreExpertiseSet = initializeSetFromOptions(baseOptions.coreExpertise);
+      const gradeSet = initializeSetFromOptions(baseOptions.grades);
+      const curriculumSet = initializeSetFromOptions(baseOptions.curriculum);
+      const designationSet = initializeSetFromOptions(baseOptions.designations);
+
+      let minExperience = Infinity;
+      let maxExperience = 0;
+      let minSalary = Infinity;
+      let maxSalary = 0;
+
+      data.forEach((candidate) => {
+        const presentCountry = candidate.present_country_name?.trim();
+        const permanentCountry = candidate.permanent_country_name?.trim();
+        if (presentCountry) countrySet.add(presentCountry);
+        if (permanentCountry) countrySet.add(permanentCountry);
+
+        const presentState = candidate.present_state_name?.trim();
+        const permanentState = candidate.permanent_state_name?.trim();
+        if (presentState) stateSet.add(presentState);
+        if (permanentState) stateSet.add(permanentState);
+
+        const presentCity = candidate.present_city_name?.trim();
+        const permanentCity = candidate.permanent_city_name?.trim();
+        if (presentCity) citySet.add(presentCity);
+        if (permanentCity) citySet.add(permanentCity);
+
+        try {
+          const candidateLanguages = parseLanguages(candidate.languages);
+          candidateLanguages.forEach((lang) => lang && languageSet.add(lang.trim()));
+        } catch (error) {
+          console.error('Error parsing languages for filter options:', error);
+        }
+
+        if (candidate.education_details_json) {
+          try {
+            const { types } = parseEducation(candidate.education_details_json);
+            types.forEach((type) => type && educationSet.add(type));
+          } catch (error) {
+            console.error('Error parsing education for filter options:', error);
+          }
+        }
+
+        buildCandidateSubjects(candidate).forEach((subject) => coreSubjectSet.add(subject));
+        buildCandidateCoreExpertise(candidate).forEach((expertise) => coreExpertiseSet.add(expertise));
+        buildCandidateGrades(candidate).forEach((grade) => gradeSet.add(grade));
+        buildCandidateCurriculum(candidate).forEach((curriculum) => curriculumSet.add(curriculum));
+        buildCandidateDesignations(candidate).forEach((designation) => designationSet.add(designation));
+
+        const totalExperience = parseFloat(candidate.total_experience_years);
+        if (!Number.isNaN(totalExperience)) {
+          minExperience = Math.min(minExperience, totalExperience);
+          maxExperience = Math.max(maxExperience, totalExperience);
+        }
+
+        const salaryRange = parseSalaryRange(candidate.expected_salary);
+        if (salaryRange) {
+          if (salaryRange.min != null) {
+            minSalary = Math.min(minSalary, salaryRange.min);
+          }
+          if (salaryRange.max != null) {
+            maxSalary = Math.max(maxSalary, salaryRange.max);
+          }
+        }
+      });
+
+      const derivedExpRange =
+        minExperience === Infinity
+          ? [0, 30]
+          : [Math.max(0, Math.floor(minExperience)), Math.max(Math.ceil(maxExperience), 0)];
+
+      const derivedSalaryRange =
+        minSalary === Infinity
+          ? [0, 200000]
+          : [Math.max(0, Math.floor(minSalary)), Math.max(Math.ceil(maxSalary), 0)];
+
+      setFilterOptions((prev) => ({
+        ...prev,
+        countries: formatSetWithBaseOptions(countrySet),
+        states: formatSetWithBaseOptions(stateSet),
+        cities: formatSetWithBaseOptions(citySet),
+        languages: formatSetWithBaseOptions(languageSet, baseOptions.languages),
+        education: formatSetWithBaseOptions(educationSet, baseOptions.education),
+        coreSubjects: formatSetWithBaseOptions(coreSubjectSet, baseOptions.coreSubjects),
+        coreExpertise: formatSetWithBaseOptions(coreExpertiseSet, baseOptions.coreExpertise),
+        grades: formatSetWithBaseOptions(gradeSet, baseOptions.grades),
+        curriculum: formatSetWithBaseOptions(curriculumSet, baseOptions.curriculum),
+        designations: formatSetWithBaseOptions(designationSet, baseOptions.designations),
+        expRange: derivedExpRange,
+        salRange: derivedSalaryRange
+      }));
+    },
+    [formatSetWithBaseOptions, initializeSetFromOptions]
+  );
 
   // Fetch user preferences
   const fetchUserPreferences = useCallback(async () => {
@@ -206,14 +561,20 @@ const AllCandidates = ({
       setSavedCandidates(prefs.savedCandidates);
       setFavouriteCandidates(prefs.favouriteCandidates);
       setDownloadedCandidates(prefs.downloadedCandidates);
+      const combinedUnlocked = new Set([
+        ...getUnlockedCandidatesFromLocalStorage(),
+        ...(prefs.unlockedCandidates || []).map((id) => String(id))
+      ]);
+      setUnlockedCandidateIds(Array.from(combinedUnlocked));
     } catch (error) {
       console.error('Error fetching user preferences:', error);
       toast.warning('Could not load your saved preferences. You can still browse candidates.');
       setSavedCandidates([]);
       setFavouriteCandidates([]);
       setDownloadedCandidates([]);
+      setUnlockedCandidateIds(getUnlockedCandidatesFromLocalStorage());
     }
-  }, [user]);
+  }, [user, getUnlockedCandidatesFromLocalStorage]);
 
   // Initial data fetch
   useEffect(() => {
@@ -229,12 +590,23 @@ const AllCandidates = ({
     }
   }, [user, userLoading, fetchCandidates, fetchUserPreferences]);
 
+  useEffect(() => {
+    if (candidates.length === 0) {
+      setFilterOptions((prev) => ({
+        ...prev,
+        ...apiFilterOptions
+      }));
+      return;
+    }
+
+    extractFilterOptions(candidates, apiFilterOptions);
+  }, [candidates, apiFilterOptions, extractFilterOptions]);
+
   // SEARCH functionality
   const handleSearch = useCallback((searchTerm) => {
     if (!searchTerm) {
       setSearchResults([]);
       setIsSearching(false);
-      setFilteredCandidates(candidates);
       setCurrentPage(1);
       return;
     }
@@ -242,7 +614,6 @@ const AllCandidates = ({
     setIsSearching(true);
     const results = CandidateApiService.searchCandidates(candidates, searchTerm);
     setSearchResults(results);
-    setFilteredCandidates(results);
     setCurrentPage(1);
   }, [candidates]);
 
@@ -257,18 +628,16 @@ const AllCandidates = ({
       languages: filters.languages?.map(l => l.value) || [],
       education: filters.education?.map(e => e.value) || [],
       coreSubjects: filters.coreSubjects?.map(s => s.value) || [],
+      coreExpertise: filters.coreExpertise?.map(s => s.value) || [],
       jobTypes: filters.jobTypes?.map(j => j.value) || [],
       grades: filters.grades?.map(g => g.value) || [],
       curriculum: filters.curriculum?.map(c => c.value) || [],
       designations: filters.designations?.map(d => d.value) || [],
       gender: filters.gender?.map(g => g.value) || [],
       noticePeriod: filters.noticePeriod?.map(n => n.value) || [],
-      jobSearchStatus: filters.jobSearchStatus?.map(j => j.value) || [],
-      jobShiftPreferences: filters.jobShiftPreferences?.map(j => j.value) || [],
-      tutionPreferences: filters.tutionPreferences?.map(t => t.value) || [],
-      otherTeachingExperience: filters.otherTeachingExperience?.map(t => t.value) || [],
       online: filters.online?.value,
-      offline: filters.offline?.value
+      min_experience: filters.min_experience,
+      max_experience: filters.max_experience
     };
 
     // Check if any filters are actually applied
@@ -285,6 +654,11 @@ const AllCandidates = ({
       setCurrentPage(1);
       return;
     }
+    
+    const minSalaryFilter = parseSalaryInput(formattedFilters.min_salary);
+    const maxSalaryFilter = parseSalaryInput(formattedFilters.max_salary);
+    const minExperienceFilter = parseExperienceInput(formattedFilters.min_experience);
+    const maxExperienceFilter = parseExperienceInput(formattedFilters.max_experience);
     
     let filtered = candidates.filter(candidate => {
       // Location filters - use PRESENT location fields (present_country_name, present_state_name, present_city_name)
@@ -335,14 +709,36 @@ const AllCandidates = ({
       // Education filter
       if (formattedFilters.education.length > 0) {
         const { types } = parseEducation(candidate.education_details_json);
-        const hasMatch = formattedFilters.education.some(filterEdu => {
-          const filterEduLower = filterEdu.toLowerCase();
-          return types.some(candEdu => {
-            const candEduLower = candEdu.toLowerCase();
-            return candEduLower === filterEduLower || 
-                   candEduLower.includes(filterEduLower) || 
-                   filterEduLower.includes(candEduLower);
-          });
+        const candidateTypes = types
+          .map((type) => type && type.toString().trim())
+          .filter(Boolean);
+        if (candidateTypes.length === 0) {
+          return false;
+        }
+
+        const normalizedCandidateTypes = candidateTypes.map(normalizeComparisonValue);
+
+        const hasMatch = formattedFilters.education.some((filterEdu) => {
+          const normalizedFilter = normalizeComparisonValue(filterEdu);
+          if (!normalizedFilter) return false;
+
+          return (
+            normalizedCandidateTypes.some(
+              (candidateValue) =>
+                candidateValue === normalizedFilter ||
+                candidateValue.includes(normalizedFilter) ||
+                normalizedFilter.includes(candidateValue)
+            ) ||
+            candidateTypes.some((candidateValue) => {
+              const candidateLower = candidateValue.toLowerCase();
+              const filterLower = filterEdu.toLowerCase();
+              return (
+                candidateLower === filterLower ||
+                candidateLower.includes(filterLower) ||
+                filterLower.includes(candidateLower)
+              );
+            })
+          );
         });
         if (!hasMatch) return false;
       }
@@ -358,6 +754,150 @@ const AllCandidates = ({
                  normalizedFilter.includes(normalizedCandidate);
         });
         if (!hasMatch) return false;
+      }
+
+      // Core subjects filter
+      if (formattedFilters.coreSubjects.length > 0) {
+        const candidateSubjects = buildCandidateSubjects(candidate).map(normalizeString);
+        if (
+          candidateSubjects.length === 0 ||
+          !formattedFilters.coreSubjects.some((filterSubject) => {
+            const normalizedFilter = normalizeString(filterSubject);
+            return candidateSubjects.some(
+              (subject) =>
+                subject === normalizedFilter ||
+                subject.includes(normalizedFilter) ||
+                normalizedFilter.includes(subject)
+            );
+          })
+        ) {
+          return false;
+        }
+      }
+
+      // Core expertise filter
+      if (formattedFilters.coreExpertise.length > 0) {
+        const candidateExpertise = buildCandidateCoreExpertise(candidate).map(normalizeString);
+        if (
+          candidateExpertise.length === 0 ||
+          !formattedFilters.coreExpertise.some((filterExpertise) => {
+            const normalizedFilter = normalizeString(filterExpertise);
+            return candidateExpertise.some(
+              (expertise) =>
+                expertise === normalizedFilter ||
+                expertise.includes(normalizedFilter) ||
+                normalizedFilter.includes(expertise)
+            );
+          })
+        ) {
+          return false;
+        }
+      }
+
+      // Grades filter
+      if (formattedFilters.grades.length > 0) {
+        const candidateGrades = buildCandidateGrades(candidate).map(normalizeString);
+        if (
+          candidateGrades.length === 0 ||
+          !formattedFilters.grades.some((filterGrade) => {
+            const normalizedFilter = normalizeString(filterGrade);
+            return candidateGrades.some(
+              (grade) =>
+                grade === normalizedFilter ||
+                grade.includes(normalizedFilter) ||
+                normalizedFilter.includes(grade)
+            );
+          })
+        ) {
+          return false;
+        }
+      }
+
+      // Curriculum filter
+      if (formattedFilters.curriculum.length > 0) {
+        const candidateCurriculum = buildCandidateCurriculum(candidate).map(normalizeString);
+        if (
+          candidateCurriculum.length === 0 ||
+          !formattedFilters.curriculum.some((filterCurriculum) => {
+            const normalizedFilter = normalizeString(filterCurriculum);
+            return candidateCurriculum.some(
+              (curriculum) =>
+                curriculum === normalizedFilter ||
+                curriculum.includes(normalizedFilter) ||
+                normalizedFilter.includes(curriculum)
+            );
+          })
+        ) {
+          return false;
+        }
+      }
+
+      // Designations filter
+      if (formattedFilters.designations.length > 0) {
+        const candidateDesignations = buildCandidateDesignations(candidate).map(normalizeString);
+        if (
+          candidateDesignations.length === 0 ||
+          !formattedFilters.designations.some((filterDesignation) => {
+            const normalizedFilter = normalizeString(filterDesignation);
+            return candidateDesignations.some(
+              (designation) =>
+                designation === normalizedFilter ||
+                designation.includes(normalizedFilter) ||
+                normalizedFilter.includes(designation)
+            );
+          })
+        ) {
+          return false;
+        }
+      }
+
+      // Gender filter
+      if (formattedFilters.gender.length > 0) {
+        const candidateGender = normalizeString(candidate.gender);
+        if (!candidateGender) return false;
+        const hasMatch = formattedFilters.gender.some(
+          (filterGender) => normalizeString(filterGender) === candidateGender
+        );
+        if (!hasMatch) return false;
+      }
+
+      // Notice period filter
+      if (formattedFilters.noticePeriod.length > 0) {
+        const candidateNotice = mapNoticeValueToLabel(candidate.notice_period);
+        if (!candidateNotice) return false;
+        const hasMatch = formattedFilters.noticePeriod.some(
+          (filterNotice) => normalizeString(filterNotice) === normalizeString(candidateNotice)
+        );
+        if (!hasMatch) return false;
+      }
+
+      // Online/offline availability
+      if (formattedFilters.online) {
+        const mode = normalizeString(formattedFilters.online);
+        if (mode === 'hybrid') {
+          const hasOnline = candidateHasModeAvailability(candidate, 'online');
+          const hasOffline = candidateHasModeAvailability(candidate, 'offline');
+          if (!hasOnline || !hasOffline) return false;
+        } else if (mode === 'online') {
+          if (!candidateHasModeAvailability(candidate, 'online')) return false;
+        } else if (mode === 'offline') {
+          if (!candidateHasModeAvailability(candidate, 'offline')) return false;
+        }
+      }
+
+      // Salary range filter
+      if (minSalaryFilter !== null || maxSalaryFilter !== null) {
+        if (!candidateSalaryWithinRange(candidate, minSalaryFilter, maxSalaryFilter)) {
+          return false;
+        }
+      }
+
+      // Experience range filter
+      if (minExperienceFilter !== null || maxExperienceFilter !== null) {
+        const candidateExperience = getCandidateExperienceYears(candidate);
+        if (candidateExperience === null) return false;
+        if (minExperienceFilter !== null && candidateExperience < minExperienceFilter) return false;
+        if (maxExperienceFilter !== null && candidateExperience > maxExperienceFilter) return false;
       }
 
       // Add more filters as needed...
@@ -467,9 +1007,62 @@ const AllCandidates = ({
   };
 
   // Handle message candidate - show modal
+  const buildMessagingCandidate = useCallback(
+    (candidate) => {
+      if (!candidate) return null;
+
+      return {
+        firebase_uid: candidate.firebase_uid,
+        id: candidate.firebase_uid,
+        fullName:
+          candidate.fullName ||
+          candidate.name ||
+          candidate?.profileData?.fullName ||
+          'Candidate',
+        name:
+          candidate.name ||
+          candidate.fullName ||
+          candidate?.profileData?.fullName ||
+          'Candidate',
+        state:
+          candidate.present_state_name ||
+          candidate.state ||
+          candidate.permanent_state_name ||
+          null,
+        city:
+          candidate.present_city_name ||
+          candidate.city ||
+          candidate.permanent_city_name ||
+          null,
+        email: candidate.email || null,
+        phone: candidate.callingNumber || null,
+        photoUrl:
+          candidatePhotos[candidate.firebase_uid] ||
+          candidate.profile_picture ||
+          null
+      };
+    },
+    [candidatePhotos]
+  );
+
   const handleMessage = (candidate) => {
-    console.log('AllCandidates: Messaging candidate:', candidate.firebase_uid);
-    setCandidateToMessage(candidate);
+    if (!candidate) return;
+
+    const candidateId = String(candidate.firebase_uid || '');
+    const isUnlocked = candidateId && unlockedCandidateIds.includes(candidateId);
+
+    if (!isUnlocked) {
+      console.log('AllCandidates: Candidate not unlocked, prompting unlock:', candidateId);
+      setCandidateToUnlock(candidate);
+      setShowUnlockPrompt(true);
+      return;
+    }
+
+    console.log('AllCandidates: Messaging candidate:', candidateId);
+    setCandidateToMessage({
+      original: candidate,
+      messaging: buildMessagingCandidate(candidate)
+    });
     setShowMessageModal(true);
   };
 
@@ -481,16 +1074,30 @@ const AllCandidates = ({
 
   // Handle "Continue Single" button - redirect to messages
   const handleMessageModalContinue = () => {
-    if (candidateToMessage) {
+    if (candidateToMessage?.messaging) {
       navigate('/provider/messages', { 
         state: { 
-          selectedCandidate: candidateToMessage,
+          selectedCandidate: candidateToMessage.messaging,
           startConversation: true 
-        } 
+        },
+        replace: false
       });
     }
     setShowMessageModal(false);
     setCandidateToMessage(null);
+  };
+
+  const handleUnlockPromptClose = () => {
+    setShowUnlockPrompt(false);
+    setCandidateToUnlock(null);
+  };
+
+  const handleUnlockPromptViewProfile = () => {
+    if (candidateToUnlock) {
+      handleViewFull(candidateToUnlock);
+    }
+    setShowUnlockPrompt(false);
+    setCandidateToUnlock(null);
   };
 
   // Function to scroll to a specific candidate
@@ -607,6 +1214,9 @@ const AllCandidates = ({
     }
   }
 
+  const totalCandidates = candidates.length;
+  const visibleCandidates = finalFilteredCandidates.length;
+
   return (
     <div className="widget-content">
       {/* Header with Search, Filter Button, and Records per Page */}
@@ -630,6 +1240,11 @@ const AllCandidates = ({
               Apply Filters {activeFilters.size > 0 && `(${activeFilters.size})`}
             </button>
           </div>
+        </div>
+        <div className="mt-2 text-sm text-gray-600">
+          Showing {visibleCandidates.toLocaleString()} of {totalCandidates.toLocaleString()} candidates
+          {activeFilters.size > 0 && ' • Filters applied'}
+          {isSearching && ' • Search active'}
         </div>
       </div>
 
@@ -711,7 +1326,52 @@ const AllCandidates = ({
         onResetFilters={handleResetFilters}
         activeFiltersCount={activeFilters.size}
         initialOptions={filterOptions}
+        optionsLoading={filterOptionsLoading}
       />
+
+      {/* Unlock Prompt Modal */}
+      {showUnlockPrompt && candidateToUnlock && (
+        <div 
+          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+          onClick={handleUnlockPromptClose}
+        >
+          <div 
+            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all" 
+              onClick={handleUnlockPromptClose}
+            >
+              &times;
+            </button>
+
+            <div className="mb-4 mt-0.5 text-center">
+              <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+                Unlock Candidate
+              </h3>
+              <p className="text-gray-600 text-[15px] leading-relaxed">
+                To message {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, please unlock their contact details first. View the profile to unlock and access messaging.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button 
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                onClick={handleUnlockPromptClose}
+              >
+                Cancel
+              </button>
+              <button 
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl"
+                onClick={handleUnlockPromptViewProfile}
+              >
+                View Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Message Modal */}
       {showMessageModal && (

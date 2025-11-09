@@ -2,71 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Select from 'react-select';
 import { GetCountries, GetState, GetCity } from 'react-country-state-city';
-import axios from 'axios';
-import { toast } from "react-toastify";
-import { useAuth } from "../../../../../Context/AuthContext";
 import InputWithTooltip from "../../../../../services/InputWithTooltip";
+import { defaultJobFilters } from '../Sections/searchJobFilters';
+import useJobFilterOptions from './useJobFilterOptions';
 
-const FilterPanel = ({ 
-  isOpen, 
-  onClose, 
-  onApplyFilters, 
+const FilterPanel = ({
+  isOpen,
+  onClose,
+  onApplyFilters,
   onResetFilters,
-  activeFiltersCount = 0 
+  activeFiltersCount = 0
 }) => {
-  const { user } = useAuth();
-  
-  // Initialize filters with saved values or defaults
-  const defaultFilters = {
-    core_subjects: [],
-    optional_subject: [],
-    country: null,
-    state: null,
-    city: null,
-    job_category: null,
-    designations: [],
-    designated_grades: [],
-    curriculum: [],
-    subjects: [],
-    core_expertise: [],
-    job_shifts: null,
-    job_process: null,
-    job_sub_process: null,
-    min_salary: '',
-    max_salary: ''
-  };
-
-  const [filters, setFilters] = useState(() => {
+  const createInitialFilters = () => {
     try {
       const saved = localStorage.getItem('jobFilters');
-      return saved ? JSON.parse(saved) : defaultFilters;
+      return saved ? { ...defaultJobFilters, ...JSON.parse(saved) } : { ...defaultJobFilters };
     } catch (error) {
       console.error('Error loading saved filters:', error);
-      return defaultFilters;
+      return { ...defaultJobFilters };
     }
-  });
+  };
 
-  // API-loaded options state
-  const [apiOptions, setApiOptions] = useState({
-    subjects: [],
-    designations: [],
-    grades: [],
-    curriculum: [],
-    coreExpertise: []
-  });
+  const [filters, setFilters] = useState(createInitialFilters);
+  const { options: apiOptions, loading: optionsLoading } = useJobFilterOptions();
 
   // Location options state
   const [locationOptions, setLocationOptions] = useState({
     countries: [],
     states: [],
     cities: []
-  });
-
-  // Loading states
-  const [isLoading, setIsLoading] = useState({
-    subjects: false,
-    constants: false,
-    preferences: false
   });
 
   // Static filter options
@@ -124,52 +88,6 @@ const FilterPanel = ({
     })
   };
 
-  // Fetch subjects from API
-  const fetchSubjects = async () => {
-    setIsLoading(prev => ({ ...prev, subjects: true }));
-    try {
-      const response = await axios.get(import.meta.env.VITE_DEV1_API + "/education-data");
-      const formattedSubjects = response.data.map(subject => ({
-        value: subject.value || subject,
-        label: subject.label || subject
-      }));
-      setApiOptions(prev => ({
-        ...prev,
-        subjects: formattedSubjects
-      }));
-    } catch (error) {
-      console.error("Error fetching subjects:", error);
-    } finally {
-      setIsLoading(prev => ({ ...prev, subjects: false }));
-    }
-  };
-
-  // Fetch other filter options from constants API
-  const fetchConstants = async () => {
-    setIsLoading(prev => ({ ...prev, constants: true }));
-    try {
-      const response = await fetch(import.meta.env.VITE_DEV1_API + "/constants");
-      const data = await response.json();
-      const transformedData = data.map(item => ({
-        category: item.category,
-        value: item.value,
-        label: item.label
-      }));
-
-      setApiOptions(prev => ({
-        ...prev,
-        designations: transformedData.filter(item => item.category === "Teaching" || item.category === "Administration"),
-        grades: transformedData.filter(item => item.category === "Grades"),
-        curriculum: transformedData.filter(item => item.category === "Curriculum"),
-        coreExpertise: transformedData.filter(item => item.category === "Core Expertise")
-      }));
-    } catch (error) {
-      console.error("Error fetching constants:", error);
-    } finally {
-      setIsLoading(prev => ({ ...prev, constants: false }));
-    }
-  };
-
   // Load data on component mount
   useEffect(() => {
     GetCountries().then((countryData) => {
@@ -182,16 +100,25 @@ const FilterPanel = ({
         ...prev,
         countries
       }));
-    });
 
-    fetchSubjects();
-    fetchConstants();
+      const indiaOption = countries.find(country => country.label && country.label.toLowerCase() === 'india');
+      if (indiaOption) {
+        setFilters(prev => {
+          const currentLabel = String(prev.country?.label || prev.country?.value || '').toLowerCase();
+          if (!prev.country || currentLabel === '' || currentLabel === 'india') {
+            return { ...prev, country: indiaOption };
+          }
+          return prev;
+        });
+      }
+    });
   }, []);
 
   // Update states when country changes
   useEffect(() => {
-    if (filters.country) {
-      GetState(filters.country.value).then((stateData) => {
+    const countryValue = filters.country?.value;
+    if (typeof countryValue === 'number') {
+      GetState(countryValue).then((stateData) => {
         const states = stateData.map(state => ({
           value: state.id,
           label: state.name
@@ -202,7 +129,6 @@ const FilterPanel = ({
           states
         }));
 
-        // Reset state and city selections
         setFilters(prev => ({
           ...prev,
           state: null,
@@ -220,8 +146,10 @@ const FilterPanel = ({
 
   // Update cities when state changes
   useEffect(() => {
-    if (filters.country && filters.state) {
-      GetCity(filters.country.value, filters.state.value).then((cityData) => {
+    const countryValue = filters.country?.value;
+    const stateValue = filters.state?.value;
+    if (typeof countryValue === 'number' && typeof stateValue === 'number') {
+      GetCity(countryValue, stateValue).then((cityData) => {
         const cities = cityData.map(city => ({
           value: city.name,
           label: city.name
@@ -232,7 +160,6 @@ const FilterPanel = ({
           cities
         }));
 
-        // Reset city selection
         setFilters(prev => ({
           ...prev,
           city: null
@@ -252,14 +179,14 @@ const FilterPanel = ({
       ...filters,
       [field]: value
     };
-    
+
     // Save to localStorage
     try {
       localStorage.setItem('jobFilters', JSON.stringify(newFilters));
     } catch (error) {
       console.error('Error saving filters:', error);
     }
-    
+
     setFilters(newFilters);
   };
 
@@ -276,7 +203,7 @@ const FilterPanel = ({
 
   // Handle reset filters
   const handleReset = () => {
-    setFilters(defaultFilters);
+    setFilters({ ...defaultJobFilters });
     try {
       localStorage.removeItem('jobFilters');
     } catch (error) {
@@ -320,7 +247,7 @@ const FilterPanel = ({
                 />
               </InputWithTooltip>
             </div>
-            
+
             <div>
               <InputWithTooltip label="State">
                 <Select
@@ -335,7 +262,7 @@ const FilterPanel = ({
                 />
               </InputWithTooltip>
             </div>
-            
+
             <div>
               <InputWithTooltip label="City">
                 <Select
@@ -379,7 +306,7 @@ const FilterPanel = ({
                 />
               </InputWithTooltip>
             </div>
-            
+
             <div>
               <InputWithTooltip label="Max Salary">
                 <input
@@ -448,7 +375,24 @@ const FilterPanel = ({
                   placeholder="Select Subjects"
                   isMulti
                   isClearable
-                  isLoading={isLoading.subjects}
+                  isLoading={optionsLoading.subjects}
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
+            </div>
+
+            {/* Education */}
+            <div>
+              <InputWithTooltip label="Education">
+                <Select
+                  value={filters.education}
+                  onChange={(value) => handleFilterChange('education', value)}
+                  options={apiOptions.education}
+                  placeholder="Select Education"
+                  isMulti
+                  isClearable
+                  isLoading={optionsLoading.constants}
                   styles={selectStyles}
                   menuPortalTarget={document.body}
                 />
@@ -465,7 +409,7 @@ const FilterPanel = ({
                   placeholder="Select Designations"
                   isMulti
                   isClearable
-                  isLoading={isLoading.constants}
+                  isLoading={optionsLoading.constants}
                   styles={selectStyles}
                   menuPortalTarget={document.body}
                 />
@@ -482,7 +426,7 @@ const FilterPanel = ({
                   placeholder="Select Grades"
                   isMulti
                   isClearable
-                  isLoading={isLoading.constants}
+                  isLoading={optionsLoading.constants}
                   styles={selectStyles}
                   menuPortalTarget={document.body}
                 />
@@ -499,24 +443,7 @@ const FilterPanel = ({
                   placeholder="Select Curriculum"
                   isMulti
                   isClearable
-                  isLoading={isLoading.constants}
-                  styles={selectStyles}
-                  menuPortalTarget={document.body}
-                />
-              </InputWithTooltip>
-            </div>
-
-            {/* Core Subjects */}
-            <div>
-              <InputWithTooltip label="Core Subjects">
-                <Select
-                  value={filters.core_subjects}
-                  onChange={(value) => handleFilterChange('core_subjects', value)}
-                  options={apiOptions.subjects}
-                  placeholder="Select Core Subjects"
-                  isMulti
-                  isClearable
-                  isLoading={isLoading.subjects}
+                  isLoading={optionsLoading.constants}
                   styles={selectStyles}
                   menuPortalTarget={document.body}
                 />
@@ -533,7 +460,7 @@ const FilterPanel = ({
                   placeholder="Select Core Expertise"
                   isMulti
                   isClearable
-                  isLoading={isLoading.constants}
+                  isLoading={optionsLoading.constants}
                   styles={selectStyles}
                   menuPortalTarget={document.body}
                 />

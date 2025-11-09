@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Select from 'react-select';
 import { GetCountries, GetState, GetCity } from 'react-country-state-city';
-import axios from 'axios';
 import { IoLocationOutline } from "react-icons/io5";
 import { BsBriefcase, BsCash, BsMortarboard, BsClock } from "react-icons/bs";
 import { AiOutlineEye, AiOutlineSave, AiOutlineHeart, AiFillHeart } from "react-icons/ai";
@@ -14,6 +13,10 @@ import { toast } from "react-toastify";
 import { useAuth } from "../../../../../Context/AuthContext";
 import InputWithTooltip from "../../../../services/InputWithTooltip";
 import LoadingState from '../../../../common/LoadingState';
+import { defaultJobFilters, applyJobFilters } from './searchJobFilters';
+import useJobFilterOptions from '../shared/useJobFilterOptions';
+import useJobMessaging from '../hooks/useJobMessaging';
+import JobMessagingModals from '../shared/JobMessagingModals';
 
 // Additional API endpoints for specific functionality
 const JOB_PREFERENCES_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference";
@@ -25,34 +28,15 @@ const RCS_API = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/rcs
 
 
 const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
-  const { user, loading: userLoading } = useAuth();
+  const { user } = useAuth();
   // Initialize filters with saved values or defaults
-  const defaultFilters = {
-    core_subjects: [],
-    optional_subject: [],
-    country: null,
-    state: null,
-    city: null,
-    job_category: null,
-    designations: [],
-    designated_grades: [],
-    curriculum: [],
-    subjects: [],
-    core_expertise: [],
-    job_shifts: null,
-    job_process: null,
-    job_sub_process: null,
-    min_salary: '',
-    max_salary: ''
-  };
-
   const [filters, setFilters] = useState(() => {
     try {
       const saved = localStorage.getItem('jobFilters');
-      return saved ? JSON.parse(saved) : defaultFilters;
+      return saved ? { ...defaultJobFilters, ...JSON.parse(saved) } : defaultJobFilters;
     } catch (error) {
       console.error('Error loading saved filters:', error);
-      return defaultFilters;
+      return defaultJobFilters;
     }
   });
 
@@ -60,8 +44,7 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilters, setActiveFilters] = useState(new Set());
-  
+
   // Saved and favorite jobs state
   const [savedJobs, setSavedJobs] = useState(new Set());
   const [favouriteJobs, setFavouriteJobs] = useState(new Set());
@@ -79,148 +62,113 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [jobsPerPage, setJobsPerPage] = useState(10);
 
-  // API-loaded options state
-  const [apiOptions, setApiOptions] = useState({
-    subjects: [],
-    designations: [],
-    grades: [],
-    curriculum: [],
-    coreExpertise: []
-  });
-
-  // Loading states
-  const [isLoading, setIsLoading] = useState({
-    subjects: false,
-    constants: false,
-    preferences: false
-  });
+  const { options: apiOptions, loading: optionLoading } = useJobFilterOptions();
 
   // Function to fetch and map job preferences
-  const fetchAndMapJobPreferences = async () => {
+  const fetchAndMapJobPreferences = useCallback(async () => {
+    if (!user?.uid) return;
+
     try {
-      if (!user?.uid) return;
-      
-      setIsLoading(prev => ({ ...prev, preferences: true }));
       const response = await fetch(JOB_PREFERENCES_API);
       const data = await response.json();
-      
-      // Find preferences for current user
-      const userPreferences = data.find(pref => pref.firebase_uid === user.uid);
+      const userPreferences = Array.isArray(data)
+        ? data.find((pref) => pref.firebase_uid === user.uid)
+        : null;
+
       if (!userPreferences) {
-        setIsLoading(prev => ({ ...prev, preferences: false }));
         return;
       }
 
-      // Map preferences to filter format
-      const mappedFilters = {
-        // Keep existing filters
-        ...filters,
-        
-        // Map based on job type
-        ...(userPreferences.Job_Type === 'teaching' ? {
-          // Teaching specific mappings
-          job_category: { value: 'fullTime', label: 'Full Time' },
-          subjects: userPreferences.teaching_subjects?.map(subject => ({
-            value: subject,
-            label: subject
-          })) || [],
-          designations: userPreferences.teaching_designations?.map(designation => ({
-            value: designation,
-            label: designation
-          })) || [],
-          designated_grades: userPreferences.teaching_grades?.map(grade => ({
-            value: grade,
-            label: grade
-          })) || [],
-          curriculum: userPreferences.teaching_curriculum?.map(curr => ({
-            value: curr,
-            label: curr
-          })) || [],
-          core_subjects: userPreferences.teaching_subjects?.map(subject => ({
-            value: subject,
-            label: subject
-          })) || [],
-          core_expertise: userPreferences.teaching_coreExpertise?.map(expertise => ({
-            value: expertise,
-            label: expertise
-          })) || []
-        } : userPreferences.Job_Type === 'administration' ? {
-          // Administration specific mappings
-          job_category: { value: 'fullTime', label: 'Full Time' },
-          designations: userPreferences.administrative_designations?.map(designation => ({
-            value: designation,
-            label: designation
-          })) || [],
-          curriculum: userPreferences.administrative_curriculum?.map(curr => ({
-            value: curr,
-            label: curr
-          })) || []
-        } : userPreferences.Job_Type === 'teaching_administrative' ? {
-          // Teaching administrative specific mappings
-          job_category: { value: 'fullTime', label: 'Full Time' },
-          subjects: userPreferences.teaching_administrative_subjects?.map(subject => ({
-            value: subject,
-            label: subject
-          })) || [],
-          designations: userPreferences.teaching_administrative_designations?.map(designation => ({
-            value: designation,
-            label: designation
-          })) || [],
-          designated_grades: userPreferences.teaching_administrative_grades?.map(grade => ({
-            value: grade,
-            label: grade
-          })) || [],
-          curriculum: userPreferences.teaching_administrative_curriculum?.map(curr => ({
-            value: curr,
-            label: curr
-          })) || [],
-          core_expertise: userPreferences.teaching_administrative_coreExpertise?.map(expertise => ({
-            value: expertise,
-            label: expertise
-          })) || []
-        } : {}),
+      const toOptionList = (items) =>
+        Array.isArray(items)
+          ? items.map((value) => ({ value, label: value }))
+          : [];
 
-        // Map location
-        country: userPreferences.preferred_country ? {
-          value: userPreferences.preferred_country,
-          label: userPreferences.preferred_country
-        } : null,
-        state: userPreferences.preferred_state ? {
-          value: userPreferences.preferred_state,
-          label: userPreferences.preferred_state
-        } : null,
-        city: userPreferences.preferred_city ? {
-          value: userPreferences.preferred_city,
-          label: userPreferences.preferred_city
-        } : null,
+      const jobTypeMappings = (() => {
+        switch (userPreferences.Job_Type) {
+          case 'teaching':
+            return {
+              job_category: { value: 'fullTime', label: 'Full Time' },
+              subjects: toOptionList(userPreferences.teaching_subjects),
+              designations: toOptionList(userPreferences.teaching_designations),
+              designated_grades: toOptionList(userPreferences.teaching_grades),
+              curriculum: toOptionList(userPreferences.teaching_curriculum),
+              core_expertise: toOptionList(userPreferences.teaching_coreExpertise)
+            };
+          case 'administration':
+            return {
+              job_category: { value: 'fullTime', label: 'Full Time' },
+              designations: toOptionList(userPreferences.administrative_designations),
+              curriculum: toOptionList(userPreferences.administrative_curriculum)
+            };
+          case 'teaching_administrative':
+            return {
+              job_category: { value: 'fullTime', label: 'Full Time' },
+              subjects: toOptionList(userPreferences.teaching_administrative_subjects),
+              designations: toOptionList(userPreferences.teaching_administrative_designations),
+              designated_grades: toOptionList(userPreferences.teaching_administrative_grades),
+              curriculum: toOptionList(userPreferences.teaching_administrative_curriculum),
+              core_expertise: toOptionList(userPreferences.teaching_administrative_coreExpertise)
+            };
+          default:
+            return {};
+        }
+      })();
 
-        // Map job process based on preferences
-        job_process: userPreferences.full_time_online && userPreferences.full_time_offline ? 
-          { value: 'Hybrid', label: 'Hybrid' } :
-          userPreferences.full_time_online ? 
-          { value: 'Online', label: 'Online' } :
-          { value: 'Regular', label: 'Regular (Offline)' },
+      const jobProcess = userPreferences.full_time_online && userPreferences.full_time_offline
+        ? { value: 'Hybrid', label: 'Hybrid' }
+        : userPreferences.full_time_online
+        ? { value: 'Online', label: 'Online' }
+        : { value: 'Regular', label: 'Regular (Offline)' };
 
-        // Map job shifts based on preferences
-        job_shifts: userPreferences.part_time_weekdays_offline || userPreferences.part_time_weekdays_online ?
-          { value: 'Week days', label: 'Week days' } :
-          userPreferences.part_time_weekends_offline || userPreferences.part_time_weekends_online ?
-          { value: 'Week ends', label: 'Week ends' } :
-          null
-      };
+      const jobShifts = userPreferences.part_time_weekdays_offline || userPreferences.part_time_weekdays_online
+        ? { value: 'Week days', label: 'Week days' }
+        : userPreferences.part_time_weekends_offline || userPreferences.part_time_weekends_online
+        ? { value: 'Week ends', label: 'Week ends' }
+        : null;
 
-      // Update filters
-      setFilters(mappedFilters);
-      
-      // Save to localStorage
-      localStorage.setItem('jobFilters', JSON.stringify(mappedFilters));
-      
+      setFilters((prev) => {
+        const locationUpdates = {
+          country: userPreferences.preferred_country
+            ? {
+                value: userPreferences.preferred_country,
+                label: userPreferences.preferred_country
+              }
+            : null,
+          state: userPreferences.preferred_state
+            ? {
+                value: userPreferences.preferred_state,
+                label: userPreferences.preferred_state
+              }
+            : null,
+          city: userPreferences.preferred_city
+            ? {
+                value: userPreferences.preferred_city,
+                label: userPreferences.preferred_city
+              }
+            : null
+        };
+
+        const newFilters = {
+          ...prev,
+          ...jobTypeMappings,
+          ...locationUpdates,
+          job_process: jobProcess,
+          job_shifts: jobShifts
+        };
+
+        try {
+          localStorage.setItem('jobFilters', JSON.stringify(newFilters));
+        } catch (storageError) {
+          console.error('Error saving filters:', storageError);
+        }
+
+        return newFilters;
+      });
     } catch (error) {
-      console.error("Error fetching job preferences:", error);
-    } finally {
-      setIsLoading(prev => ({ ...prev, preferences: false }));
+      console.error('Error fetching job preferences:', error);
     }
-  };
+  }, [user]);
 
   // Static filter options - Updated to match actual API data format
   const filterOptions = {
@@ -265,83 +213,39 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
 
   // Fetch job preferences when component mounts and user is available
   useEffect(() => {
-    if (user?.uid) {
-      fetchAndMapJobPreferences();
-    }
-  }, [user]); // Only run when user changes
+    fetchAndMapJobPreferences();
+  }, [fetchAndMapJobPreferences]);
 
-  // Fetch jobs data
-  const fetchJobs = async () => {
+  // Fetch applied jobs for current user
+  const fetchAppliedJobs = useCallback(async () => {
+    if (!user) {
+      setAppliedJobs(new Set());
+      return;
+    }
+
+    try {
+      const { appliedJobs: applied } = await JobApiService.fetchUserJobPreferences(user);
+      setAppliedJobs(new Set(applied));
+    } catch (error) {
+      console.error('Error fetching applied jobs:', error);
+      setAppliedJobs(new Set());
+    }
+  }, [user]);
+
+  const fetchJobs = useCallback(async () => {
     try {
       setLoading(true);
       const data = await JobApiService.fetchJobs();
       setJobs(data);
       setFilteredJobs(data);
     } catch (error) {
-      console.error("Error fetching jobs:", error);
+      console.error('Error fetching jobs:', error);
       setJobs([]);
       setFilteredJobs([]);
     } finally {
       setLoading(false);
     }
-  };
-
-  // Fetch subjects from API
-  const fetchSubjects = async () => {
-    setIsLoading(prev => ({ ...prev, subjects: true }));
-    try {
-      const response = await axios.get(import.meta.env.VITE_DEV1_API + "/education-data");
-      const formattedSubjects = response.data.map(subject => ({
-        value: subject.value || subject,
-        label: subject.label || subject
-      }));
-      setApiOptions(prev => ({
-        ...prev,
-        subjects: formattedSubjects
-      }));
-    } catch (error) {
-      console.error("Error fetching subjects:", error);
-    } finally {
-      setIsLoading(prev => ({ ...prev, subjects: false }));
-    }
-  };
-
-  // Fetch other filter options from constants API
-  const fetchConstants = async () => {
-    setIsLoading(prev => ({ ...prev, constants: true }));
-    try {
-      const response = await fetch(import.meta.env.VITE_DEV1_API + "/constants");
-      const data = await response.json();
-      const transformedData = data.map(item => ({
-        category: item.category,
-        value: item.value,
-        label: item.label
-      }));
-
-      setApiOptions(prev => ({
-        ...prev,
-        designations: transformedData.filter(item => item.category === "Teaching" || item.category === "Administration"),
-        grades: transformedData.filter(item => item.category === "Grades"),
-        curriculum: transformedData.filter(item => item.category === "Curriculum"),
-        coreExpertise: transformedData.filter(item => item.category === "Core Expertise")
-      }));
-    } catch (error) {
-      console.error("Error fetching constants:", error);
-    } finally {
-      setIsLoading(prev => ({ ...prev, constants: false }));
-    }
-  };
-
-  // Fetch applied jobs for current user
-  const fetchAppliedJobs = async () => {
-    try {
-      const { appliedJobs } = await JobApiService.fetchUserJobPreferences(user);
-      setAppliedJobs(new Set(appliedJobs));
-    } catch (error) {
-      console.error('Error fetching applied jobs:', error);
-      setAppliedJobs(new Set());
-    }
-  };
+  }, []);
 
   // Load data on component mount
   useEffect(() => {
@@ -355,6 +259,17 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
         ...prev,
         countries
       }));
+
+      const indiaOption = countries.find(country => country.label && country.label.toLowerCase() === 'india');
+      if (indiaOption) {
+        setFilters(prev => {
+          const currentLabel = String(prev.country?.label || prev.country?.value || '').toLowerCase();
+          if (!prev.country || currentLabel === '' || currentLabel === 'india') {
+            return { ...prev, country: indiaOption };
+          }
+          return prev;
+        });
+      }
     });
 
     // Load saved and favourite jobs from localStorage
@@ -368,15 +283,14 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
     }
 
     fetchJobs();
-    fetchSubjects();
-    fetchConstants();
     fetchAppliedJobs();
-  }, []);
+  }, [fetchJobs, fetchAppliedJobs]);
 
   // Update states when country changes
   useEffect(() => {
-    if (filters.country) {
-      GetState(filters.country.value).then((stateData) => {
+    const countryValue = filters.country?.value;
+    if (typeof countryValue === 'number') {
+      GetState(countryValue).then((stateData) => {
         const states = stateData.map(state => ({
           value: state.id,
           label: state.name
@@ -387,7 +301,6 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
           states
         }));
 
-        // Reset state and city selections
         setFilters(prev => ({
           ...prev,
           state: null,
@@ -405,8 +318,10 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
 
   // Update cities when state changes
   useEffect(() => {
-    if (filters.country && filters.state) {
-      GetCity(filters.country.value, filters.state.value).then((cityData) => {
+    const countryValue = filters.country?.value;
+    const stateValue = filters.state?.value;
+    if (typeof countryValue === 'number' && typeof stateValue === 'number') {
+      GetCity(countryValue, stateValue).then((cityData) => {
         const cities = cityData.map(city => ({
           value: city.name,
           label: city.name
@@ -433,7 +348,7 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
 
 
   // Generate consistent job ID based on job content (not array position)
-  const generateJobId = (job, index) => {
+  const generateJobId = (job, index = 0) => {
     // First try the actual ID fields
     if (job.id) return job.id;
     if (job.job_id) return job.job_id;
@@ -454,8 +369,10 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
     }
     
     // Last resort: use index
-    return index;
+    return index ?? 0;
   };
+
+  const getJobId = useCallback((job) => generateJobId(job), []);
 
   // Select styles for consistent Bootstrap look
   const selectStyles = {
@@ -500,481 +417,15 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
     handleFilterChange(name, value);
   };
 
-  // Apply filters function
   const handleApplyFilters = () => {
-    // Format filters
-    const formattedFilters = {
-      ...filters,
-      country: filters.country?.label || filters.country?.value,
-      state: filters.state?.label || filters.state?.value,
-      city: filters.city?.label || filters.city?.value,
-      job_category: filters.job_category?.value,
-      job_shifts: filters.job_shifts?.value,
-      job_process: filters.job_process?.value,
-      job_sub_process: filters.job_sub_process?.value,
-
-      subjects: filters.subjects?.map(s => s.value) || [],
-      designations: filters.designations?.map(d => d.value) || [],
-      designated_grades: filters.designated_grades?.map(g => g.value) || [],
-      curriculum: filters.curriculum?.map(c => c.value) || [],
-      core_subjects: filters.core_subjects?.map(s => s.value) || [],
-      core_expertise: filters.core_expertise?.map(e => e.value) || []
-    };
-
-    // Check if any filters are actually applied
-    const hasActiveFilters = Object.keys(formattedFilters).some(key => {
-      const value = formattedFilters[key];
-      if (Array.isArray(value)) return value.length > 0;
-      if (typeof value === 'string') return value.trim() !== '';
-      if (typeof value === 'number') return value > 0;
-      return value !== null && value !== undefined;
-    });
-
-    // If no filters are applied, show all jobs
-    if (!hasActiveFilters) {
-      setFilteredJobs(jobs);
-      setCurrentPage(1);
-      setActiveFilters(new Set());
-      return;
-    }
-
-    // Apply filtering logic similar to AllCandidates but with a key difference:
-    // Instead of filtering out jobs that don't match ALL criteria, we'll keep ALL jobs
-    // and calculate a relevance score for each one, then sort by that score
-    
-    // Get active filter keys first
-    const activeFilterKeys = Object.keys(formattedFilters).filter(key => {
-      const value = formattedFilters[key];
-      if (Array.isArray(value)) return value.length > 0;
-      if (typeof value === 'string') return value.trim() !== '';
-      return value !== null && value !== undefined;
-    });
-
-    // First, collect all jobs with their match data
-    let jobsWithMatches = jobs.map(job => {
-      // Check for empty job data - if key fields are missing, we might need to skip
-      const hasJobData = job.job_title || job.designation || job.institute_name;
-      if (!hasJobData) {
-        return { job, matchedFilters: [], relevanceScore: 0, passes: false };
-      }
-      
-      // Track which filters this job matches
-      const matchedFilters = [];
-      // Track if this job passes the minimum required filters (we can define which ones are required)
-      let passes = true;
-      
-      // Location filters - use flexible matching with type safety
-      if (formattedFilters.country) {
-        const jobCountry = String(job.country || job.country_name || '').toLowerCase().trim();
-        const filterValue = String(formattedFilters.country || '').toLowerCase().trim();
-        
-        // Special handling for India - many jobs might have this field empty but are implicitly in India
-        if (filterValue === 'india' && (jobCountry === '' || jobCountry === 'india')) {
-          console.log(`✅ Country filter passed: Empty country assumed to be India`);
-          matchedFilters.push('country');
-        }
-        // Normal country matching
-        else if (jobCountry !== filterValue && !jobCountry.includes(filterValue) && !filterValue.includes(jobCountry)) {
-          console.log(`❌ Country filter failed: '${jobCountry}' vs '${filterValue}'`);
-          // We don't return false anymore, just don't add to matchedFilters
-        }
-        else {
-          console.log(`✅ Country filter passed: '${jobCountry}' vs '${filterValue}'`);
-          matchedFilters.push('country');
-        }
-      }
-      if (formattedFilters.state) {
-        const jobState = String(job.state_ut || job.state || job.state_name || '').toLowerCase().trim();
-        const filterValue = String(formattedFilters.state || '').toLowerCase().trim();
-        
-        // More flexible matching for states
-        if (jobState === filterValue || 
-            jobState.includes(filterValue) || 
-            filterValue.includes(jobState)) {
-          console.log(`✅ State filter passed: '${jobState}' vs '${filterValue}'`);
-          matchedFilters.push('state');
-        } else {
-          console.log(`❌ State filter failed: '${jobState}' vs '${filterValue}'`);
-          // Consider state a required filter - if it fails, mark the job as not passing
-          passes = false;
-        }
-      }
-      if (formattedFilters.city) {
-        const jobCity = String(job.city || job.city_name || '').toLowerCase().trim();
-        const filterValue = String(formattedFilters.city || '').toLowerCase().trim();
-        if (jobCity === filterValue || jobCity.includes(filterValue) || filterValue.includes(jobCity)) {
-          console.log(`✅ City filter passed: '${jobCity}' vs '${filterValue}'`);
-          matchedFilters.push('city');
-        } else {
-          console.log(`❌ City filter failed: '${jobCity}' vs '${filterValue}'`);
-          // Consider city a required filter - if it fails, mark the job as not passing
-          passes = false;
-        }
-      }
-      
-      // Job category filter - very flexible matching with special cases
-      if (formattedFilters.job_category) {
-        const jobType = (job.job_type || job.Job_Type || '').toLowerCase().trim();
-        const filterValue = formattedFilters.job_category.toLowerCase().trim();
-        
-        // Special mapping for common mismatches
-        const jobTypeMapping = {
-          'fullpart': ['full-time', 'fulltime', 'full-time-part-time'],
-          'fulltime': ['full-time', 'fulltime', 'full-time-part-time'],
-          'full-time': ['fulltime', 'fullpart', 'full-time-part-time'],
-          'parttime': ['part-time', 'parttime'],
-          'part-time': ['parttime', 'parttime']
-        };
-        
-        // Check if there's a special mapping for this job type
-        const mappedValues = jobTypeMapping[jobType] || [];
-        const hasSpecialMatch = mappedValues.some(mappedValue => 
-          mappedValue.toLowerCase() === filterValue
-        );
-        
-        // Try multiple matching strategies
-        const normalizedJobType = jobType.replace(/\s+/g, '').replace(/[/-]/g, '');
-        const normalizedFilter = filterValue.replace(/\s+/g, '').replace(/[/-]/g, '');
-        
-        const isMatch = 
-          jobType === filterValue ||                           // Exact match
-          jobType.includes(filterValue) ||                     // Contains match
-          filterValue.includes(jobType) ||                     // Reverse contains
-          normalizedJobType === normalizedFilter ||            // Normalized exact
-          normalizedJobType.includes(normalizedFilter) ||      // Normalized contains
-          normalizedFilter.includes(normalizedJobType) ||      // Normalized reverse
-          hasSpecialMatch;                                    // Special mapping match
-        
-        if (!isMatch) {
-          console.log(`❌ Job category filter failed: '${jobType}' vs '${filterValue}' (normalized: '${normalizedJobType}' vs '${normalizedFilter}')`);
-        } else {
-          console.log(`✅ Job category filter passed: '${jobType}' matched '${filterValue}'`);
-          matchedFilters.push('job_category');
-        }
-      }
-      
-      // Job shifts filter - handle arrays properly with case-insensitive matching
-      if (formattedFilters.job_shifts) {
-        // Handle case where job_shifts is null, undefined, or empty array
-        if (!job.job_shifts || 
-            (Array.isArray(job.job_shifts) && job.job_shifts.length === 0) ||
-            (Array.isArray(job.job_shifts) && job.job_shifts.every(item => !item))) {
-          
-          // For "All days" filter, match everything including empty job_shifts
-          if (String(formattedFilters.job_shifts).toLowerCase().includes('all day')) {
-            console.log(`✅ Job shifts filter passed: 'All days' matches empty job_shifts`);
-            matchedFilters.push('job_shifts');
-          } else if (String(formattedFilters.job_shifts).toLowerCase().includes('week day')) {
-            // For "Week days" filter, also match empty job_shifts as most jobs are weekday by default
-            console.log(`✅ Job shifts filter passed: 'Week days' matches empty job_shifts (assumed default)`);
-            matchedFilters.push('job_shifts');
-          } else {
-            console.log(`❌ Job shifts filter failed: Empty job_shifts`);
-          }
-        } else {
-          const jobShifts = Array.isArray(job.job_shifts) ? job.job_shifts : [job.job_shifts];
-          const filterValue = String(formattedFilters.job_shifts || '').toLowerCase().trim();
-          
-          // Special case for "All days" - it should match everything
-          if (filterValue === 'all days' || filterValue.includes('all day')) {
-            console.log(`✅ Job shifts filter passed: 'All days' matches everything`);
-            matchedFilters.push('job_shifts');
-          }
-          
-          // For normal shifts, check for matches
-          else {
-            const hasMatch = jobShifts.some(shift => {
-              const shiftStr = String(shift || '').toLowerCase().trim();
-              if (!shiftStr) return false;
-              
-              // Direct match
-              if (shiftStr === filterValue) return true;
-              
-              // Contains match (either direction)
-              if (shiftStr.includes(filterValue) || filterValue.includes(shiftStr)) return true;
-              
-              // Word-by-word match for multi-word values
-              const shiftWords = shiftStr.split(/\s+/);
-              const filterWords = filterValue.split(/\s+/);
-              
-              return filterWords.some(filterWord => 
-                shiftWords.some(shiftWord => 
-                  shiftWord === filterWord || shiftWord.includes(filterWord) || filterWord.includes(shiftWord)
-                )
-              );
-            });
-            
-            if (hasMatch) {
-              console.log(`✅ Job shifts filter passed: '${jobShifts}'`);
-              matchedFilters.push('job_shifts');
-            } else {
-              console.log(`❌ Job shifts filter failed: '${jobShifts}' vs '${filterValue}'`);
-            }
-          }
-        }
-      }
-      
-      // Job process filter - handle arrays properly
-      if (formattedFilters.job_process) {
-        // Handle empty job_process similar to job_shifts
-        if (!job.job_process || 
-            (Array.isArray(job.job_process) && job.job_process.length === 0) ||
-            (Array.isArray(job.job_process) && job.job_process.every(item => !item))) {
-          
-          // For "Regular" filter, match empty job_process as most jobs are regular by default
-          if (String(formattedFilters.job_process).toLowerCase().includes('regular')) {
-            console.log(`✅ Job process filter passed: 'Regular' matches empty job_process (assumed default)`);
-            matchedFilters.push('job_process');
-          } else {
-            console.log(`❌ Job process filter failed: Empty job_process`);
-          }
-        } else {
-          const jobProcesses = Array.isArray(job.job_process) ? job.job_process : [job.job_process];
-          const filterValue = String(formattedFilters.job_process || '').toLowerCase().trim();
-          
-          // Process mapping for common terms
-          const processMap = {
-            'regular': ['offline', 'in-person', 'on-site', 'onsite'],
-            'online': ['remote', 'virtual'],
-            'hybrid': ['mixed', 'flexible']
-          };
-          
-          // Check for direct match
-          const hasDirectMatch = jobProcesses.some(process => {
-            const processStr = String(process || '').toLowerCase().trim();
-            return processStr === filterValue || processStr.includes(filterValue) || filterValue.includes(processStr);
-          });
-          
-          // Check for mapped match
-          const hasMappedMatch = jobProcesses.some(process => {
-            const processStr = String(process || '').toLowerCase().trim();
-            const mappedValues = processMap[filterValue] || [];
-            return mappedValues.some(val => processStr.includes(val));
-          });
-          
-          if (hasDirectMatch || hasMappedMatch) {
-            console.log(`✅ Job process filter passed: '${jobProcesses}' vs '${filterValue}'`);
-            matchedFilters.push('job_process');
-          } else {
-            console.log(`❌ Job process filter failed: '${jobProcesses}' vs '${filterValue}'`);
-          }
-        }
-      }
-      
-
-      
-      // Subjects filter - handle arrays properly
-      if (formattedFilters.subjects.length > 0) {
-        const jobCoreSubjects = Array.isArray(job.core_subjects) ? job.core_subjects : [job.core_subjects];
-        const jobSubjects = Array.isArray(job.subjects) ? job.subjects : [job.subjects];
-        const allJobSubjects = [...jobCoreSubjects, ...jobSubjects].filter(Boolean);
-        
-        const hasMatch = formattedFilters.subjects.some(filterSubject => 
-          allJobSubjects.some(jobSubject => 
-            String(jobSubject || '').toLowerCase().includes(String(filterSubject || '').toLowerCase())
-          )
-        );
-        if (hasMatch) {
-          console.log(`✅ Subjects filter passed`);
-          matchedFilters.push('subjects');
-        } else {
-          console.log(`❌ Subjects filter failed`);
-        }
-      }
-      
-      // Designations filter - handle arrays properly
-      if (formattedFilters.designations.length > 0) {
-        const jobDesignations = Array.isArray(job.designations) ? job.designations : [job.designations];
-        const jobTitle = job.job_title || '';
-        const allJobDesignations = [...jobDesignations, jobTitle].filter(Boolean);
-        
-        const hasMatch = formattedFilters.designations.some(filterDesignation => 
-          allJobDesignations.some(jobDesignation => 
-            String(jobDesignation || '').toLowerCase().includes(String(filterDesignation || '').toLowerCase())
-          )
-        );
-        if (hasMatch) {
-          console.log(`✅ Designations filter passed`);
-          matchedFilters.push('designations');
-        } else {
-          console.log(`❌ Designations filter failed`);
-        }
-      }
-      
-      // Grades filter - handle arrays properly
-      if (formattedFilters.designated_grades.length > 0) {
-        const jobGrades = Array.isArray(job.designated_grades) ? job.designated_grades : [job.designated_grades];
-        const jobGradeRange = job.grade_range || '';
-        const allJobGrades = [...jobGrades, jobGradeRange].filter(Boolean);
-        
-        const hasMatch = formattedFilters.designated_grades.some(filterGrade => 
-          allJobGrades.some(jobGrade => 
-            String(jobGrade || '').toLowerCase().includes(String(filterGrade || '').toLowerCase())
-          )
-        );
-        if (hasMatch) {
-          console.log(`✅ Designated grades filter passed`);
-          matchedFilters.push('designated_grades');
-        } else {
-          console.log(`❌ Designated grades filter failed`);
-        }
-      }
-      
-      // Curriculum filter - handle arrays properly
-      if (formattedFilters.curriculum.length > 0) {
-        const jobCurriculum = Array.isArray(job.curriculum) ? job.curriculum : [job.curriculum];
-        const hasMatch = formattedFilters.curriculum.some(filterCurriculum => 
-          jobCurriculum.some(jobCurr => 
-            String(jobCurr || '').toLowerCase().includes(String(filterCurriculum || '').toLowerCase())
-          )
-        );
-        if (hasMatch) {
-          console.log(`✅ Curriculum filter passed`);
-          matchedFilters.push('curriculum');
-        } else {
-          console.log(`❌ Curriculum filter failed`);
-        }
-      }
-      
-      // Core subjects filter - handle arrays properly
-      if (formattedFilters.core_subjects.length > 0) {
-        const jobCoreSubjects = Array.isArray(job.core_subjects) ? job.core_subjects : [job.core_subjects];
-        const hasMatch = formattedFilters.core_subjects.some(filterSubject => 
-          jobCoreSubjects.some(jobSubject => 
-            String(jobSubject || '').toLowerCase().includes(String(filterSubject || '').toLowerCase())
-          )
-        );
-        if (hasMatch) {
-          console.log(`✅ Core subjects filter passed`);
-          matchedFilters.push('core_subjects');
-        } else {
-          console.log(`❌ Core subjects filter failed`);
-        }
-      }
-      
-      // Core expertise filter - handle arrays properly
-      if (formattedFilters.core_expertise.length > 0) {
-        const jobExpertise = Array.isArray(job.core_expertise) ? job.core_expertise : [job.core_expertise];
-        const hasMatch = formattedFilters.core_expertise.some(filterExpertise => 
-          jobExpertise.some(jobExp => 
-            String(jobExp || '').toLowerCase().includes(String(filterExpertise || '').toLowerCase())
-          )
-        );
-        if (hasMatch) {
-          console.log(`✅ Core expertise filter passed`);
-          matchedFilters.push('core_expertise');
-        } else {
-          console.log(`❌ Core expertise filter failed`);
-        }
-      }
-      
-      // Salary range filter
-      if (formattedFilters.min_salary || formattedFilters.max_salary) {
-        const minSal = parseInt(formattedFilters.min_salary) || 0;
-        const maxSal = parseInt(formattedFilters.max_salary) || Infinity;
-        const jobMinSal = parseInt(job.min_salary) || 0;
-        const jobMaxSal = parseInt(job.max_salary) || 0;
-        
-        let salaryMatches = false;
-        if (jobMinSal > 0 && jobMaxSal > 0) {
-          // If job has both min and max salary, check if ranges overlap
-          if (!(jobMaxSal < minSal || jobMinSal > maxSal)) {
-            salaryMatches = true;
-          }
-        } else if (jobMinSal > 0) {
-          // If job has only min salary, check against our max
-          if (!(jobMinSal > maxSal)) {
-            salaryMatches = true;
-          }
-        } else if (jobMaxSal > 0) {
-          // If job has only max salary, check against our min
-          if (!(jobMaxSal < minSal)) {
-            salaryMatches = true;
-          }
-        }
-        
-        if (salaryMatches) {
-          console.log(`✅ Salary filter passed`);
-          matchedFilters.push('salary');
-        } else {
-          console.log(`❌ Salary filter failed`);
-        }
-      }
-
-      // Calculate relevance score (percentage of active filters matched)
-      let relevanceScore = 100; // Default to 100% if no filters are active
-      
-      // Ensure all jobs have at least some minimal score when filters are active
-      // This helps prevent 0% matches which looks bad in the UI
-      if (activeFilterKeys.length > 0) {
-        // Filter out location filters that don't apply to this job
-        const validFilters = activeFilterKeys.filter(key => {
-          if (key === 'country' && (!job.country && !job.country_name)) return false;
-          if (key === 'state' && (!job.state_ut && !job.state && !job.state_name)) return false;
-          if (key === 'city' && (!job.city && !job.city_name)) return false;
-          return true;
-        });
-        
-        // Filter matched filters to only include valid ones
-        const validMatchedFilters = matchedFilters.filter(filter => {
-          if (filter === 'country' && (!job.country && !job.country_name)) return false;
-          if (filter === 'state' && (!job.state_ut && !job.state && !job.state_name)) return false;
-          if (filter === 'city' && (!job.city && !job.city_name)) return false;
-          return true;
-        });
-        
-        // Add a base minimum score (40%) for all jobs that pass the filter criteria
-        // This ensures that all jobs that pass the filters look like reasonable matches
-        const baseScore = 40;
-        
-        // Calculate the remaining 60% based on matched filter proportion
-        const matchScore = validFilters.length > 0 
-          ? Math.round((validMatchedFilters.length / validFilters.length) * 60)
-          : 60;
-        
-        // Combine scores and ensure it's a valid number
-        relevanceScore = baseScore + matchScore;
-        
-        // Validate the score is a proper number
-        if (isNaN(relevanceScore) || !isFinite(relevanceScore)) {
-          relevanceScore = 40; // Default to base score if calculation fails
-        }
-      }
-      
-      // Return the job with its match data
-      return {
-        job,
-        matchedFilters,
-        relevanceScore,
-        passes
-      };
-    });
-    
-    // Now filter to only include jobs that pass the required filters
-    // and have at least one matching filter if filters are active
-    let filtered = jobsWithMatches
-      .filter(item => item.passes && (activeFilterKeys.length === 0 || item.matchedFilters.length > 0))
-      .map(item => ({
-        ...item.job,
-        relevanceScore: item.relevanceScore,
-        matchedFilters: item.matchedFilters
-      }));
-
-    // Filtering complete
-    
-    // Sort by relevance score (highest first)
-    filtered.sort((a, b) => b.relevanceScore - a.relevanceScore);
-    
-    // Set results and active filters
-    setFilteredJobs(filtered);
+    const { filteredJobs: results } = applyJobFilters(jobs, filters);
+    setFilteredJobs(results);
     setCurrentPage(1);
-    setActiveFilters(new Set(activeFilterKeys));
   };
 
   const handleReset = () => {
-    setFilters(defaultFilters);
+    setFilters({ ...defaultJobFilters });
     setFilteredJobs(jobs);
-    setActiveFilters(new Set());
     setCurrentPage(1);
     
     try {
@@ -990,48 +441,51 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
   const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
   const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
 
-  // Smart pagination: show limited page numbers with ellipsis
-  const getPageNumbers = () => {
-    if (totalPages <= 7) {
-      return Array.from({length: totalPages}, (_, i) => i + 1);
-    }
+  const isJobApplied = useCallback(
+    (job) => appliedJobs.has(getJobId(job)),
+    [appliedJobs, getJobId]
+  );
 
-    const delta = 2; // Pages to show around current page
-    const rangeWithDots = [];
+  const {
+    selectedJobs,
+    showMessageModal,
+    jobToMessage,
+    handleMessage,
+    handleMessageModalOk,
+    handleMessageModalContinue,
+    showApplyPrompt,
+    jobToApplyPrompt,
+    handleApplyPromptClose,
+    handleApplyPromptApply,
+    showBulkMessageModal,
+    handleCloseBulkMessageModal,
+    bulkChannel,
+    bulkMessage,
+    bulkMessageChars,
+    bulkError,
+    coinBalance,
+    handleChannelSelect,
+    handleBulkMessageChange,
+    handlePrepareBulkSend,
+    showConfirmModal,
+    bulkSummary,
+    handleCancelConfirmation,
+    handleConfirmSend,
+    isSendingBulk,
+    showInsufficientCoinsModal,
+    requiredCoins,
+    handleCloseInsufficientCoinsModal,
+    handleRechargeNavigate
+  } = useJobMessaging({
+    user,
+    filteredJobs,
+    currentJobs,
+    getJobId,
+    isJobApplied,
+    onViewJob: handleViewJob,
+    onApplyJob: handleApplyClick
+  });
 
-    // Always show first page
-    rangeWithDots.push(1);
-
-    // Calculate the range around current page
-    const startPage = Math.max(2, currentPage - delta);
-    const endPage = Math.min(totalPages - 1, currentPage + delta);
-
-    // Add dots after 1 if needed
-    if (startPage > 2) {
-      rangeWithDots.push('...');
-    }
-
-    // Add pages around current page (excluding 1 and last page)
-    for (let i = startPage; i <= endPage; i++) {
-      if (i !== 1 && i !== totalPages) {
-        rangeWithDots.push(i);
-      }
-    }
-
-    // Add dots before last page if needed
-    if (endPage < totalPages - 1) {
-      rangeWithDots.push('...');
-    }
-
-    // Always show last page (if different from first)
-    if (totalPages > 1) {
-      rangeWithDots.push(totalPages);
-    }
-
-    return rangeWithDots;
-  };
-
-  const pageNumbers = getPageNumbers();
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
 
@@ -1156,89 +610,6 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
     }
     console.log('SearchJobs: Viewing job:', job.id);
     onViewJob && onViewJob(job);
-  };
-
-  // ===== RCS Sending Function =====
-  const sendRcsApply = async ({ phone, userName, orgName }) => {
-    try {
-      const contactId = phone.startsWith("91") ? phone : `91${phone}`;
-      await fetch(RCS_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contactId: contactId,
-          templateName: "job_applied",
-          customParam: {
-            NAME: userName,
-            SCHOOL: orgName
-          },
-          sent_by: "suhas",
-          sent_email: "suhas75@gmail.com"
-        })
-      });
-    } catch (err) {}
-  };
-
-  // WhatsApp sending function after apply success, now triggers RCS also
-  const sendWhatsAppApply = async (job) => {
-    let phone = "";
-    let userName = "";
-    let orgName = "";
-    let errors = [];
-
-    try {
-      const loginRes = await fetch(`${LOGIN_API}?firebase_uid=${user.firebase_uid || user.uid}`);
-      if (!loginRes.ok) throw new Error("Could not fetch user details");
-      const loginData = await loginRes.json();
-      if (Array.isArray(loginData) && loginData.length > 0) {
-        phone = loginData[0].phone_number || "";
-        userName = loginData[0].name || "";
-      }
-      if (!phone) errors.push("Phone number not found for WhatsApp.");
-      if (!userName) errors.push("Name not found for WhatsApp.");
-    } catch (err) {
-      errors.push("Failed to fetch user phone/name.");
-    }
-
-    try {
-      if (job.firebase_uid) {
-        const orgRes = await fetch(`${ORG_API}?firebase_uid=${job.firebase_uid}`);
-        if (!orgRes.ok) throw new Error("Could not fetch org");
-        const orgData = await orgRes.json();
-        if (Array.isArray(orgData) && orgData.length > 0) {
-          orgName = orgData[0].name || "";
-        }
-      }
-      if (!orgName) orgName = job.institute_name || "";
-      if (!orgName) errors.push("Organisation name not found for WhatsApp.");
-    } catch (err) {
-      if (!orgName) errors.push("Failed to fetch organisation name.");
-    }
-
-    if (errors.length) {
-      return;
-    }
-
-    try {
-      await fetch(WHATSAPP_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: phone.startsWith("91") ? phone : `91${phone}`,
-          templateName: "applied_job",
-          language: "en",
-          bodyParams: [
-            { type: "text", text: userName },
-            { type: "text", text: `*${orgName}*` }
-          ],
-          sent_by: "suhas",
-          sent_email: "suhas75@gmail.com"
-        })
-      });
-      await sendRcsApply({ phone, userName, orgName });
-    } catch (err) {
-      toast.error("Failed to send WhatsApp or RCS notification.");
-    }
   };
 
   const handleApplyJob = async () => {
@@ -1430,7 +801,24 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
                   placeholder="Subjects"
                   isMulti
                   isClearable
-                  isLoading={isLoading.subjects}
+                  isLoading={optionLoading.subjects}
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
+                />
+              </InputWithTooltip>
+            </div>
+
+            {/* Education */}
+            <div className="form-group col-md-4">
+              <InputWithTooltip label="Education">
+                <Select
+                  value={filters.education}
+                  onChange={(value) => handleFilterChange('education', value)}
+                  options={apiOptions.education}
+                  placeholder="Education"
+                  isMulti
+                  isClearable
+                  isLoading={optionLoading.constants}
                   styles={selectStyles}
                   menuPortalTarget={document.body}
                 />
@@ -1449,7 +837,7 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
                   placeholder="Designations"
                   isMulti
                   isClearable
-                  isLoading={isLoading.constants}
+                  isLoading={optionLoading.constants}
                   styles={selectStyles}
                   menuPortalTarget={document.body}
                 />
@@ -1466,7 +854,7 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
                   placeholder="Grades"
                   isMulti
                   isClearable
-                  isLoading={isLoading.constants}
+                  isLoading={optionLoading.constants}
                   styles={selectStyles}
                   menuPortalTarget={document.body}
                 />
@@ -1483,24 +871,7 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
                   placeholder="Curriculum"
                   isMulti
                   isClearable
-                  isLoading={isLoading.constants}
-                  styles={selectStyles}
-                  menuPortalTarget={document.body}
-                />
-              </InputWithTooltip>
-            </div>
-
-            {/* Core Subjects */}
-            <div className="form-group col-md-4">
-              <InputWithTooltip label="Core Subjects">
-                <Select
-                  value={filters.core_subjects}
-                  onChange={(value) => handleFilterChange('core_subjects', value)}
-                  options={apiOptions.subjects}
-                  placeholder="Core Subjects"
-                  isMulti
-                  isClearable
-                  isLoading={isLoading.subjects}
+                  isLoading={optionLoading.constants}
                   styles={selectStyles}
                   menuPortalTarget={document.body}
                 />
@@ -1517,7 +888,7 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
                   placeholder="Core Expertise"
                   isMulti
                   isClearable
-                  isLoading={isLoading.constants}
+                  isLoading={optionLoading.constants}
                   styles={selectStyles}
                   menuPortalTarget={document.body}
                 />
@@ -1584,25 +955,27 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
                 ) : currentJobs.length > 0 ? (
                   <div className="job-results">
                     <div className="job-list">
-                      {currentJobs.map((job, index) => {
-                        // Calculate the real index in the full jobs array for consistent ID generation
-                        const realIndex = indexOfFirstJob + index;
-                        const jobId = generateJobId(job, realIndex);
+                      {currentJobs.map((job) => {
+                        const jobId = getJobId(job);
                         const isSaved = savedJobs.has(jobId);
                         const isFavourite = favouriteJobs.has(jobId);
-                
+                        const isApplied = appliedJobs.has(jobId);
+
                 return (
                   <JobCard
                     key={jobId}
                     job={job}
                     isSaved={isSaved}
                     isFavourite={isFavourite}
-                    isApplied={appliedJobs.has(generateJobId(job))}
+                    isApplied={isApplied}
                     loading={loading}
                     onViewJob={handleViewJob}
                     onSaveJob={() => handleSaveJob(jobId)}
                     onFavouriteJob={() => handleFavouriteJob(jobId)}
                     onApplyClick={handleApplyClick}
+                    onMessage={handleMessage}
+                    messageDisabled={!isApplied}
+                    messageTooltip={!isApplied ? 'Apply to message this institute' : ''}
                   />
                 );
               })}
@@ -1636,6 +1009,37 @@ const SearchJobs = ({ onViewJob, onBackFromJobView }) => {
           error={applyError}
         />
       </div>
+
+      <JobMessagingModals
+        showApplyPrompt={showApplyPrompt}
+        jobToApplyPrompt={jobToApplyPrompt}
+        onApplyPromptClose={handleApplyPromptClose}
+        onApplyPromptApply={handleApplyPromptApply}
+        showMessageModal={showMessageModal}
+        jobToMessage={jobToMessage}
+        onMessageModalOk={handleMessageModalOk}
+        onMessageModalContinue={handleMessageModalContinue}
+        showBulkMessageModal={showBulkMessageModal}
+        bulkChannel={bulkChannel}
+        bulkMessage={bulkMessage}
+        bulkMessageChars={bulkMessageChars}
+        coinBalance={coinBalance}
+        selectedCount={selectedJobs.size}
+        bulkError={bulkError}
+        onChannelSelect={handleChannelSelect}
+        onBulkMessageChange={handleBulkMessageChange}
+        onCloseBulkMessageModal={handleCloseBulkMessageModal}
+        onPrepareBulkSend={handlePrepareBulkSend}
+        showConfirmModal={showConfirmModal}
+        bulkSummary={bulkSummary}
+        isSendingBulk={isSendingBulk}
+        onCancelConfirmation={handleCancelConfirmation}
+        onConfirmSend={handleConfirmSend}
+        showInsufficientCoinsModal={showInsufficientCoinsModal}
+        requiredCoins={requiredCoins}
+        onCloseInsufficientCoinsModal={handleCloseInsufficientCoinsModal}
+        onRechargeNavigate={handleRechargeNavigate}
+      />
     </div>
   );
 };

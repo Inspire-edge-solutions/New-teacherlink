@@ -40,6 +40,45 @@ const AppliedCandidates = ({
   
   const [isSearching, setIsSearching] = useState(false);
   const [candidatePhotos, setCandidatePhotos] = useState({});
+  const [unlockedCandidateIds, setUnlockedCandidateIds] = useState([]);
+
+  // Message modal state
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [candidateToMessage, setCandidateToMessage] = useState(null);
+  const [showUnlockPrompt, setShowUnlockPrompt] = useState(false);
+  const [candidateToUnlock, setCandidateToUnlock] = useState(null);
+
+  const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
+    if (!user) return [];
+    const userId = user.firebase_uid || user.uid;
+    if (!userId) return [];
+
+    const unlockedIds = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(`unlocked_${userId}_`)) {
+        try {
+          const stored = localStorage.getItem(key);
+          if (!stored) continue;
+          const parsed = JSON.parse(stored);
+          if (parsed?.unlocked && parsed?.timestamp) {
+            const unlockTime = new Date(parsed.timestamp);
+            const now = new Date();
+            const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
+            if (daysDiff <= 30) {
+              const candidateId = key.replace(`unlocked_${userId}_`, '');
+              if (candidateId) {
+                unlockedIds.push(candidateId);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('AppliedCandidates: Error parsing localStorage entry', key, error);
+        }
+      }
+    }
+    return unlockedIds;
+  }, [user]);
 
   const fetchAppliedCandidates = useCallback(async () => {
     try {
@@ -55,6 +94,11 @@ const AppliedCandidates = ({
       setFilteredCandidates(appliedData);
       setSavedCandidates(prefs.savedCandidates);
       setFavouriteCandidates(prefs.favouriteCandidates);
+      const combinedUnlocked = new Set([
+        ...getUnlockedCandidatesFromLocalStorage().map(String),
+        ...(prefs.unlockedCandidates || []).map(String)
+      ]);
+      setUnlockedCandidateIds(Array.from(combinedUnlocked));
       
       // Fetch photos for applied candidates using user_id (the candidate who applied)
       if (appliedData.length > 0) {
@@ -85,10 +129,11 @@ const AppliedCandidates = ({
       console.error('Error fetching applied candidates:', error);
       setAppliedCandidates([]);
       setFilteredCandidates([]);
+      setUnlockedCandidateIds(getUnlockedCandidatesFromLocalStorage().map(String));
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, getUnlockedCandidatesFromLocalStorage]);
 
   useEffect(() => {
     if (!user && !userLoading) {
@@ -149,8 +194,76 @@ const AppliedCandidates = ({
     onViewCandidate && onViewCandidate(candidate, 'full');
   };
 
+  const buildMessagingCandidate = useCallback((candidate) => {
+    if (!candidate) return null;
+    return {
+      firebase_uid: candidate.firebase_uid,
+      id: candidate.firebase_uid,
+      fullName: candidate.fullName || candidate.name || 'Candidate',
+      name: candidate.name || candidate.fullName || 'Candidate',
+      state: candidate.present_state_name || candidate.state || candidate.permanent_state_name || null,
+      city: candidate.present_city_name || candidate.city || candidate.permanent_city_name || null,
+      email: candidate.email || null,
+      phone: candidate.callingNumber || null,
+      photoUrl: candidatePhotos[candidate.firebase_uid] || candidate.profile_picture || null
+    };
+  }, [candidatePhotos]);
+
   const handleViewShort = (candidate) => {
     onViewCandidate && onViewCandidate(candidate, 'short');
+  };
+
+  // Handle message candidate - show modal
+  const handleMessage = (candidate) => {
+    if (!candidate) return;
+    const candidateId = String(candidate.firebase_uid || '');
+    const isUnlocked = candidateId && unlockedCandidateIds.includes(candidateId);
+
+    if (!isUnlocked) {
+      console.log('AppliedCandidates: Candidate not unlocked, prompting unlock:', candidateId);
+      setCandidateToUnlock(candidate);
+      setShowUnlockPrompt(true);
+      return;
+    }
+
+    console.log('AppliedCandidates: Messaging candidate:', candidateId);
+    const messagingCandidate = buildMessagingCandidate(candidate);
+    setCandidateToMessage({ original: candidate, messaging: messagingCandidate });
+    setShowMessageModal(true);
+  };
+
+  const handleUnlockPromptClose = () => {
+    setShowUnlockPrompt(false);
+    setCandidateToUnlock(null);
+  };
+
+  const handleUnlockPromptViewProfile = () => {
+    if (candidateToUnlock) {
+      handleViewFull(candidateToUnlock);
+    }
+    setShowUnlockPrompt(false);
+    setCandidateToUnlock(null);
+  };
+
+  // Handle "Ok" button - close modal, stay on page
+  const handleMessageModalOk = () => {
+    setShowMessageModal(false);
+    setCandidateToMessage(null);
+  };
+
+  // Handle "Continue Single" button - redirect to messages
+  const handleMessageModalContinue = () => {
+    if (candidateToMessage?.messaging) {
+      navigate('/provider/messages', {
+        state: {
+          selectedCandidate: candidateToMessage.messaging,
+          startConversation: true
+        },
+        replace: false
+      });
+    }
+    setShowMessageModal(false);
+    setCandidateToMessage(null);
   };
 
   const scrollToCandidate = (candidateId) => {
@@ -231,7 +344,7 @@ const AppliedCandidates = ({
       <div className="py-12">
         <LoadingState
           title="Loading applied candidates…"
-          subtitle="We’re collecting candidates who have applied so you can review them here."
+          subtitle="We’re collecting the applications you’ve received so you can review them here."
         />
       </div>
     );
@@ -333,6 +446,7 @@ const AppliedCandidates = ({
                   showCheckbox={true}
                   isChecked={selectedCandidates.has(candidateSelectionId)}
                   onCheckboxChange={handleCheckboxChange}
+                  onMessage={handleMessage}
                 />
               );
             })}
@@ -370,6 +484,94 @@ const AppliedCandidates = ({
 
       {/* Profile Type Selection Modal for Print/Download */}
       {renderProfileTypeModal()}
+
+      {/* Unlock Prompt Modal */}
+      {showUnlockPrompt && candidateToUnlock && (
+        <div
+          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+          onClick={handleUnlockPromptClose}
+        >
+          <div
+            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
+              onClick={handleUnlockPromptClose}
+            >
+              &times;
+            </button>
+
+            <div className="mb-4 mt-0.5 text-center">
+              <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+                Unlock Candidate
+              </h3>
+              <p className="text-gray-600 text-[15px] leading-relaxed">
+                To message {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, please unlock their contact details first. View the profile to unlock and access messaging.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                onClick={handleUnlockPromptClose}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl"
+                onClick={handleUnlockPromptViewProfile}
+              >
+                View Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Message Modal */}
+      {showMessageModal && (
+        <div
+          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+          onClick={handleMessageModalOk}
+        >
+          <div
+            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
+              onClick={handleMessageModalOk}
+            >
+              &times;
+            </button>
+
+            <div className="mb-4 mt-0.5">
+              <h3 className="font-semibold text-[18px] mb-4 text-center text-gray-800">
+                Message Candidate
+              </h3>
+              <p className="text-gray-600 text-[15px] mb-6 text-center leading-relaxed">
+                If you want to send bulk message, add candidate to favourite
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                onClick={handleMessageModalOk}
+              >
+                Ok
+              </button>
+              <button
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl"
+                onClick={handleMessageModalContinue}
+              >
+                Continue Single
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

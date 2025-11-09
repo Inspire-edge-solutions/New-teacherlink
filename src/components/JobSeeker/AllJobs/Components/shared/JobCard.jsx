@@ -1,7 +1,7 @@
 import React from 'react';
 import { IoLocationOutline } from "react-icons/io5";
 import { BsBriefcase, BsCash, BsMortarboard } from "react-icons/bs";
-import { AiOutlineEye, AiOutlineSave, AiOutlineHeart, AiFillHeart } from "react-icons/ai";
+import { AiOutlineEye, AiOutlineSave, AiOutlineHeart, AiFillHeart, AiOutlineMessage } from "react-icons/ai";
 import { formatQualification } from '../../utils/formatUtils';
 
 /**
@@ -18,7 +18,13 @@ const JobCard = ({
   onSaveJob,
   onFavouriteJob,
   onApplyClick,
-  showApplicationStatus = false
+  showApplicationStatus = false,
+  onMessage,
+  showCheckbox = false,
+  isChecked = false,
+  onCheckboxChange,
+  messageDisabled = false,
+  messageTooltip = ''
 }) => {
   const jobId = Number(job.id);
   
@@ -61,6 +67,18 @@ const JobCard = ({
       <div className="flex justify-between items-start mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
+            {showCheckbox && (
+              <input
+                type="checkbox"
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                checked={isChecked}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onCheckboxChange && onCheckboxChange(job);
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
             <h3 className="text-lg font-bold text-gray-800 leading-tight">
               {job.job_title || 'Position not specified'}
             </h3>
@@ -74,7 +92,6 @@ const JobCard = ({
             </p>
           )}
         </div>
-        
         {/* Action Icons */}
         <div className="flex items-center gap-1 ml-3">
           {showApplicationStatus && (
@@ -117,6 +134,22 @@ const JobCard = ({
           >
             {isFavourite ? <AiFillHeart className="w-7 h-7" /> : <AiOutlineHeart className="w-7 h-7" />}
           </button>
+          {onMessage && (
+            <button
+              className={`p-1.5 transition-colors ${
+                messageDisabled
+                  ? 'text-gray-400 hover:text-gray-400'
+                  : 'text-indigo-500 hover:text-indigo-600'
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onMessage(job);
+              }}
+              title={messageTooltip || (messageDisabled ? 'Apply to message this institute' : 'Message institute')}
+            >
+              <AiOutlineMessage className="w-7 h-7" />
+            </button>
+          )}
         </div>
       </div>
 

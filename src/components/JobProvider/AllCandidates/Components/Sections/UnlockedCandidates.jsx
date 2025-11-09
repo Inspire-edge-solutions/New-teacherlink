@@ -41,6 +41,9 @@ const UnlockedCandidates = ({
   const [isSearching, setIsSearching] = useState(false);
   const [candidatePhotos, setCandidatePhotos] = useState({});
 
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [candidateToMessage, setCandidateToMessage] = useState(null);
+
   // Get unlocked candidates from localStorage (backward compatibility)
   // This matches the old implementation's logic
   const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
@@ -83,6 +86,21 @@ const UnlockedCandidates = ({
     
     return unlockedCandidateIds;
   }, [user]);
+
+  const buildMessagingCandidate = useCallback((candidate) => {
+    if (!candidate) return null;
+    return {
+      firebase_uid: candidate.firebase_uid,
+      id: candidate.firebase_uid,
+      fullName: candidate.fullName || candidate.name || 'Candidate',
+      name: candidate.name || candidate.fullName || 'Candidate',
+      state: candidate.present_state_name || candidate.state || candidate.permanent_state_name || null,
+      city: candidate.present_city_name || candidate.city || candidate.permanent_city_name || null,
+      email: candidate.email || null,
+      phone: candidate.callingNumber || null,
+      photoUrl: candidatePhotos[candidate.firebase_uid] || candidate.profile_picture || null
+    };
+  }, [candidatePhotos]);
 
   const fetchUnlockedCandidates = useCallback(async () => {
     try {
@@ -212,18 +230,8 @@ const UnlockedCandidates = ({
   const {
     selectedCandidates,
     selectAll,
-    bulkViewMode,
-    checkedProfiles,
-    isPreparingPrint,
     handleCheckboxChange,
     handleSelectAll,
-    handleClearSelection,
-    handleViewCompleteProfiles,
-    handleViewShortProfiles,
-    handleViewPrevious,
-    handleViewNext,
-    handleBackFromView,
-    handlePrintDownload,
     renderBulkView,
     renderActionButtons,
     renderPrintWrapper,
@@ -241,6 +249,35 @@ const UnlockedCandidates = ({
 
   const handleViewShort = (candidate) => {
     onViewCandidate && onViewCandidate(candidate, 'short');
+  };
+
+  // Handle message candidate - show modal
+  const handleMessage = (candidate) => {
+    console.log('UnlockedCandidates: Messaging candidate:', candidate.firebase_uid);
+    const messagingCandidate = buildMessagingCandidate(candidate);
+    setCandidateToMessage({ original: candidate, messaging: messagingCandidate });
+    setShowMessageModal(true);
+  };
+
+  // Handle "Ok" button - close modal, stay on page
+  const handleMessageModalOk = () => {
+    setShowMessageModal(false);
+    setCandidateToMessage(null);
+  };
+
+  // Handle "Continue Single" button - redirect to messages
+  const handleMessageModalContinue = () => {
+    if (candidateToMessage?.messaging) {
+      navigate('/provider/messages', {
+        state: {
+          selectedCandidate: candidateToMessage.messaging,
+          startConversation: true
+        },
+        replace: false
+      });
+    }
+    setShowMessageModal(false);
+    setCandidateToMessage(null);
   };
 
   const scrollToCandidate = (candidateId) => {
@@ -286,7 +323,7 @@ const UnlockedCandidates = ({
       <div className="py-12">
         <LoadingState
           title="Loading unlocked candidates…"
-          subtitle="We’re pulling the candidate profiles you’ve unlocked so you can follow up."
+          subtitle="We’re pulling up the profiles you’ve unlocked so you can follow up."
         />
       </div>
     );
@@ -386,6 +423,7 @@ const UnlockedCandidates = ({
                   showCheckbox={true}
                   isChecked={selectedCandidates.has(candidateId)}
                   onCheckboxChange={handleCheckboxChange}
+                  onMessage={handleMessage}
                 />
               );
             })}
@@ -426,6 +464,50 @@ const UnlockedCandidates = ({
 
       {/* Profile Type Selection Modal for Print/Download */}
       {renderProfileTypeModal()}
+
+      {/* Message Modal */}
+      {showMessageModal && (
+        <div
+          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+          onClick={handleMessageModalOk}
+        >
+          <div
+            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
+              onClick={handleMessageModalOk}
+            >
+              &times;
+            </button>
+
+            <div className="mb-4 mt-0.5">
+              <h3 className="font-semibold text-[18px] mb-4 text-center text-gray-800">
+                Message Candidate
+              </h3>
+              <p className="text-gray-600 text-[15px] mb-6 text-center leading-relaxed">
+                If you want to send bulk message, add candidate to favourite
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                onClick={handleMessageModalOk}
+              >
+                Ok
+              </button>
+              <button
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl"
+                onClick={handleMessageModalContinue}
+              >
+                Continue Single
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

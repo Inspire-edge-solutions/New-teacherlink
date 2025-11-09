@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { IoLocationOutline } from "react-icons/io5";
 import { BsBriefcase, BsCash, BsMortarboard } from "react-icons/bs";
 import { AiOutlineEye, AiOutlineSave, AiOutlineHeart, AiFillHeart } from "react-icons/ai";
+import { HiOutlineArrowRight } from "react-icons/hi";
 import ApplyModal from '../shared/ApplyModal';
 import JobCard from '../shared/JobCard';
 import JobApiService from '../shared/JobApiService';
@@ -13,6 +14,8 @@ import { searchJobs } from '../../utils/searchUtils';
 import { formatQualification } from '../../utils/formatUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
 import noJobsIllustration from '../../../../../assets/Illustrations/No jobs.png';
+import useJobMessaging from '../hooks/useJobMessaging';
+import JobMessagingModals from '../shared/JobMessagingModals';
 import LoadingState from '../../../../common/LoadingState';
 
 // API Endpoints
@@ -23,7 +26,7 @@ const ORG_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/org
 const WHATSAPP_API = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp';
 const RCS_API = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/rcsMessage';
 
-const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
+const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateTab }) => {
   const { user, loading: userLoading } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
@@ -436,6 +439,48 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
   const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
   const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
 
+  const isJobApplied = React.useCallback((job) => appliedJobs.includes(getJobId(job)), [appliedJobs]);
+
+  const {
+    selectedJobs,
+    showMessageModal,
+    jobToMessage,
+    handleMessage,
+    handleMessageModalOk,
+    handleMessageModalContinue,
+    showApplyPrompt,
+    jobToApplyPrompt,
+    handleApplyPromptClose,
+    handleApplyPromptApplyJob,
+    showBulkMessageModal,
+    handleCloseBulkMessageModal,
+    bulkChannel,
+    bulkMessage,
+    bulkMessageChars,
+    bulkError,
+    coinBalance,
+    handleChannelSelect,
+    handleBulkMessageChange,
+    handlePrepareBulkSend,
+    showConfirmModal,
+    bulkSummary,
+    handleCancelConfirmation,
+    handleConfirmSend,
+    isSendingBulk,
+    showInsufficientCoinsModal,
+    requiredCoins,
+    handleCloseInsufficientCoinsModal,
+    handleRechargeNavigate
+  } = useJobMessaging({
+    user,
+    filteredJobs,
+    currentJobs,
+    getJobId,
+    isJobApplied,
+    onViewJob: handleViewJob,
+    onApplyJob: handleApplyClick
+  });
+
   const getVisiblePageNumbers = () => {
     const delta = 2;
     const range = [];
@@ -480,7 +525,7 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
         <div className="py-10">
           <LoadingState
             title="Retrieving your saved jobs…"
-            subtitle="We’re pulling in the roles you saved so you can pick up where you left off."
+            subtitle="We’re pulling the roles you bookmarked so you can jump back in."
             layout="card"
           />
         </div>
@@ -519,7 +564,6 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
             <div className="job-list">
               {currentJobs.map((job, index) => {
                 const jobId = getJobId(job);
-                const isSaved = savedJobs.includes(jobId);
                 const isFavourite = favouriteJobs.includes(jobId);
                 const isApplied = appliedJobs.includes(jobId);
                 
@@ -527,7 +571,7 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
                   <JobCard
                     key={jobId}
                     job={job}
-                    isSaved={isSaved}
+                    isSaved={true}
                     isFavourite={isFavourite}
                     isApplied={isApplied}
                     loading={loading}
@@ -535,12 +579,15 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
                     onSaveJob={handleSaveJob}
                     onFavouriteJob={handleFavouriteJob}
                     onApplyClick={handleApplyClick}
+                    onMessage={handleMessage}
+                    messageDisabled={!isApplied}
+                    messageTooltip={!isApplied ? 'Apply to message this institute' : ''}
                   />
                 );
               })}
             </div>
           </div>
-        ) : isSearching ? (
+        ) : currentJobs.length === 0 && isSearching ? (
           <div className="no-results text-center py-12">
             <div className="flex flex-col items-center justify-center">
               <img 
@@ -567,14 +614,18 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
                 You haven't saved any jobs yet. Browse jobs and save the ones you're interested in.
               </p>
               <button
-                className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg font-medium text-white bg-gradient-brand hover:bg-gradient-brand-hover transition-all duration-200"
+                className="px-4 py-2 bg-gradient-brand text-white rounded-lg text-sm font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500"
                 onClick={() => {
-                  if (onNavigateToTab) {
-                    onNavigateToTab('all');
+                  if (onNavigateTab) {
+                    onNavigateTab('all');
+                    return;
                   }
+                  const allJobsTab = document.querySelector('[data-tab="all"]');
+                  if (allJobsTab) allJobsTab.click();
                 }}
               >
-                Browse Jobs
+                <span>Browse Jobs</span>
+                <HiOutlineArrowRight className="text-lg" />
               </button>
             </div>
           </div>
@@ -602,6 +653,37 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateToTab }) => {
           error={applyError}
         />
       </div>
+
+      <JobMessagingModals
+        showApplyPrompt={showApplyPrompt}
+        jobToApplyPrompt={jobToApplyPrompt}
+        onApplyPromptClose={handleApplyPromptClose}
+        onApplyPromptApply={handleApplyPromptApplyJob}
+        showMessageModal={showMessageModal}
+        jobToMessage={jobToMessage}
+        onMessageModalOk={handleMessageModalOk}
+        onMessageModalContinue={handleMessageModalContinue}
+        showBulkMessageModal={showBulkMessageModal}
+        bulkChannel={bulkChannel}
+        bulkMessage={bulkMessage}
+        bulkMessageChars={bulkMessageChars}
+        coinBalance={coinBalance}
+        selectedCount={selectedJobs.size}
+        bulkError={bulkError}
+        onChannelSelect={handleChannelSelect}
+        onBulkMessageChange={handleBulkMessageChange}
+        onCloseBulkMessageModal={handleCloseBulkMessageModal}
+        onPrepareBulkSend={handlePrepareBulkSend}
+        showConfirmModal={showConfirmModal}
+        bulkSummary={bulkSummary}
+        isSendingBulk={isSendingBulk}
+        onCancelConfirmation={handleCancelConfirmation}
+        onConfirmSend={handleConfirmSend}
+        showInsufficientCoinsModal={showInsufficientCoinsModal}
+        requiredCoins={requiredCoins}
+        onCloseInsufficientCoinsModal={handleCloseInsufficientCoinsModal}
+        onRechargeNavigate={handleRechargeNavigate}
+      />
     </div>
   );
 };

@@ -13,6 +13,8 @@ import { searchJobs } from '../../utils/searchUtils';
 import { formatQualification } from '../../utils/formatUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
 import noJobsIllustration from '../../../../../assets/Illustrations/No jobs.png';
+import useJobMessaging from '../hooks/useJobMessaging';
+import JobMessagingModals from '../shared/JobMessagingModals';
 import LoadingState from '../../../../common/LoadingState';
 
 // Additional API endpoints for specific functionality
@@ -729,6 +731,48 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
   const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
   const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
 
+  const isJobApplied = React.useCallback((job) => appliedJobs.includes(getJobId(job)), [appliedJobs]);
+
+  const {
+    selectedJobs,
+    showMessageModal,
+    jobToMessage,
+    handleMessage,
+    handleMessageModalOk,
+    handleMessageModalContinue,
+    showApplyPrompt,
+    jobToApplyPrompt,
+    handleApplyPromptClose,
+    handleApplyPromptApply,
+    showBulkMessageModal,
+    handleCloseBulkMessageModal,
+    bulkChannel,
+    bulkMessage,
+    bulkMessageChars,
+    bulkError,
+    coinBalance,
+    handleChannelSelect,
+    handleBulkMessageChange,
+    handlePrepareBulkSend,
+    showConfirmModal,
+    bulkSummary,
+    handleCancelConfirmation,
+    handleConfirmSend,
+    isSendingBulk,
+    showInsufficientCoinsModal,
+    requiredCoins,
+    handleCloseInsufficientCoinsModal,
+    handleRechargeNavigate
+  } = useJobMessaging({
+    user,
+    filteredJobs,
+    currentJobs,
+    getJobId,
+    isJobApplied,
+    onViewJob: handleViewJob,
+    onApplyJob: handleApplyClick
+  });
+
   const getVisiblePageNumbers = () => {
     const delta = 2;
     const range = [];
@@ -813,25 +857,28 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
         {currentJobs.length > 0 ? (
           <div className="job-results">
             <div className="job-list">
-                          {currentJobs.map((job, index) => {
-              const jobId = getJobId(job);
-              const isSaved = savedJobs.includes(jobId);
-              const isFavourite = favouriteJobs.includes(jobId);
-              const isApplied = appliedJobs.includes(jobId);
-              
-              return (
-                <JobCard
-                  key={jobId}
-                  job={job}
-                  isSaved={isSaved}
-                  isFavourite={isFavourite}
-                  isApplied={isApplied}
-                  loading={loading}
-                  onViewJob={handleViewJob}
-                  onSaveJob={handleSaveJob}
-                  onFavouriteJob={handleFavouriteJob}
-                  onApplyClick={handleApplyClick}
-                />
+              {currentJobs.map((job, index) => {
+                const jobId = getJobId(job);
+                const isSaved = savedJobs.includes(jobId);
+                const isFavourite = favouriteJobs.includes(jobId);
+                const isApplied = appliedJobs.includes(jobId);
+                
+                return (
+                  <JobCard
+                    key={jobId}
+                    job={job}
+                    isSaved={isSaved}
+                    isFavourite={isFavourite}
+                    isApplied={isApplied}
+                    loading={loading}
+                    onViewJob={handleViewJob}
+                    onSaveJob={handleSaveJob}
+                    onFavouriteJob={handleFavouriteJob}
+                    onApplyClick={handleApplyClick}
+                    onMessage={handleMessage}
+                    messageDisabled={!isApplied}
+                    messageTooltip={!isApplied ? 'Apply to message this institute' : ''}
+                  />
                 );
               })}
             </div>
@@ -870,8 +917,38 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView }) => {
           applyStatus={applyStatus}
           error={applyError}
         />
-
       </div>
+
+      <JobMessagingModals
+        showApplyPrompt={showApplyPrompt}
+        jobToApplyPrompt={jobToApplyPrompt}
+        onApplyPromptClose={handleApplyPromptClose}
+        onApplyPromptApply={handleApplyPromptApply}
+        showMessageModal={showMessageModal}
+        jobToMessage={jobToMessage}
+        onMessageModalOk={handleMessageModalOk}
+        onMessageModalContinue={handleMessageModalContinue}
+        showBulkMessageModal={showBulkMessageModal}
+        bulkChannel={bulkChannel}
+        bulkMessage={bulkMessage}
+        bulkMessageChars={bulkMessageChars}
+        coinBalance={coinBalance}
+        selectedCount={selectedJobs.size}
+        bulkError={bulkError}
+        onChannelSelect={handleChannelSelect}
+        onBulkMessageChange={handleBulkMessageChange}
+        onCloseBulkMessageModal={handleCloseBulkMessageModal}
+        onPrepareBulkSend={handlePrepareBulkSend}
+        showConfirmModal={showConfirmModal}
+        bulkSummary={bulkSummary}
+        isSendingBulk={isSendingBulk}
+        onCancelConfirmation={handleCancelConfirmation}
+        onConfirmSend={handleConfirmSend}
+        showInsufficientCoinsModal={showInsufficientCoinsModal}
+        requiredCoins={requiredCoins}
+        onCloseInsufficientCoinsModal={handleCloseInsufficientCoinsModal}
+        onRechargeNavigate={handleRechargeNavigate}
+      />
     </div>
   );
 };

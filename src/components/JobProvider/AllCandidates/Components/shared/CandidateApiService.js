@@ -9,10 +9,11 @@ const API_ENDPOINTS = {
   FAV_API: "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteUser",
   PROFILE_APPROVED_API: "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved",
   IMAGE_API_URL: "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image",
-  REDEEM_API: "https://mgwnmhp62h.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral",
+  REDEEM_API: "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral",
   WHATSAPP_API: "https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp",
   UNLOCK_API: "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/unlockCandidate",
-  APPLIED_CANDIDATES_API: "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate"
+  APPLIED_CANDIDATES_API: "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate",
+  LOGIN_API: "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login"
 };
 
 // Utility function to get user ID
@@ -25,17 +26,132 @@ const getCandidateId = (candidate) => {
   return candidate?.firebase_uid || candidate?.uid;
 };
 
+const buildSupplementalRecord = (candidate) => {
+  if (!candidate || typeof candidate !== 'object') return null;
+  const uid = getCandidateId(candidate);
+  if (!uid) return null;
+
+  return {
+    id: uid,
+    languages:
+      candidate.languages ??
+      candidate.language ??
+      candidate.spoken_languages ??
+      candidate.preferred_languages ??
+      null,
+    education_details_json:
+      candidate.education_details_json ??
+      candidate.education_details ??
+      candidate.education ??
+      null,
+    teaching_subjects: candidate.teaching_subjects ?? null,
+    teaching_administrative_subjects: candidate.teaching_administrative_subjects ?? null,
+    subjects_taught: candidate.subjects_taught ?? null,
+    teaching_coreExpertise:
+      candidate.teaching_coreExpertise ??
+      candidate.teaching_core_expertise ??
+      candidate.core_expertise ??
+      null,
+    teaching_administrative_coreExpertise:
+      candidate.teaching_administrative_coreExpertise ??
+      candidate.teaching_administrative_core_expertise ??
+      null,
+    core_subjects: candidate.core_subjects ?? candidate.coreSubjects ?? null,
+    teaching_grades: candidate.teaching_grades ?? null,
+    teaching_administrative_grades: candidate.teaching_administrative_grades ?? null,
+    grades_taught: candidate.grades_taught ?? null,
+    teaching_curriculum: candidate.teaching_curriculum ?? null,
+    administrative_curriculum: candidate.administrative_curriculum ?? null,
+    teaching_administrative_curriculum: candidate.teaching_administrative_curriculum ?? null,
+    curriculum_taught: candidate.curriculum_taught ?? null,
+    teaching_designations: candidate.teaching_designations ?? null,
+    administrative_designations: candidate.administrative_designations ?? null,
+    teaching_administrative_designations: candidate.teaching_administrative_designations ?? null,
+    designation: candidate.designation ?? null,
+    preferable_timings: candidate.preferable_timings ?? candidate.timing_preference ?? null,
+    expected_salary: candidate.expected_salary ?? candidate.salary_expectation ?? null,
+    total_experience_years:
+      candidate.total_experience_years ??
+      candidate.total_experience ??
+      candidate.overall_experience ??
+      null,
+    total_experience_months: candidate.total_experience_months ?? null,
+    teaching_experience_years: candidate.teaching_experience_years ?? null,
+    teaching_experience_months: candidate.teaching_experience_months ?? null,
+    other_teaching_experience: candidate.other_teaching_experience ?? null,
+    job_shift_preference: candidate.job_shift_preference ?? candidate.shift_preference ?? null,
+    job_search_status: candidate.job_search_status ?? candidate.current_job_search_status ?? null,
+    notice_period: candidate.notice_period ?? candidate.noticeperiod ?? null,
+    tuition_preferences: candidate.tuition_preferences ?? candidate.tuition_preference ?? null,
+    online_tuition: candidate.online_tuition ?? candidate.online_tutoring ?? null,
+    offline_tuition: candidate.offline_tuition ?? candidate.offline_tutoring ?? null,
+    hybrid_tuition: candidate.hybrid_tuition ?? null,
+    preferred_modes: candidate.preferred_modes ?? null
+  };
+};
+
 class CandidateApiService {
   // Fetch all candidates (basic profiles)
   static async fetchCandidates() {
     try {
-      const { data } = await axios.get(API_ENDPOINTS.CANDIDATES_API);
-      const checkRes = data[0];
-      return checkRes || [];
+      const [{ data }, supplementalMap] = await Promise.all([
+        axios.get(API_ENDPOINTS.CANDIDATES_API),
+        this.fetchSupplementalCandidateMap()
+      ]);
+
+      const candidateList = Array.isArray(data) ? data[0] : [];
+
+      if (!Array.isArray(candidateList)) {
+        return [];
+      }
+
+      const merged = candidateList.map((candidate) => {
+        const uid = getCandidateId(candidate);
+        const supplemental = uid ? supplementalMap.get(uid) : null;
+        if (!supplemental) return candidate;
+        const { id, ...rest } = supplemental;
+        return {
+          ...candidate,
+          ...rest
+        };
+      });
+
+      const uniqueEducationTypes = new Set();
+      merged.slice(0, 200).forEach((candidate) => {
+        const { types } = parseEducation(candidate.education_details_json);
+        types.forEach((type) => {
+          if (type) {
+            uniqueEducationTypes.add(type.toString().trim());
+          }
+        });
+      });
+      console.log('[CandidateApiService] sample education types:', Array.from(uniqueEducationTypes));
+
+      return merged;
     } catch (error) {
       console.error('Error fetching candidates:', error);
       toast.error("Could not load candidate list. Please refresh.");
       return [];
+    }
+  }
+
+  static async fetchSupplementalCandidateMap() {
+    try {
+      const { data } = await axios.get(API_ENDPOINTS.FULL_API);
+      const candidates = Array.isArray(data) ? data : [];
+      const map = new Map();
+
+      candidates.forEach((candidate) => {
+        const sanitized = buildSupplementalRecord(candidate);
+        if (sanitized) {
+          map.set(sanitized.id, sanitized);
+        }
+      });
+
+      return map;
+    } catch (error) {
+      console.warn('Unable to fetch supplemental candidate data:', error);
+      return new Map();
     }
   }
 
@@ -97,7 +213,12 @@ class CandidateApiService {
         .map(c => c.firebase_uid);
 
       const unlockedCandidates = userRows
-        .filter(c => c.unlocked_candidate === 1 || c.unlocked_candidate === true)
+        .filter(c => 
+          c.unlocked_candidate === 1 ||
+          c.unlocked_candidate === true ||
+          c.unblocked_candidate === 1 ||
+          c.unblocked_candidate === true
+        )
         .map(c => c.firebase_uid);
 
       return { 
@@ -122,13 +243,41 @@ class CandidateApiService {
   static async getUserCoins(user) {
     try {
       const userId = getUserId(user);
-      const { data } = await axios.get(
-        `${API_ENDPOINTS.REDEEM_API}?firebase_uid=${userId}`
-      );
-      
-      if (Array.isArray(data) && data.length > 0 && data[0].coin_value) {
+      let data;
+
+      try {
+        const response = await axios.get(
+          `${API_ENDPOINTS.REDEEM_API}?firebase_uid=${userId}`
+        );
+        data = response.data;
+      } catch (directQueryError) {
+        console.warn('Direct redeem lookup failed, attempting full fetch.', directQueryError);
+      }
+
+      if (!Array.isArray(data) || data.length === 0) {
+        try {
+          const fallbackResponse = await axios.get(API_ENDPOINTS.REDEEM_API);
+          if (Array.isArray(fallbackResponse.data)) {
+            data = fallbackResponse.data.filter(
+              (record) => String(record.firebase_uid) === String(userId)
+            );
+          } else if (fallbackResponse.data && fallbackResponse.data.firebase_uid) {
+            data = [fallbackResponse.data];
+          }
+        } catch (fallbackError) {
+          console.error('Fallback redeem lookup failed:', fallbackError);
+          data = [];
+        }
+      }
+
+      if (Array.isArray(data) && data.length > 0 && data[0].coin_value !== undefined) {
         return Number(data[0].coin_value) || 0;
       }
+
+      if (data && data.coin_value !== undefined) {
+        return Number(data.coin_value) || 0;
+      }
+
       return 0;
     } catch (error) {
       console.error('Error fetching user coins:', error);
@@ -271,7 +420,10 @@ class CandidateApiService {
       }
 
       // 4. Mark as unlocked
-      await this.upsertCandidateAction(candidate, user, { unlocked_candidate: 1 });
+      await this.upsertCandidateAction(candidate, user, { 
+        unlocked_candidate: 1,
+        unblocked_candidate: 1
+      });
 
       return { status: "success", message: "Successfully unlocked candidate profile!" };
     } catch (error) {
@@ -456,6 +608,58 @@ class CandidateApiService {
       console.error('Error fetching applied candidates:', error);
       toast.error("Could not load applied candidates. Please refresh.");
       return [];
+    }
+  }
+
+  static async fetchUserLoginDetails(firebaseUid) {
+    if (!firebaseUid) return null;
+
+    try {
+      const response = await axios.get(`${API_ENDPOINTS.LOGIN_API}?firebase_uid=${firebaseUid}`);
+      const data = response.data;
+
+      if (Array.isArray(data)) {
+        const directMatch = data.find((item) => String(item.firebase_uid) === String(firebaseUid));
+        return directMatch || data[0] || null;
+      }
+
+      if (data && data.firebase_uid) {
+        return data;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error fetching user login details:', error);
+
+      try {
+        const fallback = await axios.get(API_ENDPOINTS.LOGIN_API);
+        if (Array.isArray(fallback.data)) {
+          return (
+            fallback.data.find((item) => String(item.firebase_uid) === String(firebaseUid)) || null
+          );
+        }
+      } catch (fallbackError) {
+        console.error('Fallback login fetch failed:', fallbackError);
+      }
+
+      return null;
+    }
+  }
+
+  static async updateUserCoins(user, newCoinValue) {
+    try {
+      const userId = getUserId(user);
+      if (!userId) throw new Error('Invalid user id for coin update');
+
+      await axios.put(API_ENDPOINTS.REDEEM_API, {
+        firebase_uid: userId,
+        coin_value: newCoinValue
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error updating user coins:', error);
+      throw error;
     }
   }
 }

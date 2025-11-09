@@ -89,6 +89,15 @@ const TabDisplay = () => {
     setUnlockedCandidatesBackHandler(() => handler);
   };
 
+  const handleNavigateToTab = (tabId) => {
+    if (!tabId) return;
+    console.log('Navigating to candidate tab:', tabId);
+    setActiveTab(tabId);
+    setViewMode('list');
+    setSelectedCandidate(null);
+    setViewType(null);
+  };
+
   const tabs = [
     { id: 'all', label: 'All Candidates', component: AllCandidates },
     { id: 'favourite', label: 'Favourite Candidates', component: FavouriteCandidates },
@@ -115,14 +124,7 @@ const TabDisplay = () => {
                     ? 'bg-gradient-brand text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
-                onClick={() => {
-                  console.log('Tab clicked:', tab.id);
-                  setActiveTab(tab.id);
-                  // Reset to list view when switching tabs
-                  setViewMode('list');
-                  setSelectedCandidate(null);
-                  setViewType(null);
-                }}
+                onClick={() => handleNavigateToTab(tab.id)}
               >
                 {tab.label}
               </button>
@@ -148,6 +150,7 @@ const TabDisplay = () => {
             viewType={viewType}
             viewMode={viewMode}
             onBackToList={handleBackToList}
+            onNavigateTab={handleNavigateToTab}
           />
         </div>
       </div>

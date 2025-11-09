@@ -13,11 +13,13 @@ import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import FilterPanel from '../shared/FilterPanel';
 import { searchJobs } from '../../utils/searchUtils';
-import { formatQualification } from '../../utils/formatUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
 import noJobsIllustration from '../../../../../assets/Illustrations/No jobs.png';
 import '../styles/job-highlight.css';
 import LoadingState from '../../../../common/LoadingState';
+import { applyJobFilters } from './searchJobFilters';
+import useJobMessaging from '../hooks/useJobMessaging';
+import JobMessagingModals from '../shared/JobMessagingModals';
 
 // Additional API endpoints for specific functionality
 const EDUCATION_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails";
@@ -60,6 +62,18 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [filteredJobsByFilters, setFilteredJobsByFilters] = useState([]);
+  const [currentFilters, setCurrentFilters] = useState(() => {
+    try {
+      const saved = localStorage.getItem('jobFilters');
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      const { hasActiveFilters } = applyJobFilters([], parsed);
+      return hasActiveFilters ? parsed : null;
+    } catch (error) {
+      console.error('Error loading saved filters:', error);
+      return null;
+    }
+  });
 
 
   // Profile navigation function
@@ -203,127 +217,46 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
 
   // FILTER functionality
   const handleApplyFilters = useCallback((filters) => {
-    // Format filters similar to SearchJobs logic
-    const formattedFilters = {
-      ...filters,
-      country: filters.country?.label || filters.country?.value,
-      state: filters.state?.label || filters.state?.value,
-      city: filters.city?.label || filters.city?.value,
-      job_category: filters.job_category?.value,
-      job_shifts: filters.job_shifts?.value,
-      job_process: filters.job_process?.value,
-      job_sub_process: filters.job_sub_process?.value,
-      subjects: filters.subjects?.map(s => s.value) || [],
-      designations: filters.designations?.map(d => d.value) || [],
-      designated_grades: filters.designated_grades?.map(g => g.value) || [],
-      curriculum: filters.curriculum?.map(c => c.value) || [],
-      core_subjects: filters.core_subjects?.map(s => s.value) || [],
-      core_expertise: filters.core_expertise?.map(e => e.value) || []
-    };
+    setCurrentFilters(filters);
+    const { filteredJobs, activeFilters, hasActiveFilters } = applyJobFilters(jobs, filters);
 
-    // Check if any filters are actually applied
-    const hasActiveFilters = Object.keys(formattedFilters).some(key => {
-      const value = formattedFilters[key];
-      if (Array.isArray(value)) return value.length > 0;
-      if (typeof value === 'string') return value.trim() !== '';
-      if (typeof value === 'number') return value > 0;
-      return value !== null && value !== undefined;
-    });
-
-    if (!hasActiveFilters) {
-      setFilteredJobsByFilters(jobs);
+    if (hasActiveFilters) {
+      setFilteredJobsByFilters(filteredJobs);
+      setActiveFilters(new Set(activeFilters));
+    } else {
+      setFilteredJobsByFilters([]);
       setActiveFilters(new Set());
-      setCurrentPage(1);
-      return;
     }
 
-    // Apply filtering logic (simplified version of SearchJobs logic)
-    let filtered = jobs.filter(job => {
-      // Location filters
-      if (formattedFilters.country) {
-        const jobCountry = String(job.country || job.country_name || '').toLowerCase().trim();
-        const filterValue = String(formattedFilters.country || '').toLowerCase().trim();
-        if (filterValue === 'india' && (jobCountry === '' || jobCountry === 'india')) {
-          // Match
-        } else if (jobCountry !== filterValue && !jobCountry.includes(filterValue) && !filterValue.includes(jobCountry)) {
-          return false;
-        }
-      }
-      
-      if (formattedFilters.state) {
-        const jobState = String(job.state_ut || job.state || job.state_name || '').toLowerCase().trim();
-        const filterValue = String(formattedFilters.state || '').toLowerCase().trim();
-        if (jobState !== filterValue && !jobState.includes(filterValue) && !filterValue.includes(jobState)) {
-          return false;
-        }
-      }
-      
-      if (formattedFilters.city) {
-        const jobCity = String(job.city || job.city_name || '').toLowerCase().trim();
-        const filterValue = String(formattedFilters.city || '').toLowerCase().trim();
-        if (jobCity !== filterValue && !jobCity.includes(filterValue) && !filterValue.includes(jobCity)) {
-          return false;
-        }
-      }
-
-      // Job category filter
-      if (formattedFilters.job_category) {
-        const jobType = (job.job_type || job.Job_Type || '').toLowerCase().trim();
-        const filterValue = formattedFilters.job_category.toLowerCase().trim();
-        const normalizedJobType = jobType.replace(/\s+/g, '').replace(/[/-]/g, '');
-        const normalizedFilter = filterValue.replace(/\s+/g, '').replace(/[/-]/g, '');
-        
-        if (jobType !== filterValue && 
-            !jobType.includes(filterValue) && 
-            !filterValue.includes(jobType) &&
-            normalizedJobType !== normalizedFilter &&
-            !normalizedJobType.includes(normalizedFilter) &&
-            !normalizedFilter.includes(normalizedJobType)) {
-          return false;
-        }
-      }
-
-      // Salary range filter
-      if (formattedFilters.min_salary || formattedFilters.max_salary) {
-        const minSal = parseInt(formattedFilters.min_salary) || 0;
-        const maxSal = parseInt(formattedFilters.max_salary) || Infinity;
-        const jobMinSal = parseInt(job.min_salary) || 0;
-        const jobMaxSal = parseInt(job.max_salary) || 0;
-        
-        if (jobMinSal > 0 && jobMaxSal > 0) {
-          if (jobMaxSal < minSal || jobMinSal > maxSal) {
-            return false;
-          }
-        } else if (jobMinSal > 0) {
-          if (jobMinSal > maxSal) {
-            return false;
-          }
-        } else if (jobMaxSal > 0) {
-          if (jobMaxSal < minSal) {
-            return false;
-          }
-        }
-      }
-
-      // Add more filter logic as needed...
-      return true;
-    });
-
-    setFilteredJobsByFilters(filtered);
-    setActiveFilters(new Set(Object.keys(formattedFilters).filter(key => {
-      const value = formattedFilters[key];
-      if (Array.isArray(value)) return value.length > 0;
-      if (typeof value === 'string') return value.trim() !== '';
-      return value !== null && value !== undefined;
-    })));
     setCurrentPage(1);
   }, [jobs]);
 
   const handleResetFilters = useCallback(() => {
+    setCurrentFilters(null);
     setFilteredJobsByFilters([]);
     setActiveFilters(new Set());
     setCurrentPage(1);
   }, []);
+
+  useEffect(() => {
+    if (!jobs.length) {
+      return;
+    }
+
+    if (!currentFilters) {
+      return;
+    }
+
+    const { filteredJobs, activeFilters: activeKeys, hasActiveFilters } = applyJobFilters(jobs, currentFilters);
+
+    if (hasActiveFilters) {
+      setFilteredJobsByFilters(filteredJobs);
+      setActiveFilters(new Set(activeKeys));
+    } else {
+      setFilteredJobsByFilters([]);
+      setActiveFilters(new Set());
+    }
+  }, [jobs, currentFilters]);
 
   // JobID generator - always use .id from backend
   const getJobId = (job) => Number(job.id);
@@ -1007,6 +940,57 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
 
   const finalFilteredJobs = getCombinedResults();
 
+  // Pagination
+  const indexOfLastJob = currentPage * jobsPerPage;
+  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
+  const currentJobs = finalFilteredJobs.slice(indexOfFirstJob, indexOfLastJob);
+  const totalPages = Math.ceil(finalFilteredJobs.length / jobsPerPage);
+
+  const isJobApplied = useCallback(
+    (job) => appliedJobs.includes(getJobId(job)),
+    [appliedJobs]
+  );
+
+  const {
+    selectedJobs,
+    showMessageModal,
+    jobToMessage,
+    handleMessage,
+    handleMessageModalOk,
+    handleMessageModalContinue,
+    showApplyPrompt,
+    jobToApplyPrompt,
+    handleApplyPromptClose,
+    handleApplyPromptApply,
+    showBulkMessageModal,
+    handleCloseBulkMessageModal,
+    bulkChannel,
+    bulkMessage,
+    bulkMessageChars,
+    bulkError,
+    coinBalance,
+    handleChannelSelect,
+    handleBulkMessageChange,
+    handlePrepareBulkSend,
+    showConfirmModal,
+    bulkSummary,
+    handleCancelConfirmation,
+    handleConfirmSend,
+    isSendingBulk,
+    showInsufficientCoinsModal,
+    requiredCoins,
+    handleCloseInsufficientCoinsModal,
+    handleRechargeNavigate
+  } = useJobMessaging({
+    user,
+    filteredJobs: finalFilteredJobs,
+    currentJobs,
+    getJobId,
+    isJobApplied,
+    onViewJob: handleViewJob,
+    onApplyJob: handleApplyClick
+  });
+
   // Function to scroll to a specific job
   const scrollToJob = useCallback((jobId) => {
     if (!jobId) return;
@@ -1112,12 +1096,6 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
     }
   }, [onBackFromJobView, handleBackFromJobView]);
 
-  // Pagination
-  const indexOfLastJob = currentPage * jobsPerPage;
-  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
-  const currentJobs = finalFilteredJobs.slice(indexOfFirstJob, indexOfLastJob);
-  const totalPages = Math.ceil(finalFilteredJobs.length / jobsPerPage);
-
   const getVisiblePageNumbers = () => {
     const delta = 2;
     const range = [];
@@ -1197,7 +1175,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
         {currentJobs.length > 0 ? (
           <div className="job-results">
             <div className="job-list">
-                          {currentJobs.map((job, index) => {
+              {currentJobs.map((job) => {
               const jobId = getJobId(job);
               const isSaved = savedJobs.includes(jobId);
               const isFavourite = favouriteJobs.includes(jobId);
@@ -1215,6 +1193,9 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
                   onSaveJob={handleSaveJob}
                   onFavouriteJob={handleFavouriteJob}
                   onApplyClick={handleApplyClick}
+                  onMessage={handleMessage}
+                  messageDisabled={!isApplied}
+                  messageTooltip={!isApplied ? 'Apply to message this institute' : ''}
                 />
                 );
               })}
@@ -1265,6 +1246,37 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
         />
 
       </div>
+
+      <JobMessagingModals
+        showApplyPrompt={showApplyPrompt}
+        jobToApplyPrompt={jobToApplyPrompt}
+        onApplyPromptClose={handleApplyPromptClose}
+        onApplyPromptApply={handleApplyPromptApply}
+        showMessageModal={showMessageModal}
+        jobToMessage={jobToMessage}
+        onMessageModalOk={handleMessageModalOk}
+        onMessageModalContinue={handleMessageModalContinue}
+        showBulkMessageModal={showBulkMessageModal}
+        bulkChannel={bulkChannel}
+        bulkMessage={bulkMessage}
+        bulkMessageChars={bulkMessageChars}
+        coinBalance={coinBalance}
+        selectedCount={selectedJobs.size}
+        bulkError={bulkError}
+        onChannelSelect={handleChannelSelect}
+        onBulkMessageChange={handleBulkMessageChange}
+        onCloseBulkMessageModal={handleCloseBulkMessageModal}
+        onPrepareBulkSend={handlePrepareBulkSend}
+        showConfirmModal={showConfirmModal}
+        bulkSummary={bulkSummary}
+        isSendingBulk={isSendingBulk}
+        onCancelConfirmation={handleCancelConfirmation}
+        onConfirmSend={handleConfirmSend}
+        showInsufficientCoinsModal={showInsufficientCoinsModal}
+        requiredCoins={requiredCoins}
+        onCloseInsufficientCoinsModal={handleCloseInsufficientCoinsModal}
+        onRechargeNavigate={handleRechargeNavigate}
+      />
     </div>
   );
 };
