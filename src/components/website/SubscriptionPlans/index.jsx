@@ -181,7 +181,7 @@ const SubscriptionPlans = () => {
                   onClick={() => setActiveTab("job-seekers")}
                   className={`w-1/2 px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium transition-colors text-sm sm:text-base ${
                     activeTab === "job-seekers"
-                      ? "bg-red-600 text-white"
+                      ? "bg-gradient-brand text-white"
                       : "text-red-600 hover:bg-red-50"
                   }`}
                 >
@@ -191,7 +191,7 @@ const SubscriptionPlans = () => {
                   onClick={() => setActiveTab("job-providers")}
                   className={`w-1/2 px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium transition-colors text-sm sm:text-base ${
                     activeTab === "job-providers"
-                      ? "bg-red-600 text-white"
+                      ? "bg-gradient-brand text-white"
                       : "text-red-600 hover:bg-red-50"
                   }`}
                 >
@@ -224,7 +224,7 @@ const SubscriptionPlans = () => {
             {/* Special Offers - Job Seekers only, before Pricing */}
             {activeTab === 'job-seekers' && (
               <div className="mb-6">
-                <div className="w-full rounded-t-lg px-4 sm:px-6 py-3 text-white font-bold text-center bg-red-600">
+                <div className="w-full rounded-t-lg px-4 sm:px-6 py-3 text-white font-bold text-center bg-gradient-brand">
                   <span className="mr-2">🔔</span> SPECIAL OFFERS:
                 </div>
                 <div className="bg-white border border-gray-300 rounded-b-lg divide-y">
@@ -262,7 +262,7 @@ const SubscriptionPlans = () => {
             {/* Special Offers - Job Providers only, before Pricing */}
             {activeTab === 'job-providers' && (
               <div className="mb-6">
-                <div className="w-full rounded-t-lg px-4 sm:px-6 py-3 text-white font-bold text-center bg-red-600">
+                <div className="w-full rounded-t-lg px-4 sm:px-6 py-3 text-white font-bold text-center bg-gradient-brand">
                   <span className="mr-2">🔔</span> SPECIAL OFFERS:
                 </div>
                 <div className="bg-white border border-gray-300 rounded-b-lg divide-y">
@@ -283,7 +283,7 @@ const SubscriptionPlans = () => {
             )}
 
             {/* Pricing Header */}
-            <div className="bg-red-600 text-white py-3 px-4 sm:px-6 rounded-t-lg mb-0">
+            <div className="bg-gradient-brand text-white py-3 px-4 sm:px-6 rounded-t-lg mb-0">
               <h3 className="text-base sm:text-lg font-bold text-center">
                 Pricing & Coin Benefits - {activeTab === "job-seekers" ? "Job Seekers" : "Job Providers"} Plans
               </h3>

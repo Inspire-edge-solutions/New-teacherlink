@@ -1219,32 +1219,51 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
 
   return (
     <div className="widget-content">
-      {/* Header with Search, Filter Button, and Records per Page */}
-      <div className="widget-title mb-3">
-        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center w-full gap-3 sm:gap-4">
-          <div className="flex-1 w-full sm:max-w-[50%]">
-            <SearchBar 
-              onSearch={handleSearch} 
-              placeholder="Search candidates..." 
-            />
+      {/* Header with title, Search, and Filter Button */}
+      <div className="widget-title mb-4">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div className="flex flex-col gap-1">
+            <h3 className="text-lg sm:text-xl md:text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
+              {isSearching
+                ? `Found ${visibleCandidates.toLocaleString()} candidate${visibleCandidates === 1 ? '' : 's'}`
+                : `${totalCandidates.toLocaleString()} Candidate${totalCandidates === 1 ? '' : 's'} Available`}
+            </h3>
+            <div className="text-sm text-gray-600 flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span>
+                Showing {visibleCandidates.toLocaleString()} of {totalCandidates.toLocaleString()} candidates
+              </span>
+              {activeFilters.size > 0 && (
+                <span className="flex items-center gap-2">
+                  <span className="text-gray-300">•</span>
+                  Filters applied
+                </span>
+              )}
+              {isSearching && (
+                <span className="flex items-center gap-2">
+                  <span className="text-gray-300">•</span>
+                  Search active
+                </span>
+              )}
+            </div>
           </div>
-          <div className="flex-shrink-0">
-            <button 
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+            <div className="flex-1 min-w-[240px]">
+              <SearchBar
+                onSearch={handleSearch}
+                placeholder="Search candidates..."
+              />
+            </div>
+            <button
               onClick={() => setShowFilters(true)}
               className={`w-full sm:w-auto px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 ${
                 activeFilters.size > 0
-                  ? 'bg-gradient-brand text-white shadow-sm'
-                  : 'bg-gradient-brand text-white hover:opacity-90'
+                  ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover transition-colors'
+                  : 'bg-gradient-brand text-white hover:bg-gradient-primary-hover transition-colors'
               }`}
             >
               Apply Filters {activeFilters.size > 0 && `(${activeFilters.size})`}
             </button>
           </div>
-        </div>
-        <div className="mt-2 text-sm text-gray-600">
-          Showing {visibleCandidates.toLocaleString()} of {totalCandidates.toLocaleString()} candidates
-          {activeFilters.size > 0 && ' • Filters applied'}
-          {isSearching && ' • Search active'}
         </div>
       </div>
 
@@ -1285,8 +1304,8 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
                 />
               );
             })}
-                </div>
-              </div>
+            </div>
+            </div>
       ) : (
         <div className="text-center py-12">
           <div className="flex flex-col items-center justify-center">
@@ -1363,7 +1382,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
                 Cancel
               </button>
               <button 
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
                 onClick={handleUnlockPromptViewProfile}
               >
                 View Profile
@@ -1407,7 +1426,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
                 Ok
               </button>
               <button 
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
                 onClick={handleMessageModalContinue}
               >
                 Continue Single

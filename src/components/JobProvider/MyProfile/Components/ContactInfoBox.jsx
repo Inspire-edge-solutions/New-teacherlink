@@ -179,7 +179,7 @@ const ContactInfoBox = () => {
                     <div className="relative">
                         <button
                             type="button"
-                            className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                            className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
                             onClick={handleSearch}
                             disabled={isLoading || !user}
                         >
@@ -218,7 +218,7 @@ const ContactInfoBox = () => {
                 <div className="lg:col-span-12">
                     <button
                         type="button"
-                        className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:opacity-90 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                        className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
                         onClick={handleSave}
                         disabled={!selectedLocation || !user || isSaving}
                     >

@@ -108,7 +108,7 @@ const MessagesSidebar = ({
                     onSelectOrganisation(null);
                     navigate('/seeker/all-jobs');
                   }}
-                  className="w-full px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-brand-hover transition-colors font-medium text-sm flex items-center justify-center gap-2"
+                  className="w-full px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-primary-hover transition-colors font-medium text-sm flex items-center justify-center gap-2"
                 >
                   <FiPlus size={16} />
                   Add more Favourite jobs
@@ -169,7 +169,7 @@ const MessagesSidebar = ({
                         onSelectOrganisation(null);
                         navigate('/seeker/all-jobs');
                       }}
-                      className="w-full px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-brand-hover transition-colors font-medium"
+                      className="w-full px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-primary-hover transition-colors font-medium"
                     >
                       Go to All Jobs
                     </button>

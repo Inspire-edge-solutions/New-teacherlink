@@ -56,7 +56,7 @@ const WhyTeacherlink = () => {
                 {/* Main Card Container */}
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                     {/* Header Banner */}
-                    <div className="bg-red-600 text-white py-6 px-8">
+                    <div className="bg-gradient-brand text-white py-6 px-8">
                         <h1 className="text-3xl font-bold text-center">Why Choose TeacherLink.in?</h1>
                     </div>
                     
@@ -93,7 +93,7 @@ const WhyTeacherlink = () => {
                     
                     {/* Call to Action Section */}
                     <div className="text-center py-12 px-8 bg-gray-50 rounded-xl mx-8 mb-8">
-                        <h3 className="text-3xl font-bold mb-5 text-red-600">
+                        <h3 className="text-3xl font-bold mb-5 text-gradient-brand">
                             🎯 Your Teaching Career Starts Here
                         </h3>
                         <p className="text-lg mb-5 text-gray-700">
@@ -104,7 +104,7 @@ const WhyTeacherlink = () => {
                         </h3>
                         <a 
                             href="/register" 
-                            className="inline-block bg-red-600 hover:bg-red-700 text-white font-semibold text-lg px-8 py-4 rounded-lg transition-colors duration-300 shadow-lg hover:shadow-xl"
+                            className="inline-block bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold text-lg px-8 py-4 rounded-lg transition-colors duration-300 shadow-lg hover:shadow-xl"
                         >
                             🔗 Visit Now & Apply Free
                         </a>

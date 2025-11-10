@@ -69,7 +69,7 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
               <i>Unlocked details remain visible for <b>30 days.</b></i>
             </div>
             <button 
-              className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none w-full justify-center mb-1.5"
+              className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none w-full justify-center mb-1.5"
               disabled={loading}
               onClick={onUnlock}
             >
@@ -729,7 +729,7 @@ const ViewShort = ({
           )}
           {!isUnlocked && !checkedProfiles && (
             <button 
-              className={`inline-flex items-center justify-center gap-2.5 ${windowWidth <= 768 ? 'px-4 py-2.5 text-sm' : 'px-6 py-3 text-base'} bg-gradient-brand text-white border-none rounded-lg font-semibold cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none ${windowWidth <= 768 ? 'w-full sm:w-auto sm:min-w-[150px]' : 'min-w-[170px]'} flex-shrink-0`}
+            className={`inline-flex items-center justify-center gap-2.5 ${windowWidth <= 768 ? 'px-4 py-2.5 text-sm' : 'px-6 py-3 text-base'} bg-gradient-brand text-white border-none rounded-lg font-semibold cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none ${windowWidth <= 768 ? 'w-full sm:w-auto sm:min-w-[150px]' : 'min-w-[170px]'} flex-shrink-0`}
               onClick={handleUnlockClick}
               disabled={isUnlocked}
             >
@@ -739,7 +739,7 @@ const ViewShort = ({
           )}
         </div>
         <div className={`${windowWidth <= 768 ? 'w-full sm:w-auto sm:ml-auto' : 'ml-auto'}`}>
-          <button className={`w-full sm:w-auto ${windowWidth <= 768 ? 'px-3 py-2 text-sm' : 'px-4 py-2.5 text-base'} bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-colors whitespace-nowrap`} onClick={onBack}>
+          <button className={`w-full sm:w-auto ${windowWidth <= 768 ? 'px-3 py-2 text-sm' : 'px-4 py-2.5 text-base'} bg-gradient-brand hover:bg-gradient-primary-hover text-white rounded-lg transition-colors whitespace-nowrap`} onClick={onBack}>
             Back to List
           </button>
         </div>
@@ -1041,7 +1041,7 @@ const ViewShort = ({
               setTimeout(() => setIsDownloading(false), 1000);
             }}
             disabled={isDownloading}
-            className={`inline-flex items-center justify-center gap-2 ${windowWidth <= 768 ? 'px-4 py-2.5 text-sm w-full sm:w-auto' : 'px-6 py-3 text-base'} ${windowWidth <= 768 ? 'sm:min-w-[160px]' : 'min-w-[200px]'} bg-gradient-brand hover:opacity-90 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`inline-flex items-center justify-center gap-2 ${windowWidth <= 768 ? 'px-4 py-2.5 text-sm w-full sm:w-auto' : 'px-6 py-3 text-base'} ${windowWidth <= 768 ? 'sm:min-w-[160px]' : 'min-w-[200px]'} bg-gradient-brand hover:bg-gradient-primary-hover text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
             title={isDownloading ? "Opening print dialog..." : "Download or Print CV"}
           >
             {isDownloading ? (

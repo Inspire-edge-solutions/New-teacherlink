@@ -350,7 +350,7 @@ const MessagesComponent = () => {
               {/* Button */}
               <button 
                 onClick={handleStartNewChat}
-                className="bg-gradient-brand hover:bg-gradient-brand-hover text-white px-6 py-3 rounded-lg transition-colors text-sm sm:text-base"
+                className="bg-gradient-brand hover:bg-gradient-primary-hover text-white px-6 py-3 rounded-lg transition-colors text-sm sm:text-base"
               >
                 Start a new chat
               </button>

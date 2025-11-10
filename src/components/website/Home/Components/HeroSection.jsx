@@ -42,7 +42,8 @@ const HeroSection = () => {
             <div className="pt-0 lg:pt-1">
               <button
               onClick={() => navigate('/register')}
-              className="text-white font-semibold px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-lg text-lg sm:text-xl transition-all duration-300 transform hover:scale-105 shadow-lg w-full sm:w-auto bg-gradient-brand">
+                className="text-white font-semibold px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-lg text-lg sm:text-xl duration-300 transition-colors transform hover:scale-105 shadow-lg w-full sm:w-auto bg-gradient-brand hover:bg-gradient-primary-hover"
+              >
                 Register
               </button>
             </div>

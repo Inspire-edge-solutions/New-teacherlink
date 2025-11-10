@@ -1148,8 +1148,8 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
               onClick={() => setShowFilters(true)}
               className={`px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 ${
                 activeFilters.size > 0
-                  ? 'bg-gradient-brand text-white shadow-sm'
-                  : 'bg-gradient-brand text-white hover:opacity-90'
+                  ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover transition-colors'
+                  : 'bg-gradient-brand text-white hover:bg-gradient-primary-hover transition-colors'
               }`}
             >
               Apply Filters {activeFilters.size > 0 && `(${activeFilters.size})`}

@@ -749,7 +749,7 @@ const FavouriteCandidates = ({
               </div>
               {selectedCandidates.size > 0 && (
                 <button
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-brand rounded-lg shadow-lg hover:opacity-90 transition-all"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-brand rounded-lg shadow-lg hover:bg-gradient-primary-hover duration-300 transition-colors"
                   onClick={handleOpenBulkMessageModal}
                 >
                   <span role="img" aria-label="message">💬</span>
@@ -868,7 +868,7 @@ const FavouriteCandidates = ({
                 Cancel
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
                 onClick={handleUnlockPromptViewProfile}
               >
                 View Profile
@@ -912,7 +912,7 @@ const FavouriteCandidates = ({
                 Ok
               </button>
               <button 
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
                 onClick={handleMessageModalContinue}
               >
                 Continue Single
@@ -999,7 +999,7 @@ const FavouriteCandidates = ({
                 Cancel
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handlePrepareBulkSend}
                 disabled={!bulkChannel || bulkMessageChars === 0}
               >
@@ -1065,7 +1065,7 @@ const FavouriteCandidates = ({
                 Cancel
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleConfirmSend}
                 disabled={isSendingBulk}
               >
@@ -1120,7 +1120,7 @@ const FavouriteCandidates = ({
                 Close
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-lg hover:opacity-90 hover:shadow-xl"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
                 onClick={handleRechargeNavigate}
               >
                 Recharge Now

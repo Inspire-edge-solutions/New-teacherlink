@@ -837,7 +837,7 @@ const Coupons = ({
             />
             <button 
               type="submit"
-              className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-all duration-200 font-medium text-sm sm:text-base whitespace-nowrap"
+              className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover duration-200 transition-colors font-medium text-sm sm:text-base whitespace-nowrap"
             >
               Apply Coupon
             </button>

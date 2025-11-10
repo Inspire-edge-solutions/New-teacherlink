@@ -25,7 +25,7 @@ const SuccessModal = ({ open, onClose, message }) => {
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3">Congrats!!</h2>
           <p className="text-gray-600 text-sm sm:text-base mb-6">{message}</p>
           <button 
-            className="w-full bg-gradient-brand text-white py-2 sm:py-3 rounded-lg hover:bg-gradient-primary-hover transition-all duration-200 font-medium text-sm sm:text-base"
+            className="w-full bg-gradient-brand text-white py-2 sm:py-3 rounded-lg hover:bg-gradient-primary-hover duration-200 transition-colors font-medium text-sm sm:text-base"
             onClick={onClose}
           >
             OK
@@ -57,7 +57,7 @@ const InfoModal = ({ open, onClose, iconUrl, message, loading }) => {
           <h3 className="text-xl sm:text-2xl font-bold text-red-600 mb-3">Info</h3>
           <p className="text-gray-600 text-sm sm:text-base mb-6">{message}</p>
           <button 
-            className="w-full bg-gradient-brand text-white py-2 sm:py-3 rounded-lg hover:bg-gradient-primary-hover transition-all duration-200 font-medium text-sm sm:text-base"
+            className="w-full bg-gradient-brand text-white py-2 sm:py-3 rounded-lg hover:bg-gradient-primary-hover duration-200 transition-colors font-medium text-sm sm:text-base"
             onClick={onClose}
           >
             OK
@@ -348,9 +348,9 @@ const Subscription = () => {
             <div className={`flex justify-center ${activeTab === 'payment' ? 'w-full sm:flex-1' : 'w-full'}`}>
               <div className="flex bg-white rounded-full p-1 shadow-lg w-full sm:w-auto">
                 <button
-                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium transition-all duration-200 text-sm sm:text-base ${
+                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-sm sm:text-base ${
                     activeTab === 'payment' 
-                      ? 'bg-gradient-brand text-white shadow-md' 
+                      ? 'bg-gradient-brand text-white shadow-md hover:bg-gradient-primary-hover' 
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                   onClick={() => setActiveTab('payment')}
@@ -360,9 +360,9 @@ const Subscription = () => {
                 </button>
                 
                 <button
-                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium transition-all duration-200 text-sm sm:text-base ${
+                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-sm sm:text-base ${
                     activeTab === 'referral' 
-                      ? 'bg-gradient-brand text-white shadow-md' 
+                      ? 'bg-gradient-brand text-white shadow-md hover:bg-gradient-primary-hover' 
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                   onClick={() => setActiveTab('referral')}
@@ -372,9 +372,9 @@ const Subscription = () => {
                 </button>
                 
                 <button
-                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium transition-all duration-200 text-sm sm:text-base ${
+                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-sm sm:text-base ${
                     activeTab === 'coupon' 
-                      ? 'bg-gradient-brand text-white shadow-md' 
+                      ? 'bg-gradient-brand text-white shadow-md hover:bg-gradient-primary-hover' 
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                   onClick={() => setActiveTab('coupon')}

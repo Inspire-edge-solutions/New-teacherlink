@@ -296,7 +296,7 @@ return (
               <div className="flex gap-3 relative">
                 <div className="flex-1 relative">
                   <button 
-                    className="w-full bg-gradient-brand hover:opacity-90 text-white font-medium py-3 px-4 rounded-lg transition-opacity disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                     onClick={handleDemoVideoUploadClick}
                     disabled={demoVideoUploading}
                     onMouseEnter={() => setShowVideoTooltip(true)}
@@ -311,7 +311,7 @@ return (
                   )}
                 </div>
                 <button 
-                  className="flex-1 bg-gradient-brand hover:opacity-90 text-white font-medium py-3 px-4 rounded-lg transition-opacity disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="flex-1 bg-gradient-brand hover:bg-gradient-primary-hover text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                   onClick={handleDemoVideoView}
                   disabled={!videoFileName}
                 >
@@ -347,7 +347,7 @@ return (
               <div className="flex gap-3 relative">
                 <div className="flex-1 relative">
                   <button 
-                    className="w-full bg-gradient-brand hover:opacity-90 text-white font-medium py-3 px-4 rounded-lg transition-opacity disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                     onClick={handleResumeUploadClick}
                     disabled={resumeUploading}
                     onMouseEnter={() => setShowResumeTooltip(true)}
@@ -362,7 +362,7 @@ return (
                   )}
                 </div>
                 <button 
-                  className="flex-1 bg-gradient-brand hover:opacity-90 text-white font-medium py-3 px-4 rounded-lg transition-opacity disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="flex-1 bg-gradient-brand hover:bg-gradient-primary-hover text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                   onClick={handleResumeView}
                   disabled={!resumeFileName}
                 >

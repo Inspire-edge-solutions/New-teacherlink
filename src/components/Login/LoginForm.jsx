@@ -342,7 +342,7 @@ const LoginForm = () => {
             <div className="w-full lg:w-1/2 flex items-center justify-center px-3 sm:px-6 md:px-8 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg">
               <div className="relative w-full max-w-md">
                 <LoadingState
-                  title="Hold tight, educator!"
+                  title="Hold tight user!"
                   subtitle="We’re opening your Teacherlink dashboard right now."
                   layout="card"
                   className="shadow-xl"

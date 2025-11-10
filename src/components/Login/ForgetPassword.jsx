@@ -281,7 +281,7 @@ const ForgetPassword = () => {
                   <button 
                     type="submit" 
                     disabled={loading || !email.trim()}
-                    className="w-full bg-gradient-brand hover:opacity-90 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg md:text-xl"
+                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg md:text-xl"
                   >
                     {loading ? "Sending..." : "Send OTP"}
                   </button>
@@ -304,7 +304,7 @@ const ForgetPassword = () => {
                   <button 
                     type="submit" 
                     disabled={loading || !otp.trim()}
-                    className="w-full bg-gradient-brand hover:opacity-90 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg md:text-xl"
+                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg md:text-xl"
                   >
                     {loading ? "Verifying..." : "Verify OTP"}
                   </button>
@@ -376,7 +376,7 @@ const ForgetPassword = () => {
                   <button 
                     type="submit" 
                     disabled={loading}
-                    className="w-full bg-gradient-brand hover:opacity-90 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg md:text-xl"
+                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg md:text-xl"
                   >
                     {loading ? "Changing Password..." : "Change Password"}
                   </button>
@@ -396,7 +396,7 @@ const ForgetPassword = () => {
               </div>
               <button 
                 onClick={() => navigate('/login')}
-                className="w-full bg-gradient-brand hover:opacity-90 text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 text-base sm:text-lg md:text-xl"
+                className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg duration-200 transition-colors text-base sm:text-lg md:text-xl"
               >
                 Back to Login
               </button>

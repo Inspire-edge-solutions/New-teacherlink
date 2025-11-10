@@ -25,7 +25,7 @@ const RegBanner = () => {
                 👉 Register today to explore opportunities that match your skills and passion.
               </p>
               <button 
-                className="w-full text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-brand"
+                className="w-full text-white font-semibold py-3 px-6 rounded-lg duration-300 transition-colors transform hover:scale-105 shadow-lg bg-gradient-brand hover:bg-gradient-primary-hover"
                 onClick={() => navigate('/register')}
               >
                 Register Account
@@ -52,7 +52,7 @@ const RegBanner = () => {
               </p>
               <button 
               onClick={() => navigate('/register')}
-                className="w-full text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-brand"
+                className="w-full text-white font-semibold py-3 px-6 rounded-lg duration-300 transition-colors transform hover:scale-105 shadow-lg bg-gradient-brand hover:bg-gradient-primary-hover"
               >
                 Register Account
               </button>

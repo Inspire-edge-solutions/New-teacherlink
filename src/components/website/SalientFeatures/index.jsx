@@ -18,7 +18,7 @@ const SalientFeatures = () => {
           </h1>
           
           {/* Red Box with Description */}
-          <div className="bg-red-600 rounded-xl p-4 md:p-8 shadow-lg max-w-4xl mx-auto mb-12 md:mb-16">
+          <div className="bg-gradient-brand rounded-xl p-4 md:p-8 shadow-lg max-w-4xl mx-auto mb-12 md:mb-16">
             <p className="text-base md:text-lg text-white leading-relaxed text-center">
               Looking to land the perfect teaching role? Welcome to TeacherLink.in : India's #1 dedicated job platform made exclusively for educators. 
               Whether you're a fresher or a seasoned teacher, we've got you covered.
@@ -81,7 +81,7 @@ const SalientFeatures = () => {
                 <h2 className="text-xl md:text-2xl font-bold text-red-900 mb-3">Your Teaching Career Starts Here</h2>
                 <p className="text-sm md:text-base text-gray-700 mb-3">Join thousands of teachers who've found success with us.</p>
                 <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 md:mb-6">TeacherLink.in : Your Gateway to Career Success!</h3>
-                <button className="bg-gradient-to-r from-red-500 to-red-700 text-white font-semibold px-4 md:px-6 py-2 md:py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-sm md:text-base">
+                <button className="bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold px-4 md:px-6 py-2 md:py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-sm md:text-base">
                   <Link to="/login">
                     Apply Here
                   </Link>
@@ -97,7 +97,7 @@ const SalientFeatures = () => {
           </h1>
           
           {/* Red Box with Description for Job Providers */}
-          <div className="bg-red-600 rounded-xl p-4 md:p-8 shadow-lg max-w-4xl mx-auto mb-12 md:mb-16">
+          <div className="bg-gradient-brand rounded-xl p-4 md:p-8 shadow-lg max-w-4xl mx-auto mb-12 md:mb-16">
             <p className="text-base md:text-lg text-white leading-relaxed text-center">
               Looking to fill teaching roles with top talent? Welcome to TeacherLink.in : India's #1 job platform built exclusively for schools, colleges, coaching centers, and educational institutes.
             </p>
@@ -157,7 +157,7 @@ const SalientFeatures = () => {
                 <h2 className="text-xl md:text-2xl font-bold text-red-900 mb-3">Your Hiring Success Starts Here</h2>
                 <p className="text-sm md:text-base text-gray-700 mb-3">Looking to fill teaching roles with top talent?</p>
                 <h3 className="text-base md:text-lg font-bold text-gray-800 mb-4 md:mb-6">TeacherLink.in : Your Gateway to Hiring Success!</h3>
-                <button className="bg-gradient-to-r from-red-500 to-red-700 text-white font-semibold px-4 md:px-6 py-2 md:py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-sm md:text-base">
+                <button className="bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold px-4 md:px-6 py-2 md:py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-sm md:text-base">
                   <Link to="/login">
                     Post Jobs Here
                   </Link>

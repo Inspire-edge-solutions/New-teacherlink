@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Skeleton } from "@mui/material";
 
+const normalizePhoneNumber = (value = "") =>
+  value.replace(/[^0-9]/g, "").slice(0, 10);
+
+const isValidPhoneNumber = (value = "") => /^[6-9]\d{9}$/.test(value);
+
 const Referrals = ({ user, onSuccess }) => {
+  const navigate = useNavigate();
+
   const [contactNumber, setContactNumber] = useState('');
   const [contacts, setContacts] = useState([]);
   const [registeredContacts, setRegisteredContacts] = useState([]);
@@ -55,7 +63,12 @@ const Referrals = ({ user, onSuccess }) => {
       if (Array.isArray(rows) && rows.length > 0) {
         for (let i = 1; i <= 20; i++) {
           const val = rows[0][`contact${i}`];
-          if (val && val.trim()) contactsArr.push(val.trim());
+          if (val && val.trim()) {
+            const normalized = normalizePhoneNumber(val);
+            if (normalized.length === 10) {
+              contactsArr.push(normalized);
+            }
+          }
         }
       }
       setContacts(contactsArr);
@@ -112,12 +125,13 @@ const Referrals = ({ user, onSuccess }) => {
 
   const handleAddContact = async (e) => {
     e.preventDefault();
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(contactNumber)) {
+    const normalized = normalizePhoneNumber(contactNumber);
+
+    if (!isValidPhoneNumber(normalized)) {
       toast.error("Please enter a valid 10-digit phone number.");
       return;
     }
-    if (contacts.includes(contactNumber)) {
+    if (contacts.includes(normalized)) {
       toast.warning("This number has already been added.");
       return;
     }
@@ -125,14 +139,14 @@ const Referrals = ({ user, onSuccess }) => {
     try {
       const allUsers = await fetchAllUsers();
       const found = allUsers.some(
-        u => (u.phone_number || "").replace(/[^0-9]/g, "").slice(-10) === contactNumber
+        u => (u.phone_number || "").replace(/[^0-9]/g, "").slice(-10) === normalized
       );
       if (found) {
         toast.error("This mobile number is already in use.");
         return;
       }
 
-      const newContacts = [...contacts, contactNumber].slice(0, 20);
+      const newContacts = [...contacts, normalized].slice(0, 20);
       const body = { firebase_uid, is_active: 1 };
       newContacts.forEach((num, idx) => {
         body[`contact${idx + 1}`] = num;
@@ -153,7 +167,7 @@ const Referrals = ({ user, onSuccess }) => {
       toast.success("Candidate added successfully!");
 
       const name = await fetchCurrentUserName(firebase_uid);
-      await sendRcsInvite(contactNumber, name);
+      await sendRcsInvite(normalized, name);
 
       const reg = calculateRegisteredContacts(newContacts, allUsers);
       setRegisteredContacts(reg);
@@ -165,12 +179,13 @@ const Referrals = ({ user, onSuccess }) => {
   };
 
   const handleEditSave = async (idx) => {
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(editValue)) {
+    const normalized = normalizePhoneNumber(editValue);
+
+    if (!isValidPhoneNumber(normalized)) {
       toast.error("Please enter a valid 10-digit phone number.");
       return;
     }
-    if (contacts.includes(editValue) && contacts[idx] !== editValue) {
+    if (contacts.includes(normalized) && contacts[idx] !== normalized) {
       toast.warning("This number has already been added.");
       return;
     }
@@ -178,7 +193,7 @@ const Referrals = ({ user, onSuccess }) => {
     try {
       const allUsers = await fetchAllUsers();
       const found = allUsers.some(
-        u => (u.phone_number || "").replace(/[^0-9]/g, "").slice(-10) === editValue
+        u => (u.phone_number || "").replace(/[^0-9]/g, "").slice(-10) === normalized
       );
       if (found) {
         toast.error("This mobile number is already in use.");
@@ -186,7 +201,7 @@ const Referrals = ({ user, onSuccess }) => {
       }
 
       const updatedContacts = [...contacts];
-      updatedContacts[idx] = editValue;
+      updatedContacts[idx] = normalized;
       const body = { firebase_uid, is_active: 1 };
       updatedContacts.forEach((num, i) => {
         body[`contact${i + 1}`] = num;
@@ -207,7 +222,7 @@ const Referrals = ({ user, onSuccess }) => {
       toast.success("Candidate updated successfully!");
 
       const name = await fetchCurrentUserName(firebase_uid);
-      await sendRcsInvite(editValue, name);
+      await sendRcsInvite(normalized, name);
 
       const reg = calculateRegisteredContacts(updatedContacts, allUsers);
       setRegisteredContacts(reg);
@@ -374,6 +389,7 @@ const Referrals = ({ user, onSuccess }) => {
 
       toast.success("Congratulations! You have received your referral coins.");
       if (onSuccess) onSuccess();
+      navigate("/seeker/dashboard");
     } catch {
       toast.error("Failed to redeem referral coins or update coin history. Please contact support.");
     }
@@ -472,7 +488,7 @@ const Referrals = ({ user, onSuccess }) => {
                   <input
                     type="tel"
                     value={contactNumber}
-                    onChange={(e) => setContactNumber(e.target.value)}
+                    onChange={(e) => setContactNumber(normalizePhoneNumber(e.target.value))}
                     placeholder="Enter Candidate's mobile number"
                     pattern="[0-9]{10}"
                     maxLength="10"
@@ -483,7 +499,7 @@ const Referrals = ({ user, onSuccess }) => {
                   <button
                     type="submit"
                     disabled={contacts.length >= 20}
-                    className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 font-medium text-sm sm:text-base whitespace-nowrap"
+                    className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed duration-200 transition-colors font-medium text-sm sm:text-base whitespace-nowrap"
                   >
                     Add Candidate
                   </button>
@@ -506,7 +522,7 @@ const Referrals = ({ user, onSuccess }) => {
                           <input
                             type="tel"
                             value={editValue}
-                            onChange={e => setEditValue(e.target.value)}
+                            onChange={e => setEditValue(normalizePhoneNumber(e.target.value))}
                             maxLength="10"
                             pattern="[0-9]{10}"
                             className="px-2 sm:px-3 py-1 border border-gray-300 rounded text-xs sm:text-sm w-24 sm:w-32"

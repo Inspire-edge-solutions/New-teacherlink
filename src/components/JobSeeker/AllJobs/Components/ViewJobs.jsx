@@ -119,7 +119,7 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
               </div>
             </div>
             <button
-              className="w-full bg-gradient-brand text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-brand text-white py-3 px-4 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
               onClick={onUnlock}
             >
@@ -900,7 +900,7 @@ const ViewJobs = ({ job, onBack }) => {
         <div className="text-center">
           <p className="text-gray-600 text-lg mb-4">No job selected</p>
           <button 
-            className="px-6 py-3 bg-gradient-brand text-white rounded-lg hover:opacity-90 transition-opacity"
+          className="px-6 py-3 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors"
             onClick={onBack}
           >
             Back to Jobs
@@ -917,7 +917,7 @@ const ViewJobs = ({ job, onBack }) => {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-orange-500">Job Details</h1>
           <button 
-            className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
+          className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors font-medium"
             onClick={() => onBack('list')}
           >
             Back to Jobs
@@ -1177,7 +1177,7 @@ const ViewJobs = ({ job, onBack }) => {
                   {!isUnlocked && (
                     <div className="mt-6">
                       <button
-                        className="w-full bg-gradient-brand text-white py-4 px-6 rounded-lg font-semibold text-base hover:opacity-90 transition-opacity flex items-center justify-center gap-3"
+                        className="w-full bg-gradient-brand text-white py-4 px-6 rounded-lg font-semibold text-base hover:bg-gradient-primary-hover transition-colors flex items-center justify-center gap-3"
                         onClick={handleUnlockClick}
                       >
                         <span>💰</span>
@@ -1238,7 +1238,7 @@ const ViewJobs = ({ job, onBack }) => {
             className={`px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 ${
               isApplied 
                 ? 'bg-gray-300 text-gray-700 cursor-not-allowed' 
-                : 'bg-gradient-brand text-white hover:opacity-90 shadow-lg hover:shadow-xl'
+                : 'bg-gradient-brand text-white hover:bg-gradient-primary-hover transition-colors shadow-lg hover:shadow-xl'
             }`}
             onClick={handleApplyJob}
             disabled={isApplied}

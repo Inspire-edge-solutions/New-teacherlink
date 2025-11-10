@@ -464,7 +464,7 @@ const ProfileCompletionPopup = () => {
               Remind me later
             </button>
             <button 
-              className="flex-1 px-5 py-3 bg-gradient-brand text-white rounded-lg text-sm sm:text-base font-semibold cursor-pointer transition-all duration-200 shadow-lg text-center hover:bg-gradient-primary-hover hover:shadow-xl hover:-translate-y-0.5"
+              className="flex-1 px-5 py-3 bg-gradient-brand text-white rounded-lg text-sm sm:text-base font-semibold cursor-pointer transition-colors duration-200 shadow-lg text-center hover:bg-gradient-primary-hover hover:shadow-xl hover:-translate-y-0.5"
               onClick={handleCompleteProfile}
             >
               Complete Profile Now

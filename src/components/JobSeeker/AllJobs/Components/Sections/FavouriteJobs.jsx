@@ -551,7 +551,7 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateTab }) => {
                 </div>
                 {selectedJobs.size > 0 && (
                   <button
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-brand rounded-lg shadow-lg hover:opacity-90 transition-all"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-brand rounded-lg shadow-lg hover:bg-gradient-primary-hover transition-colors"
                     onClick={handleOpenBulkMessageModal}
                   >
                     <span role="img" aria-label="message">💬</span>

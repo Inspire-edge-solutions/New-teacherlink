@@ -280,6 +280,7 @@ const Payment = ({ user, onSuccess }) => {
             if (redeemUpdateRes.ok) {
               toast.success(`Payment successful! ${selectedPlan.name} activated with ${selectedPlan.coins} coins.`);
               if (onSuccess) onSuccess();
+              window.location.href = "/provider/dashboard";
             } else {
               toast.error("Payment recorded but failed to update coins. Contact support.");
             }
@@ -423,7 +424,7 @@ const Payment = ({ user, onSuccess }) => {
               
               {/* Choose Plan Button */}
               <button 
-                className="w-full bg-gradient-brand text-white py-2 sm:py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-lg text-sm sm:text-base"
+                className="w-full bg-gradient-brand text-white py-2 sm:py-3 rounded-lg font-medium hover:bg-gradient-primary-hover duration-200 transition-colors shadow-lg text-sm sm:text-base"
                 onClick={() => handlePurchase(plan)}
               >
                 Choose Plan

@@ -131,7 +131,7 @@ const TabDisplay = () => {
                 key={tab.id}
                 className={`px-6 py-3 rounded-lg font-medium text-sm transition-all duration-200 ${
                   activeTab === tab.id
-                    ? 'bg-gradient-brand text-white shadow-sm'
+                    ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover transition-colors'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
                 onClick={() => handleNavigateToTab(tab.id)}

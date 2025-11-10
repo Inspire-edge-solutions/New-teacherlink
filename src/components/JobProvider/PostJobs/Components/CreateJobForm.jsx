@@ -84,7 +84,7 @@ const ProfileRequiredModal = ({ isOpen, onClose }) => {
         <div className="p-6 border-t border-gray-200 bg-white flex justify-center">
           <button
             onClick={onClose}
-            className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity min-w-[120px] shadow-md"
+            className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors min-w-[120px] shadow-md"
           >
             Got It
           </button>
@@ -140,7 +140,7 @@ const JobReviewModal = ({ isOpen, onClose, onConfirm, previewData, isPosting }) 
           </button>
           <button
             onClick={onConfirm}
-            className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 min-w-[150px] flex-1 max-w-[250px] shadow-md"
+            className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors disabled:opacity-50 min-w-[150px] flex-1 max-w-[250px] shadow-md"
             disabled={isPosting}
           >
             {isPosting ? "⏳ Posting..." : "✅ Confirm & Post Job"}
@@ -1877,7 +1877,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
           <div className="flex justify-between items-center flex-wrap gap-4 mt-8 pt-6 border-t border-gray-200">
             <button
               type="button"
-              className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 shadow-md"
+              className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors disabled:opacity-50 shadow-md"
               onClick={handleSave}
               disabled={isSaving || isPosting}
             >
@@ -1885,7 +1885,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
             </button>
             <button
               type="submit"
-              className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 shadow-md"
+              className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors disabled:opacity-50 shadow-md"
               disabled={isSaving || isPosting}
             >
               {isPosting ? "⏳ Posting..." : editJobData ? "✏️ Review & Update Job" : "📋 Review & Post Job"}

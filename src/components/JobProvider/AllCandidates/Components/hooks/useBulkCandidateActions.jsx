@@ -443,7 +443,7 @@ const useBulkCandidateActions = ({
       <div className="grid grid-cols-2 sm:grid-cols-2 md:flex md:items-center gap-2 shrink-0 w-full sm:w-auto">
         <button
           onClick={handleViewCompleteProfiles}
-          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-brand text-white rounded-lg hover:opacity-90 transition-all shadow-lg hover:shadow-xl text-xs sm:text-sm whitespace-nowrap"
+          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors shadow-lg hover:shadow-xl text-xs sm:text-sm whitespace-nowrap"
           title="View Selected Complete Profiles"
         >
           <AiOutlineEye className="w-4 h-4 shrink-0" />
@@ -453,7 +453,7 @@ const useBulkCandidateActions = ({
         </button>
         <button
           onClick={handleViewShortProfiles}
-          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-brand text-white rounded-lg hover:opacity-90 transition-all shadow-lg hover:shadow-xl text-xs sm:text-sm whitespace-nowrap"
+          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors shadow-lg hover:shadow-xl text-xs sm:text-sm whitespace-nowrap"
           title="View Selected Short Profiles"
         >
           <AiOutlineFileText className="w-4 h-4 shrink-0" />
@@ -464,7 +464,7 @@ const useBulkCandidateActions = ({
         <button
           onClick={handlePrintDownload}
           disabled={isPreparingPrint}
-          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-brand text-white rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl text-xs sm:text-sm whitespace-nowrap"
+          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg hover:shadow-xl text-xs sm:text-sm whitespace-nowrap"
           title="Print/Download Selected Profiles"
         >
           {isPreparingPrint ? (
@@ -573,14 +573,14 @@ const useBulkCandidateActions = ({
             <div className="grid grid-cols-1 gap-2">
               <button
                 disabled={isPreparingPrint}
-                className="px-4 py-2 bg-gradient-brand text-white rounded-md hover:opacity-90 disabled:opacity-50 transition-all"
+                className="px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-primary-hover disabled:opacity-50 transition-colors"
                 onClick={() => handleProfileTypeConfirm('short')}
               >
                 Short Profile
               </button>
               <button
                 disabled={isPreparingPrint}
-                className="px-4 py-2 bg-gradient-brand text-white rounded-md hover:opacity-90 disabled:opacity-50 transition-all"
+                className="px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-primary-hover disabled:opacity-50 transition-colors"
                 onClick={() => handleProfileTypeConfirm('full')}
               >
                 Complete Profile

@@ -893,7 +893,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                 ) : (
                   <button
                     type="button"
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-xs md:text-sm font-medium shadow-sm transition-opacity whitespace-nowrap"
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-xs md:text-sm font-medium shadow-sm transition-colors whitespace-nowrap"
                     onClick={sendEmailOtp}
                     disabled={isEmailVerifying}
                   >
@@ -918,7 +918,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                 />
                 <button 
                   type="button" 
-                  className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-sm font-medium shadow-sm transition-opacity" 
+                  className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-sm font-medium shadow-sm transition-colors" 
                   onClick={verifyEmailOtp}
                 >
                   Submit
@@ -984,7 +984,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                 ) : (
                   <button
                     type="button"
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-xs md:text-sm font-medium shadow-sm transition-opacity whitespace-nowrap"
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-xs md:text-sm font-medium shadow-sm transition-colors whitespace-nowrap"
                     onClick={sendPhoneOtp}
                     disabled={isPhoneVerifying}
                   >
@@ -1009,14 +1009,14 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                 />
                 <button 
                   type="button" 
-                  className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-sm font-medium shadow-sm transition-opacity" 
+                  className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-sm font-medium shadow-sm transition-colors" 
                   onClick={verifyPhoneOtp}
                 >
                   Submit
                 </button>
                 <button 
                   type="button" 
-                  className="px-3 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-xs font-medium shadow-sm transition-opacity" 
+                  className="px-3 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-xs font-medium shadow-sm transition-colors" 
                   onClick={sendPhoneOtp}
                 >
                   Resend

@@ -49,9 +49,9 @@ const TabDisplay = () => {
           <nav className="flex justify-between flex-wrap gap-1" aria-label="Tabs">
             <button
               onClick={() => handleTabChange("active-jobs")}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+              className={`px-4 py-2 rounded-lg font-medium text-sm duration-200 transition-colors ${
                 activeTab === "active-jobs"
-                  ? 'bg-gradient-brand text-white shadow-sm'
+                  ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover'
                   : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
               }`}
             >
@@ -59,9 +59,9 @@ const TabDisplay = () => {
             </button>
             <button
               onClick={() => handleTabChange("create-job")}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+              className={`px-4 py-2 rounded-lg font-medium text-sm duration-200 transition-colors ${
                 activeTab === "create-job"
-                  ? 'bg-gradient-brand text-white shadow-sm'
+                  ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover'
                   : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
               }`}
             >
@@ -69,9 +69,9 @@ const TabDisplay = () => {
             </button>
             <button
               onClick={() => handleTabChange("view-history")}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+              className={`px-4 py-2 rounded-lg font-medium text-sm duration-200 transition-colors ${
                 activeTab === "view-history"
-                  ? 'bg-gradient-brand text-white shadow-sm'
+                  ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover'
                   : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
               }`}
             >
@@ -79,9 +79,9 @@ const TabDisplay = () => {
             </button>
             <button
               onClick={() => handleTabChange("saved-jobs")}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+              className={`px-4 py-2 rounded-lg font-medium text-sm duration-200 transition-colors ${
                 activeTab === "saved-jobs"
-                  ? 'bg-gradient-brand text-white shadow-sm'
+                  ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover'
                   : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
               }`}
             >

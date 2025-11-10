@@ -100,7 +100,7 @@ const ConfirmationModal = ({
           </button>
           <button 
             type="button" 
-            className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-brand text-white font-medium hover:opacity-90 transition-opacity min-w-[150px] shadow-md"
+            className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-brand text-white font-medium hover:bg-gradient-primary-hover transition-colors min-w-[150px] shadow-md"
             onClick={confirmPostSameJob}
           >
             🔄 Post Same Job
@@ -250,7 +250,7 @@ const CloseJobModal = ({
           </button>
           <button 
             type="button" 
-            className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-brand text-white font-medium hover:opacity-90 transition-opacity min-w-[150px] shadow-md"
+            className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-brand text-white font-medium hover:bg-gradient-primary-hover transition-colors min-w-[150px] shadow-md"
             onClick={confirmCloseJob}
             disabled={!closeReason || (closeReason === 'other' && !customReason.trim())}
             style={{
@@ -538,7 +538,7 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
                 </p>
                 {!searchQuery && onSwitchToCreateTab && (
                   <button 
-                    className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-full hover:opacity-90 transition-opacity inline-flex items-center gap-2"
+                    className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-full hover:bg-gradient-primary-hover transition-colors inline-flex items-center gap-2"
                     onClick={onSwitchToCreateTab}
                   >
                     <i className="la la-plus"></i> Create New Job
@@ -628,28 +628,28 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
                         <div className="flex-shrink-0 px-2">
                           <div className="flex flex-col sm:flex-row gap-2 items-end sm:items-center lg:flex-nowrap">
                             <button
-                              className="border-none rounded-md py-2 px-3 text-xs font-semibold transition-all duration-300 inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md"
+                              className="border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md"
                               onClick={() => handlePostSameJob(job)}
                             >
                               Post Same
                             </button>
 
                             <button
-                              className="border-none rounded-md py-2 px-3 text-xs font-semibold transition-all duration-300 inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md"
+                              className="border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md"
                               onClick={() => handleEditAndPost(job)}
                             >
                               Edit & Post
                             </button>
 
                             <button
-                              className={`border-none rounded-md py-2 px-3 text-xs font-semibold transition-all duration-300 inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md ${expandedJobId === (job.id || index) ? 'opacity-90' : ''}`}
+                              className={`border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md ${expandedJobId === (job.id || index) ? 'opacity-90' : ''}`}
                               onClick={() => handleViewJob(job.id || index)}
                             >
                               {expandedJobId === (job.id || index) ? 'Hide' : 'View'}
                             </button>
 
                             <button
-                              className="border-none rounded-md py-2 px-3 text-xs font-semibold transition-all duration-300 inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
+                              className="border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
                               onClick={() => handleCloseJob(job)}
                               disabled={job.is_closed === 1}
                             >

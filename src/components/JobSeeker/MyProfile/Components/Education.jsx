@@ -2483,7 +2483,7 @@ const Education = forwardRef(({
               <button 
                 type="button" 
                 onClick={() => handleRemoveEducation(index)} 
-                className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-sm font-medium shadow-sm transition-opacity"
+                className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-sm font-medium shadow-sm transition-colors"
               >
                 Remove
               </button>
