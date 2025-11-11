@@ -311,7 +311,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
                     <td className="px-1 py-2 md:px-4 md:py-3 text-center">
                       <button
                         type="button"
-                        className="px-2 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed text-xs md:text-sm font-medium shadow-sm transition-opacity whitespace-nowrap"
+                        className="px-2 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed text-xs md:text-sm font-medium shadow-sm transition-colors whitespace-nowrap"
                         onClick={() => removeLanguage(index)}
                         disabled={languages.length === 1}
                         title="Remove language"
@@ -330,7 +330,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
           <div className="mt-4">
             <button
               type="button"
-              className="w-full sm:w-auto px-4 py-2 md:px-6 md:py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 text-sm font-medium shadow-sm transition-opacity"
+              className="w-full sm:w-auto px-4 py-2 md:px-6 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-sm font-medium shadow-sm transition-colors"
               onClick={addLanguage}
             >
               Add Language +

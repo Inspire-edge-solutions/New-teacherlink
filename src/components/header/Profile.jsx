@@ -240,12 +240,10 @@ const Profile = () => {
               <Typography
                 variant="subtitle2"
                 color="textSecondary"
-                display="flex"
-                alignItems="center"
-                gap={1}
+                sx={{
+                  wordBreak: "break-word"
+                }}
               >
-                {/* <IconMail width={15} height={15} /> */}
-                <MailIcon width={15} height={15} />
                 {getUserEmail()}
               </Typography>
             </Box>

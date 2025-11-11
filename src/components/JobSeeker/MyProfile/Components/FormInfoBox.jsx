@@ -818,7 +818,7 @@ const FormInfoBox = () => {
       }
       
       return (
-        <div>
+        <div className="space-y-6">
           {currentStepData.components.map(({ component: StepComponent, props }, idx) => (
             <StepComponent
               key={`step-${currentStep}-component-${idx}`}
@@ -840,9 +840,6 @@ const FormInfoBox = () => {
       return <div>Error loading component. Please try again.</div>;
     }
   };
-
-
-
 
   // If mode is not selected, show upload section and mode selection.
   if (!viewMode) {
@@ -913,7 +910,7 @@ const FormInfoBox = () => {
 
   // If a mode is selected, show the multi-step form or final view.
   return (
-    <div className="bg-white rounded-lg shadow-sm max-w-5xl mx-auto p-4 md:p-6 overflow-x-hidden w-full" ref={profileBoxRef}>
+    <div className="bg-white rounded-lg shadow-sm max-w-5xl mx-auto md:p-6 overflow-x-hidden w-full" ref={profileBoxRef}>
       {/* Profile Completion Popup */}
       <ProfileCompletionPopup />
       
@@ -959,7 +956,7 @@ const FormInfoBox = () => {
           )}
 
           {/* Accordion Steps */}
-          <div className="p-2 sm:p-4 md:p-6 overflow-x-hidden">
+          <div className="p-2 sm:p-4 md:p-4 overflow-x-hidden">
             <div className="relative">
               {/* Vertical Line - Hidden on mobile, positioned to align with center of badges */}
               <div className="hidden sm:block absolute left-[1.5rem] top-12 bottom-12 w-[2px] bg-rose-700 z-0" />
@@ -970,10 +967,10 @@ const FormInfoBox = () => {
                 const isSaved = savedSteps.has(step.id);
                 
                 return (
-                  <div key={step.id} className="relative mb-4 sm:mb-6 md:mb-7 pl-12 sm:pl-14 md:pl-16">
-                    {/* Step Number Badge - Positioned absolutely outside */}
+                  <div key={step.id} className="relative mb-5 sm:mb-6 md:mb-7 pl-0 sm:pl-14 md:pl-16">
+                    {/* Step Number Badge - timeline style for tablet/desktop */}
                     <div
-                      className={`absolute left-0 top-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-lg sm:text-xl z-10 ${isActive ? 'bg-rose-100' : 'bg-gray-200'} text-rose-700`}
+                      className={`hidden sm:absolute sm:flex sm:left-0 sm:top-0 h-10 w-10 items-center justify-center rounded-full border border-rose-100 font-semibold text-base sm:h-12 sm:w-12 sm:text-lg z-10 ${isActive ? 'bg-rose-100' : 'bg-gray-200'} text-rose-700`}
                     >
                       {step.id}
                     </div>
@@ -981,18 +978,27 @@ const FormInfoBox = () => {
                     {/* Accordion Header */}
                     <button
                       onClick={() => jumpToStep(step.id)}
-                      className={`w-full flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 py-4 sm:py-5 rounded-lg border transition-all ${
-                        isActive ? 'bg-rose-100' : 'bg-gray-200 hover:bg-rose-100'
+                      className={`w-full flex flex-wrap items-center sm:items-start justify-between gap-3 px-3 sm:px-5 py-4 sm:py-5 text-left rounded-xl border transition-all ${
+                        isActive
+                          ? 'border-rose-200 bg-rose-100 shadow-sm'
+                          : 'border-gray-200 bg-gray-100 hover:border-rose-200 hover:bg-rose-50'
                       }`}
                     >
+                      {/* Mobile badge */}
+                      <span
+                        className={`flex h-8 w-8 items-center justify-center rounded-full border border-rose-100 bg-rose-50 text-sm font-semibold text-rose-700 sm:hidden`}
+                      >
+                        {step.id}
+                      </span>
+
                       {/* Step Title */}
-                      <div className="flex-1 flex items-center">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-base sm:text-lg font-bold m-0 p-0 text-rose-700">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-base sm:text-lg font-bold text-rose-700">
                             {step.title}
                           </h3>
                           {isSaved && (
-                            <span className="text-xs text-green-600 font-medium m-0 p-0">
+                            <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
                               ✓ Saved
                             </span>
                           )}
@@ -1001,7 +1007,7 @@ const FormInfoBox = () => {
 
                       {/* Chevron Icon */}
                       <svg
-                        className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform flex-shrink-0 ${
+                        className={`h-4 w-4 sm:h-5 sm:w-5 transition-transform flex-shrink-0 ${
                           isActive ? "rotate-180" : ""
                         }`}
                         fill="none"
@@ -1019,10 +1025,10 @@ const FormInfoBox = () => {
 
                     {/* Accordion Content */}
                     {isActive && (
-                      <div className="mt-3 sm:mt-4 p-4 sm:p-6 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="mt-3 sm:mt-4 rounded-xl border border-gray-200 bg-white sm:p-6 shadow-sm sm:bg-gray-50">
                         <fieldset 
                           disabled={isPreviewMode} 
-                          className={isPreviewMode ? "opacity-60 pointer-events-none" : ""}
+                          className={`space-y-6 ${isPreviewMode ? "opacity-60 pointer-events-none" : ""}`}
                         >
                           {renderCurrentStep()}
                         </fieldset>

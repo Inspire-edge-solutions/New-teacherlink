@@ -329,6 +329,7 @@ const AllCandidates = ({
 
   // Candidate photos
   const [candidatePhotos, setCandidatePhotos] = useState({});
+  const [pendingScrollCandidate, setPendingScrollCandidate] = useState(null);
 
   const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
     if (!user) return [];
@@ -604,18 +605,24 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
 
   // SEARCH functionality
   const handleSearch = useCallback((searchTerm) => {
-    if (!searchTerm) {
+    const normalizedTerm = (searchTerm ?? '').trim();
+
+    if (!normalizedTerm) {
       setSearchResults([]);
-      setIsSearching(false);
-      setCurrentPage(1);
+      if (isSearching) {
+        setIsSearching(false);
+        setCurrentPage(1);
+      } else {
+        setIsSearching(false);
+      }
       return;
     }
-    
+
     setIsSearching(true);
-    const results = CandidateApiService.searchCandidates(candidates, searchTerm);
+    const results = CandidateApiService.searchCandidates(candidates, normalizedTerm);
     setSearchResults(results);
     setCurrentPage(1);
-  }, [candidates]);
+  }, [candidates, isSearching]);
 
   // FILTER functionality
   const handleApplyFilters = useCallback((filters) => {
@@ -951,6 +958,22 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
 
   const finalFilteredCandidates = getCombinedResults();
 
+  const getCandidatePage = useCallback(
+    (candidateId) => {
+      if (!candidateId) return null;
+
+      const normalizedId = String(candidateId);
+      const candidateIndex = finalFilteredCandidates.findIndex(
+        (candidate) => String(candidate.firebase_uid) === normalizedId
+      );
+
+      if (candidateIndex === -1) return null;
+
+      return Math.floor(candidateIndex / candidatesPerPage) + 1;
+    },
+    [finalFilteredCandidates, candidatesPerPage]
+  );
+
   // Handle save candidate
   const handleSaveCandidate = async (candidate) => {
     if (!user) {
@@ -1101,15 +1124,15 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
   };
 
   // Function to scroll to a specific candidate
-  const scrollToCandidate = (candidateId) => {
+  const scrollToCandidate = useCallback((candidateId) => {
     if (!candidateId) return;
     
     setTimeout(() => {
       const candidateElement = document.querySelector(`[data-candidate-id="${candidateId}"]`);
       if (candidateElement) {
-        candidateElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
+        candidateElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
         });
         
         // Remove any existing highlights first
@@ -1121,17 +1144,28 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
         candidateElement.classList.add('highlighted-candidate');
       }
     }, 100);
-  };
+  }, []);
 
   // Handle back from candidate view
-  const handleBackFromCandidateView = useCallback((candidateId) => {
-    console.log('AllCandidates handleBackFromCandidateView called, candidateId:', candidateId);
-    if (candidateId) {
-      setTimeout(() => {
-        scrollToCandidate(candidateId);
-      }, 300);
-    }
-  }, []);
+  const handleBackFromCandidateView = useCallback(
+    (candidateId) => {
+      console.log('AllCandidates handleBackFromCandidateView called, candidateId:', candidateId);
+      if (!candidateId) return;
+
+      const targetPage = getCandidatePage(candidateId);
+      if (targetPage) {
+        if (currentPage !== targetPage) {
+          setPendingScrollCandidate(String(candidateId));
+          setCurrentPage(targetPage);
+        } else {
+          setPendingScrollCandidate(String(candidateId));
+        }
+      } else {
+        setPendingScrollCandidate(String(candidateId));
+      }
+    },
+    [getCandidatePage, currentPage]
+  );
 
   // Register back handler with parent
   useEffect(() => {
@@ -1140,6 +1174,17 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
       onBackFromCandidateView(handleBackFromCandidateView);
     }
   }, [onBackFromCandidateView, handleBackFromCandidateView]);
+
+  useEffect(() => {
+    if (!pendingScrollCandidate) return;
+
+    const timer = setTimeout(() => {
+      scrollToCandidate(pendingScrollCandidate);
+      setPendingScrollCandidate(null);
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [pendingScrollCandidate, scrollToCandidate, currentPage]);
 
   // Handle records per page change
   const handleRecordsPerPageChange = (newValue) => {
@@ -1158,11 +1203,6 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
     setCurrentPage(pageNumber);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  // Reset to page 1 when filtered candidates change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [finalFilteredCandidates]);
 
   // Auto-dismiss error message when user is not logged in
   useEffect(() => {

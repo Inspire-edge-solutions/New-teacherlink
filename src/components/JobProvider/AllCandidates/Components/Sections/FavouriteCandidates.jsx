@@ -54,6 +54,8 @@ const FavouriteCandidates = ({
   // Candidate photos
   const [candidatePhotos, setCandidatePhotos] = useState({});
   const [unlockedCandidateIds, setUnlockedCandidateIds] = useState([]);
+  const [pendingScrollCandidate, setPendingScrollCandidate] = useState(null);
+  const skipPageResetRef = useRef(false);
 
   // Message modal state
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -453,18 +455,24 @@ const FavouriteCandidates = ({
 
   // Handle search
   const handleSearch = useCallback((searchTerm) => {
-    if (!searchTerm) {
-      setIsSearching(false);
+    const normalizedTerm = (searchTerm ?? '').trim();
+
+    if (!normalizedTerm) {
       setFilteredCandidates(favouriteCandidates);
-      setCurrentPage(1);
+      if (isSearching) {
+        setIsSearching(false);
+        setCurrentPage(1);
+      } else {
+        setIsSearching(false);
+      }
       return;
     }
-    
+
     setIsSearching(true);
-    const results = CandidateApiService.searchCandidates(favouriteCandidates, searchTerm);
+    const results = CandidateApiService.searchCandidates(favouriteCandidates, normalizedTerm);
     setFilteredCandidates(results);
     setCurrentPage(1);
-  }, [favouriteCandidates]);
+  }, [favouriteCandidates, isSearching]);
 
   // Handle save candidate
   const handleSaveCandidate = async (candidate) => {
@@ -589,8 +597,20 @@ const FavouriteCandidates = ({
     setCandidateToMessage(null);
   };
 
-  // Function to scroll to a specific candidate
-  const scrollToCandidate = (candidateId) => {
+  const getCandidatePage = useCallback((candidateId) => {
+    if (!candidateId) return null;
+
+    const normalizedId = String(candidateId);
+    const candidateIndex = filteredCandidates.findIndex(
+      (candidate) => String(candidate.firebase_uid) === normalizedId
+    );
+
+    if (candidateIndex === -1) return null;
+
+    return Math.floor(candidateIndex / candidatesPerPage) + 1;
+  }, [filteredCandidates, candidatesPerPage]);
+
+  const scrollToCandidate = useCallback((candidateId) => {
     if (!candidateId) return;
     
     setTimeout(() => {
@@ -598,7 +618,7 @@ const FavouriteCandidates = ({
       if (candidateElement) {
         candidateElement.scrollIntoView({ 
           behavior: 'smooth', 
-          block: 'center' 
+          block: 'start' 
         });
         
         document.querySelectorAll('.highlighted-candidate').forEach(el => {
@@ -608,17 +628,26 @@ const FavouriteCandidates = ({
         candidateElement.classList.add('highlighted-candidate');
       }
     }, 100);
-  };
+  }, []);
 
-  // Handle back from candidate view
   const handleBackFromCandidateView = useCallback((candidateId) => {
     console.log('FavouriteCandidates handleBackFromCandidateView called, candidateId:', candidateId);
-    if (candidateId) {
-      setTimeout(() => {
-        scrollToCandidate(candidateId);
-      }, 300);
+    if (!candidateId) return;
+
+    const targetPage = getCandidatePage(candidateId);
+    if (targetPage) {
+      skipPageResetRef.current = true;
+      if (currentPage !== targetPage) {
+        setPendingScrollCandidate(String(candidateId));
+        setCurrentPage(targetPage);
+      } else {
+        setPendingScrollCandidate(String(candidateId));
+      }
+    } else {
+      skipPageResetRef.current = true;
+      setPendingScrollCandidate(String(candidateId));
     }
-  }, []);
+  }, [getCandidatePage, currentPage]);
 
   // Register back handler with parent
   useEffect(() => {
@@ -627,6 +656,17 @@ const FavouriteCandidates = ({
       onBackFromCandidateView(handleBackFromCandidateView);
     }
   }, [onBackFromCandidateView, handleBackFromCandidateView]);
+
+  useEffect(() => {
+    if (!pendingScrollCandidate) return;
+
+    const timer = setTimeout(() => {
+      scrollToCandidate(pendingScrollCandidate);
+      setPendingScrollCandidate(null);
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [pendingScrollCandidate, scrollToCandidate, currentPage]);
 
   // Handle records per page change
   const handleRecordsPerPageChange = (newValue) => {
@@ -645,8 +685,13 @@ const FavouriteCandidates = ({
 
   // Reset to page 1 when filtered candidates change
   useEffect(() => {
+    if (pendingScrollCandidate) return;
+    if (skipPageResetRef.current) {
+      skipPageResetRef.current = false;
+      return;
+    }
     setCurrentPage(1);
-  }, [filteredCandidates]);
+  }, [filteredCandidates, pendingScrollCandidate]);
 
   // Auto-dismiss error message when user is not logged in
   // This hook must be called before any early returns to maintain hook order

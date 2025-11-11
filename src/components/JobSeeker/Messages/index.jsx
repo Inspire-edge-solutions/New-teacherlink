@@ -224,7 +224,7 @@ const MessagesComponent = () => {
         </div>
       )}
 
-      <div className="flex h-full bg-gray-50 relative">
+      <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 relative">
         {/* Error Display */}
         {error && (
           <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 max-w-xs">
@@ -258,7 +258,7 @@ const MessagesComponent = () => {
       {/* Sidebar */}
       <div className={`${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } md:translate-x-0 fixed md:relative inset-y-0 left-0 z-50 md:z-auto transition-transform duration-300 ease-in-out`}>
+      } md:translate-x-0 fixed md:relative inset-y-0 left-0 z-50 md:z-auto transition-transform duration-300 ease-in-out w-full md:w-80 md:flex-shrink-0 max-w-full`}>
         <MessagesSidebar
           people={activeConversations}
           inactiveJobs={inactiveConversations}

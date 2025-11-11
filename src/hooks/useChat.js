@@ -34,7 +34,7 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
   // Data Loading
   // ================================
 
-  const loadOrganisations = async () => {
+  const loadOrganisations = useCallback(async () => {
     try {
       // For job seekers, use favrouteJobs API to filter organizations
       if (currentUserRole === 'jobseeker') {
@@ -52,7 +52,7 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
         setOrganisations([]);
       }
     }
-  };
+  }, [currentUserId, currentUserRole]);
 
   const loadCandidates = useCallback(async () => {
     try {

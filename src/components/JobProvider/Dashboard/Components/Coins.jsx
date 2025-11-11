@@ -6,6 +6,7 @@ import axios from "axios";
 import coinsImage from "../../../../assets/coins.png";
 import noCoinsIllustration from "../../../../assets/Illustrations/No Coins.png";
 import { Skeleton, Box } from "@mui/material";
+import ModalPortal from "../../../common/ModalPortal.jsx";
 
 const Content = () => {
   const { user } = useAuth();
@@ -357,13 +358,14 @@ const Content = () => {
 
       {/* Coin History Modal */}
       {showHistoryModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4" onClick={closeHistoryModal}>
-          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="border-b px-6 py-4">
-              <h5 className="text-xl font-bold text-gray-800">Coin Transaction History</h5>
-            </div>
-            
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+        <ModalPortal>
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4" onClick={closeHistoryModal}>
+            <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div className="border-b px-6 py-4">
+                <h5 className="text-xl font-bold text-gray-800">Coin Transaction History</h5>
+              </div>
+              
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
               {/* Filter Section */}
               <div className="mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -486,20 +488,21 @@ const Content = () => {
                     }
                   </p>
                 </div>
-              )}
-            </div>
-            
-            <div className="border-t px-6 py-4 flex justify-end">
-              <button 
-                type="button" 
-                className="px-6 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white rounded-lg transition-colors font-medium"
-                onClick={closeHistoryModal}
-              >
-                Close
-              </button>
+                )}
+              </div>
+              
+              <div className="border-t px-6 py-4 flex justify-end">
+                <button 
+                  type="button" 
+                  className="px-6 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white rounded-lg transition-colors font-medium"
+                  onClick={closeHistoryModal}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </>
   );

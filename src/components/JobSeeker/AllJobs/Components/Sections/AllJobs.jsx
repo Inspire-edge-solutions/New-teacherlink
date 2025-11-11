@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoLocationOutline } from "react-icons/io5";
 import { BsBriefcase, BsCash, BsMortarboard } from "react-icons/bs";
@@ -36,7 +36,7 @@ const PERSONAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/de
 const COIN_HISTORY_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history';
 
 
-const AllJobs = ({ onViewJob, onBackFromJobView }) => {
+const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
   const { user, loading: userLoading } = useAuth();
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
@@ -46,6 +46,9 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
   const [jobsPerPage, setJobsPerPage] = useState(10);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [pendingScrollJob, setPendingScrollJob] = useState(null);
+  const skipPageResetRef = useRef(false);
+  const [highlightedJobId, setHighlightedJobId] = useState(null);
 
   const [savedJobs, setSavedJobs] = useState([]);
   const [favouriteJobs, setFavouriteJobs] = useState([]);
@@ -200,20 +203,28 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
 
   // SEARCH functionality
   const handleSearch = useCallback((searchTerm) => {
-    if (!searchTerm) {
+    const normalizedTerm = (searchTerm ?? '').trim();
+
+    if (!normalizedTerm) {
       setSearchResults([]);
-      setIsSearching(false);
       setFilteredJobs(jobs);
-      setCurrentPage(1);
+      setHighlightedJobId(null);
+      if (isSearching) {
+        setIsSearching(false);
+        setCurrentPage(1);
+      } else {
+        setIsSearching(false);
+      }
       return;
     }
     setIsSearching(true);
-    const results = searchJobs(jobs, searchTerm);
+    const results = searchJobs(jobs, normalizedTerm);
     const sorted = sortJobsByRecency(results);
     setSearchResults(sorted);
     setFilteredJobs(sorted);
+    setHighlightedJobId(null);
     setCurrentPage(1);
-  }, [jobs, sortJobsByRecency]);
+  }, [jobs, sortJobsByRecency, isSearching]);
 
   // FILTER functionality
   const handleApplyFilters = useCallback((filters) => {
@@ -227,15 +238,24 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
       setFilteredJobsByFilters([]);
       setActiveFilters(new Set());
     }
-
-    setCurrentPage(1);
+    if (!skipPageResetRef.current) {
+      setHighlightedJobId(null);
+      setCurrentPage(1);
+    } else {
+      skipPageResetRef.current = false;
+    }
   }, [jobs]);
 
   const handleResetFilters = useCallback(() => {
     setCurrentFilters(null);
     setFilteredJobsByFilters([]);
     setActiveFilters(new Set());
-    setCurrentPage(1);
+    if (!skipPageResetRef.current) {
+      setHighlightedJobId(null);
+      setCurrentPage(1);
+    } else {
+      skipPageResetRef.current = false;
+    }
   }, []);
 
   useEffect(() => {
@@ -936,9 +956,25 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
     }
     
     return baseJobs;
-  }, [jobs, activeFilters, filteredJobsByFilters, isSearching, searchResults]);
-
+  }, [jobs, activeFilters, filteredJobsByFilters, isSearching, searchResults]); 
+ 
   const finalFilteredJobs = getCombinedResults();
+
+  const getJobPage = useCallback(
+    (jobId) => {
+      if (jobId === undefined || jobId === null) return null;
+
+      const numericJobId = Number(jobId);
+      const jobIndex = finalFilteredJobs.findIndex(
+        (job) => Number(job.id) === numericJobId
+      );
+
+      if (jobIndex === -1) return null;
+
+      return Math.floor(jobIndex / jobsPerPage) + 1;
+    },
+    [finalFilteredJobs, jobsPerPage]
+  );
 
   // Pagination
   const indexOfLastJob = currentPage * jobsPerPage;
@@ -993,78 +1029,60 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
 
   // Function to scroll to a specific job
   const scrollToJob = useCallback((jobId) => {
-    if (!jobId) return;
-    
-    // Convert jobId to number to match JobCard format
+    if (!jobId) {
+      console.warn('❌ scrollToJob called without jobId');
+      return 'done';
+    }
+
     const numericJobId = Number(jobId);
-    
-    // Get the current filtered jobs list
+    if (Number.isNaN(numericJobId)) {
+      console.warn('❌ Invalid jobId:', jobId);
+      return 'done';
+    }
+
     const filteredJobs = getCombinedResults();
-    
-    // First, check if the job exists in the jobs list
+
     const jobExists = jobs.find(job => Number(job.id) === numericJobId);
     if (!jobExists) {
       console.warn('❌ Job not found in jobs list:', numericJobId);
-      return;
+      return 'done';
     }
-    
-    // Check if the job is in the current filtered list (for pagination calculation)
+
     const jobIndex = filteredJobs.findIndex(job => Number(job.id) === numericJobId);
-    
-    if (jobIndex === -1) {
-      console.warn('❌ Job not found in current filtered jobs (might be filtered out):', numericJobId);
-      // Still try to find and highlight it in case it's on the page but filtered
-      // We'll proceed with direct DOM lookup
-    }
-    
-    // If job is in filtered list, check pagination
+
     if (jobIndex !== -1) {
-      // Check if the job is on the current page
+      const targetPage = Math.floor(jobIndex / jobsPerPage) + 1;
       const indexOfLastJob = currentPage * jobsPerPage;
       const indexOfFirstJob = indexOfLastJob - jobsPerPage;
       const isOnCurrentPage = jobIndex >= indexOfFirstJob && jobIndex < indexOfLastJob;
-      
-      // If job is not on current page, navigate to the correct page first
+
       if (!isOnCurrentPage) {
-        const targetPage = Math.floor(jobIndex / jobsPerPage) + 1;
         console.log(`Job is on page ${targetPage}, navigating...`);
-        setCurrentPage(targetPage);
-        // Wait for page change and re-render, then try scrolling
-        setTimeout(() => {
-          scrollToJob(jobId);
-        }, 300);
-        return;
+        skipPageResetRef.current = true;
+        if (currentPage !== targetPage) {
+          setCurrentPage(targetPage);
+        }
+        return 'pending';
       }
     }
-    
-    // Try multiple times with increasing delays to handle async rendering
+
     const tryFindAndScroll = (attempt = 0) => {
       const maxAttempts = 10;
-      const delay = 100 + (attempt * 50); // 100ms, 150ms, 200ms, etc.
-      
+      const delay = 100 + (attempt * 50);
+
       setTimeout(() => {
-        // Try both string and number formats
         let jobElement = document.querySelector(`[data-job-id="${numericJobId}"]`);
         if (!jobElement) {
           jobElement = document.querySelector(`[data-job-id="${jobId}"]`);
         }
-        
+
         if (jobElement) {
-          // Remove any existing highlights first
-          document.querySelectorAll('.highlighted-job').forEach(el => {
-            el.classList.remove('highlighted-job');
+          jobElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
           });
-          
-          jobElement.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
-          });
-          
-          // Add highlight effect after a small delay to ensure scroll starts
-          setTimeout(() => {
-            jobElement.classList.add('highlighted-job');
-            console.log('✅ Job highlighted:', numericJobId);
-          }, 100);
+
+          setHighlightedJobId(numericJobId);
         } else if (attempt < maxAttempts) {
           console.log(`Attempt ${attempt + 1}: Job element not found, retrying...`);
           tryFindAndScroll(attempt + 1);
@@ -1073,20 +1091,25 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
         }
       }, delay);
     };
-    
+
     tryFindAndScroll();
+    return 'done';
   }, [jobs, currentPage, jobsPerPage, getCombinedResults]);
 
   // Handle back from job view
   const handleBackFromJobView = useCallback((jobId) => {
     console.log('AllJobs handleBackFromJobView called, jobId:', jobId);
-    if (jobId) {
-      // Wait a bit longer to ensure the list view is fully rendered
-      setTimeout(() => {
-        scrollToJob(jobId);
-      }, 500);
+    if (!jobId) return;
+
+    skipPageResetRef.current = true;
+    setHighlightedJobId(null);
+    setPendingScrollJob(String(jobId));
+
+    const targetPage = getJobPage(jobId);
+    if (targetPage && currentPage !== targetPage) {
+      setCurrentPage(targetPage);
     }
-  }, [scrollToJob]);
+  }, [getJobPage, currentPage]);
 
   // Register back handler with parent
   useEffect(() => {
@@ -1095,6 +1118,33 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
       onBackFromJobView(handleBackFromJobView);
     }
   }, [onBackFromJobView, handleBackFromJobView]);
+
+  useEffect(() => {
+    if (!pendingScrollJob) return;
+
+    const timer = setTimeout(() => {
+      const result = scrollToJob(pendingScrollJob);
+      if (result !== 'pending') {
+        setPendingScrollJob(null);
+        skipPageResetRef.current = false;
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [pendingScrollJob, scrollToJob, currentPage]);
+
+  useEffect(() => {
+    if (!highlightJobId) return;
+    if (highlightedJobId === Number(highlightJobId)) return;
+    skipPageResetRef.current = true;
+    const result = scrollToJob(highlightJobId);
+    if (result === 'pending') {
+      setPendingScrollJob(String(highlightJobId));
+    } else {
+      setPendingScrollJob(null);
+      skipPageResetRef.current = false;
+    }
+  }, [highlightJobId, scrollToJob, highlightedJobId]);
 
   const getVisiblePageNumbers = () => {
     const delta = 2;
@@ -1118,7 +1168,10 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
   };
   const pageNumbers = totalPages <= 10 ? Array.from({ length: totalPages }, (_, i) => i + 1) : getVisiblePageNumbers();
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
 
 
@@ -1139,14 +1192,14 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
   return (
     <div className="widget-content">
       <div className="widget-title mb-3">
-        <div className="flex justify-between items-center w-full gap-4">
-          <div className="flex-1 max-w-[50%]">
+        <div className="flex flex-col sm:flex-row sm:items-center w-full gap-3 sm:gap-4">
+          <div className="w-full sm:flex-1">
             <SearchBar onSearch={handleSearch} placeholder="Search jobs..." />
           </div>
-          <div className="flex-shrink-0">
+          <div className="flex sm:flex-shrink-0">
             <button 
               onClick={() => setShowFilters(true)}
-              className={`px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 ${
+              className={`w-full sm:w-auto px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 ${
                 activeFilters.size > 0
                   ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover transition-colors'
                   : 'bg-gradient-brand text-white hover:bg-gradient-primary-hover transition-colors'
@@ -1159,14 +1212,15 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
       </div>
 
       <div className="job-listing">
-        <div className="flex justify-between items-center mb-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
           <h3 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
             {isSearching || activeFilters.size > 0
               ? `Found ${finalFilteredJobs.length} job${finalFilteredJobs.length !== 1 ? 's' : ''}`
               : `${jobs.length} Jobs Available`
             }
           </h3>
-          <RecordsPerPageDropdown 
+          <RecordsPerPageDropdown
+            className="w-full sm:w-auto justify-between sm:justify-end"
             itemsPerPage={jobsPerPage}
             onItemsPerPageChange={setJobsPerPage}
           />
@@ -1196,6 +1250,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView }) => {
                   onMessage={handleMessage}
                   messageDisabled={!isApplied}
                   messageTooltip={!isApplied ? 'Apply to message this institute' : ''}
+                  isHighlighted={highlightedJobId === jobId}
                 />
                 );
               })}

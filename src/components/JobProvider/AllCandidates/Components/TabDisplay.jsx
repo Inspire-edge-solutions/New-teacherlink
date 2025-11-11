@@ -26,6 +26,7 @@ const TabDisplay = () => {
     setSelectedCandidate(candidate);
     setViewType(type);
     setViewMode('detail');
+    window.scrollTo({ top: 0, behavior: 'auto' });
   };
 
   // Handle back to list

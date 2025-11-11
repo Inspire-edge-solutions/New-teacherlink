@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import CandidateCard from '../shared/CandidateCard';
@@ -41,6 +41,8 @@ const AppliedCandidates = ({
   const [isSearching, setIsSearching] = useState(false);
   const [candidatePhotos, setCandidatePhotos] = useState({});
   const [unlockedCandidateIds, setUnlockedCandidateIds] = useState([]);
+  const [pendingScrollCandidate, setPendingScrollCandidate] = useState(null);
+  const skipPageResetRef = useRef(false);
 
   // Message modal state
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -145,17 +147,22 @@ const AppliedCandidates = ({
   }, [user, userLoading, fetchAppliedCandidates]);
 
   const handleSearch = useCallback((searchTerm) => {
-    if (!searchTerm) {
-      setIsSearching(false);
+    const normalizedTerm = (searchTerm ?? '').trim();
+    if (!normalizedTerm) {
       setFilteredCandidates(appliedCandidates);
-      setCurrentPage(1);
+      if (isSearching) {
+        setIsSearching(false);
+        setCurrentPage(1);
+      } else {
+        setIsSearching(false);
+      }
       return;
     }
     setIsSearching(true);
-    const results = CandidateApiService.searchCandidates(appliedCandidates, searchTerm);
+    const results = CandidateApiService.searchCandidates(appliedCandidates, normalizedTerm);
     setFilteredCandidates(results);
     setCurrentPage(1);
-  }, [appliedCandidates]);
+  }, [appliedCandidates, isSearching]);
 
   const handleSaveCandidate = async (candidate) => {
     if (!user) return toast.error("Please login to save candidates.");
@@ -266,25 +273,70 @@ const AppliedCandidates = ({
     setCandidateToMessage(null);
   };
 
-  const scrollToCandidate = (candidateId) => {
+  const getCandidatePage = useCallback(
+    (candidateId) => {
+      if (!candidateId) return null;
+
+      const normalizedId = String(candidateId);
+      const candidateIndex = filteredCandidates.findIndex(
+        (candidate) => String(candidate.firebase_uid) === normalizedId
+      );
+
+      if (candidateIndex === -1) return null;
+
+      return Math.floor(candidateIndex / candidatesPerPage) + 1;
+    },
+    [filteredCandidates, candidatesPerPage]
+  );
+
+  const scrollToCandidate = useCallback((candidateId) => {
     if (!candidateId) return;
     setTimeout(() => {
       const el = document.querySelector(`[data-candidate-id="${candidateId}"]`);
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        document.querySelectorAll('.highlighted-candidate').forEach(e => e.classList.remove('highlighted-candidate'));
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('.highlighted-candidate').forEach((e) =>
+          e.classList.remove('highlighted-candidate')
+        );
         el.classList.add('highlighted-candidate');
       }
     }, 100);
-  };
-
-  const handleBackFromCandidateView = useCallback((candidateId) => {
-    if (candidateId) setTimeout(() => scrollToCandidate(candidateId), 300);
   }, []);
+
+  const handleBackFromCandidateView = useCallback(
+    (candidateId) => {
+      if (!candidateId) return;
+
+      const targetPage = getCandidatePage(candidateId);
+      skipPageResetRef.current = true;
+      if (targetPage) {
+        if (currentPage !== targetPage) {
+          setPendingScrollCandidate(String(candidateId));
+          setCurrentPage(targetPage);
+        } else {
+          setPendingScrollCandidate(String(candidateId));
+        }
+      } else {
+        setPendingScrollCandidate(String(candidateId));
+      }
+    },
+    [getCandidatePage, currentPage]
+  );
 
   useEffect(() => {
     if (onBackFromCandidateView) onBackFromCandidateView(handleBackFromCandidateView);
   }, [onBackFromCandidateView, handleBackFromCandidateView]);
+
+  useEffect(() => {
+    if (!pendingScrollCandidate) return;
+
+    const timer = setTimeout(() => {
+      scrollToCandidate(pendingScrollCandidate);
+      setPendingScrollCandidate(null);
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [pendingScrollCandidate, scrollToCandidate, currentPage]);
 
   const indexOfLastCandidate = currentPage * candidatesPerPage;
   const indexOfFirstCandidate = indexOfLastCandidate - candidatesPerPage;
@@ -322,7 +374,14 @@ const AppliedCandidates = ({
     documentTitlePrefix: 'Selected Applied Candidates'
   });
 
-  useEffect(() => setCurrentPage(1), [filteredCandidates]);
+  useEffect(() => {
+    if (pendingScrollCandidate) return;
+    if (skipPageResetRef.current) {
+      skipPageResetRef.current = false;
+      return;
+    }
+    setCurrentPage(1);
+  }, [filteredCandidates, pendingScrollCandidate]);
 
   // Auto-dismiss error message when user is not logged in
   useEffect(() => {

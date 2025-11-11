@@ -39,7 +39,7 @@ const MessagesSidebar = ({
   });
 
   return (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full shadow-lg md:shadow-none">
+    <div className="w-full md:w-80 bg-white border-r border-gray-200 flex flex-col h-full shadow-lg md:shadow-none">
       {/* Mobile Header with Close Button */}
       <div className="md:hidden p-4 border-b border-gray-200 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">Messages</h2>

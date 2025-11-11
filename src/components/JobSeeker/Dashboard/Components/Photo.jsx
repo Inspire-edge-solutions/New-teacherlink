@@ -13,6 +13,7 @@ const Photo = () => {
   const [userGender, setUserGender] = useState(null);
   const [candidateId, setCandidateId] = useState(null);
   const [personalData, setPersonalData] = useState(null);
+  const [presentLocation, setPresentLocation] = useState(null);
 
   const IMAGE_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image";
   const PERSONAL_DETAILS_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal";
@@ -21,6 +22,7 @@ const Photo = () => {
     if (user?.uid) {
       fetchUserDetails();
       fetchProfilePhoto();
+      fetchPresentAddress();
     } else {
       setIsLoading(false);
     }
@@ -77,6 +79,35 @@ const Photo = () => {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchPresentAddress = async () => {
+    try {
+      if (!user?.uid) return;
+
+      const { data } = await axios.get(
+        "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/presentAddress",
+        { params: { firebase_uid: user.uid } }
+      );
+
+      if (Array.isArray(data) && data[0]) {
+        const { city_name, state_name, country_name } = data[0];
+        const city = city_name?.trim();
+        const state = state_name?.trim();
+        const country = country_name?.trim();
+
+        const locationParts = [];
+        if (city) locationParts.push(city);
+        if (state && (!city || state.toLowerCase() !== city.toLowerCase())) {
+          locationParts.push(state);
+        }
+
+        const location = locationParts.join(", ") || city || state || country || null;
+        setPresentLocation(location);
+      }
+    } catch (error) {
+      console.error("Error fetching present address:", error);
     }
   };
 
@@ -155,7 +186,7 @@ const Photo = () => {
               {personalData?.designation || 'Teacher'}
             </p>
             <p className="text-sm sm:text-base text-gray-600">
-              {personalData?.city_name || personalData?.city || 'Location'}
+              {personalData?.city_name || personalData?.city || presentLocation || 'Location'}
             </p>
           </div>
         </div>

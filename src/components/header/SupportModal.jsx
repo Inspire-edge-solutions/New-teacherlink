@@ -12,12 +12,18 @@ const SupportModal = ({ isOpen, onClose }) => {
     description: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const fieldLimits = {
+    title: 25,
+    description: 100
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    const maxLength = fieldLimits[name];
+
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: maxLength ? value.slice(0, maxLength) : value
     }));
   };
 
@@ -200,6 +206,7 @@ const SupportModal = ({ isOpen, onClose }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F34B58] focus:border-transparent outline-none transition-all"
               id="title"
               name="title"
+              maxLength={fieldLimits.title}
               value={formData.title}
               onChange={handleInputChange}
               placeholder="Example: Unable to upload the resume."
@@ -217,6 +224,7 @@ const SupportModal = ({ isOpen, onClose }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F34B58] focus:border-transparent outline-none transition-all resize-none"
               id="description"
               name="description"
+              maxLength={fieldLimits.description}
               value={formData.description}
               onChange={handleInputChange}
               rows="5"

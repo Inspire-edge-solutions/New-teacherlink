@@ -23,39 +23,13 @@ const TabDisplay = () => {
     setLastSelectedJobId(job.id);
     setSelectedJob(job);
     setViewMode('detail');
+    window.scrollTo({ top: 0, behavior: 'auto' });
   };
 
   const handleBackToList = (mode) => {
     console.log('handleBackToList called, activeTab:', activeTab, 'lastSelectedJobId:', lastSelectedJobId);
     setSelectedJob(null);
     setViewMode('list');
-    
-          // Call the appropriate back handler based on active tab
-          let backHandler = null;
-          switch (activeTab) {
-            case 'all':
-              backHandler = allJobsBackHandler;
-              break;
-            case 'save':
-              backHandler = saveJobsBackHandler;
-              break;
-            case 'favourite':
-              backHandler = favouriteJobsBackHandler;
-              break;
-            case 'recommended':
-              backHandler = recommendedJobsBackHandler;
-              break;
-            case 'applied':
-              backHandler = appliedJobsBackHandler;
-              break;
-            default:
-              break;
-          }
-    
-    if (backHandler) {
-      console.log(`Calling ${activeTab}JobsBackHandler with job ID:`, lastSelectedJobId);
-      backHandler(lastSelectedJobId);
-    }
   };
 
   // Store the back handlers from job components
@@ -121,15 +95,18 @@ const TabDisplay = () => {
   console.log('TabDisplay rendered - activeTab:', activeTab); // Debug log
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Tab Navigation - Separate Container */}
-      <div className="rounded-lg shadow-sm mb-4 border border-gray-500">
-        <div className="p-6">
-          <nav className="flex justify-between" aria-label="Tabs">
+      <div className="rounded-lg shadow-sm border border-gray-500">
+        <div className="p-4 md:p-6">
+          <nav
+            className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4 justify-start"
+            aria-label="Tabs"
+          >
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                className={`px-6 py-3 rounded-lg font-medium text-sm transition-all duration-200 ${
+                className={`min-w-[calc(50%-0.5rem)] flex-1 sm:flex-none sm:min-w-0 px-4 md:px-6 py-2.5 md:py-3 rounded-lg font-medium text-sm transition-all duration-200 text-center ${
                   activeTab === tab.id
                     ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover transition-colors'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
@@ -144,8 +121,8 @@ const TabDisplay = () => {
       </div>
 
       {/* Tab Content - Separate Container */}
-      <div className=" rounded-lg shadow-sm border">
-        <div className="p-6">
+      <div className="rounded-lg shadow-sm border">
+        <div className="p-4 md:p-6">
           {viewMode === 'detail' && selectedJob ? (
             <ViewJobs job={selectedJob} onBack={handleBackToList} />
           ) : (
@@ -160,6 +137,7 @@ const TabDisplay = () => {
                       undefined
                     }
                     onNavigateTab={handleNavigateToTab}
+                    highlightJobId={viewMode === 'list' ? lastSelectedJobId : null}
                   />
           )}
         </div>
