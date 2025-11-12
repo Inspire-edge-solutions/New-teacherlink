@@ -128,7 +128,9 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
     }
   };
 
-  const isPasswordValid = Object.values(passwordValidation).every(Boolean);
+  const corePasswordStrengthKeys = ['length', 'uppercase', 'lowercase', 'number', 'special'];
+  const isCorePasswordStrengthValid = corePasswordStrengthKeys.every(key => passwordValidation[key]);
+  const isPasswordStrengthValid = isCorePasswordStrengthValid && passwordValidation.different;
 
   if (!isOpen) return null;
 
@@ -197,7 +199,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                 required
                 placeholder="Enter your new password"
                 className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-[#F34B58] focus:border-transparent outline-none transition-all ${
-                  showValidationErrors && newPassword && !isPasswordValid ? 'border-red-500' : 'border-gray-300'
+                  showValidationErrors && newPassword && !isPasswordStrengthValid ? 'border-red-500' : 'border-gray-300'
                 }`}
                 autoComplete="new-password"
               />
@@ -209,7 +211,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                 {showNewPassword ? <MdVisibility className="w-5 h-5" /> : <MdVisibilityOff className="w-5 h-5" />}
               </button>
             </div>
-            {showValidationErrors && newPassword && !isPasswordValid && (
+            {showValidationErrors && newPassword && !isCorePasswordStrengthValid && (
               <div className="mt-2 text-sm text-red-600">
                 <p className="font-medium mb-1">Password must contain:</p>
                 <ul className="space-y-1 ml-4">
@@ -218,9 +220,11 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                   {!passwordValidation.lowercase && <li>• One lowercase letter</li>}
                   {!passwordValidation.number && <li>• One number</li>}
                   {!passwordValidation.special && <li>• One special character (!@#$%^&*)</li>}
-                  {!passwordValidation.different && <li>• Must be different from old password</li>}
                 </ul>
               </div>
+            )}
+            {showValidationErrors && newPassword && passwordValidation.different === false && (
+              <p className="mt-2 text-sm text-red-600 ml-4"> New password must be different from old password</p>
             )}
           </div>
 

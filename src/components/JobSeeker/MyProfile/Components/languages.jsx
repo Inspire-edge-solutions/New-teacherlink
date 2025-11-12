@@ -228,104 +228,190 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
     return <div className="text-sm text-gray-600">Loading languages...</div>;
   }
 
+  const getLanguageOptions = (currentIndex) =>
+    availableLanguages.filter(
+      (availableLang) =>
+        !languages.some(
+          (l, i) => i !== currentIndex && l.language === availableLang.value
+        )
+    );
+
   return (
     <div className="rounded-lg pt-0 px-2 pb-4 md:pt-0 md:px-6 md:pb-6 bg-rose-100 overflow-x-hidden">
       <form onSubmit={handleSubmit} className="overflow-x-hidden">
         <div className="w-full">
-          {/* Language table header */}
-          <div className="bg-white rounded-lg overflow-hidden shadow-sm overflow-x-auto">
-            <table className="w-full min-w-[600px] md:min-w-0">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left px-2 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Languages Known</th>
-                  <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Speak</th>
-                  <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Read</th>
-                  <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Write</th>
-                  <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {languages.map((lang, index) => (
-                  <tr key={index} className="border-b border-gray-100 last:border-0">
-                    <td className="px-2 py-2 md:px-4 md:py-3">
-                      <InputWithTooltip label="Language" required>
-                        <div className="relative">
-                          <select
-                            className="w-full px-2 py-2 md:px-4 md:py-3 text-xs md:text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-8 md:pr-10"
-                            style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
-                            id={`language-${index}`}
-                            name={`language-${index}`}
-                            value={lang.language}
-                            onChange={(e) =>
-                              handleLanguageChange(index, "language", e.target.value)
-                            }
-                          >
-                            <option value="" disabled>Select Language</option>
-                            {availableLanguages
-                              .filter((availableLang) =>
-                                !languages.some(
-                                  (l, i) =>
-                                    i !== index && l.language === availableLang.value
-                                )
-                              )
-                              .map((availableLang) => (
+          {/* Desktop table view */}
+          <div className="hidden md:block">
+            <div className="bg-white rounded-lg overflow-hidden shadow-sm overflow-x-auto">
+              <table className="w-full min-w-[600px] md:min-w-0">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left px-2 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Languages Known</th>
+                    <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Speak</th>
+                    <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Read</th>
+                    <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Write</th>
+                    <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {languages.map((lang, index) => (
+                    <tr key={`desktop-${index}`} className="border-b border-gray-100 last:border-0">
+                      <td className="px-2 py-2 md:px-4 md:py-3">
+                        <InputWithTooltip label="Language" required>
+                          <div className="relative">
+                            <select
+                              className="w-full px-2 py-2 md:px-4 md:py-3 text-xs md:text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-8 md:pr-10"
+                              style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
+                              id={`language-${index}`}
+                              name={`language-${index}`}
+                              value={lang.language}
+                              onChange={(e) =>
+                                handleLanguageChange(index, "language", e.target.value)
+                              }
+                            >
+                              <option value="" disabled>Select Language</option>
+                              {getLanguageOptions(index).map((availableLang) => (
                                 <option key={availableLang.id} value={availableLang.value}>
                                   {availableLang.label}
                                 </option>
                               ))}
-                          </select>
-                          <FaChevronDown className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={12} />
-                        </div>
-                      </InputWithTooltip>
-                    </td>
-                    <td className="px-1 py-2 md:px-4 md:py-3 text-center">
+                            </select>
+                            <FaChevronDown className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={12} />
+                          </div>
+                        </InputWithTooltip>
+                      </td>
+                      <td className="px-1 py-2 md:px-4 md:py-3 text-center">
+                        <input
+                          type="checkbox"
+                          checked={lang.speak}
+                          onChange={(e) =>
+                            handleLanguageChange(index, "speak", e.target.checked)
+                          }
+                          className="w-3.5 h-3.5 md:w-4 md:h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
+                        />
+                      </td>
+                      <td className="px-1 py-2 md:px-4 md:py-3 text-center">
+                        <input
+                          type="checkbox"
+                          checked={lang.read}
+                          onChange={(e) =>
+                            handleLanguageChange(index, "read", e.target.checked)
+                          }
+                          className="w-3.5 h-3.5 md:w-4 md:h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
+                        />
+                      </td>
+                      <td className="px-1 py-2 md:px-4 md:py-3 text-center">
+                        <input
+                          type="checkbox"
+                          checked={lang.write}
+                          onChange={(e) =>
+                            handleLanguageChange(index, "write", e.target.checked)
+                          }
+                          className="w-3.5 h-3.5 md:w-4 md:h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
+                        />
+                      </td>
+                      <td className="px-1 py-2 md:px-4 md:py-3 text-center">
+                        <button
+                          type="button"
+                          className="px-2 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed text-xs md:text-sm font-medium shadow-sm transition-colors whitespace-nowrap"
+                          onClick={() => removeLanguage(index)}
+                          disabled={languages.length === 1}
+                          title="Remove language"
+                        >
+                          <span className="hidden sm:inline">Remove</span>
+                          <span className="sm:hidden">✕</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile stacked view */}
+          <div className="md:hidden space-y-4">
+            {languages.map((lang, index) => (
+              <div key={`mobile-${index}`} className="bg-white rounded-lg shadow-sm border border-gray-100 px-3 py-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex-1">
+                    <InputWithTooltip label="Language" required>
+                      <div className="relative">
+                        <select
+                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                          style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
+                          id={`mobile-language-${index}`}
+                          name={`mobile-language-${index}`}
+                          value={lang.language}
+                          onChange={(e) =>
+                            handleLanguageChange(index, "language", e.target.value)
+                          }
+                        >
+                          <option value="" disabled>Select Language</option>
+                          {getLanguageOptions(index).map((availableLang) => (
+                            <option key={availableLang.id} value={availableLang.value}>
+                              {availableLang.label}
+                            </option>
+                          ))}
+                        </select>
+                        <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" size={12} />
+                      </div>
+                    </InputWithTooltip>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="shrink-0 px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium shadow-sm transition-colors self-start"
+                    onClick={() => removeLanguage(index)}
+                    disabled={languages.length === 1}
+                    title="Remove language"
+                  >
+                    Remove
+                  </button>
+                </div>
+
+                <div className="mt-3">
+                  <span className="text-xs font-medium text-gray-700">Proficiency</span>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <label className="flex items-center gap-1 text-xs text-gray-700">
                       <input
                         type="checkbox"
                         checked={lang.speak}
                         onChange={(e) =>
                           handleLanguageChange(index, "speak", e.target.checked)
                         }
-                        className="w-3.5 h-3.5 md:w-4 md:h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
+                        className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
                       />
-                    </td>
-                    <td className="px-1 py-2 md:px-4 md:py-3 text-center">
+                      <span>Speak</span>
+                    </label>
+                    <label className="flex items-center gap-1 text-xs text-gray-700">
                       <input
                         type="checkbox"
                         checked={lang.read}
                         onChange={(e) =>
                           handleLanguageChange(index, "read", e.target.checked)
                         }
-                        className="w-3.5 h-3.5 md:w-4 md:h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
+                        className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
                       />
-                    </td>
-                    <td className="px-1 py-2 md:px-4 md:py-3 text-center">
+                      <span>Read</span>
+                    </label>
+                    <label className="flex items-center gap-1 text-xs text-gray-700">
                       <input
                         type="checkbox"
                         checked={lang.write}
                         onChange={(e) =>
                           handleLanguageChange(index, "write", e.target.checked)
                         }
-                        className="w-3.5 h-3.5 md:w-4 md:h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
+                        className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
                       />
-                    </td>
-                    <td className="px-1 py-2 md:px-4 md:py-3 text-center">
-                      <button
-                        type="button"
-                        className="px-2 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed text-xs md:text-sm font-medium shadow-sm transition-colors whitespace-nowrap"
-                        onClick={() => removeLanguage(index)}
-                        disabled={languages.length === 1}
-                        title="Remove language"
-                      >
-                        <span className="hidden sm:inline">Remove</span>
-                        <span className="sm:hidden">✕</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <span>Write</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          
+
           {/* Add Language button */}
           <div className="mt-4">
             <button

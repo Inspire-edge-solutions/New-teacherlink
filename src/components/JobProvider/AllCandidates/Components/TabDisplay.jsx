@@ -115,7 +115,7 @@ const TabDisplay = () => {
     <div>
       {/* Tab Navigation - Separate Container */}
       <div className="rounded-lg shadow-sm mb-4 border border-gray-500">
-        <div className="p-3 sm:p-4">
+        <div className="p-1 sm:p-2">
           <nav className="flex flex-wrap justify-start sm:justify-between gap-1.5 sm:gap-1" aria-label="Tabs">
             {tabs.map((tab) => (
               <button
@@ -136,7 +136,7 @@ const TabDisplay = () => {
 
       {/* Tab Content - Separate Container */}
       <div className="rounded-lg shadow-sm border">
-        <div className="p-3 sm:p-4 md:p-6">
+        <div className="p-1 sm:p-2">
           <ActiveComponent 
             onViewCandidate={handleViewCandidate}
             onBackFromCandidateView={

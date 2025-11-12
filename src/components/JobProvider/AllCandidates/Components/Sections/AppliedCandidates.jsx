@@ -44,6 +44,13 @@ const AppliedCandidates = ({
   const [pendingScrollCandidate, setPendingScrollCandidate] = useState(null);
   const skipPageResetRef = useRef(false);
 
+  const STATUS_OPTIONS = [
+    'Not Selected',
+    'Selected',
+    'Interview Scheduled',
+    'Profile in Review'
+  ];
+
   // Message modal state
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [candidateToMessage, setCandidateToMessage] = useState(null);
@@ -374,6 +381,71 @@ const AppliedCandidates = ({
     documentTitlePrefix: 'Selected Applied Candidates'
   });
 
+  const getCandidateKey = useCallback((candidate) => {
+    if (!candidate) return null;
+    return candidate.applicationId || `${candidate.job_id}_${candidate.firebase_uid || candidate.user_id}`;
+  }, []);
+
+  const getCandidateStatus = useCallback((candidate) => {
+    if (!candidate) return 'Profile in Review';
+    const statuses = [
+      candidate.status,
+      candidate.application_status,
+      candidate.stage,
+      candidate.status_text,
+      candidate.current_status
+    ].filter(Boolean);
+
+    const normalized = String(statuses[0] || '').trim();
+    if (!normalized) return 'Profile in Review';
+    if (/not\s*selected/i.test(normalized)) return 'Not Selected';
+    if (/selected/i.test(normalized)) return 'Selected';
+    if (/interview/i.test(normalized)) return 'Interview Scheduled';
+    if (/review|screen/i.test(normalized)) return 'Profile in Review';
+    return normalized;
+  }, []);
+
+  const updateCandidateCollections = useCallback((candidateKey, updater) => {
+    if (!candidateKey || typeof updater !== 'function') return;
+
+    const applyUpdate = (list) =>
+      Array.isArray(list)
+        ? list.map((candidate) =>
+            getCandidateKey(candidate) === candidateKey ? updater(candidate) : candidate
+          )
+        : list;
+
+    setAppliedCandidates((prev) => applyUpdate(prev));
+    setFilteredCandidates((prev) => applyUpdate(prev));
+  }, [getCandidateKey]);
+
+  const handleStatusChange = useCallback(
+    async (candidate, newStatus) => {
+      if (!candidate) return;
+
+      const candidateKey = getCandidateKey(candidate);
+      const previousStatus = getCandidateStatus(candidate);
+
+      updateCandidateCollections(candidateKey, (existing) => ({
+        ...existing,
+        status: newStatus,
+        application_status: newStatus
+      }));
+
+      try {
+        await CandidateApiService.updateAppliedCandidateStatus(candidate, newStatus);
+      } catch (error) {
+        toast.error(error.message || 'Failed to update status. Please try again.');
+        updateCandidateCollections(candidateKey, (existing) => ({
+          ...existing,
+          status: previousStatus,
+          application_status: previousStatus
+        }));
+      }
+    },
+    [getCandidateKey, getCandidateStatus, updateCandidateCollections]
+  );
+
   useEffect(() => {
     if (pendingScrollCandidate) return;
     if (skipPageResetRef.current) {
@@ -491,22 +563,26 @@ const AppliedCandidates = ({
               const uniqueKey = candidate.applicationId || `${candidate.job_id}_${candidateId}`;
               const candidateSelectionId = candidate.applicationId || candidate.firebase_uid;
               return (
-                <CandidateCard
-                  key={uniqueKey}
-                  candidate={candidate}
-                  isSaved={savedCandidates.includes(candidateId)}
-                  isFavourite={favouriteCandidates.includes(candidateId)}
-                  loading={loading}
-                  onViewFull={handleViewFull}
-                  onViewShort={handleViewShort}
-                  onSave={handleSaveCandidate}
-                  onToggleFavourite={handleToggleFavourite}
-                  candidatePhoto={candidatePhotos[candidateId]}
-                  showCheckbox={true}
-                  isChecked={selectedCandidates.has(candidateSelectionId)}
-                  onCheckboxChange={handleCheckboxChange}
-                  onMessage={handleMessage}
-                />
+              <CandidateCard
+                key={uniqueKey}
+                candidate={candidate}
+                isSaved={savedCandidates.includes(candidateId)}
+                isFavourite={favouriteCandidates.includes(candidateId)}
+                loading={loading}
+                onViewFull={handleViewFull}
+                onViewShort={handleViewShort}
+                onSave={handleSaveCandidate}
+                onToggleFavourite={handleToggleFavourite}
+                candidatePhoto={candidatePhotos[candidateId]}
+                showCheckbox={true}
+                isChecked={selectedCandidates.has(candidateSelectionId)}
+                onCheckboxChange={handleCheckboxChange}
+                onMessage={handleMessage}
+                showStatusControl
+                statusValue={getCandidateStatus(candidate)}
+                statusOptions={STATUS_OPTIONS}
+                onStatusChange={(newStatus) => handleStatusChange(candidate, newStatus)}
+              />
               );
             })}
           </div>

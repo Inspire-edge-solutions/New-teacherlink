@@ -1,6 +1,6 @@
 import { styled, Container, Box, useTheme, useMediaQuery } from "@mui/material";
-import { useState , useEffect} from "react";
-import { Outlet , useNavigate, useLocation} from "react-router-dom";
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
 import Sidebar from "../../components/sidebar/Sidebar";
 import DashboardHeader from "../../components/header/DashboardHeader";
 
@@ -27,36 +27,9 @@ const PageWrapper = styled("div")(({ theme, sidebarWidth }) => ({
 
 const FullLayout = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const user = JSON.parse(localStorage.getItem("user"));
-  const userType = user?.user_type;
-  console.log(user);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [activeTab, setActiveTab] = useState("Dashboard");
-  const [hasInitialRedirect, setHasInitialRedirect] = useState(false);
-
-  useEffect(() => {
-    // Only redirect on initial mount when on root path, not when navigating between routes
-    if (!hasInitialRedirect && location.pathname === "/") {
-      if(userType === "Candidate" || userType === "Employer"){
-        if(userType === "Employer"){
-          navigate("/provider/dashboard");
-        }else{
-          navigate("/seeker/dashboard");
-        }
-      }else{
-        navigate("/");
-      }
-      setHasInitialRedirect(true);
-    } else if (!hasInitialRedirect) {
-      // Mark as done even if we're not on root path
-      setHasInitialRedirect(true);
-    }
-  }, [userType, location.pathname, hasInitialRedirect, navigate]);
-
-  console.log("active tab :", activeTab);
 
   return (
     <MainWrapper>

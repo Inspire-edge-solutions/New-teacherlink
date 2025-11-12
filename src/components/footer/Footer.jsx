@@ -22,7 +22,7 @@ const Footer = () => {
 
           {/* Middle Column - Quick Links */}
           <div className="flex flex-col">
-            <h3 className="text-red-600 font-bold text-lg mb-4">Quick Links</h3>
+          <h2 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4">Quick Links</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Link
@@ -63,7 +63,7 @@ const Footer = () => {
 
           {/* Right Column - Social Media */}
           <div className="flex flex-col">
-            <h3 className="text-red-600 font-bold text-lg mb-4">Follow Us</h3>
+            <h3 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4">Follow Us</h3>
             <div className="flex space-x-4">
               {/* Facebook */}
                <a

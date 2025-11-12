@@ -342,6 +342,32 @@ class CandidateApiService {
     return this.upsertCandidateAction(candidate, user, { favroute_candidate: isFavourite ? 1 : 0 });
   }
 
+  // Update applied candidate status for a specific application
+  static async updateAppliedCandidateStatus(candidate, status) {
+    if (!candidate) {
+      throw new Error("Invalid candidate payload.");
+    }
+
+    const candidateId = getCandidateId(candidate) || candidate.user_id;
+    if (!candidateId || !candidate.job_id) {
+      throw new Error("Missing candidate identifier for status update.");
+    }
+
+    try {
+      const payload = {
+        job_id: candidate.job_id,
+        user_id: candidateId,
+        status
+      };
+      await axios.put(API_ENDPOINTS.APPLIED_CANDIDATES_API, payload);
+      toast.success("Status updated");
+      return { success: true };
+    } catch (error) {
+      console.error("Error updating candidate status:", error);
+      throw new Error("Failed to update status. Please try again.");
+    }
+  }
+
   // Mark candidate as downloaded
   static async markCandidateDownloaded(candidate, user) {
     return this.upsertCandidateAction(candidate, user, { dowloaded_candidate: 1 });

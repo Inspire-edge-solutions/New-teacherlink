@@ -32,36 +32,63 @@ const Header = () => {
           <nav className="hidden md:flex space-x-8">
             <NavLink
               to="/why-teacherlink"
-              style={({ isActive }) => ({ color: isActive ? "red" : "black" })}
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+              className={
+                ({ isActive }) => [
+                "px-3 py-2 transition-all duration-200",
+                isActive
+                  ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
+                  : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
+              ].join(" ")}
             >
               Why TeacherLink
             </NavLink>
             <NavLink
               to="/salient-features"
-              style={({ isActive }) => ({ color: isActive ? "red" : "black" })}
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+              className={
+                ({ isActive }) => [
+                "px-3 py-2 transition-all duration-200",
+                isActive
+                  ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
+                  : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
+              ].join(" ")}
             >
               Salient Features
             </NavLink>
             <NavLink
               to="/subscription-plans"
-              style={({ isActive }) => ({ color: isActive ? "red" : "black" })}
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+              className={({ isActive }) =>
+                [
+                  "px-3 py-2 transition-all duration-200",
+                  isActive
+                    ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
+                    : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
+                ].join(" ")
+              }
             >
               Subscription Plans
             </NavLink>
             <NavLink
               to="/about-us"
-              style={({ isActive }) => ({ color: isActive ? "red" : "black" })}
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+             
+              className={
+                ({ isActive }) => [
+                "px-3 py-2 transition-all duration-200",
+                isActive
+                  ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
+                  : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
+              ].join(" ")}
             >
               About Us
             </NavLink>
             <NavLink
               to="/contact-us"
-              style={({ isActive }) => ({ color: isActive ? "red" : "black" })}
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+              className={
+                ({ isActive }) => [
+                "px-3 py-2 transition-all duration-200",
+                isActive
+                  ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
+                  : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
+              ].join(" ")}
             >
               Contact Us
             </NavLink>

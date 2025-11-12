@@ -103,43 +103,37 @@ const MyProfileComponent = () => {
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-sm p-2">
             {/* Header with View/Edit Profile Button */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <h4 className="text-2xl font-bold">Profile Details</h4>
-                
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-                    {/* Mandatory Fields Notice */}
-                    {!showProfile && (
-                        <div className="text-sm">
-                            <p className="m-0 text-gray-700">
-                                <span className="text-red-500 font-bold">★ </span>
-                                Fields highlighted are mandatory to fill
-                            </p>
-                        </div>
-                    )}
+            <div className="flex items-center justify-between gap-3 mb-2">
+                <h4 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent">Profile Details</h4>
 
-                    {/* View/Edit Profile Button */}
-                    <div>
-                        {showProfile ? (
-                            <button
-                                className="px-6 py-2.5 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
-                                onClick={() => setShowProfile(false)}
-                            >
-                                Edit Profile
-                            </button>
-                        ) : (
-                            <button
-                                className="px-6 py-2.5 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
-                                onClick={handleViewProfile}
-                                disabled={loadingApproval}
-                            >
-                                {loadingApproval ? "Checking..." : "View Profile"}
-                            </button>
-                        )}
-                    </div>
-                </div>
+                {showProfile ? (
+                    <button
+                        className="flex-shrink-0 px-6 py-2.5 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                        onClick={() => setShowProfile(false)}
+                    >
+                        Edit Profile
+                    </button>
+                ) : (
+                    <button
+                        className="flex-shrink-0 px-6 py-2.5 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                        onClick={handleViewProfile}
+                        disabled={loadingApproval}
+                    >
+                        {loadingApproval ? "Checking..." : "View Profile"}
+                    </button>
+                )}
             </div>
+
+            {!showProfile && (
+                <div className="mb-6 text-sm">
+                    <p className="m-0 text-gray-700 flex items-center gap-1">
+                        <span className="text-red-500 font-bold">★</span>
+                        Fields highlighted are mandatory to fill
+                    </p>
+                </div>
+            )}
 
             {/* Profile Content */}
             {showProfile ? (

@@ -910,8 +910,8 @@ const OrgDetails = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen p-3 sm:p-4 md:p-6">
-      <form onSubmit={handleSubmit} className="max-w-7xl mx-auto">
+    <div className="bg-gray-50 min-h-screen py-3 sm:py-4 md:py-6 px-0 sm:px-2">
+      <form onSubmit={handleSubmit} className="w-full">
         {/* Organization Type Selection */}
         <div className="mb-6">
           <div className="bg-[#F0D8D9] rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
@@ -1081,7 +1081,7 @@ const OrgDetails = () => {
                         placeholder="Country"
                         menuPortalTarget={document.body}
                         styles={selectMenuPortalStyles}
-                        className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
+                        className="react-select-container w-full border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
                         classNamePrefix="react-select"
                         isSearchable
                         isClearable
@@ -1122,7 +1122,7 @@ const OrgDetails = () => {
                         placeholder="State"
                         menuPortalTarget={document.body}
                         styles={selectMenuPortalStyles}
-                        className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="react-select-container w-full border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                         classNamePrefix="react-select"
                         isSearchable
                         isClearable
@@ -1148,7 +1148,7 @@ const OrgDetails = () => {
                         placeholder="City"
                         menuPortalTarget={document.body}
                         styles={selectMenuPortalStyles}
-                        className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="react-select-container w-full border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                         classNamePrefix="react-select"
                         isSearchable
                         isClearable
@@ -1241,7 +1241,7 @@ const OrgDetails = () => {
                         placeholder="Designation"
                         menuPortalTarget={document.body}
                         styles={selectMenuPortalStyles}
-                        className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
+                        className="react-select-container w-full border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
                         classNamePrefix="react-select"
                       />
                     </InputWithTooltip>
@@ -1375,9 +1375,9 @@ const OrgDetails = () => {
               {/* Are you the owner - Radio Buttons */}
               {isNonParent() && (
                 <div className="col-span-1 md:col-span-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:space-x-6">
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
                     <span className="text-sm font-medium text-gray-700 flex-shrink-0">Are you the owner or the main head of the organization?</span>
-                    <div className="flex items-center gap-4 sm:gap-6">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
                       <label className="flex items-center space-x-2 cursor-pointer">
                         <input
                           type="radio"
@@ -1457,7 +1457,7 @@ const OrgDetails = () => {
                       placeholder="Designation"
                       menuPortalTarget={document.body}
                       styles={selectMenuPortalStyles}
-                      className="react-select-container border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
+                        className="react-select-container w-full border border-gray-300 rounded-lg focus:border-pink-300 focus:ring-2 focus:ring-pink-200 hover:border-pink-300 bg-white"
                       classNamePrefix="react-select"
                     />
                   </InputWithTooltip>
@@ -1498,24 +1498,20 @@ const OrgDetails = () => {
 
               {/* WhatsApp Number */}
               <div>
-                  <InputWithTooltip label="WhatsApp Number">
-                    <input
-                      type="text"
-                      name="phone2"
-                      placeholder="WhatsApp Number"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
-                      value={reportingAuthority.phone2}
-                      onChange={handleReportingAuthorityChange}
-                      onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
-                      maxLength="10"
-                      disabled={reportingAuthoritySameNumber}
-                    />
-                  </InputWithTooltip>
-                </div>
-
-              {/* Checkbox for WhatsApp same as Mobile */}
-              <div className="col-span-2 space-y-4">
-                <label className="flex items-center space-x-3">
+                <InputWithTooltip label="WhatsApp Number">
+                  <input
+                    type="text"
+                    name="phone2"
+                    placeholder="WhatsApp Number"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
+                    value={reportingAuthority.phone2}
+                    onChange={handleReportingAuthorityChange}
+                    onBlur={(e) => validateWithFeedback('phone', e.target.value, true)}
+                    maxLength="10"
+                    disabled={reportingAuthoritySameNumber}
+                  />
+                </InputWithTooltip>
+                <label className="flex items-center space-x-3 mt-2">
                   <input
                     type="checkbox"
                     checked={reportingAuthoritySameNumber}
@@ -1524,7 +1520,7 @@ const OrgDetails = () => {
                   />
                   <span className="text-sm text-gray-700">WhatsApp Number same as Mobile Number</span>
                 </label>
-                </div>
+              </div>
               </div>
           </CollapsibleSection>
         )}

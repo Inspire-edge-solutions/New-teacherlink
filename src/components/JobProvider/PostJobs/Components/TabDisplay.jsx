@@ -93,7 +93,7 @@ const TabDisplay = () => {
 
       {/* Tab Content - Separate Container */}
       <div className="rounded-lg shadow-sm border">
-        <div className="p-6">
+        <div className="p-2">
           {/* Show create job info only on create-job tab */}
           {activeTab === "create-job" && (
             <div className="mb-4 p-3 border border-purple-200 rounded-lg">

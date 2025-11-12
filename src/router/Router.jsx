@@ -1,6 +1,7 @@
 import React, { lazy } from "react";
 import { Navigate } from "react-router-dom";
 import Loadable from "../layouts/shared/loadable/Loadable.jsx";
+import { ProtectedRoute } from "../components/common/form/ProtectedRoute.jsx";
 
 // const BlankLayout = Loadable(
 //   lazy(() => import("../layouts/blank/BlankLayout.jsx"))
@@ -101,70 +102,94 @@ const Router = [
     ],
   },
   {
-    path: "/",
-    element: <FullLayout />,
+    path: "/provider",
+    element: <ProtectedRoute requiredUserType="Employer" />,
     children: [
       {
-        path: "/provider/dashboard",
-        element: <JobProviderDashboard />,
+        element: <FullLayout />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="dashboard" replace />,
+          },
+          {
+            path: "dashboard",
+            element: <JobProviderDashboard />,
+          },
+          {
+            path: "post-jobs",
+            element: <JobProviderPostJobs />,
+          },
+          {
+            path: "my-profile",
+            element: <JobProviderMyProfile />,
+          },
+          {
+            path: "my-account",
+            element: <JobProviderMyAccount />,
+          },
+          {
+            path: "all-candidates",
+            element: <JobProviderAllCandidates />,
+          },
+          {
+            path: "messages",
+            element: <JobProviderMessages />,
+          },
+          {
+            path: "notifications",
+            element: <JobProviderNotifications />,
+          },
+          {
+            path: "premium-services",
+            element: <JobProviderPremiumServices />,
+          },
+        ],
       },
+    ],
+  },
+  {
+    path: "/seeker",
+    element: <ProtectedRoute requiredUserType="Candidate" />,
+    children: [
       {
-        path: "/provider/post-jobs",
-        element: <JobProviderPostJobs />,
+        element: <FullLayout />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="dashboard" replace />,
+          },
+          {
+            path: "dashboard",
+            element: <JobSeekerDashboard />,
+          },
+          {
+            path: "my-account",
+            element: <JobSeekerMyAccount />,
+          },
+          {
+            path: "my-profile",
+            element: <JobSeekerMyProfile />,
+          },
+          {
+            path: "all-jobs",
+            element: <JobSeekerAllJobs />,
+          },
+          {
+            path: "messages",
+            element: <JobSeekerMessages />,
+          },
+          {
+            path: "notifications",
+            element: <JobSeekerNotifications />,
+          },
+          {
+            path: "recruiter-actions",
+            element: <JobSeekerRecruiterActions />,
+          },
+        ],
       },
-      {
-        path: "/provider/my-profile",
-        element: <JobProviderMyProfile />,
-      },
-      {
-        path: "/provider/my-account",
-        element: <JobProviderMyAccount />,
-      },
-      {
-        path: "/provider/all-candidates",
-        element: <JobProviderAllCandidates />,
-      },
-      {
-        path: "/provider/messages",
-        element: <JobProviderMessages />,
-      },
-      {
-        path: "/provider/notifications",
-        element: <JobProviderNotifications />,
-      },
-      {
-        path: "/provider/premium-services",
-        element: <JobProviderPremiumServices />,
-      },
-      {
-        path: '/seeker/dashboard',
-        element: <JobSeekerDashboard />,
-      },
-      {
-        path: "/seeker/my-account",
-        element: <JobSeekerMyAccount />,
-      },
-      {
-        path: "/seeker/my-profile",
-        element: <JobSeekerMyProfile />,
-      },
-      {
-        path: "/seeker/all-jobs",
-        element: <JobSeekerAllJobs />,
-      },
-      {
-        path: "/seeker/messages",
-        element: <JobSeekerMessages />,
-      },
-      {
-        path: "/seeker/notifications",
-        element: <JobSeekerNotifications />,
-      },
-      {
-        path: "/seeker/recruiter-actions",
-        element: <JobSeekerRecruiterActions />,
-      },
-    ]
+    ],
   },
 ];
 

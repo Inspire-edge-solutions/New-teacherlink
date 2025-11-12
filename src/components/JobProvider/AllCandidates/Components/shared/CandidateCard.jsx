@@ -28,7 +28,11 @@ const CandidateCard = ({
   showCheckbox = false,
   isChecked = false,
   onCheckboxChange,
-  candidatePhoto = null
+  candidatePhoto = null,
+  showStatusControl = false,
+  statusValue = '',
+  statusOptions = [],
+  onStatusChange
 }) => {
   const candidateId = candidate.firebase_uid;
 
@@ -95,10 +99,10 @@ const CandidateCard = ({
             </div>
 
             {/* Action Icons */}
-            <div className="flex items-center gap-2 sm:gap-2.5 sm:ml-3 flex-shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2.5 sm:ml-3 flex-shrink-0">
               {/* View Full Icon */}
               <button
-                className="group relative p-2.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-blue-200"
+                className="group relative p-2 rounded-xl sm:p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-blue-200"
                 onClick={(e) => {
                   e.stopPropagation();
                   onViewFull && onViewFull(candidate);
@@ -106,12 +110,12 @@ const CandidateCard = ({
                 title="View Full Profile"
                 disabled={loading}
               >
-                <AiOutlineEye className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                <AiOutlineEye className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
               </button>
               
               {/* View Short Icon */}
               <button
-                className="group relative p-2.5 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white border border-purple-200 hover:border-purple-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-purple-200"
+                className="group relative p-2 rounded-xl sm:p-2.5 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white border border-purple-200 hover:border-purple-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-purple-200"
                 onClick={(e) => {
                   e.stopPropagation();
                   onViewShort && onViewShort(candidate);
@@ -119,12 +123,12 @@ const CandidateCard = ({
                 title="View Short Profile"
                 disabled={loading}
               >
-                <AiOutlineFileText className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                <AiOutlineFileText className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
               </button>
               
               {/* Save Icon */}
               <button
-                className={`group relative p-2.5 rounded-xl border transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg ${
+                className={`group relative p-2 rounded-xl sm:p-2.5 border transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg ${
                   isSaved 
                     ? 'text-green-700 bg-green-50 border-green-300 hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-green-200' 
                     : 'text-green-600 bg-green-50 border-green-200 hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-green-200'
@@ -137,15 +141,15 @@ const CandidateCard = ({
                 disabled={loading}
               >
                 {isSaved ? (
-                  <AiFillSave className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:scale-110 group-hover:rotate-12" />
+                  <AiFillSave className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110 group-hover:rotate-12" />
                 ) : (
-                  <AiOutlineSave className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                  <AiOutlineSave className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
                 )}
               </button>
               
               {/* Favourite Icon */}
               <button
-                className={`group relative p-2.5 rounded-xl border transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg ${
+                className={`group relative p-2 rounded-xl sm:p-2.5 border transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg ${
                   isFavourite 
                     ? 'text-red-600 bg-red-50 border-red-300 hover:bg-red-600 hover:text-white hover:border-red-600 hover:shadow-red-200' 
                     : 'text-gray-600 bg-gray-50 border-gray-200 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-red-200'
@@ -158,15 +162,15 @@ const CandidateCard = ({
                 disabled={loading}
               >
                 {isFavourite ? (
-                  <AiFillHeart className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:scale-125 group-hover:animate-pulse" />
+                  <AiFillHeart className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-125 group-hover:animate-pulse" />
                 ) : (
-                  <AiOutlineHeart className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                  <AiOutlineHeart className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
                 )}
               </button>
               
               {/* Message Icon */}
               <button
-                className="group relative p-2.5 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-indigo-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-indigo-200"
+                className="group relative p-2 rounded-xl sm:p-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-indigo-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-indigo-200"
                 onClick={(e) => {
                   e.stopPropagation();
                   onMessage && onMessage(candidate);
@@ -174,7 +178,7 @@ const CandidateCard = ({
                 title="Message Candidate"
                 disabled={loading}
               >
-                <AiOutlineMessage className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                <AiOutlineMessage className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
               </button>
             </div>
           </div>
@@ -248,6 +252,27 @@ const CandidateCard = ({
           </span>
         </div>
       </div>
+
+      {showStatusControl && (
+        <div className="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+          <span className="text-sm font-medium text-gray-700">Status</span>
+          <select
+            className="w-full sm:w-auto text-sm sm:text-base border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+            value={statusValue}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              e.stopPropagation();
+              onStatusChange && onStatusChange(e.target.value);
+            }}
+          >
+            {statusOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
     </div>
   );
 };

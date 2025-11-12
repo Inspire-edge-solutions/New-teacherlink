@@ -313,7 +313,7 @@ const FormInfoBox = () => {
             formData: getCurrentStepData(),
             updateFormData: updateFormData
           }
-        },
+       },
       ],
       title: "Personal Details",
     },
@@ -920,7 +920,7 @@ const FormInfoBox = () => {
           <div className="p-4 sm:p-6 border-b border-gray-200">
             <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-3 sm:gap-4">
               <div className="flex-1">
-                <h2 className="text-xl sm:text-2xl font-bold text-red-500 mb-2">
+                <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent">
                   My Profile ({viewMode === "easy" ? "Short" : "Complete"})
                 </h2>
                 <p className="text-xs sm:text-sm text-gray-600">
