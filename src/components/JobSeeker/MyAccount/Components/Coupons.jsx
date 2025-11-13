@@ -855,7 +855,9 @@ const Coupons = ({
       </div>
     </div>
   );
+  
 };
+
 
 Coupons.propTypes = {
   user: PropTypes.object,

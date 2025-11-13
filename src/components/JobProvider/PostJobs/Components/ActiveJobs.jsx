@@ -343,18 +343,18 @@ const ActiveJobs = ({
         job.posted_by === user.uid
       );
       
-      // Filter for active jobs (within 30 days) and closed jobs, then sort by creation date
-      const activeAndClosedJobs = userJobs
-        .filter(job => isJobActive(job) || isJobClosed(job))
+      // Filter for active (open) jobs within the last 30 days, then sort by creation date
+      const activeJobs = userJobs
+        .filter(job => isJobActive(job) && !isJobClosed(job))
         .sort((a, b) => {
           const dateA = new Date(a.created_at || a.joining_date || 0);
           const dateB = new Date(b.created_at || b.joining_date || 0);
           return dateB - dateA; // Descending order (newest first)
         });
       
-      console.log("Active and Closed Jobs:", activeAndClosedJobs);
-      setJobs(activeAndClosedJobs);
-      setFilteredJobs(activeAndClosedJobs);
+      console.log("Active Jobs:", activeJobs);
+      setJobs(activeJobs);
+      setFilteredJobs(activeJobs);
     } catch (error) {
       console.error('Error fetching active jobs:', error);
       toast.error('Failed to fetch active jobs');
@@ -595,7 +595,7 @@ const ActiveJobs = ({
             // Job List
             <div className="w-full">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-5 gap-4 w-full">
-                <h6 className="text-gray-700 text-base font-semibold whitespace-nowrap">Active & Closed Jobs: {filteredJobs.length}</h6>
+                <h6 className="text-gray-700 text-base font-semibold whitespace-nowrap">Active Jobs: {filteredJobs.length}</h6>
                 <div className="relative w-full sm:flex-1 sm:max-w-md">
                   <input
                     type="text"
@@ -609,12 +609,7 @@ const ActiveJobs = ({
               </div>
               
               {filteredJobs.map((job, index) => (
-                <div key={job.id || index} className={`mb-4 border border-gray-200 rounded-lg shadow-sm transition-all duration-300 overflow-hidden bg-white p-3 sm:p-4 w-full hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300 hover:bg-[#F0D8D9] ${isJobClosed(job) ? 'opacity-70 bg-gray-50 border-gray-200 relative' : ''}`}>
-                  {isJobClosed(job) && (
-                    <div className="absolute top-2.5 right-2.5 bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold z-10 shadow-md">
-                      CLOSED
-                    </div>
-                  )}
+                <div key={job.id || index} className="mb-4 border border-gray-200 rounded-lg shadow-sm transition-all duration-300 overflow-hidden bg-white p-3 sm:p-4 w-full hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300 hover:bg-[#F0D8D9]">
                     {/* Job Card - Clean One Line */}
                   <div className="border-none shadow-none bg-none m-0 p-0 w-full">
                     <div className="p-0 m-0 bg-none w-full">
@@ -643,11 +638,6 @@ const ActiveJobs = ({
                                   {getStatusBadge(job)}
                                 </div>
                               </div>
-                              {isJobClosed(job) && job.reason && (
-                                <p className="text-xs sm:text-sm text-gray-600 mt-1 break-words sm:truncate w-full" title={job.reason}>
-                                  <strong>Reason:</strong> {job.reason}
-                                </p>
-                              )}
                             </div>
 
                             {/* Posted Date Section - Hidden on mobile, shown on tablet+ */}

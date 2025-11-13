@@ -34,12 +34,13 @@ class ErrorBoundary extends React.Component {
                 </p>
               </div>
 
-              <Link
-                to="/"
+              <button
+                type="button"
+                onClick={() => window.location.assign("/")}
                 className="inline-flex items-center justify-center px-8 py-3 text-base font-semibold text-white rounded-full shadow-lg bg-gradient-to-r from-blue-600 to-indigo-600 transition duration-300 hover:scale-105 hover:from-blue-700 hover:to-indigo-700"
               >
                 Go to Home
-              </Link>
+              </button>
             </div>
           </div>
         );

@@ -100,13 +100,13 @@ const TabDisplay = () => {
       <div className="rounded-lg shadow-sm border border-gray-500">
         <div className="p-4 md:p-6">
           <nav
-            className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4 justify-start"
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4 w-full"
             aria-label="Tabs"
           >
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                className={`min-w-[calc(50%-0.5rem)] flex-1 sm:flex-none sm:min-w-0 px-4 md:px-6 py-2.5 md:py-3 rounded-lg font-medium text-sm transition-all duration-200 text-center ${
+                className={`w-full px-4 md:px-6 py-2.5 md:py-3 rounded-lg font-medium text-sm transition-all duration-200 text-center ${
                   activeTab === tab.id
                     ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover transition-colors'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'

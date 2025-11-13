@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { MdClose, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { useAuth } from '../../Context/AuthContext';
 import { toast } from 'react-toastify';
@@ -35,11 +35,86 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
     different: false
   });
 
+  const resolveEmailFromSources = useCallback(() => {
+    const candidates = [];
+
+    if (user && typeof user === 'object') {
+      const directKeys = [
+        'email',
+        'contact_email',
+        'contactEmail',
+        'user_email',
+        'email_id',
+        'primary_email',
+        'personal_email'
+      ];
+
+      directKeys.forEach((key) => {
+        const value = user?.[key];
+        if (typeof value === 'string') {
+          candidates.push(value);
+        }
+      });
+
+      if (Array.isArray(user?.providerData)) {
+        user.providerData.forEach((provider) => {
+          if (provider?.email) {
+            candidates.push(provider.email);
+          }
+        });
+      }
+
+      if (user?.user_metadata?.email) {
+        candidates.push(user.user_metadata.email);
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      try {
+        const storedRaw = window.localStorage.getItem('user');
+        if (storedRaw) {
+          const stored = JSON.parse(storedRaw);
+          const storedKeys = [
+            'email',
+            'contact_email',
+            'contactEmail',
+            'user_email',
+            'email_id',
+            'primary_email',
+            'personal_email'
+          ];
+
+          storedKeys.forEach((key) => {
+            const value = stored?.[key];
+            if (typeof value === 'string') {
+              candidates.push(value);
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('ChangePasswordModal: Failed to parse stored user data', err);
+      }
+    }
+
+    const resolved = candidates
+      .map(value => (typeof value === 'string' ? value.trim() : ''))
+      .find(Boolean);
+
+    return resolved || '';
+  }, [user]);
+
   // Keep email and firebaseUid updated from context when login state changes
   useEffect(() => {
-    setEmail(user?.email || '');
     setFirebaseUid(user?.firebase_uid || user?.uid || '');
   }, [user]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const derivedEmail = resolveEmailFromSources();
+    if (derivedEmail) {
+      setEmail(derivedEmail);
+    }
+  }, [isOpen, resolveEmailFromSources]);
 
   // Validate password on change
   useEffect(() => {
@@ -72,8 +147,25 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
     setShowValidationErrors(true);
 
     // Validate email
-    if (!email || !email.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) {
-      toast.error("Please enter a valid email.");
+    const cleanedEmail = (email || '').trim();
+    const fallbackEmail = resolveEmailFromSources();
+    const finalEmail = cleanedEmail || fallbackEmail;
+
+    if (cleanedEmail && cleanedEmail !== email) {
+      setEmail(cleanedEmail);
+    } else if (!cleanedEmail && fallbackEmail && fallbackEmail !== email) {
+      setEmail(fallbackEmail);
+    }
+
+    if (!finalEmail || !finalEmail.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) {
+      console.warn("ChangePasswordModal: email validation failed", {
+        emailState: email,
+        cleanedEmail,
+        fallbackEmail,
+        finalEmail,
+        userEmail: user?.email
+      });
+      toast.error("We could not verify the email. Please logout and login again to re-authenticate");
       return;
     }
     // Validate firebaseUid
@@ -101,7 +193,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
     try {
       const payload = {
         firebase_uid: firebaseUid,
-        email,
+        email: finalEmail,
         oldPassword,
         newPassword
       };
@@ -155,6 +247,23 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6" autoComplete="off">
+          {/* Email */}
+          {email ? (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Account Email
+              </label>
+              <div className="px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700">
+                {email}
+              </div>
+            </div>
+          ) : (
+            <div className="mb-4">
+              <div className="px-3 py-2 border border-amber-300 bg-amber-50 text-amber-800 rounded-lg text-sm">
+                We couldn’t detect your email automatically. Please log out and log back in to refresh your session before changing the password.
+              </div>
+            </div>
+          )}
           {/* Old Password */}
           <div className="mb-4">
             <label htmlFor="oldPassword" className="block text-sm font-medium text-gray-700 mb-2">
@@ -290,4 +399,3 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 };
 
 export default ChangePasswordModal;
-

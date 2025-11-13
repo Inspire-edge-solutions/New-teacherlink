@@ -125,7 +125,6 @@ const fileToBase64 = (file) => {
 const [demoVideoError, setDemoVideoError] = useState("");
 const [demoVideoUploading, setDemoVideoUploading] = useState(false);
 const demoVideoInputRef = useRef(null);
-
 // Trigger file input for video upload.
 const handleDemoVideoUploadClick = () => {
   if (demoVideoInputRef.current) {
@@ -191,7 +190,7 @@ const handleDemoVideoView = async () => {
         const { data } = await axios.get(VIDEO_API_URL, { params });
         
         if (data?.url) {
-            window.open(data.url, "_blank", "noopener,noreferrer");
+         window.open(data.url, "_blank", "noopener,noreferrer");
         } else {
             toast.error("No video found");
         }
@@ -271,7 +270,7 @@ const handleResumeView = async () => {
         const { data } = await axios.get(RESUME_API_URL, { params });
         
         if (data?.url) {
-            window.open(data.url, "_blank", "noopener,noreferrer");
+         window.open(data.url, "_blank", "noopener,noreferrer");
         } else {
             toast.error("No resume found");
         }
@@ -319,7 +318,11 @@ return (
                 </button>
               </div>
               
-              {videoFileName && (
+              {!videoFileName ? (
+                <p className="text-xs text-gray-500 mt-2">
+                  Upload a video to enable viewing.
+                </p>
+              ) : (
                 <p className="text-xs text-gray-600 mt-2 truncate" title={videoFileName}>
                   {videoFileName}
                 </p>
@@ -370,12 +373,16 @@ return (
                 </button>
               </div>
               
-              {resumeFileName && (
+              {!resumeFileName ? (
+                <p className="text-xs text-gray-500 mt-2">
+                  Upload a resume to enable viewing.
+                </p>
+              ) : (
                 <p className="text-xs text-gray-600 mt-2 truncate" title={resumeFileName}>
                   {resumeFileName}
                 </p>
               )}
-              
+             
               {resumeError && (
                 <p className="text-red-500 text-xs mt-2">{resumeError}</p>
               )}

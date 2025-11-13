@@ -1,9 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Select from 'react-select';
 import { GetCountries, GetState, GetCity } from 'react-country-state-city';
-import { IoLocationOutline } from "react-icons/io5";
-import { BsBriefcase, BsCash, BsMortarboard, BsClock } from "react-icons/bs";
-import { AiOutlineEye, AiOutlineSave, AiOutlineHeart, AiFillHeart } from "react-icons/ai";
 import ApplyModal from '../shared/ApplyModal';
 import JobCard from '../shared/JobCard';
 import JobApiService from '../shared/JobApiService';
@@ -64,8 +61,27 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
   const [pendingScrollJob, setPendingScrollJob] = useState(null);
   const skipPageResetRef = useRef(false);
   const [highlightedJobId, setHighlightedJobId] = useState(null);
+  const hasAppliedPreferencesRef = useRef(false);
+  const [userPreferencesData, setUserPreferencesData] = useState(null);
+  const [pendingLocationPref, setPendingLocationPref] = useState({
+    country: null,
+    state: null,
+    city: null
+  });
+
+  const saveFiltersToStorage = useCallback((filtersToSave) => {
+    try {
+      localStorage.setItem('jobFilters', JSON.stringify(filtersToSave));
+    } catch (error) {
+      console.error('Error saving filters:', error);
+    }
+  }, []);
 
   const { options: apiOptions, loading: optionLoading } = useJobFilterOptions();
+
+  useEffect(() => {
+    hasAppliedPreferencesRef.current = false;
+  }, [user?.uid]);
 
   // Function to fetch and map job preferences
   const fetchAndMapJobPreferences = useCallback(async () => {
@@ -74,110 +90,55 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
     try {
       const response = await fetch(JOB_PREFERENCES_API);
       const data = await response.json();
-      const userPreferences = Array.isArray(data)
-        ? data.find((pref) => pref.firebase_uid === user.uid)
-        : null;
+
+      const resolvePreferences = (payload) => {
+        if (Array.isArray(payload)) {
+          return payload;
+        }
+
+        if (payload && Array.isArray(payload.value)) {
+          return payload.value;
+        }
+
+        if (payload && typeof payload.body === 'string') {
+          try {
+            const parsedBody = JSON.parse(payload.body);
+            return resolvePreferences(parsedBody);
+          } catch (error) {
+            console.error('Error parsing job preference body:', error);
+          }
+        }
+
+        if (payload && payload.body && Array.isArray(payload.body.value)) {
+          return payload.body.value;
+        }
+
+        return [];
+      };
+
+      const preferencesArray = resolvePreferences(data);
+      const userPreferences = preferencesArray.find((pref) => pref.firebase_uid === user.uid) || null;
 
       if (!userPreferences) {
         return;
       }
 
-      const toOptionList = (items) =>
-        Array.isArray(items)
-          ? items.map((value) => ({ value, label: value }))
-          : [];
-
-      const jobTypeMappings = (() => {
-        switch (userPreferences.Job_Type) {
-          case 'teaching':
-            return {
-              job_category: { value: 'fullTime', label: 'Full Time' },
-              subjects: toOptionList(userPreferences.teaching_subjects),
-              designations: toOptionList(userPreferences.teaching_designations),
-              designated_grades: toOptionList(userPreferences.teaching_grades),
-              curriculum: toOptionList(userPreferences.teaching_curriculum),
-              core_expertise: toOptionList(userPreferences.teaching_coreExpertise)
-            };
-          case 'administration':
-            return {
-              job_category: { value: 'fullTime', label: 'Full Time' },
-              designations: toOptionList(userPreferences.administrative_designations),
-              curriculum: toOptionList(userPreferences.administrative_curriculum)
-            };
-          case 'teaching_administrative':
-            return {
-              job_category: { value: 'fullTime', label: 'Full Time' },
-              subjects: toOptionList(userPreferences.teaching_administrative_subjects),
-              designations: toOptionList(userPreferences.teaching_administrative_designations),
-              designated_grades: toOptionList(userPreferences.teaching_administrative_grades),
-              curriculum: toOptionList(userPreferences.teaching_administrative_curriculum),
-              core_expertise: toOptionList(userPreferences.teaching_administrative_coreExpertise)
-            };
-          default:
-            return {};
-        }
-      })();
-
-      const jobProcess = userPreferences.full_time_online && userPreferences.full_time_offline
-        ? { value: 'Hybrid', label: 'Hybrid' }
-        : userPreferences.full_time_online
-        ? { value: 'Online', label: 'Online' }
-        : { value: 'Regular', label: 'Regular (Offline)' };
-
-      const jobShifts = userPreferences.part_time_weekdays_offline || userPreferences.part_time_weekdays_online
-        ? { value: 'Week days', label: 'Week days' }
-        : userPreferences.part_time_weekends_offline || userPreferences.part_time_weekends_online
-        ? { value: 'Week ends', label: 'Week ends' }
-        : null;
-
-      setFilters((prev) => {
-        const locationUpdates = {
-          country: userPreferences.preferred_country
-            ? {
-                value: userPreferences.preferred_country,
-                label: userPreferences.preferred_country
-              }
-            : null,
-          state: userPreferences.preferred_state
-            ? {
-                value: userPreferences.preferred_state,
-                label: userPreferences.preferred_state
-              }
-            : null,
-          city: userPreferences.preferred_city
-            ? {
-                value: userPreferences.preferred_city,
-                label: userPreferences.preferred_city
-              }
-            : null
-        };
-
-        const newFilters = {
-          ...prev,
-          ...jobTypeMappings,
-          ...locationUpdates,
-          job_process: jobProcess,
-          job_shifts: jobShifts
-        };
-
-        try {
-          localStorage.setItem('jobFilters', JSON.stringify(newFilters));
-        } catch (storageError) {
-          console.error('Error saving filters:', storageError);
-        }
-
-        return newFilters;
+      setUserPreferencesData(userPreferences);
+      hasAppliedPreferencesRef.current = false;
+      setPendingLocationPref({
+        country: userPreferences.preferred_country || null,
+        state: userPreferences.preferred_state || null,
+        city: userPreferences.preferred_city || null
       });
     } catch (error) {
       console.error('Error fetching job preferences:', error);
     }
-  }, [user]);
+  }, [user, saveFiltersToStorage]);
 
   // Static filter options - Updated to match actual API data format
-  const filterOptions = {
+  const filterOptions = useMemo(() => ({
     jobCategories: [
       { value: 'fullTime', label: 'Full Time' },
-      { value: 'Full-time', label: 'Full Time' },
       { value: 'fullPart', label: 'Full Time / Part Time' },
       { value: 'partTime', label: 'Part Time' },
       { value: 'contract', label: 'Contract' },
@@ -188,10 +149,6 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
       { value: 'All days', label: 'All days' },
       { value: 'Week ends', label: 'Week ends' },
       { value: 'Vacations', label: 'Vacations' },
-      { value: 'week days', label: 'Week days' },
-      { value: 'all days', label: 'All days' },
-      { value: 'week ends', label: 'Week ends' },
-      { value: 'vacations', label: 'Vacations' }
     ],
     jobProcesses: [
       { value: 'Regular', label: 'Regular (Offline)' },
@@ -205,7 +162,7 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
       { value: 'Private tuitions', label: 'Private tuitions' },
       { value: 'Home Tuitions', label: 'Home Tuitions' }
     ]
-  };
+  }), []);
 
   // Location options state
   const [locationOptions, setLocationOptions] = useState({
@@ -218,6 +175,266 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
   useEffect(() => {
     fetchAndMapJobPreferences();
   }, [fetchAndMapJobPreferences]);
+
+  useEffect(() => {
+    if (!userPreferencesData || hasAppliedPreferencesRef.current) {
+      return;
+    }
+
+    const normalize = (value) =>
+      String(value ?? '')
+        .toLowerCase()
+        .replace(/\s+/g, '')
+        .trim();
+
+    const matchOrCreateOption = (rawValue, optionList = []) => {
+      if (rawValue === undefined || rawValue === null || rawValue === '') {
+        return null;
+      }
+
+      const rawLabel =
+        typeof rawValue === 'object' && rawValue !== null
+          ? rawValue.label ?? rawValue.value
+          : rawValue;
+      const rawStoredValue =
+        typeof rawValue === 'object' && rawValue !== null
+          ? rawValue.value ?? rawValue.label
+          : rawValue;
+
+      const normalizedLabel = normalize(rawLabel);
+      const normalizedValue = normalize(rawStoredValue);
+
+      const matchedOption = optionList.find((option) => {
+        const optionLabel = normalize(option.label);
+        const optionValue = normalize(option.value);
+        return (
+          (optionLabel && optionLabel === normalizedLabel) ||
+          (optionValue && optionValue === normalizedValue)
+        );
+      });
+
+      if (matchedOption) {
+        return matchedOption;
+      }
+
+      const label =
+        typeof rawLabel === 'string' && rawLabel.trim().length > 0
+          ? rawLabel
+          : String(rawStoredValue ?? '').trim();
+
+      const value =
+        typeof rawStoredValue === 'string' && rawStoredValue.trim().length > 0
+          ? rawStoredValue
+          : label;
+
+      if (!label) {
+        return null;
+      }
+
+      return { value, label };
+    };
+
+    const mapListToOptions = (values, optionList = []) => {
+      if (!Array.isArray(values) || values.length === 0) {
+        return [];
+      }
+
+      const unique = new Map();
+
+      values.forEach((item) => {
+        const option = matchOrCreateOption(item, optionList);
+        if (!option) {
+          return;
+        }
+
+        const key = normalize(option.value) || normalize(option.label);
+        if (key && !unique.has(key)) {
+          unique.set(key, option);
+        }
+      });
+
+      return Array.from(unique.values());
+    };
+
+    const isTruthy = (value) => {
+      if (value === null || value === undefined) return false;
+      if (typeof value === 'boolean') return value;
+      if (typeof value === 'number') return value !== 0;
+      const normalized = String(value).toLowerCase();
+      return ['1', 'true', 'yes', 'activelysearching', 'available', 'looking'].includes(
+        normalized.replace(/\s+/g, '')
+      );
+    };
+
+    const hasFullTimeOnline = isTruthy(userPreferencesData.full_time_online);
+    const hasFullTimeOffline = isTruthy(userPreferencesData.full_time_offline);
+    const hasPartTimeWeekdays =
+      isTruthy(userPreferencesData.part_time_weekdays_offline) ||
+      isTruthy(userPreferencesData.part_time_weekdays_online);
+    const hasPartTimeWeekends =
+      isTruthy(userPreferencesData.part_time_weekends_offline) ||
+      isTruthy(userPreferencesData.part_time_weekends_online);
+    const hasPartTimeVacations =
+      isTruthy(userPreferencesData.part_time_vacations_offline) ||
+      isTruthy(userPreferencesData.part_time_vacations_online);
+
+    const hasPartTime =
+      hasPartTimeWeekdays || hasPartTimeWeekends || hasPartTimeVacations;
+    const hasFullTime = hasFullTimeOnline || hasFullTimeOffline;
+
+    let jobCategoryLabel = null;
+    if (hasFullTime && hasPartTime) {
+      jobCategoryLabel = 'Full Time / Part Time';
+    } else if (hasFullTime) {
+      jobCategoryLabel = 'Full Time';
+    } else if (hasPartTime) {
+      jobCategoryLabel = 'Part Time';
+    }
+
+    const jobCategoryOption = matchOrCreateOption(
+      jobCategoryLabel,
+      filterOptions.jobCategories
+    );
+
+    const jobProcessOption = (() => {
+      if (hasFullTimeOnline && hasFullTimeOffline) {
+        return matchOrCreateOption('Hybrid', filterOptions.jobProcesses);
+      }
+      if (hasFullTimeOnline) {
+        return matchOrCreateOption('Online', filterOptions.jobProcesses);
+      }
+      if (hasFullTimeOffline) {
+        return matchOrCreateOption('Regular', filterOptions.jobProcesses);
+      }
+      return null;
+    })();
+
+    const jobShiftsOption = (() => {
+      if (hasPartTimeWeekdays && hasPartTimeWeekends) {
+        return matchOrCreateOption('All days', filterOptions.jobShifts);
+      }
+      if (hasPartTimeWeekdays) {
+        return matchOrCreateOption('Week days', filterOptions.jobShifts);
+      }
+      if (hasPartTimeWeekends) {
+        return matchOrCreateOption('Week ends', filterOptions.jobShifts);
+      }
+      if (hasPartTimeVacations) {
+        return matchOrCreateOption('Vacations', filterOptions.jobShifts);
+      }
+      return null;
+    })();
+
+    const jobSubProcessOption = (() => {
+      const mapping = [
+        {
+          condition:
+            isTruthy(userPreferencesData.Home_Tutor_offline) ||
+            isTruthy(userPreferencesData.Home_Tutor_online),
+          label: 'Home Tuitions'
+        },
+        {
+          condition:
+            isTruthy(userPreferencesData.Private_Tutor_offline) ||
+            isTruthy(userPreferencesData.Private_Tutor_online) ||
+            isTruthy(userPreferencesData.Private_Tutions_online_online),
+          label: 'Private tuitions'
+        },
+        {
+          condition:
+            isTruthy(userPreferencesData.Group_Tutor_offline) ||
+            isTruthy(userPreferencesData.Group_Tutor_online),
+          label: 'Group tuition'
+        },
+        {
+          condition:
+            isTruthy(userPreferencesData.coaching_institute_offline) ||
+            isTruthy(userPreferencesData.coaching_institute_online),
+          label: 'Tuition Center'
+        },
+        {
+          condition:
+            isTruthy(userPreferencesData.school_college_university_online) ||
+            isTruthy(userPreferencesData.Ed_TechCompanies_online),
+          label: 'Online'
+        }
+      ];
+
+      const entry = mapping.find((item) => item.condition);
+      return entry ? matchOrCreateOption(entry.label, filterOptions.jobSubProcesses) : null;
+    })();
+
+    const subjects = mapListToOptions(
+      [
+        ...(userPreferencesData.teaching_subjects || []),
+        ...(userPreferencesData.teaching_administrative_subjects || [])
+      ],
+      apiOptions.subjects
+    );
+
+    const designations = mapListToOptions(
+      [
+        ...(userPreferencesData.teaching_designations || []),
+        ...(userPreferencesData.administrative_designations || []),
+        ...(userPreferencesData.teaching_administrative_designations || [])
+      ],
+      apiOptions.designations
+    );
+
+    const grades = mapListToOptions(
+      [
+        ...(userPreferencesData.teaching_grades || []),
+        ...(userPreferencesData.teaching_administrative_grades || [])
+      ],
+      apiOptions.grades
+    );
+
+    const curriculum = mapListToOptions(
+      [
+        ...(userPreferencesData.teaching_curriculum || []),
+        ...(userPreferencesData.administrative_curriculum || []),
+        ...(userPreferencesData.teaching_administrative_curriculum || [])
+      ],
+      apiOptions.curriculum
+    );
+
+    const coreExpertise = mapListToOptions(
+      [
+        ...(userPreferencesData.teaching_coreExpertise || []),
+        ...(userPreferencesData.teaching_administrative_coreExpertise || [])
+      ],
+      apiOptions.coreExpertise
+    );
+
+    const preferenceFilters = {};
+
+    if (jobCategoryOption) preferenceFilters.job_category = jobCategoryOption;
+    if (subjects.length > 0) preferenceFilters.subjects = subjects;
+    if (designations.length > 0) preferenceFilters.designations = designations;
+    if (grades.length > 0) preferenceFilters.designated_grades = grades;
+    if (curriculum.length > 0) preferenceFilters.curriculum = curriculum;
+    if (coreExpertise.length > 0) preferenceFilters.core_expertise = coreExpertise;
+    if (jobProcessOption) preferenceFilters.job_process = jobProcessOption;
+    if (jobShiftsOption) preferenceFilters.job_shifts = jobShiftsOption;
+    if (jobSubProcessOption) preferenceFilters.job_sub_process = jobSubProcessOption;
+
+    if (Object.keys(preferenceFilters).length === 0) {
+      hasAppliedPreferencesRef.current = true;
+      return;
+    }
+
+    setFilters((prev) => {
+      const mergedFilters = {
+        ...prev,
+        ...preferenceFilters
+      };
+
+      saveFiltersToStorage(mergedFilters);
+      return mergedFilters;
+    });
+
+    hasAppliedPreferencesRef.current = true;
+  }, [apiOptions, filterOptions, saveFiltersToStorage, userPreferencesData]);
 
   // Fetch applied jobs for current user
   const fetchAppliedJobs = useCallback(async () => {
@@ -304,11 +521,34 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
           states
         }));
 
-        setFilters(prev => ({
-          ...prev,
-          state: null,
-          city: null
-        }));
+        setFilters(prev => {
+          const currentState = prev.state;
+          const currentStateLabel = String(currentState?.label || currentState?.value || '').toLowerCase();
+          const hasMatchingState = states.some((stateOption) => {
+            const optionLabel = String(stateOption.label || '').toLowerCase();
+            if (currentState?.value !== undefined && currentState?.value !== null && stateOption.value === currentState.value) {
+              return true;
+            }
+            return optionLabel === currentStateLabel && currentStateLabel !== '';
+          });
+
+          if (hasMatchingState) {
+            return prev;
+          }
+
+          if (prev.state === null && prev.city === null) {
+            return prev;
+          }
+
+          const updatedFilters = {
+            ...prev,
+            state: null,
+            city: null
+          };
+
+          saveFiltersToStorage(updatedFilters);
+          return updatedFilters;
+        });
       });
     } else {
       setLocationOptions(prev => ({
@@ -317,7 +557,7 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
         cities: []
       }));
     }
-  }, [filters.country]);
+  }, [filters.country, saveFiltersToStorage]);
 
   // Update cities when state changes
   useEffect(() => {
@@ -335,11 +575,33 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
           cities
         }));
 
-        // Reset city selection
-        setFilters(prev => ({
-          ...prev,
-          city: null
-        }));
+        setFilters(prev => {
+          const currentCity = prev.city;
+          const currentCityLabel = String(currentCity?.label || currentCity?.value || '').toLowerCase();
+          const hasMatchingCity = cities.some((cityOption) => {
+            const optionLabel = String(cityOption.label || '').toLowerCase();
+            if (currentCity?.value !== undefined && currentCity?.value !== null && cityOption.value === currentCity.value) {
+              return true;
+            }
+            return optionLabel === currentCityLabel && currentCityLabel !== '';
+          });
+
+          if (hasMatchingCity) {
+            return prev;
+          }
+
+          if (prev.city === null) {
+            return prev;
+          }
+
+          const updatedFilters = {
+            ...prev,
+            city: null
+          };
+
+          saveFiltersToStorage(updatedFilters);
+          return updatedFilters;
+        });
       });
     } else {
       setLocationOptions(prev => ({
@@ -347,7 +609,146 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
         cities: []
       }));
     }
-  }, [filters.country, filters.state]);
+  }, [filters.country, filters.state, saveFiltersToStorage]);
+
+  useEffect(() => {
+    if (!pendingLocationPref.country || locationOptions.countries.length === 0) {
+      return;
+    }
+
+    const preferredCountry = String(pendingLocationPref.country || '').toLowerCase();
+
+    if (!preferredCountry) {
+      setPendingLocationPref(prev => ({ ...prev, country: null }));
+      return;
+    }
+
+    const countryOption = locationOptions.countries.find(
+      (option) => option.label?.toLowerCase() === preferredCountry
+    );
+
+    setPendingLocationPref(prev => ({ ...prev, country: null }));
+
+    if (!countryOption) {
+      return;
+    }
+
+    setFilters(prev => {
+      if (prev.country?.value === countryOption.value) {
+        return prev;
+      }
+
+      const updatedFilters = {
+        ...prev,
+        country: countryOption
+      };
+
+      saveFiltersToStorage(updatedFilters);
+      return updatedFilters;
+    });
+  }, [pendingLocationPref.country, locationOptions.countries, saveFiltersToStorage]);
+
+  useEffect(() => {
+    if (!pendingLocationPref.state || locationOptions.states.length === 0) {
+      return;
+    }
+
+    const preferredState = String(pendingLocationPref.state || '').toLowerCase();
+    if (!preferredState) {
+      setPendingLocationPref(prev => ({ ...prev, state: null }));
+      return;
+    }
+
+    const preferredCountryLabel = String(userPreferencesData?.preferred_country || '').toLowerCase();
+    const selectedCountryLabel = String(
+      filters.country?.label || filters.country?.value || ''
+    ).toLowerCase();
+
+    if (preferredCountryLabel && selectedCountryLabel !== preferredCountryLabel) {
+      return;
+    }
+
+    const stateOption = locationOptions.states.find(
+      (option) => option.label?.toLowerCase() === preferredState
+    );
+
+    setPendingLocationPref(prev => ({ ...prev, state: null }));
+
+    if (!stateOption) {
+      return;
+    }
+
+    setFilters(prev => {
+      if (prev.state?.value === stateOption.value) {
+        return prev;
+      }
+
+      const updatedFilters = {
+        ...prev,
+        state: stateOption
+      };
+
+      saveFiltersToStorage(updatedFilters);
+      return updatedFilters;
+    });
+  }, [
+    pendingLocationPref.state,
+    locationOptions.states,
+    filters.country,
+    userPreferencesData,
+    saveFiltersToStorage
+  ]);
+
+  useEffect(() => {
+    if (!pendingLocationPref.city || locationOptions.cities.length === 0) {
+      return;
+    }
+
+    const preferredCity = String(pendingLocationPref.city || '').toLowerCase();
+    if (!preferredCity) {
+      setPendingLocationPref(prev => ({ ...prev, city: null }));
+      return;
+    }
+
+    const preferredStateLabel = String(userPreferencesData?.preferred_state || '').toLowerCase();
+    const selectedStateLabel = String(
+      filters.state?.label || filters.state?.value || ''
+    ).toLowerCase();
+
+    if (preferredStateLabel && selectedStateLabel !== preferredStateLabel) {
+      return;
+    }
+
+    const cityOption = locationOptions.cities.find(
+      (option) => option.label?.toLowerCase() === preferredCity
+    );
+
+    setPendingLocationPref(prev => ({ ...prev, city: null }));
+
+    if (!cityOption) {
+      return;
+    }
+
+    setFilters(prev => {
+      if (prev.city?.value === cityOption.value) {
+        return prev;
+      }
+
+      const updatedFilters = {
+        ...prev,
+        city: cityOption
+      };
+
+      saveFiltersToStorage(updatedFilters);
+      return updatedFilters;
+    });
+  }, [
+    pendingLocationPref.city,
+    locationOptions.cities,
+    filters.state,
+    userPreferencesData,
+    saveFiltersToStorage
+  ]);
 
 
   // Generate consistent job ID based on job content (not array position)
@@ -405,12 +806,7 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
       [field]: value
     };
     
-    // Save to localStorage
-    try {
-      localStorage.setItem('jobFilters', JSON.stringify(newFilters));
-    } catch (error) {
-      console.error('Error saving filters:', error);
-    }
+    saveFiltersToStorage(newFilters);
     
     setFilters(newFilters);
   };
@@ -427,7 +823,8 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
   };
 
   const handleReset = () => {
-    setFilters({ ...defaultJobFilters });
+    const resetFilters = { ...defaultJobFilters };
+    setFilters(resetFilters);
     setFilteredJobs(jobs);
     setCurrentPage(1);
     setHighlightedJobId(null); // Reset highlight on search reset

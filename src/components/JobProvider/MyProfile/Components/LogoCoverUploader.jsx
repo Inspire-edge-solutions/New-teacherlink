@@ -15,7 +15,7 @@ const PAN_ALLOWED_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/
 const IMAGE_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image";
 const PAN_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-institution-pancard";
 const ADDRESS_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-institution-addressproff";
-const ADDRESS_ALLOWED_TYPES = ["image/jpeg", "image/png", "application/pdf", "image/jpg"];
+const ADDRESS_ALLOWED_TYPES = ["application/pdf"];
 
 // PAN card validator for images using Tesseract OCR
 const validatePanCardImage = async (file) => {
@@ -274,7 +274,7 @@ const LogoCoverUploader = () => {
       return;
     }
     if (!ADDRESS_ALLOWED_TYPES.includes(file.type)) {
-      toast.error("Invalid file type. Only PDF, JPG, JPEG, PNG allowed.");
+      toast.error("Invalid file type. Only PDF files are allowed.");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
@@ -354,7 +354,7 @@ const LogoCoverUploader = () => {
             type="file"
             id="address-proof-upload"
             className="hidden"
-            accept="image/*,application/pdf"
+            accept="application/pdf"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) setAddressProofFile(file);

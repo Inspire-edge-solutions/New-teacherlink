@@ -84,31 +84,31 @@ const ContactUs = () => {
                 {/* Contact Details */}
                 <div className="space-y-8">
                   {/* Address */}
-                  <div className="flex items-start space-x-4">
-                    <div className="w-6 h-6 mt-1 text-red-600">
+                  <div className="flex flex-col">
+                    <div className="flex items-center space-x-3 text-red-600">
                       <MdLocationOn className="w-6 h-6" />
-                    </div>
-                    <div>
                       <p className="text-lg font-semibold text-gray-900">Address</p>
-                      <p className="text-gray-800 leading-relaxed">
-                        Pulikeshi Nagar, Bengaluru, Karnataka, India 560005
-                      </p>
                     </div>
+                    <p className="mt-3 text-gray-800 leading-relaxed">
+                      Pulikeshi Nagar, Bengaluru, Karnataka, India 560005
+                    </p>
                   </div>
 
                   {/* Contact Support */}
-                  <div className="flex items-start space-x-4">
-                    <div className="w-6 h-6 mt-1 text-red-600">
+                  <div className="flex flex-col">
+                    <div className="flex items-center space-x-3 text-red-600">
                       <MdPhone className="w-6 h-6" />
-                    </div>
-                    <div className="space-y-1">
                       <p className="text-lg font-semibold text-gray-900">Contact Support</p>
-                      <p className="text-gray-700"><span className="font-semibold">Timings:</span> 11:00 AM to 6:00 PM</p>
-                      <p className="text-gray-800">
+                    </div>
+                    <div className="mt-3 space-y-1 text-gray-800">
+                      <p className="text-gray-700">
+                        <span className="font-semibold">Timings:</span> 11:00 AM to 6:00 PM
+                      </p>
+                      <p>
                         <span className="font-semibold">General Support:</span>
                         <a href="tel:+919980333603" className="ml-2 hover:text-red-600 transition-colors">+91 9980833603</a>
                       </p>
-                      <p className="text-gray-800">
+                      <p>
                         <span className="font-semibold">Technical Support:</span>
                         <a href="tel:+919100731810" className="ml-2 hover:text-red-600 transition-colors">+91 9100731810</a>
                       </p>
@@ -116,20 +116,30 @@ const ContactUs = () => {
                   </div>
 
                   {/* Contact Email */}
-                  <div className="flex items-start space-x-4">
-                    <div className="w-6 h-6 mt-1 text-red-600">
+                  <div className="flex flex-col">
+                    <div className="flex items-center space-x-3 text-red-600">
                       <MdEmail className="w-6 h-6" />
-                    </div>
-                    <div className="space-y-1">
                       <p className="text-lg font-semibold text-gray-900">Contact Email</p>
-                      <p className="text-gray-800">
+                    </div>
+                    <div className="mt-3 space-y-3 sm:space-y-1">
+                      <div className="text-gray-800 flex flex-col sm:flex-row sm:items-baseline">
                         <span className="font-semibold">General Support:</span>
-                        <a href="mailto:info@inspireedgesolutions.com" className="ml-2 hover:text-red-600 transition-colors">info@inspireedgesolutions.com</a>
-                      </p>
-                      <p className="text-gray-800">
+                        <a
+                          href="mailto:info@inspireedgesolutions.com"
+                          className="sm:ml-2 mt-1 sm:mt-0 hover:text-red-600 transition-colors break-all"
+                        >
+                          info@inspireedgesolutions.com
+                        </a>
+                      </div>
+                      <div className="text-gray-800 flex flex-col sm:flex-row sm:items-baseline">
                         <span className="font-semibold">Technical Support:</span>
-                        <a href="mailto:support@inspireedgesolutions.com" className="ml-2 hover:text-red-600 transition-colors">support@inspireedgesolutions.com</a>
-                      </p>
+                        <a
+                          href="mailto:support@inspireedgesolutions.com"
+                          className="sm:ml-2 mt-1 sm:mt-0 hover:text-red-600 transition-colors break-all"
+                        >
+                          support@inspireedgesolutions.com
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>

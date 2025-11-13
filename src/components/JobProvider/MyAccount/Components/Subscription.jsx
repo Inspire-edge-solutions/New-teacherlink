@@ -337,9 +337,9 @@ const Subscription = () => {
         <div className="mb-6 sm:mb-8">
           {/* Title */}
           <div className="mb-4 sm:mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-center sm:text-left" style={{ background: 'linear-gradient(to right, #F34B58, #A1025D)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Subscription plans
-            </h1>
+          <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent">
+                Subscription plans
+              </h2>
           </div>
           
           {/* Segmented Control and Payment History */}

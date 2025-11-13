@@ -381,20 +381,6 @@ const AppliedJobs = ({ highlightJobId }) => {
     return `${city}, ${state}`;
   };
 
-  if (loading || userLoading) {
-    return (
-      <div className="widget-content">
-        <div className="py-10">
-          <LoadingState
-            title="Loading applied jobs…"
-            subtitle="We’re gathering the positions you’ve already applied to so you can track progress."
-            layout="card"
-          />
-        </div>
-      </div>
-    );
-  }
-
   const scrollToJob = useCallback((jobId) => {
     if (!jobId) {
       console.warn('AppliedJobs scrollToJob: No jobId provided');
@@ -480,9 +466,19 @@ const AppliedJobs = ({ highlightJobId }) => {
   }, [highlightJobId, scrollToJob, highlightedJobId]);
 
   // Function to handle viewing a job
+  const isInitialising = loading || userLoading;
+
   return (
     <div className="widget-content">
-      {selectedJob ? (
+      {isInitialising ? (
+        <div className="py-10">
+          <LoadingState
+            title="Loading applied jobs…"
+            subtitle="We’re gathering the positions you’ve already applied to so you can track progress."
+            layout="card"
+          />
+        </div>
+      ) : selectedJob ? (
         <ViewJobs job={selectedJob} onBack={handleBackFromJobView} />
       ) : (
         <>
@@ -521,7 +517,7 @@ const AppliedJobs = ({ highlightJobId }) => {
                         onFavouriteJob={handleFavouriteJob}
                         onMessage={handleMessage}
                         messageDisabled={false}
-                        messageTooltip={!isApplied ? 'Apply to message this institute' : ''}
+                        messageTooltip=""
                         isHighlighted={highlightedJobId === jobId}
                       />
                     );

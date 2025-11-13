@@ -159,6 +159,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
   const confirmPostSavedJob = async () => {
     try {
       const jobData = { ...selectedJob };
+      const savedJobId = selectedJob?.id;
       delete jobData.id; // Remove ID to create new job
       delete jobData.created_at; // Remove created date
       
@@ -168,6 +169,25 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
         { headers: { "Content-Type": "application/json" } }
       );
       
+      // Remove the saved job after successful posting so it no longer appears in drafts
+      if (savedJobId) {
+        try {
+          await axios.delete(
+            `https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/closeJob`,
+            {
+              data: [savedJobId],
+              headers: { "Content-Type": "application/json" }
+            }
+          );
+        } catch (deleteError) {
+          console.error('Error removing saved job after posting:', deleteError);
+        }
+      }
+
+      // Optimistically update local state to reflect removal
+      setSavedJobs(prev => prev.filter(job => job.id !== savedJobId));
+      setFilteredJobs(prev => prev.filter(job => job.id !== savedJobId));
+
       toast.success('Job posted successfully!');
       setShowConfirmDialog(false);
       setSelectedJob(null);

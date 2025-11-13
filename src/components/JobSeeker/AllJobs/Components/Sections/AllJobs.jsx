@@ -64,6 +64,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
   // Filter state
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState(new Set());
+  const [hasFiltersApplied, setHasFiltersApplied] = useState(false);
   const [filteredJobsByFilters, setFilteredJobsByFilters] = useState([]);
   const [currentFilters, setCurrentFilters] = useState(() => {
     try {
@@ -231,9 +232,14 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
     setCurrentFilters(filters);
     const { filteredJobs, activeFilters, hasActiveFilters } = applyJobFilters(jobs, filters);
 
+    setHasFiltersApplied(hasActiveFilters);
+
     if (hasActiveFilters) {
       setFilteredJobsByFilters(filteredJobs);
       setActiveFilters(new Set(activeFilters));
+      if (filteredJobs.length === 0) {
+        toast.info('No jobs match your filters. Try adjusting your selections.');
+      }
     } else {
       setFilteredJobsByFilters([]);
       setActiveFilters(new Set());
@@ -250,6 +256,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
     setCurrentFilters(null);
     setFilteredJobsByFilters([]);
     setActiveFilters(new Set());
+    setHasFiltersApplied(false);
     if (!skipPageResetRef.current) {
       setHighlightedJobId(null);
       setCurrentPage(1);
@@ -272,9 +279,11 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
     if (hasActiveFilters) {
       setFilteredJobsByFilters(filteredJobs);
       setActiveFilters(new Set(activeKeys));
+      setHasFiltersApplied(true);
     } else {
       setFilteredJobsByFilters([]);
       setActiveFilters(new Set());
+      setHasFiltersApplied(false);
     }
   }, [jobs, currentFilters]);
 
@@ -941,22 +950,23 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
   // Combine search and filter results
   const getCombinedResults = useCallback(() => {
     let baseJobs = jobs;
-    
-    // Apply filters first if any are active
-    if (activeFilters.size > 0 && filteredJobsByFilters.length > 0) {
-      baseJobs = filteredJobsByFilters;
+
+    if (hasFiltersApplied) {
+      baseJobs = filteredJobsByFilters.length > 0 ? filteredJobsByFilters : jobs;
     }
-    
-    // Then apply search if searching
-    if (isSearching && searchResults.length > 0) {
-      return searchResults.filter(job => 
-        filteredJobsByFilters.length === 0 || 
-        filteredJobsByFilters.some(filteredJob => filteredJob.id === job.id)
-      );
+
+    if (isSearching) {
+      if (searchResults.length > 0) {
+        return searchResults.filter(job =>
+          filteredJobsByFilters.length === 0 ||
+          filteredJobsByFilters.some(filteredJob => filteredJob.id === job.id)
+        );
+      }
+      // No search matches; fall back to current baseJobs
     }
-    
+
     return baseJobs;
-  }, [jobs, activeFilters, filteredJobsByFilters, isSearching, searchResults]); 
+  }, [jobs, hasFiltersApplied, filteredJobsByFilters, isSearching, searchResults]); 
  
   const finalFilteredJobs = getCombinedResults();
 
@@ -1226,6 +1236,41 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
           />
         </div>
 
+        {(hasFiltersApplied && filteredJobsByFilters.length === 0) || (isSearching && searchResults.length === 0) ? (
+          <div className="p-4 mb-4 rounded bg-amber-50 border border-amber-200 text-amber-800">
+            {hasFiltersApplied && filteredJobsByFilters.length === 0 && (
+              <div className="mb-3">
+                <p className="font-semibold mb-1">No jobs match your filters.</p>
+                <p className="mb-3 text-sm">
+                  We’re showing all available jobs instead. Adjust your selections or reset them to refine the results.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    className="px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-primary-hover focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    onClick={() => setShowFilters(true)}
+                  >
+                    Adjust Filters
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
+                    onClick={handleResetFilters}
+                  >
+                    Reset Filters
+                  </button>
+                </div>
+              </div>
+            )}
+            {isSearching && searchResults.length === 0 && (
+              <div>
+                <p className="font-semibold mb-1">No jobs match your search.</p>
+                <p className="text-sm">
+                  Showing all available jobs. Try a different keyword or clear your search to explore more opportunities.
+                </p>
+              </div>
+            )}
+          </div>
+        ) : null}
+
         {currentJobs.length > 0 ? (
           <div className="job-results">
             <div className="job-list">
@@ -1264,7 +1309,43 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
                 alt="No jobs" 
                 className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
               />
-              <p className="text-gray-600 text-lg font-medium">No jobs available at the moment.</p>
+          {hasFiltersApplied ? (
+            <>
+              <p className="text-gray-700 text-lg font-semibold mb-2">
+                No jobs match your filters.
+              </p>
+              <p className="text-gray-600 mb-4">
+                Try adjusting your selections or clear them to see more opportunities.
+              </p>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setShowFilters(true)}
+                >
+                  Adjust Filters
+                </button>
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={handleResetFilters}
+                >
+                  Reset Filters
+                </button>
+              </div>
+            </>
+          ) : isSearching ? (
+            <>
+              <p className="text-gray-700 text-lg font-semibold mb-2">
+                No jobs found for your search.
+              </p>
+              <p className="text-gray-600">
+                Try a different keyword or clear the search to explore all openings.
+              </p>
+            </>
+          ) : (
+            <p className="text-gray-600 text-lg font-medium">
+              No jobs available at the moment.
+            </p>
+          )}
             </div>
           </div>
         )}
