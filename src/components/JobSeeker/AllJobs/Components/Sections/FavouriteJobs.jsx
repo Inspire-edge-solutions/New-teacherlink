@@ -1,3 +1,6 @@
+//FavouriteJobs.jsx
+
+
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { IoLocationOutline } from "react-icons/io5";
 import { BsBriefcase, BsCash, BsMortarboard } from "react-icons/bs";
@@ -536,10 +539,13 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJ
         // Send WhatsApp notification
         await JobApiService.sendWhatsAppToInstitution(selectedJob, user);
         
-        // Record coin history
-        const personalDetails = await JobApiService.getUserPersonalDetails(user);
-        if (personalDetails?.id) {
-          await JobApiService.recordCoinHistory(selectedJob, user, 30, personalDetails.id);
+        // Record coin history (always record, even if candidateId is missing)
+        try {
+          const personalDetails = await JobApiService.getUserPersonalDetails(user);
+          await JobApiService.recordCoinHistory(selectedJob, user, 30, personalDetails?.id || null);
+        } catch (historyError) {
+          console.error('Failed to record coin history:', historyError);
+          // Don't fail the application if history recording fails
         }
       } else if (result.status === "already") {
         setApplyStatus("already");
@@ -648,6 +654,7 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJ
             <div className="job-list">
               {currentJobs.map((job, index) => {
                 const jobId = getJobId(job);
+                const jobIdString = String(jobId);
                 const isSaved = savedJobs.includes(jobId);
                 const isApplied = appliedJobs.includes(jobId);
                 
@@ -667,6 +674,9 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJ
                     messageDisabled={!isApplied}
                     messageTooltip={!isApplied ? 'Apply to message this institute' : ''}
                     isHighlighted={highlightedJobId === jobId}
+                    showCheckbox={true}
+                    isChecked={selectedJobs.has(jobIdString)}
+                    onCheckboxChange={handleCheckboxChange}
                   />
                 );
               })}

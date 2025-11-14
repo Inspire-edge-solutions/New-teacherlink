@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoLocationOutline } from "react-icons/io5";
 import { BsBriefcase, BsCash, BsMortarboard } from "react-icons/bs";
@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import SearchBar from '../shared/SearchBar';
 import ApplyModal from '../shared/ApplyModal';
 import JobCard from '../shared/JobCard';
-import JobApiService from '../shared/JobApiService';
+import JobApiService, { formatPhone } from '../shared/JobApiService';
 import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import FilterPanel from '../shared/FilterPanel';
@@ -198,9 +198,14 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
     fetchSavedAndFavJobs();
   }, [user, fetchSavedAndFavJobs]);
 
+  // Only update filteredJobs when jobs change AND we're not searching/filtering
   useEffect(() => {
+    // Don't update if we're actively searching or filtering
+    if (isSearching || activeFilters.size > 0) {
+      return;
+    }
     setFilteredJobs(sortJobsByRecency(jobs));
-  }, [jobs, sortJobsByRecency]);
+  }, [jobs, sortJobsByRecency, isSearching, activeFilters]);
 
   // SEARCH functionality
   const handleSearch = useCallback((searchTerm) => {
@@ -927,10 +932,13 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
         // Send WhatsApp notification
         await JobApiService.sendWhatsAppToInstitution(selectedJob, user);
         
-        // Record coin history
-        const personalDetails = await JobApiService.getUserPersonalDetails(user);
-        if (personalDetails?.id) {
-          await JobApiService.recordCoinHistory(selectedJob, user, 100, personalDetails.id);
+        // Record coin history (always record, even if candidateId is missing)
+        try {
+          const personalDetails = await JobApiService.getUserPersonalDetails(user);
+          await JobApiService.recordCoinHistory(selectedJob, user, 100, personalDetails?.id || null);
+        } catch (historyError) {
+          console.error('Failed to record coin history:', historyError);
+          // Don't fail the application if history recording fails
         }
       } else if (result.status === "already") {
         setApplyStatus("already");
@@ -947,28 +955,25 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
     }
   };
 
-  // Combine search and filter results
-  const getCombinedResults = useCallback(() => {
+  // Combine search and filter results - memoized to prevent infinite loops
+  const finalFilteredJobs = useMemo(() => {
     let baseJobs = jobs;
-
-    if (hasFiltersApplied) {
-      baseJobs = filteredJobsByFilters.length > 0 ? filteredJobsByFilters : jobs;
+    
+    // Apply filters first if any are active
+    if (activeFilters.size > 0 && filteredJobsByFilters.length > 0) {
+      baseJobs = filteredJobsByFilters;
     }
-
-    if (isSearching) {
-      if (searchResults.length > 0) {
-        return searchResults.filter(job =>
-          filteredJobsByFilters.length === 0 ||
-          filteredJobsByFilters.some(filteredJob => filteredJob.id === job.id)
-        );
-      }
-      // No search matches; fall back to current baseJobs
+    
+    // Then apply search if searching
+    if (isSearching && searchResults.length > 0) {
+      return searchResults.filter(job => 
+        filteredJobsByFilters.length === 0 || 
+        filteredJobsByFilters.some(filteredJob => filteredJob.id === job.id)
+      );
     }
-
+    
     return baseJobs;
-  }, [jobs, hasFiltersApplied, filteredJobsByFilters, isSearching, searchResults]); 
- 
-  const finalFilteredJobs = getCombinedResults();
+  }, [jobs, activeFilters, filteredJobsByFilters, isSearching, searchResults]);
 
   const getJobPage = useCallback(
     (jobId) => {
@@ -1050,15 +1055,13 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
       return 'done';
     }
 
-    const filteredJobs = getCombinedResults();
-
     const jobExists = jobs.find(job => Number(job.id) === numericJobId);
     if (!jobExists) {
       console.warn('❌ Job not found in jobs list:', numericJobId);
       return 'done';
     }
 
-    const jobIndex = filteredJobs.findIndex(job => Number(job.id) === numericJobId);
+    const jobIndex = finalFilteredJobs.findIndex(job => Number(job.id) === numericJobId);
 
     if (jobIndex !== -1) {
       const targetPage = Math.floor(jobIndex / jobsPerPage) + 1;
@@ -1104,7 +1107,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
 
     tryFindAndScroll();
     return 'done';
-  }, [jobs, currentPage, jobsPerPage, getCombinedResults]);
+  }, [jobs, currentPage, jobsPerPage, finalFilteredJobs]);
 
   // Handle back from job view
   const handleBackFromJobView = useCallback((jobId) => {
@@ -1242,7 +1245,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
               <div className="mb-3">
                 <p className="font-semibold mb-1">No jobs match your filters.</p>
                 <p className="mb-3 text-sm">
-                  We’re showing all available jobs instead. Adjust your selections or reset them to refine the results.
+                  We're showing all available jobs instead. Adjust your selections or reset them to refine the results.
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <button
@@ -1309,43 +1312,43 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
                 alt="No jobs" 
                 className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
               />
-          {hasFiltersApplied ? (
-            <>
-              <p className="text-gray-700 text-lg font-semibold mb-2">
-                No jobs match your filters.
-              </p>
-              <p className="text-gray-600 mb-4">
-                Try adjusting your selections or clear them to see more opportunities.
-              </p>
-              <div className="flex flex-wrap gap-3 justify-center">
-                <button
-                  className="btn btn-primary"
-                  onClick={() => setShowFilters(true)}
-                >
-                  Adjust Filters
-                </button>
-                <button
-                  className="btn btn-outline-secondary"
-                  onClick={handleResetFilters}
-                >
-                  Reset Filters
-                </button>
-              </div>
-            </>
-          ) : isSearching ? (
-            <>
-              <p className="text-gray-700 text-lg font-semibold mb-2">
-                No jobs found for your search.
-              </p>
-              <p className="text-gray-600">
-                Try a different keyword or clear the search to explore all openings.
-              </p>
-            </>
-          ) : (
-            <p className="text-gray-600 text-lg font-medium">
-              No jobs available at the moment.
-            </p>
-          )}
+              {hasFiltersApplied ? (
+                <>
+                  <p className="text-gray-700 text-lg font-semibold mb-2">
+                    No jobs match your filters.
+                  </p>
+                  <p className="text-gray-600 mb-4">
+                    Try adjusting your selections or clear them to see more opportunities.
+                  </p>
+                  <div className="flex flex-wrap gap-3 justify-center">
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => setShowFilters(true)}
+                    >
+                      Adjust Filters
+                    </button>
+                    <button
+                      className="btn btn-outline-secondary"
+                      onClick={handleResetFilters}
+                    >
+                      Reset Filters
+                    </button>
+                  </div>
+                </>
+              ) : isSearching ? (
+                <>
+                  <p className="text-gray-700 text-lg font-semibold mb-2">
+                    No jobs found for your search.
+                  </p>
+                  <p className="text-gray-600">
+                    Try a different keyword or clear the search to explore all openings.
+                  </p>
+                </>
+              ) : (
+                <p className="text-gray-600 text-lg font-medium">
+                  No jobs available at the moment.
+                </p>
+              )}
             </div>
           </div>
         )}

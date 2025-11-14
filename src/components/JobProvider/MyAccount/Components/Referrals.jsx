@@ -380,11 +380,21 @@ const Referrals = ({ user, onSuccess }) => {
         reduction: null,
         reason: "10 members registered from refer"
       };
-      await fetch("https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(coinHistoryPayload)
-      });
+      try {
+        const historyResponse = await fetch("https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history", {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(coinHistoryPayload)
+        });
+        if (!historyResponse.ok) {
+          const errorText = await historyResponse.text();
+          throw new Error(`Failed to record coin history: ${historyResponse.status} - ${errorText}`);
+        }
+        console.log('Coin history recorded successfully for referral');
+      } catch (historyError) {
+        console.error('Error recording coin history for referral:', historyError);
+        // Don't fail the referral redemption if history recording fails, but log it
+      }
 
       toast.success("Congratulations! You have received your referral coins.");
       if (onSuccess) onSuccess();

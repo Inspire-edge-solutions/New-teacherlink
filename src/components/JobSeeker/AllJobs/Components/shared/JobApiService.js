@@ -37,7 +37,7 @@ const sortJobsByRecency = (jobs) => {
 };
 
 // Format phone number correctly with +91 prefix
-const formatPhone = (phone) => {
+export const formatPhone = (phone) => {
   if (!phone) return "";
 
   let clean = String(phone).replace(/\D/g, "");
@@ -333,19 +333,58 @@ class JobApiService {
   // Record coin history
   static async recordCoinHistory(job, user, coinCost, candidateId) {
     try {
-      await fetch(API_ENDPOINTS.COIN_HISTORY_API, {
+      const userId = getUserId(user);
+      if (!userId) {
+        console.error('Error recording coin history: User ID not found');
+        return;
+      }
+
+      // Get current coin balance after deduction
+      const coins = await this.getUserCoins(user);
+      const remainingCoins = coins; // This is already the balance after deduction from applyForJob
+
+      // Get organization details if available
+      let unblocked_candidate_id = null;
+      let unblocked_candidate_name = null;
+      if (job.firebase_uid) {
+        unblocked_candidate_id = job.firebase_uid;
+        try {
+          const orgRes = await fetch(`${API_ENDPOINTS.ORG_API}?firebase_uid=${job.firebase_uid}`);
+          if (orgRes.ok) {
+            const orgData = await orgRes.json();
+            const org = Array.isArray(orgData) && orgData.length > 0 ? orgData[0] : orgData;
+            unblocked_candidate_name = org?.name || org?.organization_name || null;
+          }
+        } catch (orgError) {
+          console.warn('Could not fetch organization details for coin history:', orgError);
+        }
+      }
+
+      const response = await fetch(API_ENDPOINTS.COIN_HISTORY_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          firebase_uid: userId,
           candidate_id: candidateId,
-          firebase_uid: getUserId(user),
-          coin_value: -coinCost,
-          description: `Applied for job: ${job.job_title}`,
-          job_id: job.id
+          job_id: job.id,
+          coin_value: remainingCoins, // Remaining balance after deduction
+          reduction: coinCost, // Amount deducted
+          reason: "Applied for the job",
+          unblocked_candidate_id,
+          unblocked_candidate_name
         })
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to record coin history: ${response.status} - ${errorText}`);
+      }
+
+      console.log('Coin history recorded successfully');
     } catch (error) {
       console.error('Error recording coin history:', error);
+      // Don't throw - we don't want to fail the job application if history recording fails
+      // But log it so we can debug
     }
   }
 

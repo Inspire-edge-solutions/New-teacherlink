@@ -39,6 +39,15 @@ const useJobMessaging = ({
   const [requiredCoins, setRequiredCoins] = useState(0);
 
   const userProfileRef = useRef(null);
+  const previousFilteredJobsRef = useRef(null);
+  const getJobIdRef = useRef(getJobId);
+  const previousCurrentJobsRef = useRef(null);
+  const previousSelectedJobsRef = useRef('');
+  
+  // Update ref when getJobId changes
+  useEffect(() => {
+    getJobIdRef.current = getJobId;
+  }, [getJobId]);
 
   const buildInstituteData = useCallback((job) => {
     if (!job) return null;
@@ -99,20 +108,59 @@ const useJobMessaging = ({
     });
   }, [currentJobs, getJobId]);
 
+  // Only reset selectedJobs when the actual job list changes (by comparing job IDs)
   useEffect(() => {
-    setSelectedJobs(new Set());
-    setSelectAll(false);
+    if (!Array.isArray(filteredJobs)) {
+      return;
+    }
+    
+    // Create a stable identifier for the current filtered jobs list
+    const currentJobIds = filteredJobs
+      .map(job => String(getJobIdRef.current(job)))
+      .sort()
+      .join(',');
+    
+    const previousJobIds = previousFilteredJobsRef.current;
+    
+    // Only reset if the job IDs actually changed
+    if (previousJobIds !== currentJobIds) {
+      previousFilteredJobsRef.current = currentJobIds;
+      setSelectedJobs(new Set());
+      setSelectAll(false);
+    }
   }, [filteredJobs]);
 
   useEffect(() => {
     if (!Array.isArray(currentJobs) || currentJobs.length === 0) {
       setSelectAll(false);
+      previousCurrentJobsRef.current = null;
+      previousSelectedJobsRef.current = '';
       return;
     }
-    const pageIds = new Set(currentJobs.map((job) => String(getJobId(job))));
-    const selectedOnPage = Array.from(selectedJobs).filter((id) => pageIds.has(id));
-    setSelectAll(pageIds.size > 0 && selectedOnPage.length === pageIds.size);
-  }, [currentJobs, selectedJobs, getJobId]);
+    
+    // Create stable identifiers for comparison
+    const currentJobsIds = currentJobs
+      .map((job) => String(getJobIdRef.current(job)))
+      .sort()
+      .join(',');
+    const selectedJobsIds = Array.from(selectedJobs).sort().join(',');
+    
+    // Only update if something actually changed
+    const jobsChanged = previousCurrentJobsRef.current !== currentJobsIds;
+    const selectedChanged = previousSelectedJobsRef.current !== selectedJobsIds;
+    
+    if (jobsChanged || selectedChanged) {
+      previousCurrentJobsRef.current = currentJobsIds;
+      previousSelectedJobsRef.current = selectedJobsIds;
+      
+      const pageIds = new Set(currentJobs.map((job) => String(getJobIdRef.current(job))));
+      const selectedOnPage = Array.from(selectedJobs).filter((id) => pageIds.has(id));
+      const newSelectAll = pageIds.size > 0 && selectedOnPage.length === pageIds.size;
+      
+      // Only update if the value actually changed
+      setSelectAll((prev) => prev !== newSelectAll ? newSelectAll : prev);
+    }
+  }, [currentJobs, selectedJobs]);
 
   const handleMessage = useCallback((job) => {
     if (!user) {
@@ -136,23 +184,136 @@ const useJobMessaging = ({
     setJobToMessage(null);
   }, []);
 
-  const handleMessageModalContinue = useCallback(() => {
-    if (jobToMessage?.institute) {
+  const handleMessageModalContinue = useCallback(async () => {
+    // Ensure we have jobToMessage
+    if (!jobToMessage) {
+      toast.error('Unable to open chat. Please try again.');
+      setShowMessageModal(false);
+      return;
+    }
+    
+    // Determine the institute firebase_uid
+    let instituteFirebaseUid = null;
+    
+    if (jobToMessage.institute?.firebase_uid) {
+      instituteFirebaseUid = jobToMessage.institute.firebase_uid;
+    } else if (jobToMessage.job?.firebase_uid) {
+      instituteFirebaseUid = jobToMessage.job.firebase_uid;
+    }
+    
+    if (!instituteFirebaseUid) {
+      toast.error('Unable to open chat for this institute right now. Please try again later.');
+      setShowMessageModal(false);
+      setJobToMessage(null);
+      return;
+    }
+    
+    // Fetch organisation details from API using firebase_uid (like job provider side)
+    let instituteName = 'Institute';
+    let instituteCity = null;
+    let instituteState = null;
+    
+    try {
+      const organisationDetails = await JobApiService.fetchOrganisationDetails(instituteFirebaseUid);
+      
+      if (organisationDetails) {
+        // Extract name with multiple fallbacks (similar to AllCandidates.jsx)
+        instituteName = organisationDetails.organisation_name ||
+                       organisationDetails.organization_name ||
+                       organisationDetails.school_name ||
+                       organisationDetails.name ||
+                       organisationDetails.institute_name ||
+                       jobToMessage.institute?.name ||
+                       jobToMessage.job?.institute_name ||
+                       jobToMessage.job?.school_name ||
+                       jobToMessage.job?.organization_name ||
+                       jobToMessage.job?.organisation_name ||
+                       'Institute';
+        
+        // Extract city and state
+        instituteCity = organisationDetails.city ||
+                        organisationDetails.city_name ||
+                        organisationDetails.present_city_name ||
+                        jobToMessage.institute?.city ||
+                        jobToMessage.job?.city ||
+                        jobToMessage.job?.city_name ||
+                        jobToMessage.job?.location ||
+                        null;
+        
+        instituteState = organisationDetails.state ||
+                         organisationDetails.state_ut ||
+                         organisationDetails.present_state_name ||
+                         jobToMessage.institute?.state ||
+                         jobToMessage.job?.state_ut ||
+                         jobToMessage.job?.state ||
+                         jobToMessage.job?.state_name ||
+                         null;
+      } else {
+        // Fallback to job object if API fetch fails
+        instituteName = jobToMessage.institute?.name ||
+                        jobToMessage.job?.institute_name ||
+                        jobToMessage.job?.school_name ||
+                        jobToMessage.job?.organization_name ||
+                        jobToMessage.job?.organisation_name ||
+                        'Institute';
+        instituteCity = jobToMessage.institute?.city ||
+                       jobToMessage.job?.city ||
+                       jobToMessage.job?.city_name ||
+                       jobToMessage.job?.location ||
+                       null;
+        instituteState = jobToMessage.institute?.state ||
+                         jobToMessage.job?.state_ut ||
+                         jobToMessage.job?.state ||
+                         jobToMessage.job?.state_name ||
+                         null;
+      }
+    } catch (error) {
+      console.error('Error fetching organisation details:', error);
+      // Fallback to job object if API fetch fails
+      instituteName = jobToMessage.institute?.name ||
+                      jobToMessage.job?.institute_name ||
+                      jobToMessage.job?.school_name ||
+                      jobToMessage.job?.organization_name ||
+                      jobToMessage.job?.organisation_name ||
+                      'Institute';
+      instituteCity = jobToMessage.institute?.city ||
+                     jobToMessage.job?.city ||
+                     jobToMessage.job?.city_name ||
+                     jobToMessage.job?.location ||
+                     null;
+      instituteState = jobToMessage.institute?.state ||
+                      jobToMessage.job?.state_ut ||
+                      jobToMessage.job?.state ||
+                      jobToMessage.job?.state_name ||
+                      null;
+    }
+    
+    const selectedInstitute = {
+      firebase_uid: instituteFirebaseUid,
+      name: instituteName,
+      city: instituteCity,
+      state: instituteState,
+    };
+    
+    // Navigate first, then close modal
+    try {
       navigate('/seeker/messages', {
         state: {
-          selectedInstitute: {
-            firebase_uid: jobToMessage.institute.firebase_uid,
-            name: jobToMessage.institute.name,
-            city: jobToMessage.institute.city,
-            state: jobToMessage.institute.state
-          },
-          startConversation: true
+          selectedInstitute: selectedInstitute,
+          startConversation: true,
         },
-        replace: false
+        replace: false,
       });
+      
+      // Close modal after navigation is initiated
+      setShowMessageModal(false);
+      setJobToMessage(null);
+    } catch (error) {
+      console.error('Navigation error:', error);
+      toast.error('Failed to navigate to messages. Please try again.');
+      setShowMessageModal(false);
+      setJobToMessage(null);
     }
-    setShowMessageModal(false);
-    setJobToMessage(null);
   }, [jobToMessage, navigate]);
 
   const handleApplyPromptClose = useCallback(() => {

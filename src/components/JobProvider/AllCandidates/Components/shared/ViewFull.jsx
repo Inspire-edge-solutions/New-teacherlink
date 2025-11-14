@@ -398,9 +398,11 @@ function CandidateDetail({
           unblocked_candidate_id = personalRes.data[0].id;
           unblocked_candidate_name = personalRes.data[0].fullName;
         }
-      } catch (personalError) {}
+      } catch (personalError) {
+        console.warn('Could not fetch personal details for coin history:', personalError);
+      }
       try {
-        await axios.post(COIN_HISTORY_API, {
+        const historyResponse = await axios.post(COIN_HISTORY_API, {
           firebase_uid: userId,
           candidate_id: orgId,
           job_id: null,
@@ -410,7 +412,11 @@ function CandidateDetail({
           unblocked_candidate_id,
           unblocked_candidate_name
         });
-      } catch (historyError) {}
+        console.log('Coin history recorded successfully for candidate unlock');
+      } catch (historyError) {
+        console.error('Error recording coin history for candidate unlock:', historyError);
+        // Don't fail the unlock if history recording fails, but log it for debugging
+      }
 
       setUnlockStatus("success");
       setUnlockLoading(false);

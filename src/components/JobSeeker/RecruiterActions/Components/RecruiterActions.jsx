@@ -1,6 +1,3 @@
-//RecruiterActions.jsx
-
-
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../../Context/AuthContext';
@@ -146,7 +143,7 @@ const RecruiterActions = () => {
   );
 
   return (
-    <div className="min-h-[calc(100vh-120px)] bg-[#F7F7F9] py-8 px-4 sm:px-6 lg:px-10">
+    <div className="min-h-[calc(100vh-120px)] py-8 px-4 sm:px-6 lg:px-10">
       <div className="max-w-3xl mx-auto w-full">
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-1">
@@ -187,12 +184,12 @@ const RecruiterActions = () => {
               ))}
             </div>
           ) : (
-            <div className="px-6 py-10 text-center">
+            <div className="px-6 py-10 text-center bg-[#F0D8D9] rounded-2xl">
               <h2 className="text-lg font-semibold text-gray-800 mb-2">
                 No recruiter activity yet
               </h2>
               <p className="text-sm text-gray-500 max-w-sm mx-auto">
-                When recruiters share jobs that match your profile, activity will show up here.
+                When recruiters shows interest in your profile, the activity will show up here.
               </p>
             </div>
           )}

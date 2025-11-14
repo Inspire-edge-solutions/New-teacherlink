@@ -69,17 +69,33 @@ const Content = () => {
   const fetchCoinHistory = async () => {
     try {
       setHistoryLoading(true);
-      const { data } = await axios.get(COIN_HISTORY_API_URL);
+      
+      // Try to fetch with query parameter first, fallback to client-side filtering
+      let data;
+      try {
+        const response = await axios.get(`${COIN_HISTORY_API_URL}?firebase_uid=${encodeURIComponent(user.uid)}`);
+        data = response.data;
+      } catch (queryError) {
+        // If query parameter doesn't work, fetch all and filter client-side
+        console.warn('Query parameter not supported, fetching all records:', queryError);
+        const response = await axios.get(COIN_HISTORY_API_URL);
+        data = response.data;
+      }
       
       const userHistory = Array.isArray(data) 
         ? data.filter(item => item.firebase_uid === user.uid)
-        : [];
+        : (data && data.firebase_uid === user.uid ? [data] : []);
 
       if (userHistory.length === 0) {
-        toast.info("No coin transactions found for your account");
         setCoinHistory([]);
       } else {
-        setCoinHistory(userHistory);
+        // Sort by created_at descending (most recent first)
+        const sortedHistory = userHistory.sort((a, b) => {
+          const dateA = new Date(a.created_at || 0);
+          const dateB = new Date(b.created_at || 0);
+          return dateB - dateA;
+        });
+        setCoinHistory(sortedHistory);
       }
     } catch (error) {
       console.error("Error fetching coin history:", error);

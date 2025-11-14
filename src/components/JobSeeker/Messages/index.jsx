@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import MessagesSidebar from './Components/MessagesSidebar';
 import ChatHeader from './Components/ChatHeader';
 import ChatMessages from './Components/ChatMessages';
@@ -59,6 +59,7 @@ const MessagesComponent = () => {
 
   useEffect(() => {
     const state = location.state;
+    
     if (!state || !state.selectedInstitute || !state.startConversation) {
       return;
     }
@@ -91,18 +92,7 @@ const MessagesComponent = () => {
   }, [location.state, startConversation, navigate]);
 
   const handleSelectChat = (chat) => {
-    console.log('🖱️ handleSelectChat called with:', chat);
-    console.log('🖱️ Chat details:', {
-      id: chat?.id,
-      conversationId: chat?.conversationId,
-      name: chat?.name,
-      teacherId: chat?.teacherId
-    });
     // Force reload messages even if it's the same chat
-    // Clear selected chat first to ensure messages reload
-    if (selectedChat?.id === chat?.id || selectedChat?.conversationId === chat?.conversationId) {
-      console.log('🔄 Reselecting same chat - forcing reload');
-    }
     selectChat(chat);
   };
 
@@ -126,8 +116,24 @@ const MessagesComponent = () => {
   };
 
   // Transform conversations for display
-  const activeConversations = conversations.filter(conv => conv.unreadCount > 0 || conv.lastMessage);
-  const inactiveConversations = conversations.filter(conv => conv.unreadCount === 0 && !conv.lastMessage);
+  const sortedConversations = useMemo(() => {
+    const list = Array.isArray(conversations) ? [...conversations] : [];
+    return list.sort((a, b) => {
+      const timeA = a?.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+      const timeB = b?.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+      return timeB - timeA;
+    });
+  }, [conversations]);
+
+  const activeConversations = useMemo(
+    () => sortedConversations.filter((conv) => conv.unreadCount > 0 || conv.lastMessage),
+    [sortedConversations]
+  );
+
+  const inactiveConversations = useMemo(
+    () => sortedConversations.filter((conv) => conv.unreadCount === 0 && !conv.lastMessage),
+    [sortedConversations]
+  );
 
   return (
     <>
@@ -224,7 +230,7 @@ const MessagesComponent = () => {
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 relative">
+      <div className="flex flex-col md:flex-row h-full min-h-0 bg-gray-50 relative overflow-hidden">
         {/* Error Display */}
         {error && (
           <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 max-w-xs">

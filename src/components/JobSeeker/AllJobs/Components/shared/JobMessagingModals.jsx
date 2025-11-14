@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const WHATSAPP_COST = 20;
@@ -61,7 +62,7 @@ const JobMessagingModals = ({
                 Apply To Message
               </h3>
               <p className="text-gray-600 text-[15px] leading-relaxed">
-                To message the institute about <strong>{jobToApplyPrompt.job_title || jobToApplyPrompt.title || 'this job'}</strong>, please apply to the job first. View the job to apply and unlock messaging.
+                To message the institute about the job titled - <strong>{jobToApplyPrompt.job_title || jobToApplyPrompt.title || 'this job'}</strong>, please apply to the job first. View the job to apply and unlock messaging.
               </p>
             </div>
 
@@ -124,7 +125,12 @@ const JobMessagingModals = ({
               </button>
               <button
                 className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
-                onClick={onMessageModalContinue}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onMessageModalContinue) {
+                    onMessageModalContinue();
+                  }
+                }}
               >
                 Continue Single
               </button>

@@ -788,10 +788,13 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
         // Send WhatsApp notification
         await JobApiService.sendWhatsAppToInstitution(selectedJob, user);
         
-        // Record coin history
-        const personalDetails = await JobApiService.getUserPersonalDetails(user);
-        if (personalDetails?.id) {
-          await JobApiService.recordCoinHistory(selectedJob, user, 100, personalDetails.id);
+        // Record coin history (always record, even if candidateId is missing)
+        try {
+          const personalDetails = await JobApiService.getUserPersonalDetails(user);
+          await JobApiService.recordCoinHistory(selectedJob, user, 100, personalDetails?.id || null);
+        } catch (historyError) {
+          console.error('Failed to record coin history:', historyError);
+          // Don't fail the application if history recording fails
         }
       } else if (result.status === "already") {
         setApplyStatus("already");
