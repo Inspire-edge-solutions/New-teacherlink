@@ -1,10 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import heroSection1 from '../../../../assets/heroSection1.png';
+import heroSection2 from '../../../../assets/herosection2.jpg';
+import heroSection3 from '../../../../assets/heroSection3.png';
 
 const HeroSection = () => {
   const navigate = useNavigate();
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative overflow-hidden">
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 lg:py-12">
         <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-8">
@@ -18,7 +21,7 @@ const HeroSection = () => {
               
               {/* Second Line - Teaching Job */}
               <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight">
-                <span className="text-red-500">Teaching</span>
+                <span className="bg-gradient-brand-text bg-clip-text text-transparent">Teaching</span>
                 <span className="text-gray-700"> Job?</span>
               </div>
               
@@ -56,7 +59,7 @@ const HeroSection = () => {
               <div className="absolute top-0 right-2 sm:right-4 lg:right-8 z-30">
                 <div className="relative w-48 sm:w-56 lg:w-64 h-36 sm:h-42 lg:h-48 rounded-2xl overflow-hidden shadow-2xl">
                   <img 
-                    src="/src/assets/heroSection1.png" 
+                    src={heroSection1} 
                     alt="Teacher with glasses" 
                     className="w-full h-full object-cover"
                   />
@@ -67,7 +70,7 @@ const HeroSection = () => {
               <div className="absolute top-20 sm:top-24 lg:top-32 left-2 sm:left-3 lg:left-4 z-20">
                 <div className="relative w-48 sm:w-56 lg:w-64 h-36 sm:h-42 lg:h-48 rounded-2xl overflow-hidden shadow-2xl">
                   <img 
-                    src="/src/assets/herosection2.jpg" 
+                    src={heroSection2} 
                     alt="Female teacher in saree" 
                     className="w-full h-full object-cover"
                   />
@@ -78,7 +81,7 @@ const HeroSection = () => {
               <div className="absolute top-40 sm:top-48 lg:top-56 right-2 sm:right-4 lg:right-8 z-10">
                 <div className="relative w-48 sm:w-56 lg:w-64 h-36 sm:h-42 lg:h-48 rounded-2xl overflow-hidden shadow-2xl">
                   <img 
-                    src="/src/assets/heroSection3.png" 
+                    src={heroSection3} 
                     alt="Teacher and student interaction" 
                     className="w-full h-full object-cover"
                   />

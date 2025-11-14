@@ -1170,7 +1170,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
         <form onSubmit={handleSubmit}>
           {/* Job Details Section */}
           <div className="mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-6">Job Details</h3>
+            <h3 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-6">Job Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Job Category */}
               <InputWithTooltip label="Job Category" required>

@@ -13,7 +13,7 @@ const SalientFeatures = () => {
         {/* Main Content */}
         <div className="text-center">
           {/* Red Headline */}
-          <h1 className="mb-6 md:mb-8 text-red-600 font-extrabold text-2xl sm:text-3xl md:text-4xl leading-tight tracking-normal px-4">
+          <h1 className="mb-6 md:mb-8 bg-gradient-brand-text bg-clip-text text-transparent font-extrabold text-2xl sm:text-3xl md:text-4xl leading-tight tracking-normal px-4">
             Find Your Dream Teaching Job Absolutely FREE at TeacherLink.in!
           </h1>
           
@@ -92,7 +92,7 @@ const SalientFeatures = () => {
           
           {/* Job Providers Section */}
           {/* Red Headline for Job Providers */}
-          <h1 className="mb-6 md:mb-8 text-red-600 font-extrabold text-2xl sm:text-3xl md:text-4xl leading-tight tracking-normal px-4">
+          <h1 className="mb-6 md:mb-8 bg-gradient-brand-text bg-clip-text text-transparent font-extrabold text-2xl sm:text-3xl md:text-4xl leading-tight tracking-normal px-4">
             Hire the Best Educators Fast & FREE at TeacherLink.in!
           </h1>
           

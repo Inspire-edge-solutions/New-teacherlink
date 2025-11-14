@@ -50,7 +50,7 @@ const HowItWorks = () => {
       <div className="relative z-10 container mx-auto px-4 py-16">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-gray-800 mb-6">How It Works?</h1>
+          <h1 className="text-4xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-6">How It Works?</h1>
           <div className="text-lg text-gray-600 max-w-3xl mx-auto">
             It's super easy! Just follow a few quick steps to land your dream job or find the perfect teacher - all on TeacherLink.
           </div>

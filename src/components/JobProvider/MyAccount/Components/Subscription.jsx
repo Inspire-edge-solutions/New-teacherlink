@@ -76,7 +76,7 @@ const SubscriptionDetailsView = ({ subscription }) => {
         <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
           <span className="text-2xl sm:text-3xl">✓</span>
         </div>
-        <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">Premium Subscription Activated!</h3>
+        <h3 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent">Premium Subscription Activated!</h3>
       </div>
       
       <div className="bg-gray-50 rounded-lg sm:rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
@@ -105,7 +105,7 @@ const SubscriptionDetailsView = ({ subscription }) => {
       </div>
       
       <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg sm:rounded-xl p-4 sm:p-6">
-        <h4 className="text-base sm:text-lg font-bold text-gray-800 mb-4 text-center">Premium Benefits Unlocked</h4>
+        <h4 className="text-base sm:text-lg font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 text-center">Premium Benefits Unlocked</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="flex items-center gap-3">
             <span className="text-lg sm:text-xl">🎯</span>
@@ -314,7 +314,7 @@ const Subscription = () => {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">Active Subscription</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4">Active Subscription</h2>
             <div className="bg-gray-50 rounded-lg sm:rounded-xl p-4 sm:p-6">
               <p className="text-sm sm:text-base text-gray-700 mb-2">
                 <span className="font-semibold">Valid until:</span> {new Date(subscription.endDate).toLocaleDateString()}

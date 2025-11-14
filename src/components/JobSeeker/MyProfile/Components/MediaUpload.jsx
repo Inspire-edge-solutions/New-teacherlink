@@ -289,7 +289,7 @@ return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {/* Demo Video Card */}
           <div className=" rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col">
-            <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-center">My demo video</h3>
+            <h3 className="text-lg md:text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 md:mb-6 text-center">My demo video</h3>
             
             <div className="mt-auto">
               <div className="flex gap-3 relative">
@@ -344,7 +344,7 @@ return (
 
           {/* Resume Card */}
           <div className="rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col">
-            <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-center">My resume/cv</h3>
+            <h3 className="text-lg md:text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 md:mb-6 text-center">My resume/cv</h3>
             
             <div className="mt-auto">
               <div className="flex gap-3 relative">

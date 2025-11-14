@@ -1409,7 +1409,7 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
       {/* Results Section */}
       <div className="results-section">
         <div className="flex justify-between items-center mb-3">
-          <h5 className="text-2xl font-semibold text-gray-800 m-0">Search Results ({filteredJobs.length} jobs found)</h5>
+          <h5 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent m-0">Search Results ({filteredJobs.length} jobs found)</h5>
           <RecordsPerPageDropdown 
             itemsPerPage={jobsPerPage}
             onItemsPerPageChange={setJobsPerPage}

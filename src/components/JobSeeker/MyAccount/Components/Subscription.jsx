@@ -74,7 +74,7 @@ const SubscriptionDetailsView = ({ subscription }) => {
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-2xl text-green-600">✓</span>
         </div>
-        <h3 className="text-2xl font-bold text-gray-800">Premium Subscription Activated!</h3>
+        <h3 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent">Premium Subscription Activated!</h3>
       </div>
       
       <div className="bg-gray-50 rounded-xl p-6 mb-8">
@@ -105,7 +105,7 @@ const SubscriptionDetailsView = ({ subscription }) => {
       </div>
       
       <div className="text-center">
-        <h4 className="text-xl font-bold text-gray-800 mb-6">Premium Benefits Unlocked</h4>
+        <h4 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-6">Premium Benefits Unlocked</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
             <span className="text-2xl">🎯</span>
@@ -321,7 +321,7 @@ const Subscription = () => {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl text-green-600">✓</span>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Active Subscription</h2>
+            <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4">Active Subscription</h2>
             <div className="space-y-2 text-gray-600">
               <p>Valid until: {new Date(subscription.endDate).toLocaleDateString()}</p>
               <p>Status: <span className="text-green-600 font-semibold">Active</span></p>
@@ -339,7 +339,7 @@ const Subscription = () => {
         <div className="mb-6 sm:mb-8">
           {/* Title */}
           <div className="mb-4 sm:mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-center sm:text-left" style={{ background: 'linear-gradient(to right, #F34B58, #A1025D)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent text-center sm:text-left">
               Subscription plans
             </h1>
           </div>

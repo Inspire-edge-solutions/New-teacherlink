@@ -8,6 +8,7 @@ import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { cleanupModals } from "../../utils/modalCleanup";
 import InputWithTooltip from "../../services/InputWithTooltip";
 import LoadingState from "../common/LoadingState";
+import loginImage from "../../assets/login.png";
 
 const API_URL = "https://2u7ec1e22c.execute-api.ap-south-1.amazonaws.com/staging/users";
 const PERSONAL_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal";
@@ -315,7 +316,7 @@ const LoginForm = () => {
               {/* Content */}
               <div className="flex flex-col justify-center px-12 py-16 relative z-10">
                 <div className="space-y-6">
-                  <h1 className="text-4xl font-bold text-red-600 leading-tight">
+                  <h1 className="text-4xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight">
                     Welcome Back!
                   </h1>
                   <div className="space-y-4">
@@ -329,7 +330,7 @@ const LoginForm = () => {
                 <div className="mt-10 relative">
                   <div className="w-80 h-64 bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-white">
                     <img 
-                      src="/src/assets/login.png" 
+                      src={loginImage} 
                       alt="Education professionals connecting" 
                       className="w-full h-full object-cover"
                     />
@@ -369,7 +370,7 @@ const LoginForm = () => {
         {/* Content */}
         <div className="flex flex-col justify-center px-12 py-16 relative z-10">
           <div className="space-y-6">
-            <h1 className="text-4xl font-bold text-red-600 leading-tight">
+            <h1 className="text-4xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight">
               Welcome Back!
             </h1>
             <div className="space-y-4">
@@ -384,7 +385,7 @@ const LoginForm = () => {
           <div className="mt-10 relative">
             <div className="w-80 h-64 bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-white">
               <img 
-                src="/src/assets/login.png" 
+                src={loginImage} 
                 alt="Education professionals connecting" 
                 className="w-full h-full object-cover"
               />
@@ -399,7 +400,7 @@ const LoginForm = () => {
        
 
         <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
-          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-black mb-4 sm:mb-6 text-center lg:text-left">Login</h2>
+          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center lg:text-left">Login</h2>
           
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 md:space-y-8">
             {/* Email Field */}

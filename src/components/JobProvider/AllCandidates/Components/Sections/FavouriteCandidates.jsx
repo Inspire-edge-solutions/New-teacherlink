@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import CandidateCard from '../shared/CandidateCard';
@@ -267,29 +266,24 @@ const FavouriteCandidates = ({
       setBulkError('Could not find the selected candidates.');
       return;
     }
-    const costPerCandidate = bulkChannel === 'whatsapp' ? 20 : 10;
-    const totalCost = costPerCandidate * selectedRecords.length;
-    if (coinBalance === null) {
-      setBulkError('Fetching coin balance. Please try again in a moment.');
-      return;
-    }
-    if (coinBalance < totalCost) {
-      setRequiredCoins(totalCost);
-      resetBulkMessageForm();
-      setShowBulkMessageModal(false);
-      setShowInsufficientCoinsModal(true);
-      return;
-    }
+    // No coin balance check needed - submitting for admin approval, not sending directly
+    
+    // Debug: Log the structure to see what we have
+    console.log('📋 Building summary for candidates:', selectedRecords.map(candidate => ({
+      candidateId: candidate.id,
+      candidateName: candidate.fullName || candidate.name,
+      firebaseUid: candidate.firebase_uid,
+      hasFirebaseUid: !!candidate.firebase_uid
+    })));
+    
     setBulkSummary({
       channel: bulkChannel,
       message: trimmedMessage,
-      candidates: selectedRecords,
-      costPerCandidate,
-      totalCost
+      candidates: selectedRecords
     });
     setShowConfirmModal(true);
     setShowBulkMessageModal(false);
-  }, [bulkChannel, bulkMessage, coinBalance, getSelectedCandidateRecords, resetBulkMessageForm]);
+  }, [bulkChannel, bulkMessage, getSelectedCandidateRecords]);
 
   const handleCancelConfirmation = useCallback(() => {
     setShowConfirmModal(false);
@@ -316,83 +310,108 @@ const FavouriteCandidates = ({
   }, [navigate]);
 
   const handleConfirmSend = useCallback(async () => {
-    if (!bulkSummary) return;
+    if (!bulkSummary || !user) return;
     setIsSendingBulk(true);
     try {
-      let successCount = 0;
-      const failedCandidates = [];
-      const instituteName = instituteInfo?.organisation_name || instituteInfo?.organization_name || instituteInfo?.name || instituteInfo?.fullName || 'Institute Admin';
-      const senderEmail = instituteInfo?.email || instituteInfo?.official_email || user?.email || 'admin@teacherlink.in';
-
-      for (const candidate of bulkSummary.candidates) {
-        const candidateId = candidate.firebase_uid;
-        let phone = candidate.whatsappNumber || candidate.whatsup_number || candidate.callingNumber || candidate.phone_number;
-
-        if (!phone) {
-          const loginDetails = await getCandidateLoginDetails(candidateId);
-          if (loginDetails) {
-            phone = loginDetails.phone_number || loginDetails.phoneNumber || loginDetails.contactNumber || loginDetails.contact || loginDetails.whatsapp_number;
-          }
+      // Collect firebase_uid from all selected candidates
+      const sendedTo = bulkSummary.candidates.map((candidate, index) => {
+        // Try multiple ways to get firebase_uid
+        let firebaseUid = null;
+        
+        // Try direct firebase_uid
+        if (candidate.firebase_uid) {
+          firebaseUid = candidate.firebase_uid;
         }
-
-        const formattedPhone = formatPhoneNumber(phone);
-        if (!formattedPhone) {
-          failedCandidates.push({ candidate, reason: 'No phone number available' });
-          continue;
+        // Try other possible fields
+        else if (candidate.uid) {
+          firebaseUid = candidate.uid;
         }
-
-        try {
-          if (bulkSummary.channel === 'whatsapp') {
-            await axios.post(WHATSAPP_API_URL, {
-              phone: formattedPhone,
-              templateName: WHATSAPP_TEMPLATE_NAME,
-              language: 'en',
-              bodyParams: [
-                { type: 'text', text: instituteName },
-                { type: 'text', text: bulkSummary.message }
-              ],
-              sent_by: instituteName || 'Institute Admin',
-              sent_email: senderEmail
-            });
-          } else {
-            await axios.post(RCS_API_URL, {
-              contactId: formattedPhone,
-              templateName: RCS_TEMPLATE_NAME,
-              customParam: {
-                NAME: instituteName,
-                MESSAGE: bulkSummary.message
-              },
-              sent_by: instituteName ? `${instituteName} Admin` : 'Institute Admin',
-              sent_email: senderEmail
-            });
-          }
-          successCount += 1;
-        } catch (error) {
-          console.error('Failed to send bulk message:', error);
-          failedCandidates.push({ candidate, reason: 'API error' });
+        else if (candidate.user_id) {
+          firebaseUid = candidate.user_id;
         }
+        else if (candidate.id && typeof candidate.id === 'string' && candidate.id.length > 20) {
+          // Sometimes id might be the firebase_uid
+          firebaseUid = candidate.id;
+        }
+        
+        if (!firebaseUid) {
+          console.warn(`⚠️ No firebase_uid found for candidate at index ${index}:`, {
+            candidateId: candidate.id,
+            candidateName: candidate.fullName || candidate.name,
+            hasFirebaseUid: !!candidate.firebase_uid,
+            candidateKeys: candidate ? Object.keys(candidate) : []
+          });
+        }
+        
+        return firebaseUid;
+      }).filter(uid => uid !== null && uid !== undefined); // Remove any null/undefined values
+
+      console.log('📤 Collected firebase_uids for sendedTo (candidates):', sendedTo);
+      console.log('📊 Total valid candidate uids:', sendedTo.length, 'out of', bulkSummary.candidates.length);
+
+      if (sendedTo.length === 0) {
+        toast.error('No valid candidates found in selected list. Please ensure candidates have valid firebase_uid.');
+        setIsSendingBulk(false);
+        return;
+      }
+      
+      if (sendedTo.length < bulkSummary.candidates.length) {
+        const missingCount = bulkSummary.candidates.length - sendedTo.length;
+        console.warn(`⚠️ ${missingCount} candidate(s) missing firebase_uid and will be skipped`);
+        toast.warning(`${missingCount} candidate(s) missing firebase_uid and will be skipped.`);
       }
 
-      if (successCount > 0) {
-        const totalCost = bulkSummary.totalCost;
-        const newBalance = Math.max((coinBalance ?? 0) - totalCost, 0);
-        try {
-          await CandidateApiService.updateUserCoins(user, newBalance);
-          const refreshedBalance = await CandidateApiService.getUserCoins(user);
-          setCoinBalance(refreshedBalance);
-          toast.success(`Sent ${successCount} ${bulkSummary.channel === 'whatsapp' ? 'WhatsApp' : 'RCS'} message${successCount > 1 ? 's' : ''}. Deducted ${totalCost} coin${totalCost !== 1 ? 's' : ''}.`);
-        } catch (coinError) {
-          console.error('Failed to update coins after messaging:', coinError);
-          toast.error('Messages sent but coin balance could not be updated. Please verify your balance.');
-        }
+      // Get current user's firebase_uid
+      const userFirebaseUid = user.firebase_uid || user.uid;
+      if (!userFirebaseUid) {
+        toast.error('User authentication required.');
+        setIsSendingBulk(false);
+        return;
       }
 
-      if (failedCandidates.length > 0) {
-        toast.error(`${failedCandidates.length} message${failedCandidates.length > 1 ? 's' : ''} failed to send.`);
+      // Prepare payload for approval API
+      // Note: Backend expects 'sendedeTo' (lowercase 'e'), not 'sendedTo'
+      const approvalPayload = {
+        firebase_uid: userFirebaseUid,
+        message: bulkSummary.message.trim(),
+        sendedeTo: sendedTo, // JSON array of candidate firebase_uid (note: backend column is 'sendedeTo')
+        channel: bulkSummary.channel || 'whatsapp', // Store selected channel (whatsapp or rcs)
+        isApproved: false,
+        isRejected: false,
+        reason: ""
+      };
+      
+      console.log('📦 Final approval payload:', {
+        firebase_uid: approvalPayload.firebase_uid,
+        message: approvalPayload.message.substring(0, 50) + '...',
+        sendedeTo: approvalPayload.sendedeTo,
+        sendedeToLength: approvalPayload.sendedeTo?.length,
+        channel: approvalPayload.channel
+      });
+
+      // Send to approval API
+      const response = await fetch(
+        'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/approveMessage',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(approvalPayload)
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
+
+      await response.json(); // Response received, no need to use the result
+      
+      toast.success(`Bulk message request submitted successfully! Your message is pending admin approval.`);
+      
     } catch (error) {
-      console.error('Error sending bulk messages:', error);
-      toast.error('Failed to send messages. Please try again.');
+      console.error('Error submitting bulk message for approval:', error);
+      toast.error('Failed to submit message request. Please try again.');
     } finally {
       setIsSendingBulk(false);
       setShowConfirmModal(false);
@@ -401,7 +420,7 @@ const FavouriteCandidates = ({
       setSelectedCandidates(new Set());
       setSelectAll(false);
     }
-  }, [bulkSummary, coinBalance, formatPhoneNumber, getCandidateLoginDetails, instituteInfo, resetBulkMessageForm, user]);
+  }, [bulkSummary, resetBulkMessageForm, user]);
 
   // Fetch favourite candidates
   const fetchFavouriteCandidates = useCallback(async () => {
@@ -1074,13 +1093,13 @@ const FavouriteCandidates = ({
 
             <div className="mb-4 mt-0.5 text-center space-y-2">
               <h3 className="font-semibold text-[18px] text-gray-800">
-                Confirm & Send
+                Confirm &amp; Submit for Approval
               </h3>
               <p className="text-gray-600 text-[15px] leading-relaxed">
-                You are about to send a <strong>{bulkSummary.channel === 'whatsapp' ? 'WhatsApp' : 'RCS'}</strong> message to <strong>{bulkSummary.candidates.length}</strong> candidate{bulkSummary.candidates.length !== 1 ? 's' : ''}.
+                You are about to submit a <strong>{bulkSummary.channel === 'whatsapp' ? 'WhatsApp' : 'RCS'}</strong> message request to <strong>{bulkSummary.candidates.length}</strong> candidate{bulkSummary.candidates.length !== 1 ? 's' : ''} for admin approval.
               </p>
               <p className="text-gray-600 text-[15px] leading-relaxed">
-                Total cost: <strong>{bulkSummary.totalCost}</strong> coin{bulkSummary.totalCost !== 1 ? 's' : ''}. Current balance: <strong>{coinBalance ?? 0}</strong>.
+                Your message will be reviewed by admin before being sent.
               </p>
             </div>
 
@@ -1117,10 +1136,10 @@ const FavouriteCandidates = ({
                 {isSendingBulk ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    Sending...
+                    Submitting...
                   </span>
                 ) : (
-                  'Confirm & Send'
+                  'Submit for Approval'
                 )}
               </button>
             </div>

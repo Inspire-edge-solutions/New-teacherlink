@@ -454,7 +454,7 @@ const Referrals = ({ user, onSuccess }) => {
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 mb-2">Refer Organizations & Get Access to our Basic Plan</h3>
+          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-2">Refer Organizations & Get Access to our Basic Plan</h3>
           <p className="text-gray-600 text-sm sm:text-base">Add up to 10 Organizations contact numbers and get free access to our Basic Plan when 5 register.</p>
         </div>
 

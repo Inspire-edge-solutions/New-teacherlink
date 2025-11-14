@@ -240,7 +240,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                 <div className="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
                   ✅
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-800 m-0">
+                <h3 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent m-0">
                   Confirm Job Posting
                 </h3>
               </div>
@@ -340,7 +340,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                 <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
                   🗑️
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-800 m-0">
+                <h3 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent m-0">
                   Delete Saved Job
                 </h3>
               </div>

@@ -8,6 +8,7 @@ import { Skeleton } from "@mui/material";
 import TermsPrivacy from "../website/TermsPrivacy";
 import LoginWithSocial from "./LoginWithSocial";
 import InputWithTooltip from "../../services/InputWithTooltip";
+import loginImage from "../../assets/login.png";
 
 // Terms and Privacy Policy version tracking
 const TERMS_VERSION = "1.0";
@@ -39,10 +40,10 @@ const Register = ({ user_type }) => {
     if (selectedUserType === "Job Seeker") {
       return (
         <div className="space-y-4">
-          <h1 className="text-3xl font-bold text-gray-800 leading-tight">
+          <h1 className="text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight">
             Looking for a teaching or non-teaching job in educational institutions?
           </h1>
-          <h2 className="text-2xl font-semibold text-red-600">
+          <h2 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent">
             You're in the right place!
           </h2>
           <p className="text-lg text-gray-700 leading-relaxed">
@@ -53,10 +54,10 @@ const Register = ({ user_type }) => {
     } else {
       return (
         <div className="space-y-4">
-          <h1 className="text-3xl font-bold text-gray-800 leading-tight">
+          <h1 className="text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight">
             Looking to hire top talent for your educational institution?
           </h1>
-          <h2 className="text-2xl font-semibold text-red-600">
+          <h2 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent">
             You're in the right place!
           </h2>
           <p className="text-lg text-gray-700 leading-relaxed">
@@ -169,7 +170,7 @@ const Register = ({ user_type }) => {
   const TermsAndPrivacyModal = () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-2 sm:p-4">
       <div className="bg-white rounded-xl p-4 sm:p-6 md:p-8 max-w-4xl max-h-[90vh] w-full flex flex-col">
-        <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 text-center text-red-600">
+        <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 text-center bg-gradient-brand-text bg-clip-text text-transparent">
           Terms and Conditions & Privacy Policy
         </h3>
         <div 
@@ -217,7 +218,7 @@ const Register = ({ user_type }) => {
           {/* Login Image */}
           <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl flex items-center justify-center relative overflow-hidden p-4">
             <img 
-              src="/src/assets/login.png" 
+              src={loginImage} 
               alt="Login Illustration" 
               className="w-full h-full object-contain rounded-2xl"
             />
@@ -244,7 +245,7 @@ const Register = ({ user_type }) => {
           /* Form Container */
           <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg bg-white p-3 sm:p-4 md:p-6 relative">
 
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
               Create Account
             </h2>
 

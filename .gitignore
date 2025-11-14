@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 
 .env
+.deploy.bat
+.test.bat

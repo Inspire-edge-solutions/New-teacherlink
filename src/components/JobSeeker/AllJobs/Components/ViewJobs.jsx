@@ -915,7 +915,7 @@ const ViewJobs = ({ job, onBack }) => {
       {/* Top Navigation Bar */}
       <div className="bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 py-2 pt-0">
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
-          <h1 className="text-2xl font-bold text-orange-500">Job Details</h1>
+          <h1 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent">Job Details</h1>
           <button 
           className="w-full sm:w-auto px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors font-medium text-center"
             onClick={() => onBack('list')}

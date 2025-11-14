@@ -346,7 +346,7 @@ const MessagesComponent = () => {
               </div>
 
               {/* Text */}
-              <h2 className="text-xl sm:text-2xl font-semibold text-red-500 mb-2">
+              <h2 className="text-xl sm:text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-2">
                 No Active Message
               </h2>
               <p className="text-sm sm:text-base text-gray-500 mb-6 px-4">

@@ -44,7 +44,7 @@ const ConfirmationModal = ({
               <div className="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
                 🔄
               </div>
-              <h3 className="text-2xl font-semibold text-gray-800 m-0">
+              <h3 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent m-0">
                 Post Same Job
               </h3>
             </div>
@@ -155,7 +155,7 @@ const CloseJobModal = ({
               <div className="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
                 ⚠️
               </div>
-              <h3 className="text-2xl font-semibold text-gray-800 m-0">
+              <h3 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent m-0">
                 Close Job Posting
               </h3>
             </div>

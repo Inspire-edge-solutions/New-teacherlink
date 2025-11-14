@@ -1,4 +1,5 @@
 import React from 'react'
+import aboutUsImage from '../../../assets/AboutUs.jpg'
 
 const AboutUs = () => {
   const features = [
@@ -24,9 +25,9 @@ const AboutUs = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Left Text Section */}
           <div className="flex flex-col justify-center">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-4">
+            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4">
               India's First Dedicated Job Portal for{' '}
-              <span className="text-red-600">Teachers</span>
+              <span className="bg-gradient-brand-text bg-clip-text text-transparent">Teachers</span>
             </h1>
             <p className="text-lg text-gray-600 leading-relaxed">
               Designed exclusively to connect educators with institutions directly and efficiently.
@@ -41,7 +42,7 @@ const AboutUs = () => {
             {/* White Image Container */}
             <div className="relative z-10 bg-white rounded-2xl shadow-lg overflow-hidden transform rotate-2">
               <img 
-                src="/src/assets/AboutUs.jpg" 
+                src={aboutUsImage} 
                 alt="Professionals working together" 
                 className="w-full h-80 object-cover"
               />

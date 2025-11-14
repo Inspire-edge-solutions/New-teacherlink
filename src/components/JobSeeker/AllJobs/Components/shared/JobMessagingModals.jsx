@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const WHATSAPP_COST = 20;
@@ -252,13 +251,13 @@ const JobMessagingModals = ({
 
             <div className="mb-4 mt-0.5 text-center space-y-2">
               <h3 className="font-semibold text-[18px] text-gray-800">
-                Confirm &amp; Send
+                Confirm &amp; Submit for Approval
               </h3>
               <p className="text-gray-600 text-[15px] leading-relaxed">
-                You are about to send a <strong>{bulkSummary.channel === 'whatsapp' ? 'WhatsApp' : 'RCS'}</strong> message to <strong>{bulkSummary.jobs.length}</strong> institute{bulkSummary.jobs.length !== 1 ? 's' : ''}.
+                You are about to submit a <strong>{bulkSummary.channel === 'whatsapp' ? 'WhatsApp' : 'RCS'}</strong> message request to <strong>{bulkSummary.jobs.length}</strong> institute{bulkSummary.jobs.length !== 1 ? 's' : ''} for admin approval.
               </p>
               <p className="text-gray-600 text-[15px] leading-relaxed">
-                Total cost: <strong>{bulkSummary.totalCost}</strong> coin{bulkSummary.totalCost !== 1 ? 's' : ''}. Current balance: <strong>{coinBalance ?? 0}</strong>.
+                Your message will be reviewed by admin before being sent.
               </p>
             </div>
 
@@ -298,10 +297,10 @@ const JobMessagingModals = ({
                 {isSendingBulk ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    Sending...
+                    Submitting...
                   </span>
                 ) : (
-                  'Confirm & Send'
+                  'Submit for Approval'
                 )}
               </button>
             </div>

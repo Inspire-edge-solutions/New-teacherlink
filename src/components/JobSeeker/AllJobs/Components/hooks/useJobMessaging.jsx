@@ -349,15 +349,10 @@ const useJobMessaging = ({
       toast.info('Select at least one job to send a message.');
       return;
     }
-    const selectedRecords = getSelectedRecords();
-    const notApplied = selectedRecords.filter((job) => !(isJobApplied ? isJobApplied(job) : false));
-    if (notApplied.length > 0) {
-      toast.error('You can only message institutes for jobs you have applied to.');
-      return;
-    }
+    // Bulk messaging doesn't require jobs to be applied - allow sending to all selected jobs
     resetBulkForm();
     setShowBulkMessageModal(true);
-  }, [getSelectedRecords, isJobApplied, resetBulkForm, selectedJobs.size, user]);
+  }, [resetBulkForm, selectedJobs.size, user]);
 
   const handleCloseBulkMessageModal = useCallback(() => {
     setShowBulkMessageModal(false);
@@ -411,38 +406,40 @@ const useJobMessaging = ({
       setBulkError('Could not find the selected jobs.');
       return;
     }
-    const costPerInstitute = bulkChannel === 'whatsapp' ? WHATSAPP_COST : RCS_COST;
-    const totalCost = costPerInstitute * selectedRecords.length;
-    if (coinBalance === null) {
-      setBulkError('Fetching coin balance. Please try again in a moment.');
-      return;
-    }
-    if (coinBalance < totalCost) {
-      setRequiredCoins(totalCost);
-      resetBulkForm();
-      setShowBulkMessageModal(false);
-      setShowInsufficientCoinsModal(true);
-      return;
-    }
 
+    // No coin balance check needed - submitting for admin approval, not sending directly
     const summaryJobs = selectedRecords.map((job) => {
       const institute = buildInstituteData(job);
+      
+      // Debug: Log the structure to see what we have
+      console.log('📋 Building summary for job:', {
+        jobId: job.id,
+        jobTitle: job.job_title,
+        jobFirebaseUid: job.firebase_uid,
+        instituteFirebaseUid: institute?.firebase_uid,
+        hasInstitute: !!institute
+      });
+      
       return {
         job,
         institute
       };
     });
 
+    console.log('📦 Bulk summary jobs structure:', summaryJobs.map(entry => ({
+      jobId: entry.job?.id,
+      jobFirebaseUid: entry.job?.firebase_uid,
+      instituteFirebaseUid: entry.institute?.firebase_uid
+    })));
+
     setBulkSummary({
       channel: bulkChannel,
       message: trimmedMessage,
-      jobs: summaryJobs,
-      costPerInstitute,
-      totalCost
+      jobs: summaryJobs
     });
     setShowConfirmModal(true);
     setShowBulkMessageModal(false);
-  }, [bulkChannel, bulkMessage, coinBalance, getSelectedRecords, buildInstituteData, resetBulkForm]);
+  }, [bulkChannel, bulkMessage, getSelectedRecords, buildInstituteData]);
 
   const handleCancelConfirmation = useCallback(() => {
     setShowConfirmModal(false);
@@ -462,51 +459,110 @@ const useJobMessaging = ({
     if (!bulkSummary || !user) return;
     setIsSendingBulk(true);
     try {
-      let successCount = 0;
-      const failedJobs = [];
-
-      for (const entry of bulkSummary.jobs) {
-        try {
-          if (bulkSummary.channel === 'whatsapp') {
-            await JobApiService.sendWhatsAppMessageToInstitute(entry.job, user, bulkSummary.message);
-          } else {
-            await JobApiService.sendRCSMessageToInstitute(entry.job, user, bulkSummary.message);
-          }
-          successCount += 1;
-        } catch (error) {
-          failedJobs.push({ job: entry.job, reason: error?.message || 'API error' });
+      // Collect firebase_uid from all selected jobs/institutes
+      const sendedTo = bulkSummary.jobs.map((entry, index) => {
+        // Try multiple ways to get firebase_uid
+        let firebaseUid = null;
+        
+        // First try from institute object
+        if (entry.institute?.firebase_uid) {
+          firebaseUid = entry.institute.firebase_uid;
         }
-      }
-
-      if (successCount > 0) {
-        const totalCost = bulkSummary.totalCost;
-        const newBalance = Math.max((coinBalance ?? 0) - totalCost, 0);
-        try {
-          await JobApiService.updateUserCoins(user, newBalance);
-          const refreshed = await JobApiService.getUserCoins(user);
-          setCoinBalance(refreshed);
-          toast.success(`Sent ${successCount} ${bulkSummary.channel === 'whatsapp' ? 'WhatsApp' : 'RCS'} message${successCount > 1 ? 's' : ''}. Deducted ${totalCost} coin${totalCost !== 1 ? 's' : ''}.`);
-        } catch (coinError) {
-          console.error('Failed to update coins after messaging:', coinError);
-          toast.error('Messages sent but coin balance could not be updated. Please verify your balance.');
+        // Then try from job object directly
+        else if (entry.job?.firebase_uid) {
+          firebaseUid = entry.job.firebase_uid;
         }
-      }
-
-      if (failedJobs.length > 0) {
-        failedJobs.forEach(({ job, reason }) => {
-          console.error('Messaging failed for job:', {
-            jobId: job?.id,
-            jobTitle: job?.job_title,
-            reason
+        // Try other possible fields in job
+        else if (entry.job?.institute_firebase_uid) {
+          firebaseUid = entry.job.institute_firebase_uid;
+        }
+        else if (entry.job?.organisation_firebase_uid) {
+          firebaseUid = entry.job.organisation_firebase_uid;
+        }
+        else if (entry.job?.organization_firebase_uid) {
+          firebaseUid = entry.job.organization_firebase_uid;
+        }
+        
+        if (!firebaseUid) {
+          console.warn(`⚠️ No firebase_uid found for job at index ${index}:`, {
+            jobId: entry.job?.id,
+            jobTitle: entry.job?.job_title,
+            hasInstitute: !!entry.institute,
+            instituteFirebaseUid: entry.institute?.firebase_uid,
+            jobFirebaseUid: entry.job?.firebase_uid,
+            jobKeys: entry.job ? Object.keys(entry.job) : []
           });
-        });
+        }
+        
+        return firebaseUid;
+      }).filter(uid => uid !== null && uid !== undefined); // Remove any null/undefined values
 
-        const firstReason = failedJobs[0]?.reason ? ` Reason: ${failedJobs[0].reason}` : '';
-        toast.error(`${failedJobs.length} message${failedJobs.length > 1 ? 's' : ''} failed to send.${firstReason}`);
+      console.log('📤 Collected firebase_uids for sendedTo:', sendedTo);
+      console.log('📊 Total valid uids:', sendedTo.length, 'out of', bulkSummary.jobs.length);
+
+      if (sendedTo.length === 0) {
+        toast.error('No valid institutes found in selected jobs. Please ensure jobs have institute information.');
+        setIsSendingBulk(false);
+        return;
       }
+      
+      if (sendedTo.length < bulkSummary.jobs.length) {
+        const missingCount = bulkSummary.jobs.length - sendedTo.length;
+        console.warn(`⚠️ ${missingCount} job(s) missing firebase_uid and will be skipped`);
+        toast.warning(`${missingCount} job(s) missing institute information and will be skipped.`);
+      }
+
+      // Get current user's firebase_uid
+      const userFirebaseUid = user.firebase_uid || user.uid;
+      if (!userFirebaseUid) {
+        toast.error('User authentication required.');
+        setIsSendingBulk(false);
+        return;
+      }
+
+      // Prepare payload for approval API
+      // Note: Backend expects 'sendedeTo' (lowercase 'e'), not 'sendedTo'
+      const approvalPayload = {
+        firebase_uid: userFirebaseUid,
+        message: bulkSummary.message.trim(),
+        sendedeTo: sendedTo, // JSON array of firebase_uid (note: backend column is 'sendedeTo')
+        channel: bulkSummary.channel || 'whatsapp', // Store selected channel (whatsapp or rcs)
+        isApproved: false,
+        isRejected: false,
+        reason: ""
+      };
+      
+      console.log('📦 Final approval payload:', {
+        firebase_uid: approvalPayload.firebase_uid,
+        message: approvalPayload.message.substring(0, 50) + '...',
+        sendedeTo: approvalPayload.sendedeTo,
+        sendedeToLength: approvalPayload.sendedeTo?.length,
+        channel: approvalPayload.channel
+      });
+
+      // Send to approval API
+      const response = await fetch(
+        'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/approveMessage',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(approvalPayload)
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+
+      await response.json(); // Response received, no need to use the result
+      
+      toast.success(`Bulk message request submitted successfully! Your message is pending admin approval.`);
+      
     } catch (error) {
-      console.error('Error sending bulk messages:', error);
-      toast.error('Failed to send messages. Please try again.');
+      console.error('Error submitting bulk message for approval:', error);
+      toast.error('Failed to submit message request. Please try again.');
     } finally {
       setIsSendingBulk(false);
       setShowConfirmModal(false);
@@ -515,7 +571,7 @@ const useJobMessaging = ({
       setSelectedJobs(new Set());
       setSelectAll(false);
     }
-  }, [bulkSummary, coinBalance, resetBulkForm, user]);
+  }, [bulkSummary, resetBulkForm, user]);
 
   const handleCloseInsufficientCoinsModal = useCallback(() => {
     setShowInsufficientCoinsModal(false);

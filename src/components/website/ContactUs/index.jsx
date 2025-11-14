@@ -73,7 +73,7 @@ const ContactUs = () => {
                 {/* Heading */}
                 <div className="mb-8">
                   <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
-                    <span className="text-red-600">Connect</span>
+                    <span className="bg-gradient-brand-text bg-clip-text text-transparent">Connect</span>
                     <span className="text-gray-800"> with</span>
                   </h1>
                   <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 mt-2">
