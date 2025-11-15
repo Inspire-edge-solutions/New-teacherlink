@@ -1,14 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { Box, AppBar, Toolbar, styled, Stack, IconButton } from "@mui/material";
+import { Box, AppBar, Toolbar, styled, Stack, IconButton, Badge } from "@mui/material";
 import { Menu as MenuIcon } from "@mui/icons-material";
+import { Bell } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Profile from "./Profile";
 import { useAuth } from "../../Context/AuthContext";
+import { useNotificationCount } from "../../hooks/useNotificationCount";
 import axios from "axios";
 
 const DashboardHeader = ({ onMenuClick , activeTab }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { unreadCount } = useNotificationCount();
   const [userName, setUserName] = useState("");
   const [loading, setLoading] = useState(true);
+  
+  // Get user type to determine notification route
+  const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const userType = storedUser?.user_type;
+  const notificationPath = userType === "Employer" ? "/provider/notifications" : "/seeker/notifications";
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -76,6 +86,37 @@ const DashboardHeader = ({ onMenuClick , activeTab }) => {
         <Box flexGrow={1} />
         
         <Stack spacing={1} direction="row" alignItems="center">
+          {/* Notification Bell Icon */}
+          <IconButton
+            onClick={() => navigate(notificationPath)}
+            sx={{
+              position: 'relative',
+              color: 'inherit',
+              '&:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              },
+            }}
+            aria-label="notifications"
+          >
+            <Badge
+              badgeContent={unreadCount}
+              color="error"
+              sx={{
+                '& .MuiBadge-badge': {
+                  backgroundColor: '#F34B58',
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  fontWeight: 'bold',
+                  minWidth: '18px',
+                  height: '18px',
+                  padding: '0 4px',
+                },
+              }}
+            >
+              <Bell size={22} />
+            </Badge>
+          </IconButton>
+          
           <Profile />
         </Stack>
       </ToolbarStyled>

@@ -24,7 +24,7 @@ const MyProfileComponent = () => {
                 `https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved?firebase_uid=${user.uid}`
             );
 
-            let approved, rejected, responseMsg, recordFound = false;
+            let approved, rejected, recordFound = false;
 
             // Handle both array and object response
             if (Array.isArray(res.data) && res.data.length > 0) {
@@ -35,7 +35,6 @@ const MyProfileComponent = () => {
                     recordFound = true;
                     approved = userProfile.isApproved ?? userProfile.is_approved ?? userProfile.isapproved;
                     rejected = userProfile.isRejected ?? userProfile.is_rejected ?? userProfile.isrejected;
-                    responseMsg = userProfile.response;
                 }
             } else if (
                 typeof res.data === "object" &&
@@ -45,7 +44,6 @@ const MyProfileComponent = () => {
                 recordFound = true;
                 approved = res.data.isApproved ?? res.data.is_approved ?? res.data.isapproved;
                 rejected = res.data.isRejected ?? res.data.is_rejected ?? res.data.isrejected;
-                responseMsg = res.data.response;
             }
 
             // Convert to int if string
@@ -74,18 +72,9 @@ const MyProfileComponent = () => {
                     return;
                 }
                 
-                // 3. If there's a custom admin message (but don't block viewing if approved)
-                if (responseMsg && responseMsg.trim() !== "") {
-                    toast.info("📢 You have a new message from admin", {
-                        position: "top-center",
-                        autoClose: 5000,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true
-                    });
-                }
+                // Note: Admin messages are shown in the notifications system, not here
 
-                // 4. If approved (1) or no blocking conditions, proceed to view
+                // 3. If approved (1) or no blocking conditions, proceed to view
                 if (approved === 1) {
                     setShowProfile(true);
                 }

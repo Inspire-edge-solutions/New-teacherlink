@@ -1,9 +1,74 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
+import { Paper, Grow, Skeleton } from '@mui/material';
+import { useNotifications } from './hooks/useNotifications';
+import NotificationHeader from './components/NotificationHeader';
+import NotificationFilters from './components/NotificationFilters';
+import NotificationList from './components/NotificationList';
 
 const NotificationsComponent = () => {
-  return (
-    <div>This page is under development</div>
-  )
-}
+  const [checked, setChecked] = useState(false);
+  const {
+    filteredNotifications,
+    loading,
+    filter,
+    setFilter,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification
+  } = useNotifications();
 
-export default NotificationsComponent
+  useEffect(() => {
+    const timer = setTimeout(() => setChecked(true), 200);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-4 w-full md:p-5 p-0">
+        <Paper elevation={8} className="p-4 sm:p-6">
+          <Skeleton variant="text" width="40%" height={32} className="mb-4" />
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} variant="rectangular" height={80} className="rounded-lg" />
+            ))}
+          </div>
+        </Paper>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4 w-full md:p-5 p-0">
+      {/* Header */}
+      <Grow
+        in={checked}
+        style={{ transformOrigin: '0 0 0' }}
+        {...(checked ? { timeout: 400 } : {})}
+      >
+        <Paper elevation={8} className="p-4 sm:p-6">
+          <NotificationHeader 
+            unreadCount={unreadCount} 
+            onMarkAllAsRead={markAllAsRead} 
+          />
+          <NotificationFilters 
+            filter={filter} 
+            setFilter={setFilter} 
+            unreadCount={unreadCount} 
+          />
+        </Paper>
+      </Grow>
+
+      {/* Notifications List */}
+      <NotificationList
+        filteredNotifications={filteredNotifications}
+        filter={filter}
+        checked={checked}
+        onMarkAsRead={markAsRead}
+        onDelete={deleteNotification}
+      />
+    </div>
+  );
+};
+
+export default NotificationsComponent;

@@ -459,26 +459,24 @@ const FormInfoBox = () => {
         `https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved?firebase_uid=${user.uid}`
       );
 
-      let approved, responseMsg, rejected, recordFound = false;
+      let approved, rejected, recordFound = false;
       if (Array.isArray(res.data) && res.data.length > 0) {
         const userProfile = res.data.find(obj => obj.firebase_uid === user.uid);
         if (userProfile) {
           recordFound = true;
           approved = userProfile?.isApproved ?? userProfile?.isapproved;
           rejected = userProfile?.isRejected ?? userProfile?.isrejected;
-          responseMsg = userProfile?.response;
         }
       } else if (typeof res.data === "object" && res.data !== null && Object.keys(res.data).length > 0) {
         recordFound = true;
         approved = res.data.isApproved ?? res.data.isapproved;
         rejected = res.data.isRejected ?? res.data.isrejected;
-        responseMsg = res.data.response;
       }
 
       if (typeof approved === "string") approved = parseInt(approved);
       if (typeof rejected === "string") rejected = parseInt(rejected);
 
-      // Only block if found and rejected/response
+      // Only block if found and rejected/under review
       if (recordFound) {
         if (rejected === 1) {
           toast.error("Your profile has been rejected by admin", {
@@ -494,15 +492,8 @@ const FormInfoBox = () => {
           });
           setLoadingApproval(false);
           return;
-        } else if (responseMsg && responseMsg.trim() !== "") {
-          toast.info("📢 You have a new message from admin", {
-            position: "top-center",
-            autoClose: 5000,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true
-          });
         }
+        // Note: Admin messages are shown in the notifications system, not here
 
         if (approved === 1) {
           setViewMode(mode);
@@ -691,36 +682,27 @@ const FormInfoBox = () => {
         `https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved?firebase_uid=${user.uid}`
       );
 
-      let approved, responseMsg, rejected, recordFound = false;
+      let approved, rejected, recordFound = false;
       if (Array.isArray(res.data) && res.data.length > 0) {
         const userProfile = res.data.find(obj => obj.firebase_uid === user.uid);
         if (userProfile) {
           recordFound = true;
           approved = userProfile?.isApproved ?? userProfile?.isapproved;
           rejected = userProfile?.isRejected ?? userProfile?.isrejected;
-          responseMsg = userProfile?.response;
         }
       } else if (typeof res.data === "object" && res.data !== null && Object.keys(res.data).length > 0) {
         recordFound = true;
         approved = res.data.isApproved ?? res.data.isapproved;
         rejected = res.data.isRejected ?? res.data.isrejected;
-        responseMsg = res.data.response;
       }
 
       if (typeof approved === "string") approved = parseInt(approved);
       if (typeof rejected === "string") rejected = parseInt(rejected);
 
       if (recordFound) {
-        // Only block if found and rejected/response
-        if (responseMsg && responseMsg.trim() !== "") {
-          toast.info("Admin has sent you a message.");
-          setTimeout(() => {
-            setViewMode(null);
-            setShowProfile(false);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }, 1500);
-          return;
-        } else if (rejected === 1) {
+        // Only block if found and rejected/under review
+        // Note: Admin messages are shown in the notifications system, not here
+        if (rejected === 1) {
           toast.error("Your profile is rejected");
           setTimeout(() => {
             setViewMode(null);
