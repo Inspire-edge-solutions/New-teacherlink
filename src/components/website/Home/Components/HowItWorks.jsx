@@ -66,7 +66,7 @@ const HowItWorks = () => {
                 <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300 p-8 text-center h-full flex flex-col">
                   {/* Icon - Inside the card */}
                   <div className="mb-6">
-                    <div className="bg-red-500 w-16 h-16 rounded-full flex items-center justify-center shadow-lg mx-auto">
+                    <div className="bg-gradient-brand hover:bg-gradient-primary-hover w-16 h-16 rounded-full flex items-center justify-center shadow-lg mx-auto">
                       <IconComponent className="text-white text-2xl" />
                     </div>
                   </div>

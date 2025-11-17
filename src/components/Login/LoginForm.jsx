@@ -444,8 +444,7 @@ const LoginForm = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 text-base sm:text-lg md:text-xl"
-              style={{ background: 'linear-gradient(90deg, #FA5357 0%, #A2035D 100%)' }}
+              className="w-full text-white font-semibold bg-gradient-brand hover:bg-gradient-primary-hover py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 text-base sm:text-lg md:text-xl"
             >
               {loading ? "Logging in..." : "Login"}
             </button>

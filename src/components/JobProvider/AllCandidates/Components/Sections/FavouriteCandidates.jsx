@@ -369,25 +369,46 @@ const FavouriteCandidates = ({
         return;
       }
 
+      // Validate sendedTo array before sending
+      if (!Array.isArray(sendedTo) || sendedTo.length === 0) {
+        console.error('❌ Invalid sendedTo array:', sendedTo);
+        toast.error('No valid recipients found. Cannot submit message for approval.');
+        setIsSendingBulk(false);
+        return;
+      }
+
       // Prepare payload for approval API
       // Note: Backend expects 'sendedeTo' (lowercase 'e'), not 'sendedTo'
+      // Backend will JSON.stringify the array, so send as array (not string)
       const approvalPayload = {
         firebase_uid: userFirebaseUid,
         message: bulkSummary.message.trim(),
-        sendedeTo: sendedTo, // JSON array of candidate firebase_uid (note: backend column is 'sendedeTo')
+        sendedeTo: sendedTo, // Send as array - backend will JSON.stringify it
         channel: bulkSummary.channel || 'whatsapp', // Store selected channel (whatsapp or rcs)
         isApproved: false,
         isRejected: false,
         reason: ""
       };
       
+      // Final validation - ensure sendedeTo is present and is an array
+      if (!approvalPayload.sendedeTo || !Array.isArray(approvalPayload.sendedeTo) || approvalPayload.sendedeTo.length === 0) {
+        console.error('❌ Validation failed - sendedeTo is invalid:', approvalPayload.sendedeTo);
+        toast.error('Invalid recipient data. Please try again.');
+        setIsSendingBulk(false);
+        return;
+      }
+      
       console.log('📦 Final approval payload:', {
         firebase_uid: approvalPayload.firebase_uid,
         message: approvalPayload.message.substring(0, 50) + '...',
         sendedeTo: approvalPayload.sendedeTo,
-        sendedeToLength: approvalPayload.sendedeTo?.length,
+        sendedeToLength: approvalPayload.sendedeTo.length,
+        sendedeToType: Array.isArray(approvalPayload.sendedeTo) ? 'array' : typeof approvalPayload.sendedeTo,
         channel: approvalPayload.channel
       });
+      
+      // Log the actual JSON that will be sent
+      console.log('📤 JSON payload to be sent:', JSON.stringify(approvalPayload));
 
       // Send to approval API
       const response = await fetch(
