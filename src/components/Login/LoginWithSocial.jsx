@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { FcGoogle } from "react-icons/fc";
@@ -43,6 +43,8 @@ const getFirebaseAuth = () => {
 
 const LoginWithSocial = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requiredUserType = searchParams.get('requiredUserType'); // 'Candidate' or 'Employer'
   const [showRoleSelection, setShowRoleSelection] = useState(false);
   const [googlePayload, setGooglePayload] = useState(null);
   const [number, setNumber] = useState('');
@@ -156,6 +158,38 @@ const LoginWithSocial = () => {
       console.log("Backend response:", data);
 
       if (res.ok && data.success) {
+        // Get redirect URL from query params if available
+        const redirectUrl = searchParams.get('redirect');
+        
+        // Validate user type if requiredUserType is specified
+        if (requiredUserType) {
+          const userType = data.user.user_type;
+          const isValidUserType = 
+            (requiredUserType === 'Candidate' && (userType === 'Candidate' || userType === 'Teacher')) ||
+            (requiredUserType === 'Employer' && userType === 'Employer');
+          
+          if (!isValidUserType) {
+            // Wrong user type - sign out and show error
+            const auth = getFirebaseAuth();
+            await signOut(auth);
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+            
+            const pageName = requiredUserType === 'Candidate' ? 'available jobs' : 'available candidates';
+            const correctUserType = requiredUserType === 'Candidate' ? 'Candidate/Teacher' : 'Employer';
+            
+            toast.error(`This page is only for ${correctUserType} accounts. Please login with the correct account type to access ${pageName}.`);
+            
+            // Redirect back to the original page
+            if (redirectUrl) {
+              navigate(redirectUrl);
+            } else {
+              navigate('/home');
+            }
+            return;
+          }
+        }
+        
         // User exists and is complete - login successful
         toast.success("Login successful!");
         
@@ -163,15 +197,34 @@ const LoginWithSocial = () => {
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("token", await user.getIdToken());
         
-        // Navigate based on user type
-        const userType = data.user.user_type;
-        const redirectPath = userType === "Employer"
-          ? "/provider/dashboard"
-          : userType === "Candidate"
-            ? "/seeker/dashboard"
-            : "/";
-        
-        console.log("Redirecting to:", redirectPath);
+        // Determine redirect path
+        let redirectPath;
+        if (redirectUrl && requiredUserType) {
+          // If we came from a public page and validation passed, redirect to authenticated version
+          const userType = data.user.user_type;
+          if (redirectUrl === '/available-jobs' && (userType === 'Candidate' || userType === 'Teacher')) {
+            redirectPath = '/seeker/all-jobs';
+          } else if (redirectUrl === '/available-candidates' && userType === 'Employer') {
+            redirectPath = '/provider/all-candidates';
+          } else {
+            // Fallback to dashboard
+            redirectPath = userType === "Employer"
+              ? "/provider/dashboard"
+              : userType === "Candidate"
+                ? "/seeker/dashboard"
+                : "/";
+          }
+          console.log("Redirecting to authenticated page:", redirectPath);
+        } else {
+          // Otherwise, navigate based on user type
+          const userType = data.user.user_type;
+          redirectPath = userType === "Employer"
+            ? "/provider/dashboard"
+            : userType === "Candidate"
+              ? "/seeker/dashboard"
+              : "/";
+          console.log("Redirecting to dashboard:", redirectPath);
+        }
         // Close any open login modal/backdrop before navigating
         await closeBootstrapModalIfAny();
         

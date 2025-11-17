@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { getFirebaseAuth, getAuthMethods } from "../../firebase";
 import { toast } from "react-toastify";
 import LoginWithSocial from "./LoginWithSocial";
@@ -24,6 +24,8 @@ const LoginForm = () => {
   const [blockedMsg, setBlockedMsg] = useState("");
   const [blockedTitle, setBlockedTitle] = useState("");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requiredUserType = searchParams.get('requiredUserType'); // 'Candidate' or 'Employer'
 
   // ---- Block check function for candidate/institution ----
   const checkIfBlocked = async (firebase_uid, email) => {
@@ -236,18 +238,73 @@ const LoginForm = () => {
       }
 
       console.log("User details fetched successfully:", data);
+      
+      // Get redirect URL from query params if available
+      const redirectUrl = searchParams.get('redirect');
+      console.log("Login redirect params:", { redirectUrl, requiredUserType });
+      
+      // Validate user type if requiredUserType is specified
+      if (requiredUserType) {
+        const userType = data.user_type;
+        const isValidUserType = 
+          (requiredUserType === 'Candidate' && (userType === 'Candidate' || userType === 'Teacher')) ||
+          (requiredUserType === 'Employer' && userType === 'Employer');
+        
+        if (!isValidUserType) {
+          // Wrong user type - sign out and show error
+          const auth = await getFirebaseAuth();
+          const { signOut } = await getAuthMethods();
+          await signOut(auth);
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          
+          const pageName = requiredUserType === 'Candidate' ? 'available jobs' : 'available candidates';
+          const correctUserType = requiredUserType === 'Candidate' ? 'Candidate/Teacher' : 'Employer';
+          
+          toast.error(`This page is only for ${correctUserType} accounts. Please login with the correct account type to access ${pageName}.`);
+          setLoading(false);
+          
+          // Redirect back to the original page
+          if (redirectUrl) {
+            navigate(redirectUrl);
+          } else {
+            navigate('/home');
+          }
+          return;
+        }
+      }
+      
       // Store user data
       localStorage.setItem("user", JSON.stringify(data));
 
-      // Navigate based on user type
-      const userType = data.user_type;
-      const redirectPath = userType === "Employer"
-        ? "/provider/dashboard"
-        : userType === "Candidate"
-          ? "/seeker/dashboard"
-          : "/";
-
-      console.log("Redirecting to:", redirectPath);
+      // Determine redirect path
+      let redirectPath;
+      if (redirectUrl && requiredUserType) {
+        // If we came from a public page and validation passed, redirect to authenticated version
+        const userType = data.user_type;
+        if (redirectUrl === '/available-jobs' && (userType === 'Candidate' || userType === 'Teacher')) {
+          redirectPath = '/seeker/all-jobs';
+        } else if (redirectUrl === '/available-candidates' && userType === 'Employer') {
+          redirectPath = '/provider/all-candidates';
+        } else {
+          // Fallback to dashboard
+          redirectPath = userType === "Employer"
+            ? "/provider/dashboard"
+            : userType === "Candidate"
+              ? "/seeker/dashboard"
+              : "/";
+        }
+        console.log("Redirecting to authenticated page:", redirectPath);
+      } else {
+        // Otherwise, navigate based on user type
+        const userType = data.user_type;
+        redirectPath = userType === "Employer"
+          ? "/provider/dashboard"
+          : userType === "Candidate"
+            ? "/seeker/dashboard"
+            : "/";
+        console.log("Redirecting to dashboard:", redirectPath);
+      }
 
       // Clean up modal
       const modalElement = document.getElementById('loginPopupModal');

@@ -15,7 +15,7 @@ const CandidateFilterPanel = ({
 }) => {
   // Initialize filters with saved values or defaults
   const defaultFilters = {
-    country: null,
+    country: { value: 'India', label: 'India' },
     state: null,
     city: null,
     languages: [],
@@ -115,6 +115,26 @@ const CandidateFilterPanel = ({
         ...prev,
         countries
       }));
+
+      // Ensure India is properly mapped with numeric ID
+      const indiaOption = countries.find(country => country.label && country.label.toLowerCase() === 'india');
+      if (indiaOption) {
+        setFilters(prev => {
+          const currentLabel = String(prev.country?.label || prev.country?.value || '').toLowerCase();
+          const currentValue = prev.country?.value;
+          // Only update if country is null/empty, or if it's India but with wrong value type (string instead of number)
+          if (!prev.country || currentLabel === '' || (currentLabel === 'india' && typeof currentValue !== 'number')) {
+            const updated = { ...prev, country: indiaOption };
+            try {
+              localStorage.setItem('candidateFilters', JSON.stringify(updated));
+            } catch (error) {
+              console.error('Error saving filters:', error);
+            }
+            return updated;
+          }
+          return prev;
+        });
+      }
     });
   }, []);
 
@@ -205,7 +225,22 @@ const CandidateFilterPanel = ({
 
   // Handle reset filters
   const handleReset = () => {
-    setFilters({ ...defaultFilters });
+    const resetFilters = { ...defaultFilters };
+    
+    // If countries are loaded, ensure India is properly mapped with numeric ID
+    if (locationOptions.countries.length > 0) {
+      const indiaOption = locationOptions.countries.find(
+        country => country.label && country.label.toLowerCase() === 'india'
+      );
+      if (indiaOption && typeof indiaOption.value === 'number') {
+        resetFilters.country = indiaOption;
+      } else {
+        // If India option not found, set to null to allow manual selection
+        resetFilters.country = null;
+      }
+    }
+    
+    setFilters(resetFilters);
     try {
       localStorage.removeItem('candidateFilters');
     } catch (error) {

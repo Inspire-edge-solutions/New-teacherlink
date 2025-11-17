@@ -325,6 +325,7 @@ const AllCandidates = ({
   // Filter state
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState(new Set());
+  const [userHasAppliedFilters, setUserHasAppliedFilters] = useState(false); // Track if user explicitly applied filters
   const [filteredCandidatesByFilters, setFilteredCandidatesByFilters] = useState([]);
 
   // Candidate photos
@@ -912,6 +913,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
     });
 
     setFilteredCandidatesByFilters(filtered);
+    setUserHasAppliedFilters(true); // Mark that user has explicitly applied filters
     
     const activeFilterKeys = Object.keys(formattedFilters).filter(key => {
       const value = formattedFilters[key];
@@ -927,6 +929,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
   const handleResetFilters = useCallback(() => {
     setFilteredCandidatesByFilters([]);
     setActiveFilters(new Set());
+    setUserHasAppliedFilters(false); // Reset the flag when filters are reset
     setCurrentPage(1);
   }, []);
 
@@ -1355,7 +1358,9 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
               className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
             />
             <p className="text-gray-600 text-lg font-medium">
-              {isSearching 
+              {userHasAppliedFilters && activeFilters.size > 0 && filteredCandidatesByFilters.length === 0
+                ? 'No candidates match your filters. Try adjusting your selections or reset them to see more candidates.'
+                : isSearching 
                 ? 'No candidates found matching your search.'
                 : 'No candidates available at the moment.'
               }

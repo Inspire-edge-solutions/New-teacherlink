@@ -65,6 +65,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [hasFiltersApplied, setHasFiltersApplied] = useState(false);
+  const [userHasAppliedFilters, setUserHasAppliedFilters] = useState(false); // Track if user explicitly applied filters
   const [filteredJobsByFilters, setFilteredJobsByFilters] = useState([]);
   const [currentFilters, setCurrentFilters] = useState(() => {
     try {
@@ -235,6 +236,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
   // FILTER functionality
   const handleApplyFilters = useCallback((filters) => {
     setCurrentFilters(filters);
+    setUserHasAppliedFilters(true); // Mark that user has explicitly applied filters
     const { filteredJobs, activeFilters, hasActiveFilters } = applyJobFilters(jobs, filters);
 
     setHasFiltersApplied(hasActiveFilters);
@@ -262,6 +264,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
     setFilteredJobsByFilters([]);
     setActiveFilters(new Set());
     setHasFiltersApplied(false);
+    setUserHasAppliedFilters(false); // Reset the flag when filters are reset
     if (!skipPageResetRef.current) {
       setHighlightedJobId(null);
       setCurrentPage(1);
@@ -1239,9 +1242,9 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
           />
         </div>
 
-        {(hasFiltersApplied && filteredJobsByFilters.length === 0) || (isSearching && searchResults.length === 0) ? (
+        {(userHasAppliedFilters && hasFiltersApplied && filteredJobsByFilters.length === 0) || (isSearching && searchResults.length === 0) ? (
           <div className="p-4 mb-4 rounded bg-amber-50 border border-amber-200 text-amber-800">
-            {hasFiltersApplied && filteredJobsByFilters.length === 0 && (
+            {userHasAppliedFilters && hasFiltersApplied && filteredJobsByFilters.length === 0 && (
               <div className="mb-3">
                 <p className="font-semibold mb-1">No jobs match your filters.</p>
                 <p className="mb-3 text-sm">
@@ -1312,7 +1315,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
                 alt="No jobs" 
                 className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
               />
-              {hasFiltersApplied ? (
+              {userHasAppliedFilters && hasFiltersApplied ? (
                 <>
                   <p className="text-gray-700 text-lg font-semibold mb-2">
                     No jobs match your filters.

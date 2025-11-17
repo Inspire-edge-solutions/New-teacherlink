@@ -367,3 +367,53 @@ export const isValidCandidate = (candidate) => {
   return hasId && hasName;
 };
 
+/**
+ * Build candidate subjects from various fields
+ * Collects subjects from education details and candidate fields
+ * @param {Object} candidate - Candidate object
+ * @returns {Array<string>} Array of subject strings
+ */
+export const buildCandidateSubjects = (candidate) => {
+  if (!candidate) return [];
+  
+  const subjects = new Set();
+  
+  // Get subjects from education details
+  const { subjects: parsedSubjects } = parseEducation(candidate.education_details_json);
+  parsedSubjects.forEach((subject) => {
+    if (subject) subjects.add(subject);
+  });
+  
+  // Helper to convert to array and add to set
+  const toArray = (value) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [parsed];
+      } catch {
+        return value.split(',').map(s => s.trim());
+      }
+    }
+    return [value];
+  };
+  
+  // Collect from various candidate fields
+  const subjectFields = [
+    candidate.teaching_subjects,
+    candidate.teaching_administrative_subjects,
+    candidate.subjects_taught,
+    candidate.core_subjects,
+    candidate.coreSubjects
+  ];
+  
+  subjectFields.forEach((field) => {
+    toArray(field).forEach((subject) => {
+      if (subject) subjects.add(subject);
+    });
+  });
+  
+  return Array.from(subjects);
+};
+

@@ -119,7 +119,9 @@ const FilterPanel = ({
       if (indiaOption) {
         setFilters(prev => {
           const currentLabel = String(prev.country?.label || prev.country?.value || '').toLowerCase();
-          if (!prev.country || currentLabel === '' || currentLabel === 'india') {
+          const currentValue = prev.country?.value;
+          // Only update if country is null/empty, or if it's India but with wrong value type (string instead of number)
+          if (!prev.country || currentLabel === '' || (currentLabel === 'india' && typeof currentValue !== 'number')) {
             const updated = { ...prev, country: indiaOption };
             saveFiltersToStorage(updated);
             return updated;
@@ -720,7 +722,22 @@ const FilterPanel = ({
 
   // Handle reset filters
   const handleReset = () => {
-    setFilters({ ...defaultJobFilters });
+    const resetFilters = { ...defaultJobFilters };
+    
+    // If countries are loaded, ensure India is properly mapped with numeric ID
+    if (locationOptions.countries.length > 0) {
+      const indiaOption = locationOptions.countries.find(
+        country => country.label && country.label.toLowerCase() === 'india'
+      );
+      if (indiaOption && typeof indiaOption.value === 'number') {
+        resetFilters.country = indiaOption;
+      } else {
+        // If India option not found, set to null to allow manual selection
+        resetFilters.country = null;
+      }
+    }
+    
+    setFilters(resetFilters);
     try {
       localStorage.removeItem('jobFilters');
     } catch (error) {
