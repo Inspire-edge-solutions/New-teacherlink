@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AiOutlineEye, AiOutlineFileText, AiOutlineMessage } from 'react-icons/ai';
 import { FaBriefcase, FaWallet, FaMapMarkerAlt, FaGraduationCap, FaStar } from 'react-icons/fa';
@@ -9,6 +9,7 @@ import {
   parseCoreExpertise, 
   getLocationString
 } from '../utils/candidateUtils.js';
+import LoginConsentModal from '../../../../../components/common/LoginConsentModal';
 
 /**
  * Public CandidateCard component for unauthenticated users
@@ -17,12 +18,27 @@ import {
 const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
   const navigate = useNavigate();
   const candidateId = candidate.firebase_uid;
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
 
   const expertise = parseCoreExpertise(candidate);
 
-  // Redirect to login with action context and required user type
+  // Show consent modal before redirecting to login
   const handleAction = (action) => {
-    navigate(`/login?redirect=/available-candidates&action=${action}&id=${candidateId}&requiredUserType=Employer`);
+    setPendingAction(action);
+    setShowConsentModal(true);
+  };
+
+  // Handle consent confirmation - redirect to login
+  const handleConfirmLogin = () => {
+    setShowConsentModal(false);
+    navigate(`/login?redirect=/available-candidates&action=${pendingAction}&id=${candidateId}&requiredUserType=Employer`);
+  };
+
+  // Handle consent cancellation
+  const handleCancel = () => {
+    setShowConsentModal(false);
+    setPendingAction(null);
   };
 
   return (
@@ -166,6 +182,15 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
           </span>
         </div>
       </div>
+
+      {/* Login Consent Modal */}
+      <LoginConsentModal
+        isOpen={showConsentModal}
+        onClose={handleCancel}
+        onConfirm={handleConfirmLogin}
+        action={pendingAction}
+        userType="Employer"
+      />
     </div>
   );
 };

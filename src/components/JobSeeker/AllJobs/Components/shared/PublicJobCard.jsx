@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoLocationOutline } from "react-icons/io5";
 import { BsBriefcase, BsCash, BsMortarboard } from "react-icons/bs";
 import { AiOutlineEye, AiOutlineMessage } from "react-icons/ai";
 import { formatQualification } from '../../utils/formatUtils';
+import LoginConsentModal from '../../../../../components/common/LoginConsentModal';
 
 /**
  * Public JobCard component for unauthenticated users
@@ -12,6 +13,8 @@ import { formatQualification } from '../../utils/formatUtils';
 const PublicJobCard = ({ job }) => {
   const navigate = useNavigate();
   const jobId = Number(job.id);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
   
   // Helper functions for formatting
   const formatSalary = (minSalary, maxSalary) => {
@@ -41,9 +44,22 @@ const PublicJobCard = ({ job }) => {
     return `${Math.floor(diffInMinutes / 1440)} days ago`;
   };
 
-  // Redirect to login with action context and required user type
+  // Show consent modal before redirecting to login
   const handleAction = (action) => {
-    navigate(`/login?redirect=/available-jobs&action=${action}&id=${jobId}&requiredUserType=Candidate`);
+    setPendingAction(action);
+    setShowConsentModal(true);
+  };
+
+  // Handle consent confirmation - redirect to login
+  const handleConfirmLogin = () => {
+    setShowConsentModal(false);
+    navigate(`/login?redirect=/available-jobs&action=${pendingAction}&id=${jobId}&requiredUserType=Candidate`);
+  };
+
+  // Handle consent cancellation
+  const handleCancel = () => {
+    setShowConsentModal(false);
+    setPendingAction(null);
   };
 
   return (
@@ -132,6 +148,15 @@ const PublicJobCard = ({ job }) => {
           )}
         </div>
       </div>
+
+      {/* Login Consent Modal */}
+      <LoginConsentModal
+        isOpen={showConsentModal}
+        onClose={handleCancel}
+        onConfirm={handleConfirmLogin}
+        action={pendingAction}
+        userType="Candidate"
+      />
     </div>
   );
 };

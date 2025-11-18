@@ -19,11 +19,17 @@ const PublicJobFilterPanel = ({
     city: null,
     education: [],
     subjects: [],
-    minExperience: '',
-    maxExperience: '',
+    minExperienceYears: null,
+    maxExperienceYears: null,
     minSalary: '',
     maxSalary: ''
   };
+
+  // Create year options
+  const yearOptions = Array.from({ length: 51 }, (_, i) => ({
+    value: i,
+    label: i.toString()
+  }));
 
   const [filters, setFilters] = useState(defaultFilters);
   const [locationOptions, setLocationOptions] = useState({
@@ -236,25 +242,29 @@ const PublicJobFilterPanel = ({
 
             {/* Experience Range */}
             <div>
-              <InputWithTooltip label="Min Experience (years)">
-                <input
-                  type="number"
-                  value={filters.minExperience}
-                  onChange={(e) => handleFilterChange('minExperience', e.target.value)}
-                  placeholder="Min Experience"
-                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              <InputWithTooltip label="Min Experience (Years)">
+                <Select
+                  value={filters.minExperienceYears}
+                  onChange={(value) => handleFilterChange('minExperienceYears', value)}
+                  options={yearOptions}
+                  placeholder="Minimum Experience Years"
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
                 />
               </InputWithTooltip>
             </div>
 
             <div>
-              <InputWithTooltip label="Max Experience (years)">
-                <input
-                  type="number"
-                  value={filters.maxExperience}
-                  onChange={(e) => handleFilterChange('maxExperience', e.target.value)}
-                  placeholder="Max Experience"
-                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              <InputWithTooltip label="Max Experience (Years)">
+                <Select
+                  value={filters.maxExperienceYears}
+                  onChange={(value) => handleFilterChange('maxExperienceYears', value)}
+                  options={yearOptions}
+                  placeholder="Maximum Experience Years"
+                  isClearable
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
                 />
               </InputWithTooltip>
             </div>

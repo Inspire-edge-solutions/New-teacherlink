@@ -169,19 +169,33 @@ const AvailableCandidatesPage = () => {
       });
     }
 
-    // Experience filters
-    if (filters.minExperience) {
-      const min = Number(filters.minExperience);
+    // Experience filters - using years only
+    const minExpYears = filters.minExperienceYears?.value ?? 0;
+    const maxExpYears = filters.maxExperienceYears?.value ?? Infinity;
+
+    if (minExpYears > 0 || maxExpYears < Infinity) {
       filtered = filtered.filter(candidate => {
-        const exp = candidate.total_experience_years || 0;
-        return exp >= min;
-      });
-    }
-    if (filters.maxExperience) {
-      const max = Number(filters.maxExperience);
-      filtered = filtered.filter(candidate => {
-        const exp = candidate.total_experience_years || 0;
-        return exp <= max;
+        // Parse candidate experience (handle years)
+        const parseExperienceValue = (value) => {
+          if (!value) return 0;
+          if (typeof value === 'number') return value;
+          if (typeof value === 'string') {
+            const match = value.match(/^(\d+)/);
+            return match ? parseInt(match[1]) : 0;
+          }
+          return 0;
+        };
+
+        // Get total experience in years
+        const expYears = parseExperienceValue(candidate.total_experience_years) || 0;
+        
+        // If no experience specified, include candidate (don't filter out)
+        if (expYears === 0) {
+          return true;
+        }
+        
+        // Check if candidate experience falls within filter range
+        return expYears >= minExpYears && expYears <= maxExpYears;
       });
     }
 
@@ -221,14 +235,23 @@ const AvailableCandidatesPage = () => {
       });
     }
 
-    // Count active filters (handle arrays properly)
+    // Count active filters (handle arrays properly, count experience as single filter)
     const count = Object.entries(filters).filter(([key, value]) => {
+      // Count experience fields as a single filter
+      if (key === 'minExperienceYears' || key === 'maxExperienceYears') {
+        // Only count if at least one experience field is set (checked separately)
+        return false;
+      }
       if (Array.isArray(value)) return value.length > 0;
       if (typeof value === 'string') return value.trim() !== '';
       return value !== null && value !== undefined && value !== '';
     }).length;
     
-    setActiveFiltersCount(count);
+    // Add 1 if any experience filter is set
+    const hasExperienceFilter = filters.minExperienceYears || filters.maxExperienceYears;
+    const finalCount = hasExperienceFilter ? count + 1 : count;
+    
+    setActiveFiltersCount(finalCount);
     setFilteredCandidates(filtered);
   }, []);
 
@@ -274,7 +297,7 @@ const AvailableCandidatesPage = () => {
   }, [filteredCandidates, currentPage, totalPages]);
 
   const metadata = {
-    title: "Available Teacher Candidates | Browse Qualified Educators | TeacherLink",
+    title: "Active Teacher Profiles | Browse Qualified Educators | TeacherLink",
     description: "Explore available teaching professionals. Register to unlock full candidate details and contact information.",
   };
 
@@ -295,7 +318,7 @@ const AvailableCandidatesPage = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header Banner */}
           <div className="bg-gradient-brand text-white text-center rounded-lg p-6 mb-6 shadow-lg">
-            <h1 className="text-3xl font-bold mb-2">Available Teacher Candidates</h1>
+            <h1 className="text-3xl font-bold mb-2">Active Teacher Profiles</h1>
             <p className="text-lg opacity-90">
               Discover qualified teaching professionals. Register or login to unlock full profiles and contact candidates.
             </p>
@@ -333,7 +356,7 @@ const AvailableCandidatesPage = () => {
           {/* Candidates Count and Records Per Page */}
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent">
-              {filteredCandidates.length} {filteredCandidates.length === 1 ? 'Candidate' : 'Candidates'} Available
+              {filteredCandidates.length} {filteredCandidates.length === 1 ? 'Profile' : 'Profiles'} Available
             </h2>
             <RecordsPerPageDropdown 
               itemsPerPage={candidatesPerPage}

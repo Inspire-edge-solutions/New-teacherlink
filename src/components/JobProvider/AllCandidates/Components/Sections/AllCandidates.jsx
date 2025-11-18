@@ -253,6 +253,12 @@ const parseSalaryInput = (value) => {
 
 const parseExperienceInput = (value) => {
   if (value === null || value === undefined || value === '') return null;
+  // Handle react-select option object format
+  if (typeof value === 'object' && value !== null && 'value' in value) {
+    const parsed = Number(value.value);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  // Handle string/number format (backward compatibility)
   const parsed = Number(value);
   return Number.isNaN(parsed) ? null : parsed;
 };
@@ -644,8 +650,8 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
       gender: filters.gender?.map(g => g.value) || [],
       noticePeriod: filters.noticePeriod?.map(n => n.value) || [],
       online: filters.online?.value,
-      min_experience: filters.min_experience,
-      max_experience: filters.max_experience
+      min_experience: filters.minExperienceYears?.value ?? filters.min_experience ?? null,
+      max_experience: filters.maxExperienceYears?.value ?? filters.max_experience ?? null
     };
 
     // Check if any filters are actually applied

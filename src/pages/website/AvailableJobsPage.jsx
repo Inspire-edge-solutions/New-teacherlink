@@ -107,20 +107,30 @@ const AvailableJobsPage = () => {
     let { filteredJobs, activeFilters, hasActiveFilters } = applyJobFilters(jobsToFilter, formattedFilters);
     
     // Apply experience filters separately (not handled by applyJobFilters)
-    if (filters.minExperience || filters.maxExperience) {
-      const minExp = filters.minExperience ? Number(filters.minExperience) : 0;
-      const maxExp = filters.maxExperience ? Number(filters.maxExperience) : Infinity;
-      
+    const minExpYears = filters.minExperienceYears?.value ?? 0;
+    const maxExpYears = filters.maxExperienceYears?.value ?? Infinity;
+
+    if (minExpYears > 0 || maxExpYears < Infinity) {
       filteredJobs = filteredJobs.filter(job => {
-        // Check various experience fields
-        const totalExpMin = Number(job.total_experience_min_years) || 0;
-        const totalExpMax = Number(job.total_experience_max_years) || 0;
-        const teachingExpMin = Number(job.teaching_experience_min_years) || 0;
-        const teachingExpMax = Number(job.teaching_experience_max_years) || 0;
+        // Parse job experience fields (handle years)
+        const parseExperienceValue = (value) => {
+          if (!value) return 0;
+          if (typeof value === 'number') return value;
+          if (typeof value === 'string') {
+            const match = value.match(/^(\d+)/);
+            return match ? parseInt(match[1]) : 0;
+          }
+          return 0;
+        };
+
+        const totalExpMinYears = parseExperienceValue(job.total_experience_min_years) || 0;
+        const totalExpMaxYears = parseExperienceValue(job.total_experience_max_years) || 0;
+        const teachingExpMinYears = parseExperienceValue(job.teaching_experience_min_years) || 0;
+        const teachingExpMaxYears = parseExperienceValue(job.teaching_experience_max_years) || 0;
         
         // Job matches if any of its experience ranges overlap with the filter range
-        const jobMinExp = Math.min(totalExpMin, teachingExpMin);
-        const jobMaxExp = Math.max(totalExpMax, teachingExpMax);
+        const jobMinExp = Math.min(totalExpMinYears, teachingExpMinYears);
+        const jobMaxExp = Math.max(totalExpMaxYears, teachingExpMaxYears);
         
         // If job has no experience specified, include it (don't filter out)
         if (jobMinExp === 0 && jobMaxExp === 0) {
@@ -128,12 +138,12 @@ const AvailableJobsPage = () => {
         }
         
         // Check if ranges overlap
-        return jobMaxExp >= minExp && jobMinExp <= maxExp;
+        return jobMaxExp >= minExpYears && jobMinExp <= maxExpYears;
       });
       
       if (hasActiveFilters) {
         activeFilters.push('experience');
-      } else if (filters.minExperience || filters.maxExperience) {
+      } else {
         activeFilters = ['experience'];
         hasActiveFilters = true;
       }
