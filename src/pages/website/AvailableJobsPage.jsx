@@ -193,7 +193,7 @@ const AvailableJobsPage = () => {
   }, [filteredJobs, currentPage, totalPages]);
 
   const metadata = {
-    title: "Available Teaching Jobs | Browse Opportunities | TeacherLink",
+    title: "Active Jobs for Teachers | Browse Opportunities | TeacherLink",
     description: "Explore available teaching opportunities. Register to apply and unlock full job details.",
   };
 
@@ -214,7 +214,7 @@ const AvailableJobsPage = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header Banner */}
           <div className="bg-gradient-brand text-white text-center rounded-lg p-6 mb-6 shadow-lg">
-            <h1 className="text-3xl font-bold mb-2">Available Teaching Jobs</h1>
+            <h1 className="text-3xl font-bold mb-2">Active Jobs for Teachers</h1>
             <p className="text-lg opacity-90">
               Discover exciting teaching opportunities. Register or login to apply and unlock full details.
             </p>
@@ -252,7 +252,7 @@ const AvailableJobsPage = () => {
           {/* Jobs Count and Records Per Page */}
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent">
-              {filteredJobs.length} {filteredJobs.length === 1 ? 'Job' : 'Jobs'} Available
+              {filteredJobs.length} {filteredJobs.length === 1 ? 'Job' : 'Jobs'} Active
             </h2>
             <RecordsPerPageDropdown 
               itemsPerPage={jobsPerPage}

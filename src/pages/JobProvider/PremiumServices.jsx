@@ -5,8 +5,8 @@ import MetaComponent from '../../components/common/MetaComponent';
 const PremiumServices = () => {
 
     const metadata = {
-        title: "Premium Service | Upgrade Your TeacherLink Account",
-        description: "Upgrade your TeacherLink account to access premium features and services. Choose from our subscription plans to unlock exclusive benefits and enhance your education recruitment experience.",
+        title: "Premium Advertising Services | Promote Your Jobs | TeacherLink",
+        description: "Maximize your reach and attract the best teaching talent with our premium advertising packages. Featured job postings, homepage banners, newsletter sponsorships, and more.",
       };
       
 
