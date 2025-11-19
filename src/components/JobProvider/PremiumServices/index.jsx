@@ -29,8 +29,7 @@ const PremiumServicesComponent = () => {
   const handleFormSubmit = (formData) => {
     // TODO: Implement form submission logic
     console.log('Form submitted:', formData);
-    // For now, just show success message and close modal
-    alert('Thank you for your interest! Our team will contact you shortly.');
+    // Success messages are already shown via toast notifications in BookingModal
     handleCloseModal();
   };
 
