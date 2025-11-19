@@ -1,4 +1,6 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import AllJobs from './Sections/AllJobs';
 import SaveJobs from './Sections/SaveJobs';
 import FavouriteJobs from './Sections/FavouriteJobs';
@@ -6,7 +8,11 @@ import RecommendedJobs from './Sections/RecommendedJobs';
 import ViewJobs from './ViewJobs';
 import AppliedJobs from './Sections/AppliedJobs';
 
+const JOBS_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes';
+
 const TabDisplay = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
   const [selectedJob, setSelectedJob] = useState(null);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'detail'
@@ -16,6 +22,7 @@ const TabDisplay = () => {
   const [recommendedJobsBackHandler, setRecommendedJobsBackHandler] = useState(null);
   const [appliedJobsBackHandler, setAppliedJobsBackHandler] = useState(null);
   const [lastSelectedJobId, setLastSelectedJobId] = useState(null);
+  const [fromNotifications, setFromNotifications] = useState(false);
 
   // Handle job view
   const handleViewJob = (job) => {
@@ -28,9 +35,52 @@ const TabDisplay = () => {
 
   const handleBackToList = (mode) => {
     console.log('handleBackToList called, activeTab:', activeTab, 'lastSelectedJobId:', lastSelectedJobId);
+    
+    // If we came from notifications, navigate back to notifications
+    if (fromNotifications) {
+      navigate('/seeker/notifications');
+      return;
+    }
+    
     setSelectedJob(null);
     setViewMode('list');
   };
+
+  // Check for navigation state from notifications
+  useEffect(() => {
+    const state = location.state;
+    if (state?.openJobId && state?.fromNotifications) {
+      setFromNotifications(true);
+      
+      // Fetch and open the job
+      const fetchAndOpenJob = async () => {
+        try {
+          const response = await axios.get(`${JOBS_API}?id=${state.openJobId}`);
+          let jobData = null;
+          
+          if (Array.isArray(response.data) && response.data.length > 0) {
+            jobData = response.data.find(job => Number(job.id) === Number(state.openJobId));
+          } else if (response.data && response.data.id) {
+            jobData = response.data;
+          }
+          
+          if (jobData) {
+            setSelectedJob(jobData);
+            setViewMode('detail');
+            setLastSelectedJobId(jobData.id);
+            window.scrollTo({ top: 0, behavior: 'auto' });
+            
+            // Clear the state to prevent re-opening on re-render
+            navigate(location.pathname, { replace: true, state: {} });
+          }
+        } catch (error) {
+          console.error('Error fetching job from notification:', error);
+        }
+      };
+      
+      fetchAndOpenJob();
+    }
+  }, [location.state, navigate, location.pathname]);
 
   // Store the back handlers from job components
   const handleAllJobsBackHandler = useCallback((handler) => {
@@ -124,7 +174,7 @@ const TabDisplay = () => {
       <div className="rounded-lg shadow-sm border">
         <div className="p-4 md:p-6">
           {viewMode === 'detail' && selectedJob ? (
-            <ViewJobs job={selectedJob} onBack={handleBackToList} />
+            <ViewJobs job={selectedJob} onBack={handleBackToList} fromNotifications={fromNotifications} />
           ) : (
                   <ActiveComponent 
                     onViewJob={handleViewJob} 

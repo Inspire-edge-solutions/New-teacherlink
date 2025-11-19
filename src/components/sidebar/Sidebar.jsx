@@ -145,14 +145,8 @@ export default function Sidebar({
                   onClick={() => toggleItem(item.label)}
                   title={isCollapsed ? item.label : undefined} // tooltip when collapsed
                 >
-                  <div className={`icon-gradient-wrapper ${active ? 'active' : ''} relative`}>
+                  <div className={`icon-gradient-wrapper ${active ? 'active' : ''}`}>
                     <item.icon className="h-5 w-10 shrink-0" />
-                    {/* Notification Badge */}
-                    {item.label === "Notifications" && unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-gradient-to-r from-[#F34B58] to-[#A1025D] text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </span>
-                    )}
                   </div>
                   {!isCollapsed && (
                     <span className={`${active ? "bg-gradient-to-r from-[#F34B58] to-[#A1025D] bg-clip-text text-transparent font-semibold" : "text-gray-700"} flex items-center gap-2`}>

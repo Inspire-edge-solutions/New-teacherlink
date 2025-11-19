@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import ModalPortal from '../../../common/ModalPortal';
 import InputWithTooltip from '../../../../services/InputWithTooltip';
-import { Fade, Slide, Paper, Zoom, Checkbox, FormControlLabel, Box, CircularProgress, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
+import { Fade, Slide, Paper, Zoom, Checkbox, FormControlLabel, Box, CircularProgress, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, Radio, RadioGroup, FormControl, FormLabel } from '@mui/material';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../../../Context/AuthContext';
 
@@ -10,17 +10,16 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
   const { user } = useAuth();
   const firebase_uid = user?.uid;
   
-  const MAX_IMAGES = 5; // Maximum number of images allowed
-  
   const [formData, setFormData] = useState({
     name: '',
     schoolName: '',
     message: '',
-    images: [],
+    mediaType: '', // 'image' or 'video'
+    image: null,
     video: null,
     prepareContent: false
   });
-  const [imagePreviews, setImagePreviews] = useState([]);
+  const [imagePreview, setImagePreview] = useState(null);
   const [videoPreview, setVideoPreview] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -65,50 +64,44 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
     }));
   };
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      const currentImageCount = formData.images.length;
-      const remainingSlots = MAX_IMAGES - currentImageCount;
-      
-      if (remainingSlots <= 0) {
-        toast.error(`Maximum ${MAX_IMAGES} images allowed. Please remove some images first.`);
-        e.target.value = '';
-        return;
-      }
-      
-      // Limit the number of files to the remaining slots
-      const filesToAdd = files.slice(0, remainingSlots);
-      
-      if (files.length > remainingSlots) {
-        toast.warning(`Only ${remainingSlots} more image${remainingSlots > 1 ? 's' : ''} can be added. Maximum ${MAX_IMAGES} images allowed.`);
-      }
-      
-      // Add new images to existing ones
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, ...filesToAdd]
-      }));
-      
-      // Create previews for new images
-      filesToAdd.forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImagePreviews(prev => [...prev, reader.result]);
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-    // Reset input to allow selecting the same file again
-    e.target.value = '';
-  };
-
-  const handleRemoveImage = (index) => {
+  const handleMediaTypeChange = (e) => {
+    const newMediaType = e.target.value;
     setFormData(prev => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      mediaType: newMediaType,
+      // Clear the other media type when switching
+      image: newMediaType === 'image' ? prev.image : null,
+      video: newMediaType === 'video' ? prev.video : null
     }));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    // Clear previews
+    if (newMediaType === 'image') {
+      setVideoPreview(null);
+    } else {
+      setImagePreview(null);
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        image: file
+      }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      image: null
+    }));
+    setImagePreview(null);
   };
 
   const handleVideoChange = (e) => {
@@ -124,6 +117,14 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleRemoveVideo = () => {
+    setFormData(prev => ({
+      ...prev,
+      video: null
+    }));
+    setVideoPreview(null);
   };
 
   // Handle payment for advertising service
@@ -345,8 +346,8 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
         return;
       }
 
-    // If prepareContent is not checked, check if user uploaded their own images/video
-    if (formData.images.length > 0 || formData.video) {
+    // If prepareContent is not checked, check if user uploaded their own image/video
+    if (formData.image || formData.video) {
       console.log("User uploaded content - proceeding with payment");
       // Proceed with payment
       setIsProcessing(true);
@@ -362,7 +363,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
 
     // If neither condition is met, show error
     console.log("Neither condition met - showing error");
-    toast.error("Please either upload your own images/video or select the option for TeacherLink to prepare content.");
+    toast.error("Please either upload your own image/video or select the option for TeacherLink to prepare content.");
   };
 
   const handleClose = () => {
@@ -370,11 +371,12 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
       name: '',
       schoolName: '',
       message: '',
-      images: [],
+      mediaType: '',
+      image: null,
       video: null,
       prepareContent: false
     });
-    setImagePreviews([]);
+    setImagePreview(null);
     setVideoPreview(null);
     setIsProcessing(false);
     setShowSuccessDialog(false);
@@ -388,11 +390,12 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
       name: '',
       schoolName: '',
       message: '',
-      images: [],
+      mediaType: '',
+      image: null,
       video: null,
       prepareContent: false
     });
-    setImagePreviews([]);
+    setImagePreview(null);
     setVideoPreview(null);
   };
 
@@ -494,109 +497,192 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
             />
           </InputWithTooltip>
 
-          {/* Image and Video Upload Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            {/* Add Images */}
-            <InputWithTooltip label={`Add images (max ${MAX_IMAGES})`}>
-              <div className="relative">
-                <input
-                  type="file"
-                  id="images"
-                  name="images"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageChange}
-                  className="hidden"
-                  disabled={formData.images.length >= MAX_IMAGES}
-                />
-                <label
-                  htmlFor="images"
-                  className={`flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-lg transition-colors ${
-                    formData.images.length >= MAX_IMAGES
-                      ? 'bg-gray-200 cursor-not-allowed opacity-60'
-                      : 'cursor-pointer bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
-                  }`}
-                >
-                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    formData.images.length >= MAX_IMAGES ? 'bg-gray-400' : 'bg-red-500'
-                  }`}>
-                    <FaPlus className="text-white text-xs sm:text-sm" />
-                  </div>
-                  <span className="text-gray-700 text-xs sm:text-sm truncate">
-                    {imagePreviews.length > 0 
-                      ? `${imagePreviews.length}/${MAX_IMAGES} image${imagePreviews.length > 1 ? 's' : ''} selected` 
-                      : `Choose images (max ${MAX_IMAGES})`}
-                  </span>
-                </label>
-                {imagePreviews.length > 0 && (
-                  <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {imagePreviews.map((preview, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={preview}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-24 sm:h-32 object-cover rounded-lg border border-gray-300"
+          {/* Media Type Selection with Radio Buttons and Upload Input */}
+          <Box 
+            sx={{ 
+              p: 1.5, 
+              bgcolor: 'rgba(255, 255, 255, 0.5)', 
+              borderRadius: 2,
+              border: '1px solid rgba(0, 0, 0, 0.1)',
+              mb: 2
+            }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
+              {/* Left Side - Radio Buttons (Vertical) */}
+              <div>
+                <FormControl component="fieldset" fullWidth>
+                  <FormLabel 
+                    component="legend" 
+                    sx={{ 
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                      fontWeight: 'semibold',
+                      color: '#000000 !important',
+                      mb: 1,
+                      '&.Mui-focused': {
+                        color: '#000000 !important'
+                      }
+                    }}
+                  >
+                    Select Media Type
+                  </FormLabel>
+                  <RadioGroup
+                    name="mediaType"
+                    value={formData.mediaType}
+                    onChange={handleMediaTypeChange}
+                    sx={{ 
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1
+                    }}
+                  >
+                    <FormControlLabel
+                      value="image"
+                      control={
+                        <Radio
+                          sx={{
+                            color: '#F34B58',
+                            '&.Mui-checked': {
+                              color: '#A1025D',
+                            },
+                            '& .MuiSvgIcon-root': {
+                              fontSize: { xs: '1.125rem', sm: '1.25rem' }
+                            }
+                          }}
                         />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(index)}
-                          className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
-                          aria-label={`Remove image ${index + 1}`}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </InputWithTooltip>
-
-            {/* Upload Video */}
-            <InputWithTooltip label="Upload video">
-              <div className="relative">
-                <input
-                  type="file"
-                  id="video"
-                  name="video"
-                  accept="video/*"
-                  onChange={handleVideoChange}
-                  className="hidden"
-                />
-                <label
-                  htmlFor="video"
-                  className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 transition-colors hover:bg-gray-100 active:bg-gray-200"
-                >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <FaPlus className="text-white text-xs sm:text-sm" />
-                  </div>
-                  <span className="text-gray-700 text-xs sm:text-sm truncate">
-                    {videoPreview ? 'Video selected' : 'Choose video'}
-                  </span>
-                </label>
-                {videoPreview && (
-                  <div className="mt-2 relative">
-                    <video
-                      src={videoPreview}
-                      controls
-                      className="w-full h-24 sm:h-32 object-cover rounded-lg border border-gray-300"
+                      }
+                      label={
+                        <span className="text-sm text-gray-800 font-medium">
+                          Image
+                        </span>
+                      }
                     />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setVideoPreview(null);
-                        setFormData(prev => ({ ...prev, video: null }));
-                      }}
-                      className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
-                      aria-label="Remove video"
-                    >
-                      ×
-                    </button>
+                    <FormControlLabel
+                      value="video"
+                      control={
+                        <Radio
+                          sx={{
+                            color: '#F34B58',
+                            '&.Mui-checked': {
+                              color: '#A1025D',
+                            },
+                            '& .MuiSvgIcon-root': {
+                              fontSize: { xs: '1.125rem', sm: '1.25rem' }
+                            }
+                          }}
+                        />
+                      }
+                      label={
+                        <span className="text-sm text-gray-800 font-medium">
+                          Video
+                        </span>
+                      }
+                    />
+                  </RadioGroup>
+                </FormControl>
+              </div>
+
+              {/* Right Side - Upload Input (Shows when media type is selected) */}
+              <div className="flex items-center justify-center min-h-full">
+                {formData.mediaType === 'image' && (
+                  <div className="w-full">
+                    <InputWithTooltip label="Upload image">
+                      <div className="relative">
+                        <input
+                          type="file"
+                          id="image"
+                          name="image"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="image"
+                          className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 transition-colors hover:bg-gray-100 active:bg-gray-200"
+                        >
+                          <div className="w-7 h-7 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <FaPlus className="text-white text-xs" />
+                          </div>
+                          <span className="text-gray-700 text-xs sm:text-sm truncate">
+                            {imagePreview ? 'Image selected' : 'Choose image'}
+                          </span>
+                        </label>
+                        {imagePreview && (
+                          <div className="mt-2 relative">
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="w-full h-24 object-cover rounded-lg border border-gray-300"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleRemoveImage}
+                              className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                              aria-label="Remove image"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </InputWithTooltip>
+                  </div>
+                )}
+
+                {formData.mediaType === 'video' && (
+                  <div className="w-full">
+                    <InputWithTooltip label="Upload video">
+                      <div className="relative">
+                        <input
+                          type="file"
+                          id="video"
+                          name="video"
+                          accept="video/*"
+                          onChange={handleVideoChange}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="video"
+                          className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 transition-colors hover:bg-gray-100 active:bg-gray-200"
+                        >
+                          <div className="w-7 h-7 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <FaPlus className="text-white text-xs" />
+                          </div>
+                          <span className="text-gray-700 text-xs sm:text-sm truncate">
+                            {videoPreview ? 'Video selected' : 'Choose video'}
+                          </span>
+                        </label>
+                        {videoPreview && (
+                          <div className="mt-2 relative">
+                            <video
+                              src={videoPreview}
+                              controls
+                              className="w-full h-24 object-cover rounded-lg border border-gray-300"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleRemoveVideo}
+                              className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                              aria-label="Remove video"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </InputWithTooltip>
+                  </div>
+                )}
+
+                {!formData.mediaType && (
+                  <div className="w-full flex items-center justify-center min-h-[40px]">
+                    <p className="text-xs text-gray-500 text-center">
+                      Select a media type
+                    </p>
                   </div>
                 )}
               </div>
-            </InputWithTooltip>
-          </div>
+            </div>
+          </Box>
 
           {/* Prepare Content Checkbox */}
           <Box 

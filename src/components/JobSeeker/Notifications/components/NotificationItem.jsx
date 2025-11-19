@@ -1,9 +1,35 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Grow } from '@mui/material';
 import { FaCheckCircle, FaTrash } from 'react-icons/fa';
 import { getNotificationIcon, formatTimestamp } from '../utils/notificationUtils';
 
 const NotificationItem = ({ notification, index, checked, onMarkAsRead, onDelete }) => {
+  const navigate = useNavigate();
+
+  const handleNotificationClick = (e) => {
+    // Don't navigate if clicking on action buttons
+    if (e.target.closest('button')) {
+      return;
+    }
+
+    // If notification has a link, navigate to it
+    if (notification.link) {
+      // For job notifications, navigate with state to indicate coming from notifications
+      if (notification.type === 'job' && notification.jobId) {
+        navigate('/seeker/all-jobs', {
+          state: {
+            openJobId: notification.jobId,
+            fromNotifications: true
+          }
+        });
+      } else {
+        // For other notifications, use the link as-is
+        navigate(notification.link);
+      }
+    }
+  };
+
   return (
     <Grow
       key={notification.id}
@@ -12,6 +38,7 @@ const NotificationItem = ({ notification, index, checked, onMarkAsRead, onDelete
       {...(checked ? { timeout: 800 + index * 100 } : {})}
     >
       <div
+        onClick={handleNotificationClick}
         className={`p-4 rounded-lg border-2 transition-all duration-200 hover:shadow-md hover:bg-[#F0D8D9] cursor-pointer ${
           notification.read
             ? 'bg-gray-50 border-gray-200'
@@ -78,4 +105,3 @@ const NotificationItem = ({ notification, index, checked, onMarkAsRead, onDelete
 };
 
 export default NotificationItem;
-

@@ -24,6 +24,7 @@ const COIN_HISTORY_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.co
 const ORGANISATION_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation';
 const PERSONAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal';
 const UNLOCK_INFO_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/unlock_details';
+const PROFILE_VIEW_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/profile_views';
 
 // -- Unlock Modal Component with Portal-based display
 function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, unlockStatus, error }) {
@@ -34,7 +35,7 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
 
   // Portal modal content
   const modalContent = (
-    <div className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5" onClick={onClose}>
+    <div className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[10050] animate-fadeIn overflow-y-auto p-5" onClick={onClose}>
       <div className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()}>
         <button className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all" onClick={onClose}>
           &times;
@@ -763,6 +764,57 @@ function CandidateDetail({
       );
     }
   };
+
+  // Track profile view - notify job seeker when their profile is viewed
+  const trackProfileView = useCallback(async () => {
+    if (!userId || !candidateId || !candidate) return;
+    
+    try {
+      // Get institution name
+      let institutionName = 'An Institution';
+      try {
+        const orgResponse = await axios.get(`${ORGANISATION_API}?firebase_uid=${encodeURIComponent(userId)}`);
+        if (orgResponse.status === 200 && Array.isArray(orgResponse.data) && orgResponse.data.length > 0) {
+          const orgData = orgResponse.data[0];
+          institutionName = orgData.organisation_name || 
+                          orgData.organization_name || 
+                          orgData.school_name || 
+                          orgData.name || 
+                          orgData.institute_name || 
+                          'An Institution';
+        }
+      } catch (orgError) {
+        console.error("Error fetching organization data for view tracking:", orgError);
+      }
+
+      // Track the view
+      await axios.post(PROFILE_VIEW_API, {
+        viewed_user_id: candidateId, // Job seeker's firebase_uid
+        viewer_user_id: userId, // Job provider's firebase_uid
+        institution_name: institutionName,
+        viewed_at: new Date().toISOString()
+      });
+    } catch (error) {
+      // Silently fail - don't interrupt user experience
+      console.error("Error tracking profile view:", error);
+    }
+  }, [userId, candidateId, candidate]);
+
+  // Track view when profile loads
+  useEffect(() => {
+    if (candidate?.firebase_uid && userId && profileData) {
+      // Only track once per profile load (not on every re-render)
+      const viewKey = `viewed_${userId}_${candidate.firebase_uid}`;
+      const lastViewTime = sessionStorage.getItem(viewKey);
+      const now = Date.now();
+      
+      // Track view if not viewed in this session (within last 5 minutes)
+      if (!lastViewTime || (now - parseInt(lastViewTime)) > 5 * 60 * 1000) {
+        trackProfileView();
+        sessionStorage.setItem(viewKey, now.toString());
+      }
+    }
+  }, [candidate?.firebase_uid, userId, profileData, trackProfileView]);
 
   useEffect(() => {
     if (candidate?.firebase_uid) {

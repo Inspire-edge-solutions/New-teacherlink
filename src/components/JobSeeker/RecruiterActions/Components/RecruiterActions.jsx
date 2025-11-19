@@ -1,3 +1,6 @@
+//RecruiterActions.jsx
+
+
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../../Context/AuthContext';
@@ -7,6 +10,9 @@ const PERSONAL_API =
   'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal';
 const REQUIREMENT_ACTION_API =
   'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/requirementAction';
+const FAV_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteUser';
+const PROFILE_VIEW_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/profile_views';
+const ORG_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation';
 
 const formatRelativeTime = (dateString) => {
   if (!dateString) return 'Just now';
@@ -86,18 +92,27 @@ const RecruiterActions = () => {
           return;
         }
 
-        const { data: requirementData } = await axios.get(
-          REQUIREMENT_ACTION_API,
-          {
+        // Fetch all actions in parallel
+        const [requirementData, favData, profileViewData] = await Promise.all([
+          axios.get(REQUIREMENT_ACTION_API, {
             params: { firebase_uid: firebaseUid },
-          }
-        );
+          }).catch(() => ({ data: [] })),
+          axios.get(FAV_API).catch(() => ({ data: [] })),
+          axios.get(PROFILE_VIEW_API, {
+            params: { viewed_user_id: firebaseUid },
+          }).catch(() => ({ data: [] })),
+        ]);
 
-        const requirementList = Array.isArray(requirementData)
-          ? requirementData
+        const requirementList = Array.isArray(requirementData.data)
+          ? requirementData.data
+          : [];
+        const favList = Array.isArray(favData.data) ? favData.data : [];
+        const profileViewList = Array.isArray(profileViewData.data)
+          ? profileViewData.data
           : [];
 
-        const filtered = requirementList.filter((item) => {
+        // Filter requirement actions
+        const filteredRequirements = requirementList.filter((item) => {
           if (!item) return false;
           if (item?.candidate_id) {
             return String(item.candidate_id) === String(candidateId);
@@ -105,18 +120,140 @@ const RecruiterActions = () => {
           return true;
         });
 
-        const formatted = filtered.map((item) => ({
-          id: item?.id ?? `${candidateId}-${item?.job_id ?? 'unknown'}`,
-          organisation: item?.full_name?.trim() || 'Recruiter notification',
-          action: item?.job_id ? 'recommended' : 'updated',
-          context: item?.job_id
-            ? `job ${item.job_id} for your profile.`
-            : 'your profile.',
-          timestamp: formatRelativeTime(item?.created_at),
-          isUnread: false,
-        }));
+        // Filter favorite/save actions (where firebase_uid matches current user)
+        const filteredFavActions = favList.filter((item) => {
+          if (!item) return false;
+          return (
+            String(item.firebase_uid) === String(firebaseUid) &&
+            (item.favroute_candidate === 1 || item.saved_candidate === 1)
+          );
+        });
 
-        setActions(formatted);
+        // Filter profile views (where viewed_user_id matches current user)
+        const filteredProfileViews = profileViewList.filter((item) => {
+          if (!item) return false;
+          return String(item.viewed_user_id) === String(firebaseUid);
+        });
+
+        // Get unique organization IDs
+        const orgIds = new Set();
+        filteredRequirements.forEach((item) => {
+          if (item?.firebase_uid) orgIds.add(item.firebase_uid);
+        });
+        filteredFavActions.forEach((item) => {
+          if (item?.added_by) orgIds.add(item.added_by);
+        });
+        filteredProfileViews.forEach((item) => {
+          if (item?.viewer_user_id) orgIds.add(item.viewer_user_id);
+        });
+
+        // Fetch organization names
+        const orgNamesMap = new Map();
+        await Promise.all(
+          Array.from(orgIds).map(async (orgId) => {
+            try {
+              const { data: orgData } = await axios.get(ORG_API, {
+                params: { firebase_uid: orgId },
+              });
+              const org = Array.isArray(orgData) ? orgData[0] : orgData;
+              const orgName =
+                org?.organisation_name ||
+                org?.organization_name ||
+                org?.school_name ||
+                org?.name ||
+                org?.institute_name ||
+                'An Institution';
+              orgNamesMap.set(orgId, orgName);
+            } catch (error) {
+              orgNamesMap.set(orgId, 'An Institution');
+            }
+          })
+        );
+
+        // Format requirement actions
+        const formattedRequirements = filteredRequirements.map((item) => {
+          const timestamp = item?.created_at;
+          return {
+            id: `req-${item?.id ?? `${candidateId}-${item?.job_id ?? 'unknown'}`}`,
+            organisation:
+              orgNamesMap.get(item?.firebase_uid) ||
+              item?.full_name?.trim() ||
+              'Recruiter notification',
+            action: item?.job_id ? 'recommended' : 'updated',
+            context: item?.job_id
+              ? `job ${item.job_id} for your profile.`
+              : 'your profile.',
+            timestamp: formatRelativeTime(timestamp),
+            rawTimestamp: timestamp,
+            isUnread: false,
+          };
+        });
+
+        // Format favorite actions
+        const formattedFavorites = filteredFavActions
+          .filter((item) => item.favroute_candidate === 1)
+          .map((item) => {
+            const timestamp = item?.created_at || item?.updated_at;
+            return {
+              id: `fav-${item?.id ?? `${item.added_by}-${item.firebase_uid}-${Date.now()}`}`,
+              organisation:
+                orgNamesMap.get(item?.added_by) || 'An Institution',
+              action: 'favorited',
+              context: 'your profile.',
+              timestamp: formatRelativeTime(timestamp),
+              rawTimestamp: timestamp,
+              isUnread: false,
+            };
+          });
+
+        // Format save actions
+        const formattedSaves = filteredFavActions
+          .filter((item) => item.saved_candidate === 1)
+          .map((item) => {
+            const timestamp = item?.created_at || item?.updated_at;
+            return {
+              id: `save-${item?.id ?? `${item.added_by}-${item.firebase_uid}-${Date.now()}`}`,
+              organisation:
+                orgNamesMap.get(item?.added_by) || 'An Institution',
+              action: 'saved',
+              context: 'your profile.',
+              timestamp: formatRelativeTime(timestamp),
+              rawTimestamp: timestamp,
+              isUnread: false,
+            };
+          });
+
+        // Format profile view actions
+        const formattedViews = filteredProfileViews.map((item) => {
+          const timestamp = item?.viewed_at || item?.created_at;
+          return {
+            id: `view-${item?.id ?? `${item.viewer_user_id}-${item.viewed_user_id}-${Date.now()}`}`,
+            organisation:
+              item?.institution_name ||
+              orgNamesMap.get(item?.viewer_user_id) ||
+              'An Institution',
+            action: 'viewed',
+            context: 'your profile.',
+            timestamp: formatRelativeTime(timestamp),
+            rawTimestamp: timestamp,
+            isUnread: false,
+          };
+        });
+
+        // Combine all actions and sort by raw timestamp (newest first)
+        const allActions = [
+          ...formattedRequirements,
+          ...formattedFavorites,
+          ...formattedSaves,
+          ...formattedViews,
+        ].sort((a, b) => {
+          // Sort by raw timestamp (newest first)
+          const timeA = a.rawTimestamp ? new Date(a.rawTimestamp).getTime() : 0;
+          const timeB = b.rawTimestamp ? new Date(b.rawTimestamp).getTime() : 0;
+          return timeB - timeA;
+        });
+
+        setActions(allActions);
       } catch (fetchError) {
         console.error('Failed to load recruiter actions:', fetchError);
         const status = fetchError?.response?.status;

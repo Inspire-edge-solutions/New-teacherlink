@@ -8,7 +8,8 @@ const NotificationList = ({
   filter, 
   checked, 
   onMarkAsRead, 
-  onDelete 
+  onDelete,
+  onNotificationClick
 }) => {
   return (
     <Grow
@@ -37,6 +38,7 @@ const NotificationList = ({
                 checked={checked}
                 onMarkAsRead={onMarkAsRead}
                 onDelete={onDelete}
+                onClick={onNotificationClick}
               />
             ))}
           </div>
@@ -47,4 +49,3 @@ const NotificationList = ({
 };
 
 export default NotificationList;
-

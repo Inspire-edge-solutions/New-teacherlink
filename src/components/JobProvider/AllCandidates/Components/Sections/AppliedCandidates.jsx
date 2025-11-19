@@ -27,6 +27,7 @@ const AppliedCandidates = ({
 
   const [appliedCandidates, setAppliedCandidates] = useState([]);
   const [filteredCandidates, setFilteredCandidates] = useState([]);
+  const [recommendedCandidates, setRecommendedCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const [savedCandidates, setSavedCandidates] = useState([]);
@@ -89,6 +90,247 @@ const AppliedCandidates = ({
     return unlockedIds;
   }, [user]);
 
+  // Fetch recommended candidates based on posted jobs
+  const fetchRecommendedCandidates = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const userId = user.firebase_uid || user.uid;
+      
+      // Fetch provider's posted jobs
+      const jobsResponse = await axios.get(
+        `https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes?firebase_uid=${userId}`
+      );
+      
+      const allJobs = Array.isArray(jobsResponse.data) ? jobsResponse.data : [];
+      const userJobs = allJobs.filter(job => 
+        (job.firebase_uid === userId || job.user_id === userId || job.posted_by === userId) &&
+        job.isApproved === 1 &&
+        job.is_closed !== 1
+      );
+      
+      if (userJobs.length === 0) {
+        setRecommendedCandidates([]);
+        return;
+      }
+      
+      // Fetch all approved candidates
+      const [allCandidates, approvedUids] = await Promise.all([
+        CandidateApiService.fetchCandidates(),
+        CandidateApiService.fetchApprovedCandidates()
+      ]);
+      
+      const approvedCandidates = CandidateApiService.filterApprovedCandidates(
+        allCandidates,
+        approvedUids
+      );
+      
+      // Get applied candidate IDs to exclude them (use current state)
+      const appliedCandidateIds = new Set(
+        appliedCandidates.map(c => c.firebase_uid).filter(Boolean)
+      );
+      
+      // Fetch job preferences and present addresses for all candidates
+      const [jobPreferencesRes, presentAddressRes] = await Promise.all([
+        axios.get('https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference'),
+        axios.get('https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/presentAddress')
+      ]);
+      
+      const allPreferences = Array.isArray(jobPreferencesRes.data) ? jobPreferencesRes.data : [];
+      const allAddresses = Array.isArray(presentAddressRes.data) ? presentAddressRes.data : [];
+      
+      // Match candidates to jobs
+      const recommended = [];
+      const recommendedIds = new Set();
+      
+      for (const job of userJobs) {
+        for (const candidate of approvedCandidates) {
+          const candidateId = candidate.firebase_uid;
+          
+          // Skip if already applied or already in recommended list
+          if (appliedCandidateIds.has(candidateId) || recommendedIds.has(candidateId)) {
+            continue;
+          }
+          
+          // Get candidate preferences and address
+          const preferences = allPreferences.find(p => p.firebase_uid === candidateId);
+          const presentAddress = allAddresses.find(a => a.firebase_uid === candidateId);
+          
+          // Check if candidate matches job (same logic as RecommendedJobs but reversed)
+          if (checkCandidateJobMatch(candidate, job, preferences, presentAddress)) {
+            recommended.push({
+              ...candidate,
+              matchedJobId: job.id,
+              matchedJobTitle: job.job_title,
+              isRecommended: true
+            });
+            recommendedIds.add(candidateId);
+          }
+        }
+      }
+      
+      setRecommendedCandidates(recommended);
+      
+      // Fetch photos for recommended candidates
+      if (recommended.length > 0) {
+        const photoPromises = recommended.map(async (candidate) => {
+          const candidateUserId = candidate.firebase_uid;
+          if (!candidateUserId) return null;
+          
+          try {
+            const photoUrl = await CandidateApiService.fetchCandidatePhoto(candidateUserId);
+            return photoUrl ? { id: candidateUserId, url: photoUrl } : null;
+          } catch (error) {
+            console.error(`Error fetching photo for candidate ${candidateUserId}:`, error);
+            return null;
+          }
+        });
+        
+        const photoResults = await Promise.allSettled(photoPromises);
+        const photoMap = {};
+        photoResults.forEach(result => {
+          if (result.status === 'fulfilled' && result.value) {
+            photoMap[result.value.id] = result.value.url;
+          }
+        });
+        // Merge with existing photos
+        setCandidatePhotos(prev => ({ ...prev, ...photoMap }));
+      }
+    } catch (error) {
+      console.error('Error fetching recommended candidates:', error);
+      setRecommendedCandidates([]);
+    }
+  }, [user, appliedCandidates]);
+
+  // Check if candidate matches job (reverse of RecommendedJobs logic)
+  const checkCandidateJobMatch = (candidate, job, preferences, presentAddress) => {
+    if (!preferences && !presentAddress) return false;
+    
+    let matchCount = 0;
+    
+    // 1. Job type match
+    if (preferences) {
+      const jobType = job.job_type ? job.job_type.toLowerCase() : '';
+      if (preferences.full_time_online === "1" && (
+        jobType === "online" || jobType === "remote" || jobType === "workfromhome" ||
+        jobType === "wfh" || jobType.includes("online")
+      )) {
+        matchCount++;
+      } else if (preferences.full_time_offline === "1" && (
+        jobType === "offline" || jobType === "fulltime" || jobType === "parttime" ||
+        jobType === "fullpart" || jobType === "full_time" || jobType === "part_time" ||
+        jobType.includes("time") || jobType === ""
+      )) {
+        matchCount++;
+      }
+    }
+    
+    // 2. Salary range match
+    if (preferences && preferences.expected_salary && job.min_salary && job.max_salary) {
+      const prefSalary = preferences.expected_salary;
+      const jobMinSalary = parseInt(job.min_salary);
+      const jobMaxSalary = parseInt(job.max_salary);
+      
+      if (prefSalary === "20k_40k" && jobMinSalary >= 20000 && jobMaxSalary <= 40000) {
+        matchCount++;
+      } else if (prefSalary === "40k_60k" && jobMinSalary >= 40000 && jobMaxSalary <= 60000) {
+        matchCount++;
+      } else if (prefSalary === "60k_80k" && jobMinSalary >= 60000 && jobMaxSalary <= 80000) {
+        matchCount++;
+      } else if (prefSalary === "80k_above" && jobMinSalary >= 80000) {
+        matchCount++;
+      }
+    }
+    
+    // 3. Teaching subjects match
+    if (preferences && preferences.teaching_subjects && job.core_subjects) {
+      const userSubjects = Array.isArray(preferences.teaching_subjects) 
+        ? preferences.teaching_subjects 
+        : [preferences.teaching_subjects];
+      const jobSubjects = Array.isArray(job.core_subjects) 
+        ? job.core_subjects 
+        : [job.core_subjects];
+      
+      const hasSubjectMatch = userSubjects.some(userSubject => 
+        jobSubjects.some(jobSubject => 
+          jobSubject.toLowerCase().includes(userSubject.toLowerCase()) ||
+          userSubject.toLowerCase().includes(jobSubject.toLowerCase())
+        )
+      );
+      
+      if (hasSubjectMatch || (job.job_title && userSubjects.some(us => 
+        job.job_title.toLowerCase().includes(us.toLowerCase()) ||
+        us.toLowerCase().includes(job.job_title.toLowerCase())
+      ))) {
+        matchCount++;
+      }
+    }
+    
+    // 4. Preferred country match
+    if (preferences && preferences.preferred_country && job.country) {
+      if (preferences.preferred_country.toLowerCase() === job.country.toLowerCase()) {
+        matchCount++;
+      }
+    }
+    
+    // 5. Preferred state match
+    if (preferences && preferences.preferred_state && job.state_ut) {
+      if (preferences.preferred_state.toLowerCase() === job.state_ut.toLowerCase()) {
+        matchCount++;
+      }
+    }
+    
+    // 6. Preferred city match
+    if (preferences && preferences.preferred_city && job.city) {
+      if (preferences.preferred_city.toLowerCase() === job.city.toLowerCase()) {
+        matchCount++;
+      }
+    }
+    
+    // 7. Teaching grades match
+    if (preferences && preferences.teaching_grades) {
+      const userGrades = Array.isArray(preferences.teaching_grades) 
+        ? preferences.teaching_grades 
+        : [preferences.teaching_grades];
+      
+      if (job.job_title && userGrades.some(ug => 
+        job.job_title.toLowerCase().includes(ug.toLowerCase()) ||
+        ug.toLowerCase().includes(job.job_title.toLowerCase())
+      )) {
+        matchCount++;
+      } else if (job.core_subjects) {
+        const jobSubjects = Array.isArray(job.core_subjects) 
+          ? job.core_subjects 
+          : [job.core_subjects];
+        if (userGrades.some(ug => 
+          jobSubjects.some(js => 
+            js.toLowerCase().includes(ug.toLowerCase()) ||
+            ug.toLowerCase().includes(js.toLowerCase())
+          )
+        )) {
+          matchCount++;
+        }
+      }
+    }
+    
+    // 8. Present address state match
+    if (presentAddress && presentAddress.state_name && job.state_ut) {
+      if (presentAddress.state_name.toLowerCase() === job.state_ut.toLowerCase()) {
+        matchCount++;
+      }
+    }
+    
+    // 9. Present address city match
+    if (presentAddress && presentAddress.city_name && job.city) {
+      if (presentAddress.city_name.toLowerCase() === job.city.toLowerCase()) {
+        matchCount++;
+      }
+    }
+    
+    // Require at least 2 matches
+    return matchCount >= 2;
+  };
+
   const fetchAppliedCandidates = useCallback(async () => {
     try {
       setLoading(true);
@@ -134,6 +376,7 @@ const AppliedCandidates = ({
         });
         setCandidatePhotos(photoMap);
       }
+      
     } catch (error) {
       console.error('Error fetching applied candidates:', error);
       setAppliedCandidates([]);
@@ -143,6 +386,13 @@ const AppliedCandidates = ({
       setLoading(false);
     }
   }, [user, getUnlockedCandidatesFromLocalStorage]);
+
+  // Fetch recommended candidates after applied candidates are loaded
+  useEffect(() => {
+    if (appliedCandidates.length >= 0 && user) {
+      fetchRecommendedCandidates();
+    }
+  }, [appliedCandidates, user, fetchRecommendedCandidates]);
 
   useEffect(() => {
     if (!user && !userLoading) {
@@ -523,6 +773,44 @@ const AppliedCandidates = ({
         </div>
       </div>
       
+      {/* Recommended Candidates Section */}
+      {recommendedCandidates.length > 0 && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h3 className="text-lg sm:text-xl font-semibold text-blue-800 mb-3">
+            💡 Recommended Candidates ({recommendedCandidates.length})
+          </h3>
+          <p className="text-sm text-blue-700 mb-4">
+            These candidates match your posted jobs but haven't applied yet. Consider reaching out to them!
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recommendedCandidates.slice(0, 6).map((candidate) => {
+              const candidateId = candidate.firebase_uid;
+              return (
+                <CandidateCard
+                  key={`recommended-${candidateId}`}
+                  candidate={candidate}
+                  isSaved={savedCandidates.includes(candidateId)}
+                  isFavourite={favouriteCandidates.includes(candidateId)}
+                  loading={false}
+                  onViewFull={handleViewFull}
+                  onViewShort={handleViewShort}
+                  onSave={handleSaveCandidate}
+                  onToggleFavourite={handleToggleFavourite}
+                  candidatePhoto={candidatePhotos[candidateId]}
+                  showCheckbox={false}
+                  onMessage={handleMessage}
+                />
+              );
+            })}
+          </div>
+          {recommendedCandidates.length > 6 && (
+            <p className="text-sm text-blue-600 mt-3 text-center">
+              Showing 6 of {recommendedCandidates.length} recommended candidates
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="mb-3">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-2 mb-2 sm:mb-0">
           <h3 className="text-lg sm:text-xl md:text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 shrink-0">

@@ -3,7 +3,22 @@ import { Grow } from '@mui/material';
 import { FaCheckCircle, FaTrash } from 'react-icons/fa';
 import { getNotificationIcon, formatTimestamp } from '../utils/notificationUtils';
 
-const NotificationItem = ({ notification, index, checked, onMarkAsRead, onDelete }) => {
+const NotificationItem = ({ notification, index, checked, onMarkAsRead, onDelete, onClick }) => {
+  const handleClick = (e) => {
+    // Don't trigger if clicking on action buttons
+    if (e.target.closest('button')) {
+      return;
+    }
+    
+    // Handle click for recommended candidates notifications
+    if (notification.type === 'application' && notification.jobId && onClick) {
+      onClick(notification);
+    } else if (notification.link) {
+      // For other notifications with links, navigate
+      window.location.href = notification.link;
+    }
+  };
+
   return (
     <Grow
       key={notification.id}
@@ -12,6 +27,7 @@ const NotificationItem = ({ notification, index, checked, onMarkAsRead, onDelete
       {...(checked ? { timeout: 800 + index * 100 } : {})}
     >
       <div
+        onClick={handleClick}
         className={`p-4 rounded-lg border-2 transition-all duration-200 hover:shadow-md hover:bg-[#F0D8D9] cursor-pointer ${
           notification.read
             ? 'bg-gray-50 border-gray-200'
@@ -78,4 +94,3 @@ const NotificationItem = ({ notification, index, checked, onMarkAsRead, onDelete
 };
 
 export default NotificationItem;
-

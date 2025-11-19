@@ -4,64 +4,13 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 
 const APPROVAL_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved";
-
-// Mock data structure - Replace with actual API call
-const mockNotifications = [
-  {
-    id: 1,
-    type: 'application',
-    title: 'New Job Application',
-    message: 'John Doe applied for Mathematics Teacher position at your school',
-    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
-    read: false,
-    link: '/provider/all-candidates'
-  },
-  {
-    id: 2,
-    type: 'application',
-    title: 'Application Status Update',
-    message: 'You have 5 new applications for Science Teacher position',
-    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
-    read: false,
-    link: '/provider/applied-candidates'
-  },
-  {
-    id: 3,
-    type: 'message',
-    title: 'New Message',
-    message: 'You have a new message from a candidate regarding the job posting',
-    timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
-    read: true,
-    link: '/provider/messages'
-  },
-  {
-    id: 4,
-    type: 'job',
-    title: 'Job Post Status',
-    message: 'Your job posting for English Teacher has been approved and is now live',
-    timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    read: false,
-    link: '/provider/post-jobs'
-  },
-  {
-    id: 5,
-    type: 'system',
-    title: 'Profile Update Required',
-    message: 'Please complete your organization profile to attract more candidates',
-    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    read: true,
-    link: '/provider/my-profile'
-  },
-  {
-    id: 6,
-    type: 'job',
-    title: 'Job Post Expiring Soon',
-    message: 'Your job posting for Physics Teacher will expire in 3 days. Consider renewing it.',
-    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-    read: true,
-    link: '/provider/post-jobs'
-  }
-];
+const JOBS_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes";
+const CANDIDATES_API = "https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/change";
+const FULL_API = "https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/fullapi";
+const JOB_PREFERENCE_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference";
+const PRESENT_ADDRESS_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/presentAddress";
+const PROFILE_APPROVED_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved";
+const APPLY_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate";
 
 export const useNotifications = () => {
   const { user } = useAuth();
@@ -91,7 +40,7 @@ export const useNotifications = () => {
   };
 
   // Fetch admin notifications from profile_approved API
-  const fetchAdminNotifications = async (userId) => {
+  const fetchAdminNotifications = async (userId, existingNotifications = []) => {
     try {
       const authHeaders = {
         headers: {
@@ -105,7 +54,8 @@ export const useNotifications = () => {
         authHeaders
       );
 
-      const adminNotifications = [];
+      const newAdminNotifications = [];
+      const updatedNotifications = [];
 
       let userProfile = null;
       if (Array.isArray(res.data) && res.data.length > 0) {
@@ -121,29 +71,102 @@ export const useNotifications = () => {
         const updatedAt = userProfile?.updated_at ? new Date(userProfile.updated_at) : new Date();
         const updatedAtString = userProfile?.updated_at || updatedAt.toISOString();
 
-        // Priority 1: Admin message (most important - always show if exists and updated)
+        // Helper function to check if notification exists
+        const getExistingNotification = (notificationId) => {
+          return existingNotifications.find(n => n.id === notificationId);
+        };
+
+        // Helper function to check if notification was updated (new updated_at)
+        const isNotificationUpdated = (existing, newUpdatedAt) => {
+          if (!existing || !existing._updatedAt) return true;
+          return new Date(newUpdatedAt) > new Date(existing._updatedAt);
+        };
+
+        // Priority 1: Admin response message (most important - always show if exists)
         if (responseMsg && responseMsg.trim() !== "") {
           const notificationId = `admin-msg-${userId}`;
-          if (shouldShowNotification(notificationId, updatedAtString)) {
-            adminNotifications.push({
+          const existing = getExistingNotification(notificationId);
+          const isUpdated = isNotificationUpdated(existing, updatedAtString);
+          
+          // If notification was updated, keep old one as is and create new one as unread
+          if (existing && isUpdated) {
+            // Keep old notification with its current read status (don't auto-mark as read)
+            updatedNotifications.push(existing);
+            // Create new notification as unread
+            newAdminNotifications.push({
+              id: `${notificationId}-${Date.now()}`, // Unique ID for new notification
+              type: 'admin',
+              title: 'Message from Admin',
+              message: responseMsg,
+              timestamp: updatedAt,
+              read: false, // New notification is unread
+              link: '/provider/my-profile',
+              _updatedAt: updatedAtString
+            });
+          } else if (existing && !isUpdated) {
+            // No update, keep existing notification as is
+            updatedNotifications.push(existing);
+          } else {
+            // New notification
+            newAdminNotifications.push({
               id: notificationId,
               type: 'admin',
               title: 'Message from Admin',
               message: responseMsg,
               timestamp: updatedAt,
-              read: false,
+              read: existing ? existing.read : !shouldShowNotification(notificationId, updatedAtString),
               link: '/provider/my-profile',
-              _updatedAt: updatedAtString // Store for comparison
+              _updatedAt: updatedAtString
             });
           }
         }
 
-        // Priority 2: Profile rejection (only if rejected and no message already shown)
+        // Priority 2: Profile Approved (show if approved=1 and no response message)
+        if (approved === 1 && (!responseMsg || responseMsg.trim() === "")) {
+          const notificationId = `admin-approved-${userId}`;
+          const existing = getExistingNotification(notificationId);
+          const isUpdated = isNotificationUpdated(existing, updatedAtString);
+          
+          if (existing && isUpdated) {
+            // Keep old notification with its current read status (don't auto-mark as read)
+            updatedNotifications.push(existing);
+            newAdminNotifications.push({
+              id: `${notificationId}-${Date.now()}`,
+              type: 'admin',
+              title: 'Profile Approved',
+              message: 'Your profile has been approved by admin. You can now post jobs!',
+              timestamp: updatedAt,
+              read: false,
+              link: '/provider/my-profile',
+              _updatedAt: updatedAtString
+            });
+          } else if (existing && !isUpdated) {
+            updatedNotifications.push(existing);
+          } else {
+            newAdminNotifications.push({
+              id: notificationId,
+              type: 'admin',
+              title: 'Profile Approved',
+              message: 'Your profile has been approved by admin. You can now post jobs!',
+              timestamp: updatedAt,
+              read: existing ? existing.read : !shouldShowNotification(notificationId, updatedAtString),
+              link: '/provider/my-profile',
+              _updatedAt: updatedAtString
+            });
+          }
+        }
+
+        // Priority 3: Profile rejection (only if rejected=1 and no response message)
         if (rejected === 1 && (!responseMsg || responseMsg.trim() === "")) {
           const notificationId = `admin-rejected-${userId}`;
-          if (shouldShowNotification(notificationId, updatedAtString)) {
-            adminNotifications.push({
-              id: notificationId,
+          const existing = getExistingNotification(notificationId);
+          const isUpdated = isNotificationUpdated(existing, updatedAtString);
+          
+          if (existing && isUpdated) {
+            // Keep old notification with its current read status (don't auto-mark as read)
+            updatedNotifications.push(existing);
+            newAdminNotifications.push({
+              id: `${notificationId}-${Date.now()}`,
               type: 'admin',
               title: 'Profile Rejected',
               message: 'Your profile has been rejected by admin. Please review and update your profile.',
@@ -152,15 +175,33 @@ export const useNotifications = () => {
               link: '/provider/my-profile',
               _updatedAt: updatedAtString
             });
+          } else if (existing && !isUpdated) {
+            updatedNotifications.push(existing);
+          } else {
+            newAdminNotifications.push({
+              id: notificationId,
+              type: 'admin',
+              title: 'Profile Rejected',
+              message: 'Your profile has been rejected by admin. Please review and update your profile.',
+              timestamp: updatedAt,
+              read: existing ? existing.read : !shouldShowNotification(notificationId, updatedAtString),
+              link: '/provider/my-profile',
+              _updatedAt: updatedAtString
+            });
           }
         }
 
-        // Priority 3: Profile under review (only if pending approval and no message/rejection)
+        // Priority 4: Profile under review (only if pending approval and not rejected, and no response)
         if (approved === 0 && rejected === 0 && (!responseMsg || responseMsg.trim() === "")) {
           const notificationId = `admin-review-${userId}`;
-          if (shouldShowNotification(notificationId, updatedAtString)) {
-            adminNotifications.push({
-              id: notificationId,
+          const existing = getExistingNotification(notificationId);
+          const isUpdated = isNotificationUpdated(existing, updatedAtString);
+          
+          if (existing && isUpdated) {
+            // Keep old notification with its current read status (don't auto-mark as read)
+            updatedNotifications.push(existing);
+            newAdminNotifications.push({
+              id: `${notificationId}-${Date.now()}`,
               type: 'admin',
               title: 'Profile Under Review',
               message: 'Your profile is currently under admin review. We will notify you once it\'s approved.',
@@ -169,18 +210,313 @@ export const useNotifications = () => {
               link: '/provider/my-profile',
               _updatedAt: updatedAtString
             });
+          } else if (existing && !isUpdated) {
+            updatedNotifications.push(existing);
+          } else {
+            newAdminNotifications.push({
+              id: notificationId,
+              type: 'admin',
+              title: 'Profile Under Review',
+              message: 'Your profile is currently under admin review. We will notify you once it\'s approved.',
+              timestamp: updatedAt,
+              read: existing ? existing.read : !shouldShowNotification(notificationId, updatedAtString),
+              link: '/provider/my-profile',
+              _updatedAt: updatedAtString
+            });
           }
         }
       }
 
-      return adminNotifications;
+      // Get base notification IDs (without timestamp suffix) for current notifications
+      const getBaseNotificationId = (id) => {
+        // If ID has timestamp suffix (format: baseId-timestamp), return baseId
+        const parts = id.split('-');
+        if (parts.length > 2 && !isNaN(parts[parts.length - 1])) {
+          return parts.slice(0, -1).join('-');
+        }
+        return id;
+      };
+
+      const allCurrentBaseIds = new Set([
+        ...updatedNotifications.map(n => getBaseNotificationId(n.id)),
+        ...newAdminNotifications.map(n => getBaseNotificationId(n.id))
+      ]);
+
+      // Get other admin notifications (old ones not currently active)
+      const otherAdminNotifications = existingNotifications.filter(n => {
+        if (n.type !== 'admin') return false;
+        const baseId = getBaseNotificationId(n.id);
+        return !allCurrentBaseIds.has(baseId);
+      });
+
+      // Combine all notifications: updated (preserved), new, and other old admin notifications
+      return [...updatedNotifications, ...newAdminNotifications, ...otherAdminNotifications];
     } catch (error) {
       console.error('Error fetching admin notifications:', error);
       return [];
     }
   };
 
-  // Fetch notifications - Replace with actual API call
+  // Check if candidate matches job (same logic as AppliedCandidates)
+  const checkCandidateJobMatch = (candidate, job, preferences, presentAddress) => {
+    if (!preferences && !presentAddress) return false;
+    
+    let matchCount = 0;
+    
+    // 1. Job type match
+    if (preferences) {
+      const jobType = job.job_type ? job.job_type.toLowerCase() : '';
+      if (preferences.full_time_online === "1" && (
+        jobType === "online" || jobType === "remote" || jobType === "workfromhome" ||
+        jobType === "wfh" || jobType.includes("online")
+      )) {
+        matchCount++;
+      } else if (preferences.full_time_offline === "1" && (
+        jobType === "offline" || jobType === "fulltime" || jobType === "parttime" ||
+        jobType === "fullpart" || jobType === "full_time" || jobType === "part_time" ||
+        jobType.includes("time") || jobType === ""
+      )) {
+        matchCount++;
+      }
+    }
+    
+    // 2. Salary range match
+    if (preferences && preferences.expected_salary && job.min_salary && job.max_salary) {
+      const prefSalary = preferences.expected_salary;
+      const jobMinSalary = parseInt(job.min_salary);
+      const jobMaxSalary = parseInt(job.max_salary);
+      
+      if (prefSalary === "20k_40k" && jobMinSalary >= 20000 && jobMaxSalary <= 40000) {
+        matchCount++;
+      } else if (prefSalary === "40k_60k" && jobMinSalary >= 40000 && jobMaxSalary <= 60000) {
+        matchCount++;
+      } else if (prefSalary === "60k_80k" && jobMinSalary >= 60000 && jobMaxSalary <= 80000) {
+        matchCount++;
+      } else if (prefSalary === "80k_above" && jobMinSalary >= 80000) {
+        matchCount++;
+      }
+    }
+    
+    // 3. Teaching subjects match
+    if (preferences && preferences.teaching_subjects && job.core_subjects) {
+      const userSubjects = Array.isArray(preferences.teaching_subjects) 
+        ? preferences.teaching_subjects 
+        : [preferences.teaching_subjects];
+      const jobSubjects = Array.isArray(job.core_subjects) 
+        ? job.core_subjects 
+        : [job.core_subjects];
+      
+      const hasSubjectMatch = userSubjects.some(userSubject => 
+        jobSubjects.some(jobSubject => 
+          jobSubject.toLowerCase().includes(userSubject.toLowerCase()) ||
+          userSubject.toLowerCase().includes(jobSubject.toLowerCase())
+        )
+      );
+      
+      if (hasSubjectMatch || (job.job_title && userSubjects.some(us => 
+        job.job_title.toLowerCase().includes(us.toLowerCase()) ||
+        us.toLowerCase().includes(job.job_title.toLowerCase())
+      ))) {
+        matchCount++;
+      }
+    }
+    
+    // 4. Preferred country match
+    if (preferences && preferences.preferred_country && job.country) {
+      if (preferences.preferred_country.toLowerCase() === job.country.toLowerCase()) {
+        matchCount++;
+      }
+    }
+    
+    // 5. Preferred state match
+    if (preferences && preferences.preferred_state && job.state_ut) {
+      if (preferences.preferred_state.toLowerCase() === job.state_ut.toLowerCase()) {
+        matchCount++;
+      }
+    }
+    
+    // 6. Preferred city match
+    if (preferences && preferences.preferred_city && job.city) {
+      if (preferences.preferred_city.toLowerCase() === job.city.toLowerCase()) {
+        matchCount++;
+      }
+    }
+    
+    // 7. Teaching grades match
+    if (preferences && preferences.teaching_grades) {
+      const userGrades = Array.isArray(preferences.teaching_grades) 
+        ? preferences.teaching_grades 
+        : [preferences.teaching_grades];
+      
+      if (job.job_title && userGrades.some(ug => 
+        job.job_title.toLowerCase().includes(ug.toLowerCase()) ||
+        ug.toLowerCase().includes(job.job_title.toLowerCase())
+      )) {
+        matchCount++;
+      } else if (job.core_subjects) {
+        const jobSubjects = Array.isArray(job.core_subjects) 
+          ? job.core_subjects 
+          : [job.core_subjects];
+        if (userGrades.some(ug => 
+          jobSubjects.some(js => 
+            js.toLowerCase().includes(ug.toLowerCase()) ||
+            ug.toLowerCase().includes(js.toLowerCase())
+          )
+        )) {
+          matchCount++;
+        }
+      }
+    }
+    
+    // 8. Present address state match
+    if (presentAddress && presentAddress.state_name && job.state_ut) {
+      if (presentAddress.state_name.toLowerCase() === job.state_ut.toLowerCase()) {
+        matchCount++;
+      }
+    }
+    
+    // 9. Present address city match
+    if (presentAddress && presentAddress.city_name && job.city) {
+      if (presentAddress.city_name.toLowerCase() === job.city.toLowerCase()) {
+        matchCount++;
+      }
+    }
+    
+    // Require at least 2 matches
+    return matchCount >= 2;
+  };
+
+  // Fetch recommended candidates notifications (when job is approved and has matching candidates)
+  const fetchRecommendedCandidatesNotifications = async (userId, existingNotifications = []) => {
+    try {
+      const recommendedNotifications = [];
+      
+      // Fetch provider's approved jobs (approved in last 7 days)
+      const jobsRes = await axios.get(`${JOBS_API}?firebase_uid=${userId}`);
+      const allJobs = Array.isArray(jobsRes.data) ? jobsRes.data : [];
+      
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      const recentApprovedJobs = allJobs.filter(job => {
+        // Must be user's job
+        if (job.firebase_uid !== userId && job.user_id !== userId && job.posted_by !== userId) {
+          return false;
+        }
+        // Must be approved
+        if (job.isApproved !== 1) return false;
+        // Must be approved recently (updated_at in last 7 days)
+        const updatedDate = new Date(job.updated_at || job.created_at || 0);
+        return updatedDate >= sevenDaysAgo;
+      });
+      
+      if (recentApprovedJobs.length === 0) {
+        return []; // No recent approved jobs
+      }
+      
+      // Fetch all approved candidates
+      const [candidatesRes, approvedRes] = await Promise.all([
+        axios.get(CANDIDATES_API),
+        axios.get(PROFILE_APPROVED_API)
+      ]);
+      
+      const allCandidates = Array.isArray(candidatesRes.data) 
+        ? (Array.isArray(candidatesRes.data[0]) ? candidatesRes.data[0] : candidatesRes.data)
+        : [];
+      
+      const approvedData = Array.isArray(approvedRes.data) ? approvedRes.data : [];
+      const approvedUids = new Set(
+        approvedData
+          .filter(item => item.isApproved === 1 || item.isapproved === 1)
+          .map(item => item.firebase_uid)
+      );
+      
+      const approvedCandidates = allCandidates.filter(c => 
+        c.firebase_uid && approvedUids.has(c.firebase_uid)
+      );
+      
+      if (approvedCandidates.length === 0) {
+        return []; // No approved candidates
+      }
+      
+      // Get applied candidate IDs to exclude them
+      const applyRes = await axios.get(APPLY_API);
+      const allApplications = Array.isArray(applyRes.data) ? applyRes.data : [];
+      const appliedCandidateIds = new Set(
+        allApplications
+          .filter(app => recentApprovedJobs.some(job => Number(app.job_id) === Number(job.id)))
+          .map(app => app.user_id || app.firebase_uid)
+          .filter(Boolean)
+      );
+      
+      // Fetch job preferences and present addresses
+      const [jobPreferencesRes, presentAddressRes] = await Promise.all([
+        axios.get(JOB_PREFERENCE_API),
+        axios.get(PRESENT_ADDRESS_API)
+      ]);
+      
+      const allPreferences = Array.isArray(jobPreferencesRes.data) ? jobPreferencesRes.data : [];
+      const allAddresses = Array.isArray(presentAddressRes.data) ? presentAddressRes.data : [];
+      
+      // For each approved job, find matching candidates
+      for (const job of recentApprovedJobs) {
+        const matchingCandidates = [];
+        
+        for (const candidate of approvedCandidates) {
+          const candidateId = candidate.firebase_uid;
+          
+          // Skip if already applied
+          if (appliedCandidateIds.has(candidateId)) continue;
+          
+          // Get candidate preferences and address
+          const preferences = allPreferences.find(p => p.firebase_uid === candidateId);
+          const presentAddress = allAddresses.find(a => a.firebase_uid === candidateId);
+          
+          // Check if candidate matches job
+          if (checkCandidateJobMatch(candidate, job, preferences, presentAddress)) {
+            matchingCandidates.push(candidate);
+          }
+        }
+        
+        // Create notification if there are matching candidates
+        if (matchingCandidates.length > 0) {
+          const notificationId = `recommended-candidates-${job.id}-${userId}`;
+          const existing = existingNotifications.find(n => n.id === notificationId);
+          const jobUpdatedAt = job.updated_at || job.created_at || new Date().toISOString();
+          
+          // Check if this is a new or updated notification
+          const isUpdated = existing 
+            ? new Date(jobUpdatedAt) > new Date(existing.timestamp)
+            : true;
+          
+          if (isUpdated || !existing) {
+            recommendedNotifications.push({
+              id: existing && isUpdated ? `${notificationId}-${Date.now()}` : notificationId,
+              type: 'application',
+              title: 'Recommended Candidates Found',
+              message: `${matchingCandidates.length} candidate${matchingCandidates.length !== 1 ? 's' : ''} match your job "${job.job_title}". Check them out in Applications!`,
+              timestamp: new Date(jobUpdatedAt),
+              read: existing ? existing.read : false,
+              link: '/provider/all-candidates',
+              jobId: job.id,
+              jobTitle: job.job_title,
+              matchCount: matchingCandidates.length
+            });
+          } else if (existing) {
+            // Keep existing notification
+            recommendedNotifications.push(existing);
+          }
+        }
+      }
+      
+      return recommendedNotifications;
+    } catch (error) {
+      console.error('Error fetching recommended candidates notifications:', error);
+      return [];
+    }
+  };
+
+  // Fetch notifications
   useEffect(() => {
     const fetchNotifications = async () => {
       if (!user) {
@@ -192,16 +528,16 @@ export const useNotifications = () => {
         setLoading(true);
         const userId = user.firebase_uid || user.uid;
         
-        // Fetch admin notifications
-        const adminNotifications = await fetchAdminNotifications(userId);
+        // Fetch admin notifications, passing existing notifications to preserve read status
+        const adminNotifications = await fetchAdminNotifications(userId, notifications);
         
-        // TODO: Replace with actual API endpoint for other notifications
-        // const response = await axios.get(`NOTIFICATION_API?user_id=${userId}`);
-        // const otherNotifications = response.data;
+        // Fetch recommended candidates notifications (when jobs are approved and have matches)
+        const recommendedCandidatesNotifications = await fetchRecommendedCandidatesNotifications(userId, notifications);
         
-        // Combine admin notifications with mock data (replace with actual API data)
-        const allNotifications = [...adminNotifications, ...mockNotifications];
+        // Combine all notifications
+        const allNotifications = [...adminNotifications, ...recommendedCandidatesNotifications];
         
+        // Only use real notifications from API (no mock data)
         setNotifications(allNotifications);
       } catch (error) {
         console.error('Error fetching notifications:', error);
@@ -209,10 +545,11 @@ export const useNotifications = () => {
         // Try to at least get admin notifications on error
         try {
           const userId = user.firebase_uid || user.uid;
-          const adminNotifications = await fetchAdminNotifications(userId);
-          setNotifications([...adminNotifications, ...mockNotifications]);
-        } catch (adminError) {
-          setNotifications(mockNotifications); // Fallback to mock data only
+          const adminNotifications = await fetchAdminNotifications(userId, notifications);
+          const recommendedCandidatesNotifications = await fetchRecommendedCandidatesNotifications(userId, notifications);
+          setNotifications([...adminNotifications, ...recommendedCandidatesNotifications]);
+        } catch {
+          setNotifications([]); // No fallback - only show real data
         }
       } finally {
         setLoading(false);
@@ -220,6 +557,7 @@ export const useNotifications = () => {
     };
 
     fetchNotifications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Filter notifications
@@ -232,9 +570,6 @@ export const useNotifications = () => {
         break;
       case 'read':
         filtered = filtered.filter(n => n.read);
-        break;
-      case 'job':
-        filtered = filtered.filter(n => n.type === 'job');
         break;
       case 'application':
         filtered = filtered.filter(n => n.type === 'application');
@@ -260,9 +595,6 @@ export const useNotifications = () => {
 
   const markAsRead = async (id) => {
     try {
-      // TODO: Replace with actual API call
-      // await axios.put(`NOTIFICATION_API/${id}`, { read: true });
-      
       setNotifications(prev => {
         const updated = prev.map(n => {
           if (n.id === id) {
@@ -270,6 +602,7 @@ export const useNotifications = () => {
             if (n.type === 'admin' && n._updatedAt) {
               setLastSeenTimestamp(id, new Date(n._updatedAt));
             }
+            // Only update read status, don't remove notification
             return { ...n, read: true };
           }
           return n;
@@ -339,4 +672,3 @@ export const useNotifications = () => {
     deleteNotification
   };
 };
-
