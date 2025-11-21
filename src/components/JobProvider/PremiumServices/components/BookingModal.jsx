@@ -5,6 +5,9 @@ import InputWithTooltip from '../../../../services/InputWithTooltip';
 import { Fade, Slide, Paper, Zoom, Checkbox, FormControlLabel, Box, CircularProgress, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, Radio, RadioGroup, FormControl, FormLabel } from '@mui/material';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../../../Context/AuthContext';
+import axios from 'axios';
+
+const PREMIUM_SERVICE_API = 'https://c84gq6yg5d.execute-api.ap-south-1.amazonaws.com/dev/premium-service';
 
 const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
   const { user } = useAuth();
@@ -26,13 +29,222 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
 
   // Helper: Get auth token
   const getAuthToken = () =>
-    localStorage.getItem("token") || sessionStorage.getItem("token");
+    localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
 
   // Helper: Prepare headers for authenticated API calls
   const getAuthHeaders = () => {
     const token = getAuthToken();
     if (!token) return { "Content-Type": "application/json" };
     return { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+  };
+
+  // Helper: Upload file to S3 using presigned URL
+  const uploadToS3ViaPresignedUrl = async (file, presignedUrl) => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      let timeoutId;
+      
+      // Set timeout (5 minutes for large files)
+      const timeout = 5 * 60 * 1000; // 5 minutes
+      
+      timeoutId = setTimeout(() => {
+        xhr.abort();
+        reject(new Error('Upload timeout. The file may be too large. Please try a smaller file.'));
+      }, timeout);
+      
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = (e.loaded / e.total) * 100;
+          console.log(`Upload progress: ${percentComplete.toFixed(1)}%`);
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        clearTimeout(timeoutId);
+        if (xhr.status === 200 || xhr.status === 204) {
+          resolve(true);
+        } else {
+          reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.statusText}`));
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        clearTimeout(timeoutId);
+        reject(new Error('Upload failed due to network error. Please check your internet connection.'));
+      });
+
+      xhr.addEventListener('abort', () => {
+        clearTimeout(timeoutId);
+        reject(new Error('Upload was aborted'));
+      });
+
+      xhr.addEventListener('timeout', () => {
+        clearTimeout(timeoutId);
+        xhr.abort();
+        reject(new Error('Upload timeout. Please try again with a smaller file.'));
+      });
+
+      try {
+        xhr.open('PUT', presignedUrl);
+        xhr.setRequestHeader('Content-Type', file.type);
+        xhr.timeout = timeout;
+        xhr.send(file);
+      } catch (error) {
+        clearTimeout(timeoutId);
+        reject(new Error(`Failed to start upload: ${error.message}`));
+      }
+    });
+  };
+
+  // Helper: Get presigned URL and upload file to S3, return S3 key
+  const uploadFileToS3 = async (file, uploadType) => {
+    if (!file) return null;
+
+    // Validate file size (max 100MB for videos, 10MB for images)
+    const maxSize = uploadType === 'video' ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      const maxSizeMB = maxSize / (1024 * 1024);
+      throw new Error(`File size exceeds ${maxSizeMB}MB limit. Please use a smaller file.`);
+    }
+
+    try {
+      // Generate S3 key (same format as backend uses for base64 uploads)
+      const timestamp = Date.now();
+      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const s3Key = `premium-service/${firebase_uid}/${timestamp}_${sanitizedFileName}`;
+
+      // Get presigned URL from backend with the formatted S3 key
+      toast.info(`Preparing ${uploadType} upload...`, { toastId: `presign-${uploadType}`, autoClose: 2000 });
+      
+      const presignResponse = await axios.post(
+        PREMIUM_SERVICE_API,
+        {
+          fileName: s3Key, // Use the formatted S3 key as fileName
+          fileType: file.type,
+          uploadType: uploadType
+        },
+        { 
+          headers: getAuthHeaders(),
+          timeout: 15000 // 15 second timeout for presigned URL request
+        }
+      );
+
+      if (!presignResponse.data || !presignResponse.data.uploadUrl) {
+        throw new Error('Failed to get upload URL from server');
+      }
+
+      const { uploadUrl } = presignResponse.data;
+
+      // Upload file directly to S3 using presigned URL
+      toast.info(`Uploading ${uploadType}... This may take a moment for large files.`, { 
+        toastId: `upload-${uploadType}`, 
+        autoClose: false 
+      });
+      
+      await uploadToS3ViaPresignedUrl(file, uploadUrl);
+
+      toast.dismiss(`upload-${uploadType}`);
+      toast.dismiss(`presign-${uploadType}`);
+      return s3Key;
+    } catch (error) {
+      console.error(`Error uploading ${uploadType}:`, error);
+      toast.dismiss(`presign-${uploadType}`);
+      toast.dismiss(`upload-${uploadType}`);
+      
+      // Provide more specific error messages
+      if (error.response) {
+        const errorMsg = error.response.data?.message || error.response.data?.error || `Server error: ${error.response.status}`;
+        throw new Error(`Upload failed: ${errorMsg}`);
+      } else if (error.request) {
+        throw new Error('Upload failed: No response from server. Please check your internet connection.');
+      } else {
+        throw new Error(`Upload failed: ${error.message || 'Unknown error'}`);
+      }
+    }
+  };
+
+  // Helper: Submit premium service data to API
+  const submitPremiumService = async (data) => {
+    if (!firebase_uid) {
+      throw new Error("User not authenticated");
+    }
+
+    try {
+      const payload = {
+        firebase_uid: firebase_uid,
+        name: data.name,
+        institution_name: data.schoolName,
+        message: data.message,
+        prepare_video_images: data.prepareContent || false
+      };
+
+      // Upload image using presigned URL if provided
+      if (data.image) {
+        try {
+          toast.info("Uploading image to server...", { toastId: "upload-image", autoClose: false });
+          const imageKey = await uploadFileToS3(data.image, 'image');
+          payload.image = imageKey; // Send S3 key instead of base64
+          toast.dismiss("upload-image");
+        } catch (error) {
+          toast.dismiss("upload-image");
+          throw new Error(`Image upload failed: ${error.message}`);
+        }
+      }
+
+      // Upload video using presigned URL if provided (much faster than base64)
+      if (data.video) {
+        try {
+          toast.info("Uploading video to server... This may take a moment for large files.", { 
+            toastId: "upload-video", 
+            autoClose: false 
+          });
+          const videoKey = await uploadFileToS3(data.video, 'video');
+          payload.video = videoKey; // Send S3 key instead of base64
+          toast.dismiss("upload-video");
+        } catch (error) {
+          toast.dismiss("upload-video");
+          throw new Error(`Video upload failed: ${error.message}`);
+        }
+      }
+
+      // Submit the form data with S3 keys
+      toast.info("Saving your premium service details...", { toastId: "save-service", autoClose: false });
+      
+      console.log("Submitting payload to API:", {
+        firebase_uid: payload.firebase_uid,
+        name: payload.name,
+        institution_name: payload.institution_name,
+        hasImage: !!payload.image,
+        hasVideo: !!payload.video,
+        prepare_video_images: payload.prepare_video_images
+      });
+      
+      const response = await axios.post(PREMIUM_SERVICE_API, payload, {
+        headers: getAuthHeaders(),
+        timeout: 30000 // 30 second timeout
+      });
+
+      console.log("API Response:", response.data);
+      
+      if (!response.data) {
+        throw new Error("No response data from server");
+      }
+
+      toast.dismiss("save-service");
+      return response.data;
+    } catch (error) {
+      console.error("Premium service submission error:", error);
+      toast.dismiss("save-service");
+      toast.dismiss("upload-image");
+      toast.dismiss("upload-video");
+      
+      if (error.code === 'ECONNABORTED') {
+        throw new Error("Request timed out. Please try again with a smaller file.");
+      }
+      
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || "Failed to submit premium service";
+      throw new Error(errorMessage);
+    }
   };
 
   // Load Razorpay script
@@ -84,6 +296,21 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file size (max 10MB for images)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        toast.error("Image file size exceeds 10MB limit. Please select a smaller image.");
+        e.target.value = ''; // Reset input
+        return;
+      }
+
+      // Validate image file type
+      if (!file.type.startsWith('image/')) {
+        toast.error("Please select a valid image file.");
+        e.target.value = ''; // Reset input
+        return;
+      }
+
       setFormData(prev => ({
         ...prev,
         image: file
@@ -107,6 +334,21 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
   const handleVideoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file size (max 100MB)
+      const maxSize = 100 * 1024 * 1024; // 100MB
+      if (file.size > maxSize) {
+        toast.error("Video file size exceeds 100MB limit. Please select a smaller file.");
+        e.target.value = ''; // Reset input
+        return;
+      }
+
+      // Validate video file type
+      if (!file.type.startsWith('video/')) {
+        toast.error("Please select a valid video file.");
+        e.target.value = ''; // Reset input
+        return;
+      }
+
       setFormData(prev => ({
         ...prev,
         video: file
@@ -127,8 +369,8 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
     setVideoPreview(null);
   };
 
-  // Handle payment for advertising service
-  const proceedWithPayment = async () => {
+  // Handle payment for advertising service (currently not used - uploads go directly to backend)
+  const _proceedWithPayment = async () => {
     console.log("proceedWithPayment called");
     console.log("window.Razorpay:", window.Razorpay);
     console.log("firebase_uid:", firebase_uid);
@@ -136,7 +378,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
     if (!window.Razorpay) {
       console.log("Razorpay not loaded, waiting...");
       toast.info("Loading payment system, please wait...");
-      setTimeout(() => proceedWithPayment(), 800);
+      setTimeout(() => _proceedWithPayment(), 800);
       return;
     }
 
@@ -205,12 +447,17 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
       if (!res.ok) {
         let errorData;
         try {
-          errorData = await res.json();
-        } catch (e) {
+          const text = await res.text();
+          try {
+            errorData = JSON.parse(text);
+          } catch {
+            errorData = { message: text || `Server error: ${res.status} ${res.statusText}` };
+          }
+        } catch {
           errorData = { message: `Server error: ${res.status} ${res.statusText}` };
         }
         toast.dismiss("pay-prepare");
-        const errorMessage = errorData.message || errorData.error || `Failed to create order (${res.status}). Please try again.`;
+        const errorMessage = errorData.message || errorData.error || errorData.errorMessage || `Failed to create order (${res.status}). Please try again.`;
         toast.error(errorMessage);
         console.error("Order creation failed - Full error:", {
           status: res.status,
@@ -267,18 +514,32 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
             if (!putRes.ok) throw new Error("Failed to update payment status");
 
             toast.dismiss("pay-done");
-            toast.success("Payment successful! Your advertising service has been booked.");
             
-            // Submit form data to backend (TODO: Implement API call to save booking)
-            onSubmit({
-              package: selectedPackage,
-              ...formData,
-              paymentStatus: 'paid',
-              paymentId: response.razorpay_payment_id,
-              orderId: response.razorpay_order_id
-            });
-            
-            handleClose();
+            // Submit form data to backend API
+            try {
+              toast.info("Saving your premium service details...", { toastId: "save-service", autoClose: false });
+              await submitPremiumService({
+                ...formData,
+                prepareContent: false // Already uploaded their own content
+              });
+              toast.dismiss("save-service");
+              toast.success("Payment successful! Your advertising service has been booked and saved.");
+              
+              onSubmit({
+                package: selectedPackage,
+                ...formData,
+                paymentStatus: 'paid',
+                paymentId: response.razorpay_payment_id,
+                orderId: response.razorpay_order_id
+              });
+              
+              handleClose();
+            } catch (submitError) {
+              toast.dismiss("save-service");
+              console.error("Error saving premium service:", submitError);
+              toast.error(`Payment successful, but failed to save service details: ${submitError.message}. Please contact support.`);
+              setIsProcessing(false);
+            }
           } catch (err) {
             toast.dismiss("pay-done");
             toast.error("Payment captured, but could not update status. Contact support.");
@@ -316,8 +577,9 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
       console.log("Razorpay open() called");
     } catch (err) {
       toast.dismiss("pay-prepare");
-      toast.error("Error starting payment. Please try again.");
       console.error("Payment error:", err);
+      const errorMessage = err?.message || err?.toString() || "Error starting payment. Please try again.";
+      toast.error(errorMessage);
       setIsProcessing(false);
     }
   };
@@ -326,10 +588,22 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
     e.preventDefault();
     console.log("Form submitted with data:", formData);
     
-      // Priority: If user wants TeacherLink to prepare content, no payment needed
-      if (formData.prepareContent) {
-        // No payment needed - just collect information
-        // Submit form data (TODO: Implement API call to save booking request)
+    // Priority: If user wants TeacherLink to prepare content, no payment needed
+    if (formData.prepareContent) {
+      // No payment needed - just collect information and submit to API
+      setIsProcessing(true);
+      try {
+        toast.info("Saving your premium service request...", { toastId: "save-request", autoClose: false });
+        await submitPremiumService({
+          ...formData,
+          prepareContent: true
+        });
+        toast.dismiss("save-request");
+        toast.success("Your request has been submitted successfully!");
+        
+        // Reset processing state before closing
+        setIsProcessing(false);
+        
         onSubmit({
           package: selectedPackage,
           ...formData,
@@ -343,19 +617,49 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
         setTimeout(() => {
           setShowSuccessDialog(true);
         }, 300);
-        return;
+      } catch (submitError) {
+        toast.dismiss("save-request");
+        console.error("Error submitting premium service request:", submitError);
+        const errorMsg = submitError?.response?.data?.message || submitError?.response?.data?.error || submitError?.message || "Failed to submit request";
+        toast.error(`Failed to submit request: ${errorMsg}. Please try again.`);
+        setIsProcessing(false);
       }
+      return;
+    }
 
-    // If prepareContent is not checked, check if user uploaded their own image/video
+    // If user uploaded their own image/video, directly submit to backend (no payment needed)
     if (formData.image || formData.video) {
-      console.log("User uploaded content - proceeding with payment");
-      // Proceed with payment
+      console.log("User uploaded content - directly submitting to backend");
       setIsProcessing(true);
       try {
-        await proceedWithPayment();
-      } catch (error) {
-        console.error("Error in proceedWithPayment:", error);
-        toast.error("Failed to initiate payment. Please try again.");
+        toast.info("Uploading and saving your premium service...", { toastId: "upload-content", autoClose: false });
+        await submitPremiumService({
+          ...formData,
+          prepareContent: false // User uploaded their own content
+        });
+        toast.dismiss("upload-content");
+        toast.success("Your premium service has been submitted successfully!");
+        
+        // Reset processing state before closing
+        setIsProcessing(false);
+        
+        onSubmit({
+          package: selectedPackage,
+          ...formData,
+          paymentStatus: 'pending',
+          requiresContentCreation: false
+        });
+        
+        // Close booking modal first, then show success dialog
+        onClose();
+        setTimeout(() => {
+          setShowSuccessDialog(true);
+        }, 300);
+      } catch (submitError) {
+        toast.dismiss("upload-content");
+        console.error("Error submitting premium service:", submitError);
+        const errorMsg = submitError?.response?.data?.message || submitError?.response?.data?.error || submitError?.message || "Failed to submit premium service";
+        toast.error(`Failed to submit: ${errorMsg}. Please try again.`);
         setIsProcessing(false);
       }
       return;
@@ -833,4 +1137,3 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
 };
 
 export default BookingModal;
-

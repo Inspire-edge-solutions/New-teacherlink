@@ -148,6 +148,7 @@ const OrgDetails = () => {
   const [parentCities, setParentCities] = useState([]);
   const [isFetched, setIsFetched] = useState(false);
   const [indiaOption, setIndiaOption] = useState(null);
+  const [pincodeInteracted, setPincodeInteracted] = useState(false);
 
   useEffect(() => {
     const loadCountries = async () => {
@@ -205,6 +206,10 @@ const OrgDetails = () => {
               email: raw.contact_person_email || user.email || ""
             }
           }));
+          // Mark pincode as interacted if it exists in loaded data
+          if (raw.pincode) {
+            setPincodeInteracted(true);
+          }
           setParentDetails(prev => ({
             ...prev,
             address: raw.parent_address || "",
@@ -639,6 +644,10 @@ const OrgDetails = () => {
     const { name, value } = e.target;
     const formattedValue = formatFieldValue(name, value);
     validateWithFeedback(name, formattedValue, false);
+    // Track if pincode has been interacted with
+    if (name === "pincode") {
+      setPincodeInteracted(true);
+    }
     setOrgDetails(prev => ({
       ...prev,
       [name]: formattedValue,
@@ -766,7 +775,8 @@ const OrgDetails = () => {
     e.preventDefault();
     
     // Validate pincode against selected state before submission
-    if (orgDetails.pincode && orgDetails.state) {
+    // Only validate if user has interacted with the pincode field
+    if (pincodeInteracted && orgDetails.pincode && orgDetails.state) {
       const isPincodeValid = validatePincodeForStateWithFeedback(orgDetails.pincode, orgDetails.state, true);
       if (!isPincodeValid) {
         toast.error("Please correct the pincode before submitting");
@@ -1167,7 +1177,10 @@ const OrgDetails = () => {
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
                         value={orgDetails.pincode}
                         onChange={handleInputChange}
-                        onBlur={(e) => validatePincodeForStateWithFeedback(e.target.value, orgDetails.state, true)}
+                        onBlur={(e) => {
+                          setPincodeInteracted(true);
+                          validatePincodeForStateWithFeedback(e.target.value, orgDetails.state, true);
+                        }}
                         pattern="^[1-9][0-9]{5}$"
                         title="Enter a valid 6-digit pincode"
                         minLength={6}

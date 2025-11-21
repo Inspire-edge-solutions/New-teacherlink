@@ -464,13 +464,13 @@ const useBulkCandidateActions = ({
         <button
           onClick={handlePrintDownload}
           disabled={isPreparingPrint}
-          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg hover:shadow-xl text-xs sm:text-sm whitespace-nowrap"
+          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg hover:shadow-xl text-xs sm:text-sm whitespace-nowrap min-w-[100px]"
           title="Print/Download Selected Profiles"
         >
           {isPreparingPrint ? (
             <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0"></div>
-              <span>Preparing...</span>
+              <div className="w-5 h-5 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0"></div>
+              <span className="text-xs sm:text-sm">Preparing...</span>
             </>
           ) : (
             <>
@@ -535,6 +535,35 @@ const useBulkCandidateActions = ({
           </div>
         ))}
       </div>
+    );
+  };
+
+  // Render overlay loader for print preparation
+  const renderMobilePrintLoader = () => {
+    if (!isPreparingPrint) {
+      return null;
+    }
+
+    return createPortal(
+      <div
+        className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+        role="status"
+        aria-label="Preparing print"
+      >
+        <div
+          className="rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain flex flex-col items-center gap-4"
+          style={{ backgroundColor: '#F0D8D9' }}
+        >
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-center">
+            <h3 className="font-semibold text-[18px] mb-2 text-gray-800">Preparing Print</h3>
+            <p className="text-gray-600 text-[15px] leading-relaxed">
+              Please wait while we prepare {selectedCandidates.size} profile(s) for printing...
+            </p>
+          </div>
+        </div>
+      </div>,
+      document.body
     );
   };
 
@@ -616,7 +645,8 @@ const useBulkCandidateActions = ({
     renderBulkView,
     renderActionButtons,
     renderPrintWrapper,
-    renderProfileTypeModal
+    renderProfileTypeModal,
+    renderMobilePrintLoader
   };
 };
 

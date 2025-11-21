@@ -39,214 +39,6 @@ export const useNotifications = () => {
     return new Date(updatedAt) > lastSeen; // Show only if updated_at is newer
   };
 
-  // Check if job matches user preferences (same logic as RecommendedJobs)
-  const checkJobMatch = (job, preferences, presentAddress) => {
-    if (!preferences && !presentAddress) return false;
-
-    let matchCount = 0;
-
-    // 1. Job type match
-    if (preferences) {
-      const jobType = job.job_type ? job.job_type.toLowerCase() : '';
-      if (preferences.full_time_online === "1" && (
-        jobType === "online" || jobType === "remote" || jobType === "workfromhome" ||
-        jobType === "wfh" || jobType.includes("online")
-      )) {
-        matchCount++;
-      } else if (preferences.full_time_offline === "1" && (
-        jobType === "offline" || jobType === "fulltime" || jobType === "parttime" ||
-        jobType === "fullpart" || jobType === "full_time" || jobType === "part_time" ||
-        jobType.includes("time") || jobType === ""
-      )) {
-        matchCount++;
-      }
-    }
-
-    // 2. Salary range match
-    if (preferences && preferences.expected_salary && job.min_salary && job.max_salary) {
-      const prefSalary = preferences.expected_salary;
-      const jobMinSalary = parseInt(job.min_salary);
-      const jobMaxSalary = parseInt(job.max_salary);
-      if (prefSalary === "20k_40k" && jobMinSalary >= 20000 && jobMaxSalary <= 40000) {
-        matchCount++;
-      } else if (prefSalary === "40k_60k" && jobMinSalary >= 40000 && jobMaxSalary <= 60000) {
-        matchCount++;
-      } else if (prefSalary === "60k_80k" && jobMinSalary >= 60000 && jobMaxSalary <= 80000) {
-        matchCount++;
-      } else if (prefSalary === "80k_above" && jobMinSalary >= 80000) {
-        matchCount++;
-      }
-    }
-
-    // 3. Teaching subjects match
-    if (preferences && preferences.teaching_subjects) {
-      const userSubjects = Array.isArray(preferences.teaching_subjects) 
-        ? preferences.teaching_subjects 
-        : [preferences.teaching_subjects];
-      let hasSubjectMatch = false;
-      if (job.core_subjects) {
-        const jobSubjects = Array.isArray(job.core_subjects) ? job.core_subjects : [job.core_subjects];
-        hasSubjectMatch = userSubjects.some(userSubject => 
-          jobSubjects.some(jobSubject => 
-            jobSubject.toLowerCase().includes(userSubject.toLowerCase()) ||
-            userSubject.toLowerCase().includes(jobSubject.toLowerCase())
-          )
-        );
-      }
-      if (!hasSubjectMatch && job.job_title) {
-        hasSubjectMatch = userSubjects.some(userSubject => 
-          job.job_title.toLowerCase().includes(userSubject.toLowerCase()) ||
-          userSubject.toLowerCase().includes(job.job_title.toLowerCase())
-        );
-      }
-      if (hasSubjectMatch) matchCount++;
-    }
-
-    // 4. Preferred country match
-    if (preferences && preferences.preferred_country && job.country) {
-      if (preferences.preferred_country.toLowerCase() === job.country.toLowerCase()) {
-        matchCount++;
-      }
-    }
-
-    // 5. Preferred state match
-    if (preferences && preferences.preferred_state && job.state_ut) {
-      if (preferences.preferred_state.toLowerCase() === job.state_ut.toLowerCase()) {
-        matchCount++;
-      }
-    }
-
-    // 6. Preferred city match
-    if (preferences && preferences.preferred_city && job.city) {
-      if (preferences.preferred_city.toLowerCase() === job.city.toLowerCase()) {
-        matchCount++;
-      }
-    }
-
-    // 7. Teaching grades match
-    if (preferences && preferences.teaching_grades) {
-      const userGrades = Array.isArray(preferences.teaching_grades) 
-        ? preferences.teaching_grades 
-        : [preferences.teaching_grades];
-      let hasGradeMatch = false;
-      if (job.job_title) {
-        hasGradeMatch = userGrades.some(userGrade => 
-          job.job_title.toLowerCase().includes(userGrade.toLowerCase()) ||
-          userGrade.toLowerCase().includes(job.job_title.toLowerCase())
-        );
-      }
-      if (!hasGradeMatch && job.core_subjects) {
-        const jobSubjects = Array.isArray(job.core_subjects) ? job.core_subjects : [job.core_subjects];
-        hasGradeMatch = userGrades.some(userGrade => 
-          jobSubjects.some(jobSubject => 
-            jobSubject.toLowerCase().includes(userGrade.toLowerCase()) ||
-            userGrade.toLowerCase().includes(jobSubject.toLowerCase())
-          )
-        );
-      }
-      if (hasGradeMatch) matchCount++;
-    }
-
-    // 8. Present address state match
-    if (presentAddress && presentAddress.state_name && job.state_ut) {
-      if (presentAddress.state_name.toLowerCase() === job.state_ut.toLowerCase()) {
-        matchCount++;
-      }
-    }
-
-    // 9. Present address city match
-    if (presentAddress && presentAddress.city_name && job.city) {
-      if (presentAddress.city_name.toLowerCase() === job.city.toLowerCase()) {
-        matchCount++;
-      }
-    }
-
-    // Return true if matches at least 2 criteria
-    return matchCount >= 2;
-  };
-
-  // Fetch job match notifications (new jobs that match user preferences)
-  const fetchJobMatchNotifications = async (userId, existingNotifications = []) => {
-    try {
-      const jobMatchNotifications = [];
-      
-      // Fetch user job preferences
-      const prefRes = await axios.get(JOB_PREFERENCE_API);
-      const prefData = Array.isArray(prefRes.data) 
-        ? prefRes.data.find(pref => pref.firebase_uid === userId)
-        : null;
-
-      // Fetch user present address
-      const addrRes = await axios.get(PRESENT_ADDRESS_API);
-      const addrData = Array.isArray(addrRes.data)
-        ? addrRes.data.find(addr => addr.firebase_uid === userId)
-        : null;
-
-      if (!prefData && !addrData) {
-        return []; // No preferences/address, no job matches
-      }
-
-      // Fetch recent jobs (last 7 days)
-      const jobsRes = await axios.get(JOBS_API);
-      const allJobs = Array.isArray(jobsRes.data) ? jobsRes.data : [];
-      
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      
-      const recentJobs = allJobs.filter(job => {
-        // Only approved jobs
-        if (job.isApproved !== 1) return false;
-        
-        // Jobs created OR updated in last 7 days (check both created_at and updated_at)
-        const createdDate = new Date(job.created_at || job.createdAt || 0);
-        const updatedDate = new Date(job.updated_at || job.updatedAt || 0);
-        const mostRecentDate = updatedDate > createdDate ? updatedDate : createdDate;
-        return mostRecentDate >= sevenDaysAgo;
-      });
-
-      // Check each recent job for matches
-      for (const job of recentJobs) {
-        if (checkJobMatch(job, prefData, addrData)) {
-          const notificationId = `job-match-${job.id}-${userId}`;
-          const existing = existingNotifications.find(n => n.id === notificationId);
-          
-          // Get organization name
-          let orgName = job.institute_name || job.organization_name || "Organization";
-          try {
-            const orgRes = await axios.get(`${ORG_API}?firebase_uid=${job.firebase_uid}`);
-            const orgData = Array.isArray(orgRes.data) ? orgRes.data[0] : orgRes.data;
-            if (orgData) {
-              orgName = orgData.name || orgData.organization_name || orgName;
-            }
-          } catch {
-            // Use default orgName
-          }
-
-          if (!existing) {
-            // New notification
-            jobMatchNotifications.push({
-              id: notificationId,
-              type: 'job',
-              title: 'New Job Match Found',
-              message: `A new job matches your profile for ${job.job_title}. To unlock details click here.`,
-              timestamp: new Date(job.created_at || job.createdAt || Date.now()),
-              read: false,
-              link: `/seeker/all-jobs?highlight=${job.id}`,
-              jobId: job.id
-            });
-          } else {
-            // Keep existing notification
-            jobMatchNotifications.push(existing);
-          }
-        }
-      }
-
-      return jobMatchNotifications;
-    } catch (error) {
-      console.error('Error fetching job match notifications:', error);
-      return [];
-    }
-  };
 
   // Fetch closed job notifications (jobs user applied to that were closed)
   const fetchClosedJobNotifications = async (userId, existingNotifications = []) => {
@@ -653,9 +445,6 @@ export const useNotifications = () => {
         // Fetch admin notifications, passing existing notifications to preserve read status
         const adminNotifications = await fetchAdminNotifications(userId, notifications);
         
-        // Fetch job match notifications (new jobs that match user preferences)
-        const jobMatchNotifications = await fetchJobMatchNotifications(userId, notifications);
-        
         // Fetch closed job notifications (jobs user applied to that were closed)
         const closedJobNotifications = await fetchClosedJobNotifications(userId, notifications);
         
@@ -663,7 +452,7 @@ export const useNotifications = () => {
         const profileViewNotifications = await fetchProfileViewNotifications(userId, notifications);
         
         // Combine all notifications
-        const allNotifications = [...adminNotifications, ...jobMatchNotifications, ...closedJobNotifications, ...profileViewNotifications];
+        const allNotifications = [...adminNotifications, ...closedJobNotifications, ...profileViewNotifications];
         
         setNotifications(allNotifications);
       } catch (error) {
@@ -673,10 +462,9 @@ export const useNotifications = () => {
         try {
           const userId = user.firebase_uid || user.uid;
           const adminNotifications = await fetchAdminNotifications(userId, notifications);
-          const jobMatchNotifications = await fetchJobMatchNotifications(userId, notifications);
           const closedJobNotifications = await fetchClosedJobNotifications(userId, notifications);
           const profileViewNotifications = await fetchProfileViewNotifications(userId, notifications);
-          setNotifications([...adminNotifications, ...jobMatchNotifications, ...closedJobNotifications, ...profileViewNotifications]);
+          setNotifications([...adminNotifications, ...closedJobNotifications, ...profileViewNotifications]);
         } catch {
           setNotifications([]); // No fallback - only show real data
         }

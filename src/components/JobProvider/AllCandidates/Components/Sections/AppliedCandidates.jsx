@@ -620,7 +620,8 @@ const AppliedCandidates = ({
     renderBulkView,
     renderActionButtons,
     renderPrintWrapper,
-    renderProfileTypeModal
+    renderProfileTypeModal,
+    renderMobilePrintLoader
   } = useBulkCandidateActions({
     filteredCandidates,
     currentCandidates,
@@ -907,6 +908,9 @@ const AppliedCandidates = ({
 
       {/* Profile Type Selection Modal for Print/Download */}
       {renderProfileTypeModal()}
+
+      {/* Print Loader Overlay */}
+      {renderMobilePrintLoader()}
 
       {/* Unlock Prompt Modal */}
       {showUnlockPrompt && candidateToUnlock && (

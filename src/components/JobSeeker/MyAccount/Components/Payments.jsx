@@ -166,7 +166,7 @@ const Payment = ({ user, onSuccess }) => {
   const handleProfilePopupClose = () => {
     setShowProfilePopup(false);
     // Redirect to profile page
-    window.location.href = "/candidates-dashboard/my-profile";
+    window.location.href = "/seeker/my-profile";
   };
 
 

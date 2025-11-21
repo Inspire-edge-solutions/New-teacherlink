@@ -1035,6 +1035,14 @@ const FavouriteCandidates = ({
                 <p>
                   <strong>10 coins</strong> per candidate via RCS
                 </p>
+                {coinBalance !== null && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    Current balance: <strong>{coinBalance}</strong> coins
+                  </p>
+                )}
+                <p className="text-xs text-gray-400 mt-2">
+                  Coins will be deducted after admin approval
+                </p>
               </div>
             </div>
 

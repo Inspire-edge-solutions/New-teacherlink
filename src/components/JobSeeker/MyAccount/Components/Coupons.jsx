@@ -92,7 +92,7 @@ const Coupons = ({
     setShowProfilePopup(false);
     setCouponCode("");
     // Redirect to profile page
-    window.location.href = "/candidates-dashboard/my-profile";
+    window.location.href = "/seeker/my-profile";
   };
 
 

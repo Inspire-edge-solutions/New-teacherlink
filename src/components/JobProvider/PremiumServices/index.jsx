@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Header from './components/Header';
 import HowItWorks from './components/HowItWorks';
 import HomepageBannerCard from './components/HomepageBannerCard';
-import FuturePackagesAccordion from './components/FuturePackagesAccordion';
+//import FuturePackagesAccordion from './components/FuturePackagesAccordion';
 import ContactSection from './components/ContactSection';
 import BookingModal from './components/BookingModal';
 import { homepageBannerPackage, futurePackages } from './data/plans.jsx';
@@ -43,11 +43,11 @@ const PremiumServicesComponent = () => {
         />
          <HowItWorks />
          <ContactSection />
-        <FuturePackagesAccordion
+        {/* <FuturePackagesAccordion
           packages={futurePackages}
           expandedAccordion={expandedAccordion}
           onToggleAccordion={toggleAccordion}
-        />
+        /> */}
         <BookingModal
           isOpen={showContactModal}
           selectedPackage={selectedPackage}

@@ -65,9 +65,9 @@ const JobCard = ({
       onClick={() => onViewJob && onViewJob(job)}
     >
       {/* Header Section */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between mb-4">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between mb-4 overflow-x-hidden">
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <div className="flex items-center gap-2 flex-wrap mb-1 overflow-x-hidden">
             {showCheckbox && (
               <input
                 type="checkbox"
@@ -80,7 +80,7 @@ const JobCard = ({
                 onClick={(e) => e.stopPropagation()}
               />
             )}
-            <h3 className="text-lg font-bold text-gray-800 leading-tight break-words">
+            <h3 className="text-lg font-bold text-gray-800 leading-tight break-words max-w-full" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
               {job.job_title || 'Position not specified'}
             </h3>
             <span className="bg-pink-100 text-red-500 text-xs px-2 py-0.5 rounded-full font-medium">

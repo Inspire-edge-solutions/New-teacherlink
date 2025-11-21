@@ -573,11 +573,11 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
                   {/* Job Card - Clean One Line */}
                   <div className="border-none shadow-none bg-none m-0 p-0 w-full">
                     <div className="p-0 m-0 bg-none w-full">
-                      <div className="flex flex-row items-start m-0 w-full gap-3">
+                      <div className="flex flex-row items-start m-0 w-full gap-3 overflow-x-hidden">
                         {/* Left Side: ID, Title, Date */}
-                        <div className="flex flex-col gap-2 flex-1 min-w-0">
+                        <div className="flex flex-col gap-2 flex-1 min-w-0 overflow-hidden">
                           {/* Top Row: ID and Title */}
-                          <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+                          <div className="flex flex-col sm:flex-row sm:items-start gap-3 overflow-x-hidden">
                             {/* Job ID Section */}
                             <div className="flex-shrink-0 flex items-center">
                               <div className="bg-gradient-brand text-white px-3 py-1.5 rounded-xl text-xs font-semibold text-center inline-block whitespace-nowrap shadow-md w-fit">
@@ -586,8 +586,8 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
                             </div>
 
                             {/* Job Title Section */}
-                            <div className="flex-1 min-w-0 flex flex-col items-start justify-center">
-                              <h6 className="text-lg sm:text-xl font-semibold text-gray-800 leading-tight m-0 mb-1 break-words sm:truncate w-full" title={job.job_title || 'Untitled Job'}>
+                            <div className="flex-1 min-w-0 flex flex-col items-start justify-center overflow-hidden">
+                              <h6 className="text-lg sm:text-xl font-semibold text-gray-800 leading-tight m-0 mb-1 break-words sm:truncate max-w-full" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }} title={job.job_title || 'Untitled Job'}>
                                 {job.job_title || 'Untitled Job'}
                               </h6>
                               <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 mt-2">

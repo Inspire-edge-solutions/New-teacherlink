@@ -19,6 +19,8 @@ export const getNotificationIcon = (type) => {
       return <MdInfo className="text-orange-500" />;
     case 'admin':
       return <FaUserShield className="text-orange-500" />;
+    case 'candidate_status':
+      return <FaUserCheck className="text-blue-500" />;
     default:
       return <MdNotifications className="text-gray-500" />;
   }

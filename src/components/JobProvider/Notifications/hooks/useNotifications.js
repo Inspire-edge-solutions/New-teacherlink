@@ -11,6 +11,7 @@ const JOB_PREFERENCE_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.
 const PRESENT_ADDRESS_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/presentAddress";
 const PROFILE_APPROVED_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved";
 const APPLY_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate";
+const REDEEM_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral";
 
 export const useNotifications = () => {
   const { user } = useAuth();
@@ -67,7 +68,21 @@ export const useNotifications = () => {
       if (userProfile) {
         const approved = parseInt(userProfile?.isApproved ?? userProfile?.isapproved ?? 0);
         const rejected = parseInt(userProfile?.isRejected ?? userProfile?.isrejected ?? 0);
-        const responseMsg = userProfile?.response;
+        let responseMsg = userProfile?.response;
+        
+        // Check if response is a candidate_status notification (JSON)
+        // If so, skip it here (it will be handled by fetchCandidateStatusNotifications)
+        try {
+          if (responseMsg) {
+            const parsed = JSON.parse(responseMsg);
+            if (parsed.type === 'candidate_status') {
+              responseMsg = null; // Skip candidate_status notifications in admin notifications
+            }
+          }
+        } catch {
+          // Not JSON, treat as regular admin message
+        }
+        
         const updatedAt = userProfile?.updated_at ? new Date(userProfile.updated_at) : new Date();
         const updatedAtString = userProfile?.updated_at || updatedAt.toISOString();
 
@@ -386,6 +401,110 @@ export const useNotifications = () => {
     return matchCount >= 2;
   };
 
+  // Fetch candidate status change notifications
+  const fetchCandidateStatusNotifications = async (userId, existingNotifications = []) => {
+    try {
+      const statusNotifications = [];
+      
+      // Fetch user's profile_approved record to get candidate status change notifications
+      const res = await axios.get(`${PROFILE_APPROVED_API}?firebase_uid=${userId}`);
+      let userProfile = null;
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        userProfile = res.data.find(obj => obj.firebase_uid === userId);
+      } else if (typeof res.data === "object" && res.data !== null && Object.keys(res.data).length > 0) {
+        userProfile = res.data;
+      }
+      
+      if (!userProfile || !userProfile.response) {
+        return [];
+      }
+      
+      // Try to parse response as JSON (candidate status notification)
+      let notificationData = null;
+      try {
+        notificationData = JSON.parse(userProfile.response);
+        // Check if it's a candidate status notification
+        if (notificationData.type !== 'candidate_status') {
+          return [];
+        }
+      } catch {
+        // Not a JSON notification, skip
+        return [];
+      }
+      
+      // Check coin balance before showing notification
+      let userCoins = 0;
+      try {
+        const coinRes = await axios.get(REDEEM_API);
+        const coinList = Array.isArray(coinRes.data) ? coinRes.data : [];
+        const userCoinRecord = coinList.find(record => String(record.firebase_uid) === String(userId));
+        userCoins = userCoinRecord?.coin_value ? Number(userCoinRecord.coin_value) : 0;
+      } catch (coinError) {
+        console.error('Error fetching coin balance:', coinError);
+        return []; // Don't show notification if can't check coins
+      }
+      
+      // Only show if user has 20+ coins
+      if (userCoins < 20) {
+        return []; // Not enough coins, don't show notification
+      }
+      
+      // Check if this notification was already seen/paid for
+      const notificationId = `candidate-status-${notificationData.candidate_uid}-${notificationData.timestamp}`;
+      const existing = existingNotifications.find(n => n.id === notificationId);
+      
+      // Check localStorage to prevent duplicate charges on page refresh
+      const paidNotificationsKey = `candidate_status_paid_${userId}`;
+      const paidNotifications = JSON.parse(localStorage.getItem(paidNotificationsKey) || '[]');
+      const isAlreadyPaid = paidNotifications.includes(notificationId);
+      
+      // Check if this is a new notification (not seen before and not paid)
+      const isNew = !existing || (!existing._paidFor && !isAlreadyPaid);
+      
+      if (isNew && !isAlreadyPaid) {
+        // Deduct 20 coins
+        try {
+          const newCoinBalance = userCoins - 20;
+          await axios.put(REDEEM_API, {
+            firebase_uid: userId,
+            coin_value: newCoinBalance
+          });
+          
+          // Mark as paid in localStorage to prevent duplicate charges
+          paidNotifications.push(notificationId);
+          localStorage.setItem(paidNotificationsKey, JSON.stringify(paidNotifications));
+          
+          console.log(`✅ Deducted 20 coins for candidate status notification. New balance: ${newCoinBalance}`);
+        } catch (deductError) {
+          console.error('Error deducting coins:', deductError);
+          return []; // Don't show notification if coin deduction fails
+        }
+      }
+      
+      // Create notification
+      const updatedAt = userProfile.updated_at ? new Date(userProfile.updated_at) : new Date(notificationData.timestamp);
+      statusNotifications.push({
+        id: notificationId,
+        type: 'candidate_status',
+        title: 'Candidate Status Changed',
+        message: notificationData.message || `${notificationData.candidate_name} changed their job search status`,
+        timestamp: updatedAt,
+        read: existing ? existing.read : false,
+        link: '/provider/all-candidates',
+        candidateUid: notificationData.candidate_uid,
+        candidateName: notificationData.candidate_name,
+        newStatus: notificationData.new_status,
+        _paidFor: true, // Mark as paid
+        _updatedAt: userProfile.updated_at || notificationData.timestamp
+      });
+      
+      return statusNotifications;
+    } catch (error) {
+      console.error('Error fetching candidate status notifications:', error);
+      return [];
+    }
+  };
+
   // Fetch recommended candidates notifications (when job is approved and has matching candidates)
   const fetchRecommendedCandidatesNotifications = async (userId, existingNotifications = []) => {
     try {
@@ -534,8 +653,11 @@ export const useNotifications = () => {
         // Fetch recommended candidates notifications (when jobs are approved and have matches)
         const recommendedCandidatesNotifications = await fetchRecommendedCandidatesNotifications(userId, notifications);
         
+        // Fetch candidate status change notifications (when favorited candidates change job search status)
+        const candidateStatusNotifications = await fetchCandidateStatusNotifications(userId, notifications);
+        
         // Combine all notifications
-        const allNotifications = [...adminNotifications, ...recommendedCandidatesNotifications];
+        const allNotifications = [...adminNotifications, ...recommendedCandidatesNotifications, ...candidateStatusNotifications];
         
         // Only use real notifications from API (no mock data)
         setNotifications(allNotifications);
@@ -547,7 +669,8 @@ export const useNotifications = () => {
           const userId = user.firebase_uid || user.uid;
           const adminNotifications = await fetchAdminNotifications(userId, notifications);
           const recommendedCandidatesNotifications = await fetchRecommendedCandidatesNotifications(userId, notifications);
-          setNotifications([...adminNotifications, ...recommendedCandidatesNotifications]);
+          const candidateStatusNotifications = await fetchCandidateStatusNotifications(userId, notifications);
+          setNotifications([...adminNotifications, ...recommendedCandidatesNotifications, ...candidateStatusNotifications]);
         } catch {
           setNotifications([]); // No fallback - only show real data
         }
@@ -582,6 +705,9 @@ export const useNotifications = () => {
         break;
       case 'Admin':
         filtered = filtered.filter(n => n.type === 'admin');
+        break;
+      case 'candidate_status':
+        filtered = filtered.filter(n => n.type === 'candidate_status');
         break;
       default:
         // 'all' - no filter
