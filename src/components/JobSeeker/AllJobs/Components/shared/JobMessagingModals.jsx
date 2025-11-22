@@ -1,4 +1,5 @@
 import React from 'react';
+import ModalPortal from '../../../../common/ModalPortal';
 
 const WHATSAPP_COST = 20;
 const RCS_COST = 10;
@@ -140,14 +141,15 @@ const JobMessagingModals = ({
 
       {/* Bulk Message Modal */}
       {showBulkMessageModal && (
-        <div
-          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-          onClick={onCloseBulkMessageModal}
-        >
+        <ModalPortal>
           <div
-            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+            onClick={onCloseBulkMessageModal}
           >
+            <div
+              className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+              onClick={(e) => e.stopPropagation()}
+            >
             <button
               className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
               onClick={onCloseBulkMessageModal}
@@ -230,20 +232,22 @@ const JobMessagingModals = ({
                 Review &amp; Send
               </button>
             </div>
+            </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {/* Bulk Message Confirmation Modal */}
       {showConfirmModal && bulkSummary && (
-        <div
-          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-          onClick={onCancelConfirmation}
-        >
+        <ModalPortal>
           <div
-            className="bg-white rounded-2xl p-8 w-[90%] max-w-lg relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+            onClick={onCancelConfirmation}
           >
+            <div
+              className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-lg relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+              onClick={(e) => e.stopPropagation()}
+            >
             <button
               className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900hover:scale-110 transition-all"
               onClick={onCancelConfirmation}
@@ -307,8 +311,9 @@ const JobMessagingModals = ({
                 )}
               </button>
             </div>
+            </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {/* Insufficient Coins Modal */}

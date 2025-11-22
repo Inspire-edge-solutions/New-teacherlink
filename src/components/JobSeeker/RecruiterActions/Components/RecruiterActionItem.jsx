@@ -1,7 +1,25 @@
 import React from 'react';
+import { FaHeart, FaBookmark } from 'react-icons/fa';
 
 const RecruiterActionItem = ({ action, isFirst }) => {
-  const { organisation, action: actionLabel, context, timestamp, isUnread } = action;
+  const { organisation, action: actionLabel, context, isUnread } = action;
+
+  const getIcon = () => {
+    if (actionLabel === 'favorited') {
+      return <FaHeart className="mt-1 text-rose-500 flex-shrink-0" size={16} />;
+    }
+    if (actionLabel === 'saved') {
+      return <FaBookmark className="mt-1 text-green-500 flex-shrink-0" size={16} />;
+    }
+    // For other actions (recommended, updated, viewed), show a simple dot
+    return (
+      <span
+        className={`mt-1 h-2.5 w-2.5 rounded-full flex-shrink-0 bg-gray-300 transition-colors duration-200 ${
+          isUnread ? 'group-hover:bg-rose-500 group-focus-within:bg-rose-500' : 'group-hover:bg-rose-500 group-focus-within:bg-rose-500'
+        }`}
+      />
+    );
+  };
 
   return (
     <div
@@ -10,21 +28,13 @@ const RecruiterActionItem = ({ action, isFirst }) => {
       }`}
     >
       <div className="flex items-start gap-3">
-        <span
-          className={`mt-1 h-2.5 w-2.5 rounded-full flex-shrink-0 bg-gray-300 transition-colors duration-200 ${
-            isUnread ? 'group-hover:bg-rose-500 group-focus-within:bg-rose-500' : 'group-hover:bg-rose-500 group-focus-within:bg-rose-500'
-          }`}
-        />
+        {getIcon()}
         <p className="m-0 text-sm sm:text-base text-gray-700 leading-relaxed">
           <span className="font-semibold text-gray-900">{organisation}</span> has{' '}
           <span className="font-semibold text-gray-900">{actionLabel}</span>{' '}
           {context}
         </p>
       </div>
-
-      <span className="text-xs sm:text-sm font-medium text-gray-500 whitespace-nowrap">
-        {timestamp}
-      </span>
     </div>
   );
 };

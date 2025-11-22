@@ -28,51 +28,98 @@ class ChatApiService {
     // Prevent duplicate connections (StrictMode mounts/unmounts)
     if (this.ws) {
       if (this.ws.readyState === WebSocket.OPEN && this._lastParams === wsUrl) {
-        console.log('WebSocket already connected');
+        console.log('🔌 WebSocket already connected, verifying handler...');
+        console.log('🔌 Existing WebSocket onmessage handler:', typeof this.ws.onmessage);
+        // Ensure handler is still attached even if already connected
+        if (!this.ws.onmessage) {
+          console.warn('⚠️ Handler missing on existing connection! Re-attaching...');
+          this.attachMessageHandler();
+        }
         return;
       }
       if (this.ws.readyState === WebSocket.CONNECTING) {
-        console.log('WebSocket is connecting');
+        console.log('🔌 WebSocket is connecting, waiting...');
         return;
+      }
+      // Close existing connection if it's not open
+      console.log('🔌 Closing existing WebSocket before creating new one');
+      try {
+        this.ws.close();
+      } catch (e) {
+        console.warn('⚠️ Error closing existing WebSocket:', e);
       }
     }
     if (this._connecting) {
+      console.log('🔌 Already connecting, skipping');
       return;
     }
     this._connecting = true;
     this._lastParams = wsUrl;
     
     try {
+      console.log('🔌 Creating new WebSocket connection to:', wsUrl);
       this.ws = new WebSocket(wsUrl);
       
+      // Verify onmessage handler is attached immediately after creation
+      console.log('🔌 WebSocket created. Setting up handlers...');
+      
       this.ws.onopen = () => {
-        console.log('✅ WebSocket connected successfully!');
+        console.log('✅✅✅ WebSocket connected successfully! ✅✅✅');
         console.log('✅ WebSocket URL:', wsUrl);
+        console.log('✅ ReadyState:', this.ws.readyState, '(OPEN =', WebSocket.OPEN, ')');
+        console.log('✅ Verifying onmessage handler after onopen:', typeof this.ws.onmessage);
         this.isConnected = true;
         this.reconnectAttempts = 0;
         this._connecting = false;
         // Emit connected event immediately to update UI
+        console.log('✅ Emitting connected event...');
         this.emit('connected');
         // Double-check status after a brief delay to ensure it's set
         setTimeout(() => {
           if (this.ws?.readyState === WebSocket.OPEN) {
             this.isConnected = true;
+            console.log('✅ Double-check: WebSocket still OPEN, emitting connected again');
+            console.log('✅ Double-check: onmessage handler still attached:', typeof this.ws.onmessage);
+            console.log('✅ Double-check: WebSocket instance:', this.ws);
+            console.log('✅ Double-check: Handler function:', this.ws.onmessage);
+            
+            // Re-verify handler is still there and re-attach if needed
+            if (!this.ws.onmessage) {
+              console.error('❌❌❌ CRITICAL: onmessage handler was removed! Re-attaching...');
+              this.attachMessageHandler();
+            } else {
+              // Test if handler is actually callable
+              console.log('✅ Testing handler by checking if it can be called...');
+              try {
+                const handlerType = typeof this.ws.onmessage;
+                console.log('✅ Handler type:', handlerType);
+                if (handlerType === 'function') {
+                  console.log('✅ Handler is a function - should work');
+                } else {
+                  console.error('❌ Handler is not a function! Type:', handlerType);
+                }
+              } catch (e) {
+                console.error('❌ Error testing handler:', e);
+              }
+            }
+            
+            // Store reference to WebSocket for debugging
+            window.__debugWebSocket = this.ws;
+            console.log('✅ WebSocket stored in window.__debugWebSocket for debugging');
+            
             this.emit('connected');
+          } else {
+            console.warn('⚠️ Double-check: WebSocket state changed to:', this.ws?.readyState);
           }
         }, 100);
       };
 
-      this.ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          // Removed excessive logging - uncomment for debugging if needed
-          // console.log('WebSocket message received:', data.type || data.action);
-          this.handleWebSocketMessage(data);
-        } catch (error) {
-          console.error('❌ Error parsing WebSocket message:', error);
-          console.error('❌ Raw message data:', event.data);
-        }
-      };
+      // Attach message handler using a method to ensure it's always set
+      this.attachMessageHandler();
+      
+      // Verify handler is attached
+      console.log('🔌 onmessage handler attached:', typeof this.ws.onmessage);
+      console.log('🔌 WebSocket readyState after setup:', this.ws.readyState);
 
       this.ws.onclose = (event) => {
         console.log('⚠️ WebSocket disconnected');
@@ -133,26 +180,100 @@ class ChatApiService {
   // Message Handling
   // ================================
 
+  attachMessageHandler() {
+    if (!this.ws) {
+      console.warn('⚠️ Cannot attach handler - WebSocket does not exist');
+      return;
+    }
+    
+    console.log('🔌 Attaching message handler to WebSocket:', this.ws);
+    console.log('🔌 WebSocket readyState:', this.ws.readyState);
+    console.log('🔌 WebSocket URL:', this.ws.url);
+    
+    // Store reference to the WebSocket instance we're attaching to
+    const wsInstance = this.ws;
+    const serviceInstance = this;
+    
+    // Use arrow function to preserve 'this' context
+    const messageHandler = (event) => {
+      console.log('📨📨📨 WebSocket onmessage handler FIRED! 📨📨📨');
+      console.log('📨 Event type:', event.type);
+      console.log('📨 Event data type:', typeof event.data);
+      console.log('📨 Event target:', event.target);
+      console.log('📨 WebSocket instance match:', wsInstance === event.target ? '✅ MATCH' : '❌ MISMATCH');
+      console.log('📨 Current serviceInstance.ws:', serviceInstance.ws);
+      console.log('📨 Instance match:', wsInstance === serviceInstance.ws ? '✅ MATCH' : '❌ MISMATCH');
+      
+      try {
+        console.log('📨 WebSocket raw message received:', event.data);
+        const data = JSON.parse(event.data);
+        console.log('📨 WebSocket parsed data:', JSON.stringify(data, null, 2));
+        console.log('📨 WebSocket message type:', data.type || data.action || 'NO TYPE');
+        serviceInstance.handleWebSocketMessage(data);
+      } catch (error) {
+        console.error('❌ Error parsing WebSocket message:', error);
+        console.error('❌ Raw message data:', event.data);
+      }
+    };
+    
+    // Remove any existing listener first to avoid duplicates
+    if (this._messageHandler && this.ws.removeEventListener) {
+      try {
+        this.ws.removeEventListener('message', this._messageHandler);
+        console.log('🔌 Removed previous message listener');
+      } catch (e) {
+        console.warn('⚠️ Could not remove previous listener:', e);
+      }
+    }
+    
+    // Attach using BOTH methods for maximum compatibility
+    // Method 1: onmessage property (standard)
+    this.ws.onmessage = messageHandler;
+    
+    // Method 2: addEventListener (more robust, can't be overwritten as easily)
+    if (this.ws.addEventListener) {
+      this.ws.addEventListener('message', messageHandler);
+      console.log('🔌 Also attached via addEventListener');
+    }
+    
+    // Verify it's attached
+    console.log('✅ Message handler attached successfully');
+    console.log('✅ Handler function:', typeof this.ws.onmessage);
+    console.log('✅ Handler matches:', this.ws.onmessage === messageHandler ? 'YES' : 'NO');
+    
+    // Store handler reference for debugging
+    this._messageHandler = messageHandler;
+    window.__debugWebSocketHandler = messageHandler;
+    window.__debugWebSocket = this.ws;
+    console.log('✅ Handler stored in window.__debugWebSocketHandler for debugging');
+    console.log('✅ WebSocket stored in window.__debugWebSocket for debugging');
+    
+    // Add a test to verify handler works
+    console.log('✅ You can test the handler manually with: window.__debugWebSocketHandler({data: \'{"test": true}\'})');
+  }
+
   handleWebSocketMessage(data) {
-    // Removed excessive logging - uncomment for debugging if needed
-    // console.log('Raw WebSocket data received:', data);
+    console.log('📡 Raw WebSocket data received:', JSON.stringify(data, null, 2));
     const { type, action } = data;
     
     // Handle both 'type' and 'action' fields
     const messageType = type || action;
     
-    // Removed excessive logging - uncomment for debugging if needed
-    // console.log('Message type/action:', messageType);
+    console.log('📡 Message type/action:', messageType);
+    console.log('📡 Full data object keys:', Object.keys(data));
     
     switch (messageType) {
       case 'message':
       case 'sendMessage': {
-        // Removed excessive logging - uncomment for debugging if needed
-        // console.log('Processing REAL-TIME message type');
+        console.log('📡 Processing REAL-TIME message type');
         // Handle both data.message and data format
         // Backend sends: { type: 'message', conversationId: '...', message: {...} }
         // So we prefer data.message but also include top-level conversationId if present
         let messageData = data.message || data;
+        
+        console.log('📡 Initial messageData:', messageData);
+        console.log('📡 data.message exists:', !!data.message);
+        console.log('📡 data itself:', data);
         
         // Ensure we have a proper message object
         if (!messageData || (typeof messageData === 'object' && Object.keys(messageData).length === 0)) {
@@ -162,17 +283,20 @@ class ChatApiService {
         
         // If conversationId is at top level but not in message, use top-level one
         if (data.conversationId && !messageData.conversationId) {
+          console.log('📡 Adding top-level conversationId to messageData');
           messageData.conversationId = data.conversationId;
         }
         
         // Ensure all required fields are present
         if (!messageData.conversationId && data.conversationId) {
+          console.log('📡 Adding conversationId from data');
           messageData.conversationId = data.conversationId;
         }
         
-        // Removed excessive logging - uncomment for debugging if needed
-        // console.log('Extracted message data:', messageData);
+        console.log('📡 Final messageData before emit:', JSON.stringify(messageData, null, 2));
+        console.log('📡 About to emit newMessage event');
         this.emit('newMessage', messageData);
+        console.log('📡 ✅ Emitted newMessage event');
         break;
       }
       case 'userOnlineStatus':
@@ -242,10 +366,15 @@ class ChatApiService {
   }
 
   emit(event, data) {
+    console.log(`📢 Emitting event: ${event}`, data ? `with data: ${JSON.stringify(data).substring(0, 200)}` : 'no data');
+    const handlers = this.messageHandlers.get(event);
+    console.log(`📢 Handlers for ${event}:`, handlers ? handlers.length : 0);
     if (this.messageHandlers.has(event)) {
       this.messageHandlers.get(event).forEach(handler => {
         try {
+          console.log(`📢 Calling handler for ${event}`);
           handler(data);
+          console.log(`📢 Handler for ${event} completed`);
         } catch (error) {
           console.error('Error in event handler:', error);
         }
@@ -807,7 +936,10 @@ class ChatApiService {
 
   generateConversationId(senderId, receiverId) {
     // Sort IDs to ensure consistent conversation ID
-    const sortedIds = [senderId, receiverId].sort();
+    // Normalize IDs to handle case variations
+    const normalizedSenderId = String(senderId || '').trim();
+    const normalizedReceiverId = String(receiverId || '').trim();
+    const sortedIds = [normalizedSenderId, normalizedReceiverId].sort();
     return `conv_${sortedIds[0]}_${sortedIds[1]}`;
   }
 

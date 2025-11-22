@@ -12,6 +12,9 @@ const PRESENT_ADDRESS_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws
 const PROFILE_APPROVED_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved";
 const APPLY_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate";
 const REDEEM_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral";
+const COIN_HISTORY_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history";
+const ORGANISATION_API = "https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation";
+const PERSONAL_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal";
 
 export const useNotifications = () => {
   const { user } = useAuth();
@@ -469,6 +472,53 @@ export const useNotifications = () => {
             firebase_uid: userId,
             coin_value: newCoinBalance
           });
+          
+          // Record coin history for candidate status notification
+          try {
+            // Get organization ID for the current user (job provider)
+            let orgId = null;
+            try {
+              const orgResponse = await axios.get(`${ORGANISATION_API}?firebase_uid=${encodeURIComponent(userId)}`);
+              if (orgResponse.status === 200 && Array.isArray(orgResponse.data) && orgResponse.data.length > 0) {
+                orgId = orgResponse.data[0].id;
+              }
+            } catch (orgError) {
+              console.warn('Could not fetch organization data for coin history:', orgError);
+            }
+
+            // Get candidate's personal ID from personal API
+            let unblocked_candidate_id = null;
+            let unblocked_candidate_name = notificationData.candidate_name || null;
+            try {
+              const personalRes = await axios.get(PERSONAL_API, { params: { firebase_uid: notificationData.candidate_uid } });
+              if (personalRes.status === 200 && Array.isArray(personalRes.data) && personalRes.data.length > 0) {
+                unblocked_candidate_id = personalRes.data[0].id;
+                // Use candidate_name from notificationData, fallback to fullName from personal API
+                if (!unblocked_candidate_name) {
+                  unblocked_candidate_name = personalRes.data[0].fullName || null;
+                }
+              }
+            } catch (personalError) {
+              console.warn('Could not fetch personal details for coin history:', personalError);
+            }
+
+            const coinHistoryPayload = {
+              firebase_uid: userId,
+              candidate_id: orgId, // Organization ID (job provider)
+              job_id: null,
+              coin_value: newCoinBalance, // Remaining balance after deduction
+              reduction: 20, // Amount deducted
+              reason: "Viewed candidate status change",
+              unblocked_candidate_id, // Candidate's personal ID
+              unblocked_candidate_name // Candidate's name
+            };
+
+            await axios.post(COIN_HISTORY_API, coinHistoryPayload);
+            console.log('✅ Coin history recorded successfully for candidate status notification');
+          } catch (historyError) {
+            console.error('Error recording coin history for candidate status notification:', historyError);
+            // Don't fail the main flow if history recording fails
+          }
           
           // Mark as paid in localStorage to prevent duplicate charges
           paidNotifications.push(notificationId);

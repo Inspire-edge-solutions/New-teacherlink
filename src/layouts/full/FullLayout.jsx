@@ -1,8 +1,9 @@
 import { styled, Container, Box, useTheme, useMediaQuery } from "@mui/material";
-import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../../components/sidebar/Sidebar";
 import DashboardHeader from "../../components/header/DashboardHeader";
+import { getUserProp } from "../../Context/UserSession";
 
 const MainWrapper = styled("div")(() => ({
   display: "flex",
@@ -30,6 +31,54 @@ const FullLayout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const location = useLocation();
+  const userType = getUserProp("user", "user_type");
+
+  // Menu mappings for route to label conversion
+  const providerMenuMap = {
+    "/provider/dashboard": "Dashboard",
+    "/provider/my-account": "My Account",
+    "/provider/my-profile": "My Profile",
+    "/provider/post-jobs": "My Jobs",
+    "/provider/all-candidates": "All Candidates",
+    "/provider/messages": "Messages",
+    "/provider/notifications": "Notifications",
+    "/provider/premium-services": "Premium Service",
+  };
+
+  const seekerMenuMap = {
+    "/seeker/dashboard": "Dashboard",
+    "/seeker/my-account": "My Account",
+    "/seeker/my-profile": "My Profile",
+    "/seeker/all-jobs": "Jobs",
+    "/seeker/recruiter-actions": "Recruiter Actions",
+    "/seeker/messages": "Messages",
+    "/seeker/notifications": "Notifications",
+  };
+
+  // Update activeTab based on current route
+  useEffect(() => {
+    const menuMap = userType === "Employer" ? providerMenuMap : seekerMenuMap;
+    const pathname = location.pathname;
+    
+    // Find matching menu item
+    let matchedLabel = "Dashboard"; // default
+    
+    // Check for exact match first
+    if (menuMap[pathname]) {
+      matchedLabel = menuMap[pathname];
+    } else {
+      // Check for path prefix match (for nested routes)
+      for (const [path, label] of Object.entries(menuMap)) {
+        if (pathname.startsWith(path + "/") || pathname === path) {
+          matchedLabel = label;
+          break;
+        }
+      }
+    }
+    
+    setActiveTab(matchedLabel);
+  }, [location.pathname, userType]);
 
   return (
     <MainWrapper>

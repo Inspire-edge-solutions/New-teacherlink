@@ -13,6 +13,7 @@ import noCandidateIllustration from '../../../../../assets/Illustrations/No cand
 import '../styles/candidate-highlight.css';
 import LoadingState from '../../../../common/LoadingState';
 import { HiOutlineArrowRight } from 'react-icons/hi';
+import CandidateActionConfirmationModal from '../shared/CandidateActionConfirmationModal';
 
 const SavedCandidates = ({ 
   onViewCandidate, 
@@ -50,6 +51,8 @@ const SavedCandidates = ({
   const [candidateToMessage, setCandidateToMessage] = useState(null);
   const [showUnlockPrompt, setShowUnlockPrompt] = useState(false);
   const [candidateToUnlock, setCandidateToUnlock] = useState(null);
+  const [showFavouriteConfirmModal, setShowFavouriteConfirmModal] = useState(false);
+  const [candidateToFavourite, setCandidateToFavourite] = useState(null);
 
   const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
     if (!user) return [];
@@ -160,10 +163,19 @@ const SavedCandidates = ({
 
   const handleToggleFavourite = async (candidateId, candidate, isFavourite) => {
     if (!user) return toast.error("Please login to manage favourites.");
+    
+    // If adding to favourites, show confirmation modal first
+    if (isFavourite) {
+      setCandidateToFavourite({ candidateId, candidate, isFavourite });
+      setShowFavouriteConfirmModal(true);
+      return;
+    }
+    
+    // If removing from favourites, proceed directly
     try {
       await CandidateApiService.toggleFavouriteCandidate(candidate, user, isFavourite);
       await fetchSavedCandidates();
-    toast[isFavourite ? 'success' : 'info'](
+      toast[isFavourite ? 'success' : 'info'](
         `${candidate.fullName || candidate.name || 'Candidate'} ${
           isFavourite ? 'added to favourites!' : 'removed from favourites!'
         }`
@@ -172,6 +184,37 @@ const SavedCandidates = ({
       console.error('Error updating favourite:', error);
       toast.error('Failed to update favourite status. Please try again.');
     }
+  };
+
+  // Handle confirm favourite after modal confirmation
+  const handleConfirmFavourite = async () => {
+    if (!candidateToFavourite || !user) {
+      setShowFavouriteConfirmModal(false);
+      setCandidateToFavourite(null);
+      return;
+    }
+    
+    const { candidate, isFavourite } = candidateToFavourite;
+    
+    try {
+      await CandidateApiService.toggleFavouriteCandidate(candidate, user, true);
+      await fetchSavedCandidates();
+      toast.success(
+        `${candidate.fullName || candidate.name || 'Candidate'} added to favourites!`
+      );
+    } catch (error) {
+      console.error('Error updating favourite:', error);
+      toast.error('Failed to update favourite status. Please try again.');
+    } finally {
+      setShowFavouriteConfirmModal(false);
+      setCandidateToFavourite(null);
+    }
+  };
+
+  // Handle cancel favourite confirmation
+  const handleCancelFavourite = () => {
+    setShowFavouriteConfirmModal(false);
+    setCandidateToFavourite(null);
   };
 
   const handleViewFull = (candidate) => {
@@ -558,6 +601,14 @@ const SavedCandidates = ({
           </div>
         </div>
       )}
+
+      {/* Favourite Confirmation Modal */}
+      <CandidateActionConfirmationModal
+        isOpen={showFavouriteConfirmModal && !!candidateToFavourite}
+        actionType="favorite"
+        onConfirm={handleConfirmFavourite}
+        onCancel={handleCancelFavourite}
+      />
     </div>
   );
 };

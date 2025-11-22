@@ -369,6 +369,203 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
     setVideoPreview(null);
   };
 
+  // Handle payment for premium service when checkbox is NOT checked
+  const proceedWithPremiumServicePayment = async () => {
+    if (!window.Razorpay) {
+      toast.info("Loading payment system, please wait...");
+      setTimeout(() => proceedWithPremiumServicePayment(), 800);
+      return;
+    }
+
+    if (!firebase_uid) {
+      toast.error("User not logged in!");
+      setIsProcessing(false);
+      return;
+    }
+
+    toast.dismiss();
+    toast.info("Preparing payment...", { toastId: "pay-prepare", autoClose: false });
+
+    try {
+      // 1. Fetch user details from login API
+      const userRes = await fetch(
+        `https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login?firebase_uid=${encodeURIComponent(firebase_uid)}`
+      );
+      const userData = await userRes.json();
+
+      let userName = "";
+      let userNumber = "";
+
+      if (Array.isArray(userData) && userData.length > 0) {
+        userName = userData[0]?.name || "";
+        userNumber = userData[0]?.phone_number || "";
+      } else if (userData?.name) {
+        userName = userData.name;
+        userNumber = userData.phone_number || "";
+      }
+
+      // 2. Create order on backend for premium service (₹2000)
+      const res = await fetch(
+        "https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/razorpay/order",
+        {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            firebase_uid,
+            amount: 2000, // ₹2000 fixed amount
+            currency: "INR",
+            receipt: `premium_service_${Date.now()}`,
+            name: userName,
+            number: userNumber,
+            premium_service: true // Set premium_service flag to true
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        let errorData;
+        try {
+          const text = await res.text();
+          try {
+            errorData = JSON.parse(text);
+          } catch {
+            errorData = { message: text || `Server error: ${res.status} ${res.statusText}` };
+          }
+        } catch {
+          errorData = { message: `Server error: ${res.status} ${res.statusText}` };
+        }
+        toast.dismiss("pay-prepare");
+        const errorMessage = errorData.message || errorData.error || errorData.errorMessage || `Failed to create order (${res.status}). Please try again.`;
+        toast.error(errorMessage);
+        console.error("Order creation failed - Full error:", {
+          status: res.status,
+          statusText: res.statusText,
+          errorData: errorData
+        });
+        setIsProcessing(false);
+        return;
+      }
+
+      const order = await res.json();
+
+      if (!order.id) {
+        toast.dismiss("pay-prepare");
+        toast.error(order.message || "Failed to create order. Please try again.");
+        console.error("Order response missing id:", order);
+        setIsProcessing(false);
+        return;
+      }
+
+      // 3. Setup Razorpay checkout options
+      const options = {
+        key: "rzp_live_93pNpUOJq57lgB", // Live Razorpay key
+        amount: order.amount, // Amount in paise (from backend)
+        currency: order.currency || "INR",
+        name: "TeacherLink",
+        description: `Premium Service - Advertising (₹2000)`,
+        order_id: order.id,
+        handler: async function (response) {
+          console.log("Payment successful:", response);
+          toast.dismiss("pay-prepare");
+          toast.info("Processing payment...", { toastId: "pay-done", autoClose: false });
+
+          try {
+            // 4. Update payment status on backend after success
+            const putRes = await fetch(
+              "https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/razorpay/order",
+              {
+                method: "PUT",
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  payment_id: response.razorpay_payment_id,
+                  status: "paid",
+                  payment_data: response,
+                  firebase_uid,
+                  premium_service: true // Set premium_service flag to true
+                }),
+              }
+            );
+
+            if (!putRes.ok) throw new Error("Failed to update payment status");
+
+            toast.dismiss("pay-done");
+            
+            // 5. After successful payment, submit premium service data to backend
+            try {
+              toast.info("Saving your premium service...", { toastId: "save-service", autoClose: false });
+              await submitPremiumService({
+                ...formData,
+                prepareContent: false
+              });
+              toast.dismiss("save-service");
+              toast.success("Payment successful! Your premium service has been submitted successfully!");
+              
+              // Reset processing state before closing
+              setIsProcessing(false);
+              
+              onSubmit({
+                package: selectedPackage,
+                ...formData,
+                paymentStatus: 'paid',
+                requiresContentCreation: false,
+                paymentId: response.razorpay_payment_id,
+                orderId: response.razorpay_order_id
+              });
+              
+              // Close booking modal first, then show success dialog
+              onClose();
+              setTimeout(() => {
+                setShowSuccessDialog(true);
+              }, 300);
+            } catch (submitError) {
+              toast.dismiss("save-service");
+              console.error("Error submitting premium service:", submitError);
+              const errorMsg = submitError?.response?.data?.message || submitError?.response?.data?.error || submitError?.message || "Failed to submit premium service";
+              toast.error(`Payment successful, but failed to save service details: ${errorMsg}. Please contact support.`);
+              setIsProcessing(false);
+            }
+          } catch (err) {
+            toast.dismiss("pay-done");
+            toast.error("Payment captured, but could not update status. Contact support.");
+            console.error(err);
+            setIsProcessing(false);
+          }
+        },
+        prefill: {
+          name: userName,
+          email: user?.email || "",
+          contact: userNumber,
+        },
+        theme: { color: "#F34B58" },
+        modal: {
+          ondismiss: function () {
+            toast.dismiss("pay-prepare");
+            toast.info("Payment window closed.");
+            setIsProcessing(false);
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      
+      // Add error handler
+      rzp.on('payment.failed', function (response) {
+        console.error("Payment failed:", response);
+        toast.error(`Payment failed: ${response.error.description || "Unknown error"}`);
+        setIsProcessing(false);
+      });
+      
+      rzp.open();
+    } catch (err) {
+      toast.dismiss("pay-prepare");
+      console.error("Payment error:", err);
+      const errorMessage = err?.message || err?.toString() || "Error starting payment. Please try again.";
+      toast.error(errorMessage);
+      setIsProcessing(false);
+    }
+  };
+
   // Handle payment for advertising service (currently not used - uploads go directly to backend)
   const _proceedWithPayment = async () => {
     console.log("proceedWithPayment called");
@@ -627,47 +824,11 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
       return;
     }
 
-    // If user uploaded their own image/video, directly submit to backend (no payment needed)
-    if (formData.image || formData.video) {
-      console.log("User uploaded content - directly submitting to backend");
-      setIsProcessing(true);
-      try {
-        toast.info("Uploading and saving your premium service...", { toastId: "upload-content", autoClose: false });
-        await submitPremiumService({
-          ...formData,
-          prepareContent: false // User uploaded their own content
-        });
-        toast.dismiss("upload-content");
-        toast.success("Your premium service has been submitted successfully!");
-        
-        // Reset processing state before closing
-        setIsProcessing(false);
-        
-        onSubmit({
-          package: selectedPackage,
-          ...formData,
-          paymentStatus: 'pending',
-          requiresContentCreation: false
-        });
-        
-        // Close booking modal first, then show success dialog
-        onClose();
-        setTimeout(() => {
-          setShowSuccessDialog(true);
-        }, 300);
-      } catch (submitError) {
-        toast.dismiss("upload-content");
-        console.error("Error submitting premium service:", submitError);
-        const errorMsg = submitError?.response?.data?.message || submitError?.response?.data?.error || submitError?.message || "Failed to submit premium service";
-        toast.error(`Failed to submit: ${errorMsg}. Please try again.`);
-        setIsProcessing(false);
-      }
-      return;
-    }
-
-    // If neither condition is met, show error
-    console.log("Neither condition met - showing error");
-    toast.error("Please either upload your own image/video or select the option for TeacherLink to prepare content.");
+    // If checkbox is NOT checked, require payment of ₹2000 (regardless of image/video upload)
+    // User can submit with or without image/video, but payment is required
+    console.log("Checkbox not checked - requiring payment before submission");
+    setIsProcessing(true);
+    proceedWithPremiumServicePayment();
   };
 
   const handleClose = () => {

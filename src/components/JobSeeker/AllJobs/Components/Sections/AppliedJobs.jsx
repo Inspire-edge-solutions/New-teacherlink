@@ -15,6 +15,7 @@ import noJobsIllustration from '../../../../../assets/Illustrations/No jobs.png'
 import useJobMessaging from '../hooks/useJobMessaging';
 import JobMessagingModals from '../shared/JobMessagingModals';
 import LoadingState from '../../../../common/LoadingState';
+import JobActionConfirmationModal from '../shared/JobActionConfirmationModal';
 
 // API Endpoints
 const APPLY_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate';
@@ -36,6 +37,10 @@ const AppliedJobs = ({ highlightJobId }) => {
   const [pendingScrollJob, setPendingScrollJob] = useState(null);
   const skipPageResetRef = useRef(false);
   const [highlightedJobId, setHighlightedJobId] = useState(null);
+  const [showFavouriteConfirmModal, setShowFavouriteConfirmModal] = useState(false);
+  const [jobToFavourite, setJobToFavourite] = useState(null);
+  const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
+  const [jobToSave, setJobToSave] = useState(null);
 
 
   const getJobId = (job) => Number(job.id);
@@ -204,10 +209,23 @@ const AppliedJobs = ({ highlightJobId }) => {
   };
 
   const handleSaveJob = async (job) => {
+    if (!user) {
+      toast.error("Please login to save jobs.");
+      return;
+    }
     const jobId = getJobId(job);
     const isSaved = savedJobs.includes(jobId);
+    
+    // If saving (not removing), show confirmation modal first
+    if (!isSaved) {
+      setJobToSave({ job, isSaved });
+      setShowSaveConfirmModal(true);
+      return;
+    }
+    
+    // If removing from saved, proceed directly
     try {
-      await JobApiService.toggleSaveJob(job, user, !isSaved);
+      await JobApiService.toggleSaveJob(job, user, false);
       await fetchSavedAndFavJobs();
     } catch (error) {
       console.error('Error saving job:', error);
@@ -215,16 +233,85 @@ const AppliedJobs = ({ highlightJobId }) => {
     }
   };
 
+  // Handle confirm save after modal confirmation
+  const handleConfirmSave = async () => {
+    if (!jobToSave || !user) {
+      setShowSaveConfirmModal(false);
+      setJobToSave(null);
+      return;
+    }
+    
+    const { job } = jobToSave;
+    
+    try {
+      await JobApiService.toggleSaveJob(job, user, true);
+      await fetchSavedAndFavJobs();
+    } catch (error) {
+      console.error('Error saving job:', error);
+      toast.error("Failed to update job preference. Please try again.");
+    } finally {
+      setShowSaveConfirmModal(false);
+      setJobToSave(null);
+    }
+  };
+
+  // Handle cancel save confirmation
+  const handleCancelSave = () => {
+    setShowSaveConfirmModal(false);
+    setJobToSave(null);
+  };
+
   const handleFavouriteJob = async (job) => {
+    if (!user) {
+      toast.error("Please login to favourite jobs.");
+      return;
+    }
     const jobId = getJobId(job);
     const isFavourite = favouriteJobs.includes(jobId);
+    
+    // If adding to favourites, show confirmation modal first
+    if (!isFavourite) {
+      setJobToFavourite({ job, isFavourite });
+      setShowFavouriteConfirmModal(true);
+      return;
+    }
+    
+    // If removing from favourites, proceed directly
     try {
-      await JobApiService.toggleFavouriteJob(job, user, !isFavourite);
+      await JobApiService.toggleFavouriteJob(job, user, false);
       await fetchSavedAndFavJobs();
     } catch (error) {
       console.error('Error favouriting job:', error);
       toast.error("Failed to update job preference. Please try again.");
     }
+  };
+
+  // Handle confirm favourite after modal confirmation
+  const handleConfirmFavourite = async () => {
+    if (!jobToFavourite || !user) {
+      setShowFavouriteConfirmModal(false);
+      setJobToFavourite(null);
+      return;
+    }
+    
+    const { job } = jobToFavourite;
+    
+    try {
+      await JobApiService.toggleFavouriteJob(job, user, true);
+      await fetchSavedAndFavJobs();
+    } catch (error) {
+      console.error('Error favouriting job:', error);
+      toast.error("Failed to update job preference. Please try again.");
+    } finally {
+      setShowFavouriteConfirmModal(false);
+      setJobToFavourite(null);
+    }
+  };
+
+  // Handle cancel favourite confirmation
+  const handleCancelFavourite = () => {
+    setShowFavouriteConfirmModal(false);
+    setJobToFavourite(null);
   };
 
   useEffect(() => {
@@ -550,6 +637,22 @@ const AppliedJobs = ({ highlightJobId }) => {
           />
         </>
       )}
+
+      {/* Favourite Confirmation Modal */}
+      <JobActionConfirmationModal
+        isOpen={showFavouriteConfirmModal && !!jobToFavourite}
+        actionType="favorite"
+        onConfirm={handleConfirmFavourite}
+        onCancel={handleCancelFavourite}
+      />
+
+      {/* Save Confirmation Modal */}
+      <JobActionConfirmationModal
+        isOpen={showSaveConfirmModal && !!jobToSave}
+        actionType="save"
+        onConfirm={handleConfirmSave}
+        onCancel={handleCancelSave}
+      />
 
       <JobMessagingModals
         showApplyPrompt={showApplyPrompt}

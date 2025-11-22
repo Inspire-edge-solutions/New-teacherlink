@@ -7,6 +7,23 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, typingUsers = n
     messagesEndRef?.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Debug: Log messages for troubleshooting
+  useEffect(() => {
+    console.log('💬 ChatMessages received messages:', messages.length);
+    if (messages.length > 0) {
+      console.log('💬 First message:', messages[0]);
+      console.log('💬 Last message:', messages[messages.length - 1]);
+      const filtered = messages.filter(message => {
+        const text = message.text || message.messageText || message.message || '';
+        return text.trim().length > 0;
+      });
+      console.log('💬 Filtered messages count:', filtered.length);
+      if (filtered.length !== messages.length) {
+        console.warn('⚠️ Some messages were filtered out:', messages.length - filtered.length);
+      }
+    }
+  }, [messages]);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -33,13 +50,18 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, typingUsers = n
   return (
     <div className="flex-1 overflow-y-auto bg-gray-50 p-3 sm:p-6">
       <div className="max-w-4xl mx-auto space-y-4">
-        {messages
-          .filter(message => {
-            // Filter out empty messages
-            const text = message.text || message.messageText || message.message || '';
-            return text.trim().length > 0;
-          })
-          .map((message, index) => {
+        {messages.length === 0 ? (
+          <div className="text-center text-gray-500 py-8">
+            <p>No messages yet. Start the conversation!</p>
+          </div>
+        ) : (
+          messages
+            .filter(message => {
+              // Filter out empty messages
+              const text = message.text || message.messageText || message.message || '';
+              return text.trim().length > 0;
+            })
+            .map((message, index) => {
             const isOwn = String(message.senderId) === String(currentUserId); // Own messages
             const statusInfo = getMessageStatus(message);
             const StatusIcon = statusInfo.icon;
@@ -125,7 +147,8 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, typingUsers = n
               </div>
             </div>
           );
-        })}
+        })
+        )}
         
         {/* Typing Indicator - Only show when someone is typing */}
         {typingUsers.size > 0 && (

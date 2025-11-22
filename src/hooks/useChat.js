@@ -20,11 +20,19 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const selectedChatRef = useRef(null);
+  const sentMessageRegistry = useRef(new Map()); // Track temp messages: tempId -> { realId, timestamp, text }
+  const unreadCountUpdateTimeout = useRef(null); // Debounce unread count updates
+  const messagesRef = useRef([]); // Keep ref in sync with messages state for reliable access
+  const messagePollIntervalRef = useRef(null); // Poll for new messages as WebSocket fallback
   
-  // Keep ref in sync with selectedChat state
+  // Keep refs in sync with state
   useEffect(() => {
     selectedChatRef.current = selectedChat;
   }, [selectedChat]);
+  
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // ================================
   // Initialize Chat
@@ -80,7 +88,30 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
       chatApiService.setCurrentUser(currentUserId, currentUserName, currentUserRole);
 
       // Connect WebSocket
+      console.log('🔌 Initializing WebSocket connection...', {
+        userId: currentUserId,
+        userRole: currentUserRole,
+        userName: currentUserName
+      });
       chatApiService.connectWebSocket(currentUserId, currentUserRole, currentUserName);
+      
+      // Log connection status after a short delay
+      setTimeout(() => {
+        const ws = chatApiService.ws;
+        const readyState = ws ? ws.readyState : null;
+        const readyStateText = ws ? 
+          (readyState === WebSocket.CONNECTING ? 'CONNECTING' :
+           readyState === WebSocket.OPEN ? 'OPEN' :
+           readyState === WebSocket.CLOSING ? 'CLOSING' :
+           readyState === WebSocket.CLOSED ? 'CLOSED' : 'UNKNOWN') : 'NO_WEBSOCKET';
+        
+        console.log('🔌 WebSocket Connection Status (after init):', {
+          exists: !!ws,
+          readyState,
+          readyStateText,
+          isConnected: chatApiService.isConnected
+        });
+      }, 1000);
 
       // Load organisations/candidates, conversations, and blocked users
       const loadPromises = [
@@ -427,46 +458,45 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
           });
           
           if (remainingMissing.length > 0) {
-            console.log('🔄 Fetching remaining names individually:', remainingMissing.length);
-            Promise.all(
-              remainingMissing.map(c => {
-                const userId = c.teacherId || c.studentId;
-                return chatApiService.getUserName(userId).then(name => {
-                  if (name && !name.includes('undefined') && !name.startsWith('User ')) {
-                    console.log(`✅ Individual fetch: Got name "${name}" for userId: ${userId}`);
-                    setConversations(prev => prev.map(conv => 
-                      ((conv.teacherId === userId || conv.studentId === userId) && (conv.id === c.id || conv.conversationId === c.conversationId))
-                        ? { ...conv, name }
-                        : conv
-                    ));
+            console.log('🔄 Batch fetching remaining names:', remainingMissing.length);
+            const userIdsToFetch = remainingMissing
+              .map(c => c.teacherId || c.studentId)
+              .filter(Boolean);
+            
+            if (userIdsToFetch.length > 0) {
+              chatApiService.getUserNames(userIdsToFetch).then(nameMap => {
+                setConversations(prev => prev.map(conv => {
+                  const userId = conv.teacherId || conv.studentId;
+                  if (userId && nameMap[userId] && !nameMap[userId].includes('undefined') && !nameMap[userId].startsWith('User ')) {
+                    return { ...conv, name: nameMap[userId] };
                   }
-                }).catch(err => {
-                  console.error(`❌ Error fetching individual user name for ${userId}:`, err);
-                });
-              })
-            );
+                  return conv;
+                }));
+              }).catch(err => {
+                console.error('❌ Error batch fetching remaining names:', err);
+              });
+            }
           }
         } catch (err) {
           console.error('❌ Error fetching user names:', err);
-          // Try individual fetching as fallback (in parallel)
-          Promise.all(
-            missingNames.map(c => {
-              const userId = c.teacherId || c.studentId;
-              if (userId) {
-                return chatApiService.getUserName(userId).then(name => {
-                  if (name && !name.includes('undefined')) {
-                    setConversations(prev => prev.map(conv => 
-                      ((conv.teacherId === userId || conv.studentId === userId) && (conv.id === c.id || conv.conversationId === c.conversationId))
-                        ? { ...conv, name }
-                        : conv
-                    ));
-                  }
-                }).catch(err => {
-                  console.error(`❌ Fallback error for ${userId}:`, err);
-                });
-              }
-            })
-          );
+          // Try batch fetching as fallback
+          const userIdsToFetch = missingNames
+            .map(c => c.teacherId || c.studentId)
+            .filter(Boolean);
+          
+          if (userIdsToFetch.length > 0) {
+            chatApiService.getUserNames(userIdsToFetch).then(nameMap => {
+              setConversations(prev => prev.map(conv => {
+                const userId = conv.teacherId || conv.studentId;
+                if (userId && nameMap[userId] && !nameMap[userId].includes('undefined')) {
+                  return { ...conv, name: nameMap[userId] };
+                }
+                return conv;
+              }));
+            }).catch(fallbackErr => {
+              console.error('❌ Fallback batch fetch error:', fallbackErr);
+            });
+          }
         }
       }
 
@@ -524,6 +554,9 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
           // Log raw message to see what fields are available
           console.log(`📥 Raw message ${idx}:`, msg);
           
+          // Extract text from multiple possible field names
+          const messageText = msg.text || msg.messageText || msg.message || msg.content || msg.body || '';
+          
           const formatted = {
             messageId: msg.SK || msg.messageId || msg.id || `msg_${idx}_${Date.now()}`,
             conversationId: msg.conversationId || conversationId,
@@ -531,20 +564,37 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
             senderName: msg.senderName || msg.sender,
             receiverId: msg.receiverId || msg.receiverFirebaseUid,
             receiverName: msg.receiverName || msg.receiver,
-            text: msg.text || msg.messageText || msg.message || msg.messageText || '',
-            timestamp: msg.timestamp || msg.time || msg.createdAt || new Date().toISOString(),
+            text: messageText,
+            messageText: messageText, // Also set messageText for compatibility
+            message: messageText, // Also set message for compatibility
+            timestamp: msg.timestamp || msg.time || msg.createdAt || msg.created_at || new Date().toISOString(),
             status: msg.status || 'delivered',
             isOwn: currentUserId && String(msg.senderId || msg.senderFirebaseUid) === String(currentUserId)
           };
+          
+          // Debug: Log if message has no text
+          if (!messageText || !messageText.trim()) {
+            console.warn(`⚠️ Message ${idx} has no text field. Available fields:`, Object.keys(msg));
+          }
           console.log(`📥 Formatted message ${idx}:`, formatted);
           return formatted;
         })
         .filter(msg => {
-          // Filter out empty messages
-          const text = msg.text || msg.messageText || msg.message || '';
+          // Filter out empty messages - check all possible text fields
+          const text = msg.text || msg.messageText || msg.message || msg.content || msg.body || '';
           const hasText = text.trim().length > 0;
           if (!hasText) {
-            console.warn('⚠️ Filtering out empty message:', msg);
+            console.warn('⚠️ Filtering out empty message:', {
+              messageId: msg.messageId,
+              availableFields: Object.keys(msg),
+              sampleFields: {
+                text: msg.text,
+                messageText: msg.messageText,
+                message: msg.message,
+                content: msg.content,
+                body: msg.body
+              }
+            });
             return false;
           }
           
@@ -558,27 +608,40 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
           }
           
           return true;
-        })
-        .map(msg => {
-          // Fetch missing sender names from login API
-          if (!msg.senderName && msg.senderId && msg.senderId !== currentUserId) {
-            console.log('📝 Fetching sender name for message:', msg.senderId);
-            chatApiService.getUserName(msg.senderId).then(name => {
-              setMessages(prev => prev.map(m => 
-                m.messageId === msg.messageId && !m.senderName
-                  ? { ...m, senderName: name }
-                  : m
-              ));
-            }).catch(err => {
-              console.error('Error fetching sender name:', err);
-            });
-          }
-          return msg;
         });
       
-      console.log('✅ Setting messages to state. Count:', formattedMessages.length);
-      console.log('✅ Formatted messages array:', formattedMessages);
-      setMessages(formattedMessages);
+      // Sort messages by timestamp (ascending - oldest first) to ensure correct display order
+      const sortedMessages = [...formattedMessages].sort((a, b) => {
+        const timeA = new Date(a.timestamp || 0).getTime();
+        const timeB = new Date(b.timestamp || 0).getTime();
+        return timeA - timeB; // Ascending order (oldest first)
+      });
+      
+      console.log('✅ Setting messages to state. Count:', sortedMessages.length);
+      console.log('✅ Formatted messages array:', sortedMessages);
+      console.log('✅ Sample message (first):', sortedMessages[0]);
+      console.log('✅ Sample message (last):', sortedMessages[sortedMessages.length - 1]);
+      setMessages(sortedMessages);
+      
+      // Batch fetch missing sender names after setting messages
+      const missingNames = formattedMessages
+        .filter(msg => !msg.senderName && msg.senderId && msg.senderId !== currentUserId)
+        .map(msg => msg.senderId);
+      
+      if (missingNames.length > 0) {
+        const uniqueMissingNames = [...new Set(missingNames)];
+        console.log('📝 Batch fetching sender names for', uniqueMissingNames.length, 'users');
+        chatApiService.getUserNames(uniqueMissingNames).then(nameMap => {
+          setMessages(prev => prev.map(m => {
+            if (!m.senderName && m.senderId && nameMap[m.senderId]) {
+              return { ...m, senderName: nameMap[m.senderId] };
+            }
+            return m;
+          }));
+        }).catch(err => {
+          console.error('Error batch fetching sender names:', err);
+        });
+      }
       
       // Also log after setting to verify state update
       setTimeout(() => {
@@ -606,94 +669,19 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
           await chatApiService.markMessagesAsRead(conversationId, currentUserId);
           console.log('✅ Messages marked as read successfully');
           
-          // IMPORTANT: Refresh unread counts after marking as read
-          // This updates the conversation list to show correct unread count (should be 0)
-          setTimeout(async () => {
-            try {
-              console.log('🔄 Refreshing unread counts after marking as read...');
-              const unreadData = await chatApiService.getUnreadCounts(currentUserId);
-              const unreadCounts = unreadData.unreadCounts || {};
-              console.log('📊 Updated unread counts:', unreadCounts);
-              
-              // Update conversation list with new unread counts
-              setConversations(prev => prev.map(conv => {
-                const convId = conv.conversationId || conv.id;
-                const newUnreadCount = unreadCounts[convId] || 0;
-                if (convId === conversationId && conv.unreadCount !== newUnreadCount) {
-                  console.log(`✅ Updating unread count for conversation ${convId}: ${conv.unreadCount} -> ${newUnreadCount}`);
-                }
-                return {
-                  ...conv,
-                  unreadCount: newUnreadCount
-                };
-              }));
-            } catch (err) {
-              console.error('Error refreshing unread counts:', err);
-            }
-          }, 800);
+          // Update unread counts (debounced to prevent race conditions)
+          updateUnreadCounts();
           
-          // Also refresh messages after marking as read to get updated statuses
-          setTimeout(async () => {
-            try {
-              const refreshData = await chatApiService.getMessages(conversationId);
-              const refreshMessages = refreshData.messages || refreshData || [];
-              const refreshFormatted = refreshMessages
-                .filter(msg => {
-                  const text = msg.text || msg.messageText || msg.message || '';
-                  return text.trim().length > 0;
-                })
-                .map(msg => ({
-                  messageId: msg.SK || msg.messageId || msg.id,
-                  conversationId: msg.conversationId || conversationId,
-                  senderId: msg.senderId || msg.senderFirebaseUid,
-                  senderName: msg.senderName || msg.sender,
-                  receiverId: msg.receiverId || msg.receiverFirebaseUid,
-                  receiverName: msg.receiverName || msg.receiver,
-                  text: msg.text || msg.messageText || msg.message || '',
-                  timestamp: msg.timestamp || msg.time || msg.createdAt || new Date().toISOString(),
-                  status: msg.status || 'delivered',
-                  isOwn: currentUserId && String(msg.senderId || msg.senderFirebaseUid) === String(currentUserId)
-                }));
-              
-              // Update conversation list with the most recent message from refresh
-              if (refreshFormatted.length > 0) {
-                const sortedRefresh = [...refreshFormatted].sort((a, b) => 
-                  new Date(b.timestamp) - new Date(a.timestamp)
-                );
-                const latestRefreshMessage = sortedRefresh[0];
-                if (latestRefreshMessage) {
-                  updateConversationWithMessage(latestRefreshMessage);
-                }
-              }
-              
-              // Update messages with latest statuses (especially read status)
-              setMessages(prev => {
-                const merged = prev.map(prevMsg => {
-                  const latest = refreshFormatted.find(latestMsg => 
-                    latestMsg.messageId === prevMsg.messageId ||
-                    (prevMsg.messageId.startsWith('temp_') && 
-                     latestMsg.text === prevMsg.text &&
-                     Math.abs(new Date(latestMsg.timestamp) - new Date(prevMsg.timestamp)) < 2000)
-                  );
-                  if (latest) {
-                    return { ...prevMsg, status: latest.status };
-                  }
-                  return prevMsg;
-                });
-                
-                // Add any new messages from refresh that weren't in prev
-                refreshFormatted.forEach(latestMsg => {
-                  if (!merged.some(m => m.messageId === latestMsg.messageId)) {
-                    merged.push(latestMsg);
-                  }
-                });
-                
-                return merged.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-              });
-            } catch (err) {
-              console.error('Error refreshing messages after mark read:', err);
+          // Update message statuses locally instead of reloading
+          setMessages(prev => prev.map(msg => {
+            // Update status to 'read' for messages in this conversation that are from other users
+            if (msg.conversationId === conversationId && 
+                String(msg.senderId) !== String(currentUserId) &&
+                msg.status !== 'read') {
+              return { ...msg, status: 'read' };
             }
-          }, 500);
+            return msg;
+          }));
         } catch (err) {
           console.error('❌ Error marking messages as read:', err);
         }
@@ -711,8 +699,31 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
   // ================================
 
   useEffect(() => {
+    // Log WebSocket connection status for debugging
+    const logConnectionStatus = () => {
+      const ws = chatApiService.ws;
+      const readyState = ws ? ws.readyState : null;
+      const readyStateText = ws ? 
+        (readyState === WebSocket.CONNECTING ? 'CONNECTING' :
+         readyState === WebSocket.OPEN ? 'OPEN' :
+         readyState === WebSocket.CLOSING ? 'CLOSING' :
+         readyState === WebSocket.CLOSED ? 'CLOSED' : 'UNKNOWN') : 'NO_WEBSOCKET';
+      
+      console.log('🔌 WebSocket Connection Status:', {
+        exists: !!ws,
+        readyState,
+        readyStateText,
+        isConnected: chatApiService.isConnected,
+        wsUrl: chatApiService.wsUrl,
+        userId: currentUserId,
+        userRole: currentUserRole
+      });
+    };
+    
     // Check connection status immediately and set up periodic check
     const checkConnection = () => {
+      logConnectionStatus();
+      
       if (!chatApiService.ws) {
         setIsConnected(false);
         // Try to reconnect if we have user info
@@ -766,10 +777,11 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
       console.log('🔥 Current user ID:', currentUserId);
       console.log('🔥 Current selectedChat:', selectedChatRef.current);
       
-      // Filter out empty messages immediately
-      const messageText = message.text || message.messageText || message.message || '';
+      // Filter out empty messages immediately - check multiple field names
+      const messageText = message.text || message.messageText || message.message || message.content || message.body || '';
       if (!messageText || !messageText.trim()) {
         console.warn('⚠️ Skipping empty message:', message);
+        console.warn('⚠️ Available fields:', Object.keys(message));
         return;
       }
       
@@ -785,9 +797,15 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
       }
       
       // Ensure message has proper format
+      // Extract conversationId from multiple possible field names
+      const messageConversationId = message.conversationId || 
+                                    message.conversation_id ||
+                                    message.convId ||
+                                    message.conversationId;
+      
       const formattedMessage = {
         messageId: message.messageId || message.id || `msg_${Date.now()}`,
-        conversationId: message.conversationId,
+        conversationId: messageConversationId,
         senderId: senderId,
         senderName: message.senderName || message.sender,
         receiverId: message.receiverId || message.receiverFirebaseUid,
@@ -798,64 +816,87 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
         isOwn: currentUserId && String(senderId) === String(currentUserId)
       };
       
+      console.log('📨 Formatted message conversationId:', formattedMessage.conversationId);
+      console.log('📨 Raw message conversationId fields:', {
+        conversationId: message.conversationId,
+        conversation_id: message.conversation_id,
+        convId: message.convId,
+        allKeys: Object.keys(message)
+      });
+      
       console.log('✅ Formatted message:', formattedMessage);
       
       // Always update conversation list FIRST (this shows the message in sidebar immediately)
       updateConversationWithMessage(formattedMessage);
       
-      // Refresh unread counts after receiving a new message to keep counts accurate
-      // This is especially important for messages from other users
-      setTimeout(async () => {
-        try {
-          const unreadData = await chatApiService.getUnreadCounts(currentUserId);
-          const unreadCounts = unreadData.unreadCounts || {};
-          console.log('📊 Updated unread counts after new message:', unreadCounts);
-          
-          // Update conversation list with new unread counts
-          setConversations(prev => prev.map(conv => {
-            const convId = conv.conversationId || conv.id;
-            const newUnreadCount = unreadCounts[convId] || 0;
-            return {
-              ...conv,
-              unreadCount: newUnreadCount
-            };
-          }));
-        } catch (err) {
-          console.error('Error refreshing unread counts after new message:', err);
-        }
-      }, 500);
+      // Update unread counts (debounced to prevent race conditions)
+      updateUnreadCounts();
       
       // Get current selectedChat synchronously using ref (avoids stale closures)
       // We need to check if this message belongs to the currently selected conversation
-      const currentSelectedChat = selectedChatRef.current;
+      // IMPORTANT: Use ref directly inside setMessages callback to get latest value
+      console.log('🔄 About to call setMessages. Current messages count:', messagesRef.current.length);
+      console.log('🔄 Selected chat ref:', selectedChatRef.current);
+      console.log('🔄 Formatted message before setMessages:', {
+        conversationId: formattedMessage.conversationId,
+        senderId: formattedMessage.senderId,
+        receiverId: formattedMessage.receiverId,
+        text: formattedMessage.text.substring(0, 50)
+      });
+      
       setMessages(prevMessages => {
-        // Get conversation ID from ref (always latest value)
-        const currentConversationId = currentSelectedChat?.conversationId || currentSelectedChat?.id;
-        const messageConversationId = formattedMessage.conversationId;
+        console.log('🔄 Inside setMessages callback. Previous messages count:', prevMessages.length);
+        // Get conversation ID from ref (always latest value) - use ref directly inside callback
+        const latestSelectedChat = selectedChatRef.current;
+        const currentConversationId = latestSelectedChat?.conversationId || latestSelectedChat?.id;
+        // Try multiple fields for message conversation ID (backend might use different field names)
+        const messageConversationId = formattedMessage.conversationId || 
+                                      formattedMessage.conversation_id ||
+                                      formattedMessage.convId ||
+                                      (formattedMessage.conversationId ? formattedMessage.conversationId : null);
         
-        // Normalize conversation IDs for comparison (handle string/number mismatches)
-        const normalizedCurrentId = currentConversationId ? String(currentConversationId).trim() : null;
-        const normalizedMessageId = messageConversationId ? String(messageConversationId).trim() : null;
+        console.log('🔍 Conversation ID check inside setMessages:', {
+          latestSelectedChat: !!latestSelectedChat,
+          currentConversationId,
+          messageConversationId,
+          formattedMessageKeys: Object.keys(formattedMessage),
+          selectedChatRefCurrent: selectedChatRef.current?.conversationId || selectedChatRef.current?.id,
+          selectedChatKeys: latestSelectedChat ? Object.keys(latestSelectedChat) : []
+        });
         
-        // Enhanced conversation ID matching - try multiple formats
+        // Normalize conversation IDs for comparison (handle string/number mismatches, case-insensitive)
+        // Also handle character variations (O vs 0, L vs /, etc.) by normalizing
+        const normalizeId = (id) => {
+          if (!id) return null;
+          // Convert to string, trim, lowercase, and replace common character confusions
+          return String(id).trim().toLowerCase()
+            .replace(/[o0]/g, '0') // Normalize O and 0
+            .replace(/[il1|]/g, '1') // Normalize I, l, 1, |
+            .replace(/[\/\\]/g, '/'); // Normalize forward/back slashes
+        };
+        
+        const normalizedCurrentId = normalizeId(currentConversationId);
+        const normalizedMessageId = normalizeId(messageConversationId);
+        
+        // Enhanced conversation ID matching - try multiple formats (case-insensitive, character-normalized)
         let isCurrentConversation = false;
         if (normalizedCurrentId && normalizedMessageId) {
-          // Exact match
+          // Exact match (case-insensitive, character-normalized)
           if (normalizedCurrentId === normalizedMessageId) {
             isCurrentConversation = true;
           }
-          // Match without 'conv_' prefix
+          // Match without 'conv_' prefix (case-insensitive, character-normalized)
           else if (normalizedCurrentId.replace(/^conv_/, '') === normalizedMessageId.replace(/^conv_/, '')) {
             isCurrentConversation = true;
           }
-          // Extract IDs from conversation format (conv_userId1_userId2)
+          // Extract IDs from conversation format (conv_userId1_userId2) - case-insensitive, character-normalized
           else {
             const currentParts = normalizedCurrentId.replace(/^conv_/, '').split('_');
             const messageParts = normalizedMessageId.replace(/^conv_/, '').split('_');
-            // Check if both contain the same user IDs (order might differ)
+            // Check if both contain the same user IDs (order might differ, case-insensitive, character-normalized)
             if (currentParts.length === 2 && messageParts.length === 2) {
-              const currentSet = new Set(currentParts);
-              const messageSet = new Set(messageParts);
+              const currentSet = new Set(currentParts.map(id => normalizeId(id)));
+              const messageSet = new Set(messageParts.map(id => normalizeId(id)));
               if (currentSet.size === messageSet.size && 
                   [...currentSet].every(id => messageSet.has(id))) {
                 isCurrentConversation = true;
@@ -864,11 +905,59 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
           }
         }
         
+        // FALLBACK: If conversation ID matching fails, try matching by participant IDs
+        // This handles cases where conversation IDs might be formatted differently
+        if (!isCurrentConversation && latestSelectedChat) {
+          // Extract participant ID from selected chat (try multiple fields)
+          let selectedChatParticipantId = latestSelectedChat.teacherId || 
+                                         latestSelectedChat.studentId || 
+                                         latestSelectedChat.firebase_uid;
+          
+          // If not found, try to extract from conversation ID
+          if (!selectedChatParticipantId && currentConversationId) {
+            const parts = String(currentConversationId).replace(/^conv_/, '').split('_');
+            // Find the part that's not the current user ID
+            selectedChatParticipantId = parts.find(id => 
+              id && String(id).trim().toLowerCase() !== String(currentUserId || '').trim().toLowerCase()
+            );
+          }
+          
+          const messageSenderId = String(formattedMessage.senderId || '').trim().toLowerCase();
+          const messageReceiverId = String(formattedMessage.receiverId || '').trim().toLowerCase();
+          const currentUserIdStr = String(currentUserId || '').trim().toLowerCase();
+          const selectedParticipantIdStr = String(selectedChatParticipantId || '').trim().toLowerCase();
+          
+          // Check if message is between current user and the selected chat participant
+          const isMessageForSelectedChat = selectedParticipantIdStr && (
+            (messageSenderId === currentUserIdStr && messageReceiverId === selectedParticipantIdStr) ||
+            (messageReceiverId === currentUserIdStr && messageSenderId === selectedParticipantIdStr)
+          );
+          
+          if (isMessageForSelectedChat) {
+            console.log('🔄 Fallback match: Conversation IDs don\'t match, but participant IDs do!');
+            console.log('🔄 Selected chat participant:', selectedChatParticipantId);
+            console.log('🔄 Message sender:', formattedMessage.senderId);
+            console.log('🔄 Message receiver:', formattedMessage.receiverId);
+            console.log('🔄 Current user:', currentUserId);
+            isCurrentConversation = true;
+          } else {
+            console.log('🔄 Fallback match failed:', {
+              selectedChatParticipantId,
+              messageSenderId,
+              messageReceiverId,
+              currentUserIdStr,
+              isMessageForSelectedChat
+            });
+          }
+        }
+        
         console.log('📨 Conversation matching:', {
           currentConversationId: normalizedCurrentId,
           messageConversationId: normalizedMessageId,
           isCurrentConversation,
-          selectedChatExists: !!currentSelectedChat
+          selectedChatExists: !!latestSelectedChat,
+          originalCurrentId: currentConversationId,
+          originalMessageId: messageConversationId
         });
         
         // Clear typing indicator if message is for current conversation
@@ -879,6 +968,9 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
             return newSet;
           });
         }
+        
+        // Use latestSelectedChat instead of currentSelectedChat
+        const currentSelectedChat = latestSelectedChat;
         
         // ALWAYS add message if conversation matches OR if it's for the current user
         // This ensures messages appear in real-time regardless of which side sent them
@@ -894,15 +986,33 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
           });
           
           // Check if message already exists (avoid duplicates)
+          // Use registry for better duplicate detection
           const messageExists = prevMessages.some(m => {
             // Check by messageId first (most reliable)
             if (m.messageId && formattedMessage.messageId && 
                 String(m.messageId) === String(formattedMessage.messageId)) {
               return true;
             }
+            
+            // Check registry for temp messages
+            const msgId = m.messageId || formattedMessage.messageId;
+            if (msgId && sentMessageRegistry.current.has(msgId)) {
+              const registryEntry = sentMessageRegistry.current.get(msgId);
+              if (registryEntry.realId && String(registryEntry.realId) === String(formattedMessage.messageId)) {
+                return true;
+              }
+              if (formattedMessage.messageId && sentMessageRegistry.current.has(formattedMessage.messageId)) {
+                const realId = sentMessageRegistry.current.get(formattedMessage.messageId).realId;
+                if (realId && String(realId) === String(m.messageId)) {
+                  return true;
+                }
+              }
+            }
+            
             // Check by text + sender + timestamp (for optimistic messages)
             if (m.text === formattedMessage.text && 
-                m.senderId === formattedMessage.senderId) {
+                m.senderId === formattedMessage.senderId &&
+                m.conversationId === formattedMessage.conversationId) {
               const timeDiff = Math.abs(
                 new Date(m.timestamp).getTime() - new Date(formattedMessage.timestamp).getTime()
               );
@@ -937,20 +1047,7 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
             // Force scroll to ensure visibility
             setTimeout(() => scrollToBottom(), 100);
             
-            // Fetch sender name if missing (async, won't block UI)
-            if (!formattedMessage.senderName && formattedMessage.senderId && formattedMessage.senderId !== currentUserId) {
-              chatApiService.getUserName(formattedMessage.senderId).then(name => {
-                if (name && !name.includes('undefined')) {
-                  setMessages(current => current.map(m => 
-                    m.messageId === formattedMessage.messageId && !m.senderName
-                      ? { ...m, senderName: name }
-                      : m
-                  ));
-                }
-              }).catch(err => {
-                console.error('Error fetching sender name:', err);
-              });
-            }
+            // Note: Sender name will be fetched in batch if missing (handled after message is added)
             
             return updated;
           }
@@ -966,32 +1063,61 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
           console.log('✨ New message count:', updatedMessages.length);
           console.log('✨ Message added successfully:', formattedMessage.text.substring(0, 50));
           
-          // Fetch sender name if missing (async, won't block UI)
-          if (!formattedMessage.senderName && formattedMessage.senderId && formattedMessage.senderId !== currentUserId) {
-            chatApiService.getUserName(formattedMessage.senderId).then(name => {
-              if (name && !name.includes('undefined')) {
-                setMessages(current => current.map(m => 
-                  m.messageId === formattedMessage.messageId && !m.senderName
-                    ? { ...m, senderName: name }
-                    : m
-                ));
-              }
-            }).catch(err => {
-              console.error('Error fetching sender name:', err);
-            });
-          }
+          // Note: Sender name will be fetched in batch if missing (handled separately)
           
           // Force scroll to bottom to show new message
           setTimeout(() => scrollToBottom(), 50);
           
+          console.log('✨ Returning updated messages array. New count:', updatedMessages.length);
           return updatedMessages;
         } else {
           // Message is not for current conversation - still log for debugging
-          console.log('ℹ️ Message received but not for current conversation.');
-          console.log('ℹ️ Current:', normalizedCurrentId, 'Message:', normalizedMessageId);
-          console.log('ℹ️ Message will appear in sidebar.');
+          console.warn('⚠️ Message received but NOT for current conversation!');
+          console.warn('⚠️ Current conversation ID (normalized):', normalizedCurrentId);
+          console.warn('⚠️ Message conversation ID (normalized):', normalizedMessageId);
+          console.warn('⚠️ Current conversation ID (original):', currentConversationId);
+          console.warn('⚠️ Message conversation ID (original):', messageConversationId);
+          console.warn('⚠️ Selected chat exists:', !!latestSelectedChat);
+          console.warn('⚠️ Message will appear in sidebar, but NOT in active chat view.');
+          console.warn('⚠️ Previous messages count:', prevMessages.length);
+          
+          // If there's no selected chat, this is expected. Otherwise, it's a matching issue.
+          if (latestSelectedChat) {
+            console.error('❌ CRITICAL: Conversation ID mismatch! Message will not appear in active chat.');
+            console.error('❌ Attempting to add anyway if message is for current user...');
+            
+            // LAST RESORT: If message is for current user (sent or received), add it anyway
+            // This handles edge cases where conversation ID matching completely fails
+            const messageIsForCurrentUser = (
+              String(formattedMessage.senderId || '').trim() === String(currentUserId || '').trim() ||
+              String(formattedMessage.receiverId || '').trim() === String(currentUserId || '').trim()
+            );
+            
+            if (messageIsForCurrentUser) {
+              console.log('🆘 EMERGENCY: Adding message anyway because it\'s for current user');
+              // Check if message already exists
+              const alreadyExists = prevMessages.some(m => 
+                m.messageId === formattedMessage.messageId ||
+                (m.text === formattedMessage.text && 
+                 m.senderId === formattedMessage.senderId &&
+                 Math.abs(new Date(m.timestamp).getTime() - new Date(formattedMessage.timestamp).getTime()) < 5000)
+              );
+              
+              if (!alreadyExists) {
+                const emergencyUpdated = [...prevMessages, formattedMessage].sort((a, b) => 
+                  new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+                );
+                console.log('🆘 Emergency add successful. New count:', emergencyUpdated.length);
+                setTimeout(() => scrollToBottom(), 50);
+                return emergencyUpdated;
+              } else {
+                console.log('🆘 Message already exists, skipping emergency add');
+              }
+            }
+          }
         }
         
+        console.log('⚠️ Returning previous messages unchanged. Count:', prevMessages.length);
         return prevMessages;
       });
     };
@@ -1078,27 +1204,8 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
         }));
       }
       
-      // Refresh unread counts when messages are marked as read
-      // This ensures the conversation list reflects the updated unread count
-      setTimeout(async () => {
-        try {
-          const unreadData = await chatApiService.getUnreadCounts(currentUserId);
-          const unreadCounts = unreadData.unreadCounts || {};
-          console.log('📊 Updated unread counts from read receipt:', unreadCounts);
-          
-          // Update conversation list with new unread counts
-          setConversations(prev => prev.map(conv => {
-            const convId = conv.conversationId || conv.id;
-            const newUnreadCount = unreadCounts[convId] || 0;
-            return {
-              ...conv,
-              unreadCount: newUnreadCount
-            };
-          }));
-        } catch (err) {
-          console.error('Error refreshing unread counts from read receipt:', err);
-        }
-      }, 300);
+      // Update unread counts (debounced to prevent race conditions)
+      updateUnreadCounts();
     };
 
     const handleError = (error) => {
@@ -1152,8 +1259,14 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
     chatApiService.on('disconnected', handleDisconnected);
     // Register WebSocket event handlers
     console.log('🔌 Registering WebSocket event handlers...');
+    console.log('🔌 Current WebSocket state:', {
+      ws: !!chatApiService.ws,
+      readyState: chatApiService.ws ? chatApiService.ws.readyState : 'N/A',
+      isConnected: chatApiService.isConnected
+    });
     chatApiService.on('newMessage', handleNewMessage);
     console.log('✅ Registered newMessage handler');
+    console.log('✅ Handler count for newMessage:', chatApiService.messageHandlers?.get('newMessage')?.length || 0);
     chatApiService.on('userStatus', handleUserStatus);
     chatApiService.on('typing', handleTyping);
     chatApiService.on('messageDeleted', handleMessageDeleted);
@@ -1181,6 +1294,35 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
   // ================================
   // Helper Functions
   // ================================
+
+  // Debounced unread count update to prevent race conditions
+  const updateUnreadCounts = useCallback(() => {
+    // Clear existing timeout
+    if (unreadCountUpdateTimeout.current) {
+      clearTimeout(unreadCountUpdateTimeout.current);
+    }
+    
+    // Debounce to 300ms to batch multiple updates
+    unreadCountUpdateTimeout.current = setTimeout(async () => {
+      try {
+        const unreadData = await chatApiService.getUnreadCounts(currentUserId);
+        const unreadCounts = unreadData.unreadCounts || {};
+        console.log('📊 Updated unread counts:', unreadCounts);
+        
+        // Update conversation list with new unread counts
+        setConversations(prev => prev.map(conv => {
+          const convId = conv.conversationId || conv.id;
+          const newUnreadCount = unreadCounts[convId] || 0;
+          return {
+            ...conv,
+            unreadCount: newUnreadCount
+          };
+        }));
+      } catch (err) {
+        console.error('Error refreshing unread counts:', err);
+      }
+    }, 300);
+  }, [currentUserId]);
 
   const updateConversationWithMessage = (message) => {
     setConversations(prev => {
@@ -1332,11 +1474,59 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
       // Clear messages first to show loading state, then load fresh messages
       setMessages([]);
       await loadMessages(conversationId);
+      
+      // Clear any existing poll interval
+      if (messagePollIntervalRef.current) {
+        clearInterval(messagePollIntervalRef.current);
+        messagePollIntervalRef.current = null;
+      }
+      
+      // Start polling for new messages as a fallback if WebSocket isn't delivering
+      // This ensures messages appear even if WebSocket routing fails
+      console.log('🔄 Starting message polling (WebSocket fallback)...');
+      messagePollIntervalRef.current = setInterval(async () => {
+        // Only poll if this chat is still selected
+        const currentChat = selectedChatRef.current;
+        const currentConvId = currentChat?.conversationId || currentChat?.id;
+        if (currentConvId === conversationId) {
+          console.log('🔄 Polling for new messages...');
+          try {
+            const currentMessageCount = messagesRef.current.length;
+            await loadMessages(conversationId);
+            const newMessageCount = messagesRef.current.length;
+            if (newMessageCount > currentMessageCount) {
+              console.log(`✅ Polling found ${newMessageCount - currentMessageCount} new message(s)!`);
+            }
+          } catch (err) {
+            console.error('❌ Error polling messages:', err);
+          }
+        } else {
+          // Chat changed, stop polling
+          console.log('🔄 Chat changed, stopping message polling');
+          if (messagePollIntervalRef.current) {
+            clearInterval(messagePollIntervalRef.current);
+            messagePollIntervalRef.current = null;
+          }
+        }
+      }, 3000); // Poll every 3 seconds
     } else {
       console.warn('⚠️ No conversationId or id in selected chat:', chat);
       // If no conversation ID, clear messages
       setMessages([]);
+      // Clear polling
+      if (messagePollIntervalRef.current) {
+        clearInterval(messagePollIntervalRef.current);
+        messagePollIntervalRef.current = null;
+      }
     }
+    
+    // Cleanup: Clear polling when chat is deselected
+    return () => {
+      if (messagePollIntervalRef.current) {
+        clearInterval(messagePollIntervalRef.current);
+        messagePollIntervalRef.current = null;
+      }
+    };
   }, [currentUserId, loadMessages]);
 
   const sendMessage = useCallback(async (messageText, receiverId, receiverName) => {
@@ -1349,38 +1539,57 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
       return;
     }
 
-    const conversationId = selectedChat?.conversationId || selectedChat?.id || 
-      chatApiService.generateConversationId(currentUserId, receiverId);
+    // Extract receiverId and receiverName from selectedChat if not provided
+    // This ensures compatibility with both Job Seeker (passes params) and Job Provider (doesn't pass)
+    const finalReceiverId = receiverId || selectedChat.teacherId || selectedChat.studentId || selectedChat.firebase_uid;
+    const finalReceiverName = receiverName || selectedChat.name || selectedChat.fullName;
     
+    if (!finalReceiverId) {
+      console.error('❌ Cannot send message - no receiverId found');
+      setError('Cannot send message: Receiver information missing');
+      return;
+    }
+
+    const conversationId = selectedChat?.conversationId || selectedChat?.id || 
+      chatApiService.generateConversationId(currentUserId, finalReceiverId);
+    
+    // Normalize conversation ID to handle case/character variations
+    const normalizedConversationId = conversationId ? String(conversationId).trim().toLowerCase() : null;
     console.log('📤 Using conversationId:', conversationId);
-    console.log('📤 Current messages count before send:', messages.length);
+    console.log('📤 Normalized conversationId:', normalizedConversationId);
+    
+    // Use functional update to get current messages state (avoids stale closure)
+    let currentMessagesCount = 0;
+    setMessages(prev => {
+      currentMessagesCount = prev.length;
+      return prev; // No change, just reading
+    });
+    console.log('📤 Current messages count before send:', currentMessagesCount);
+    console.log('📤 Messages ref count:', messagesRef.current.length);
 
     try {
-      // Send message via WebSocket
-      console.log('📤 Sending via WebSocket...');
-      chatApiService.sendWebSocketMessage('sendMessage', {
-        conversationId,
-        conversationType: 'direct',
-        messageType: 'text',
-        messageText: messageText.trim(),
-        receiverId,
-        receiverName
-      });
-
-      // Create optimistic message
-      const tempId = `temp_${Date.now()}`;
+      // Create optimistic message first
+      const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const optimisticMessage = {
         messageId: tempId,
         conversationId,
         senderId: currentUserId,
         senderName: currentUserName,
-        receiverId,
-        receiverName,
+        receiverId: finalReceiverId,
+        receiverName: finalReceiverName,
         text: messageText.trim(),
         timestamp: new Date().toISOString(),
         status: 'sending',
         isOwn: true
       };
+
+      // Register temp message for duplicate detection
+      sentMessageRegistry.current.set(tempId, {
+        text: messageText.trim(),
+        timestamp: optimisticMessage.timestamp,
+        conversationId,
+        senderId: currentUserId
+      });
 
       console.log('📤 Adding optimistic message:', optimisticMessage);
       setMessages(prev => {
@@ -1390,19 +1599,49 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
       });
       scrollToBottom();
 
-      // REST fallback to persist and mark delivered
+      // Send message via WebSocket (with error handling)
+      let wsSent = false;
+      if (chatApiService.ws && chatApiService.ws.readyState === WebSocket.OPEN) {
+        try {
+          console.log('📤 Sending via WebSocket...');
+          chatApiService.sendWebSocketMessage('sendMessage', {
+            conversationId,
+            conversationType: 'direct',
+            messageType: 'text',
+            messageText: messageText.trim(),
+            receiverId: finalReceiverId,
+            receiverName: finalReceiverName
+          });
+          wsSent = true;
+        } catch (wsErr) {
+          console.error('WebSocket send error:', wsErr);
+        }
+      } else {
+        console.warn('⚠️ WebSocket not connected, will use REST only');
+      }
+
+      // REST fallback to persist and mark delivered (always send for persistence)
       try {
         console.log('📤 Sending via REST API...');
         const restRes = await chatApiService.sendMessageRest({
           conversationId,
           senderId: currentUserId,
           senderName: currentUserName,
-          receiverId,
-          receiverName,
+          receiverId: finalReceiverId,
+          receiverName: finalReceiverName,
           text: messageText.trim()
         });
         
         console.log('✅ Message sent via REST, response:', restRes);
+        
+        const realMessageId = restRes.messageId || restRes.id;
+        
+        // Update registry with real message ID
+        if (realMessageId && sentMessageRegistry.current.has(tempId)) {
+          const registryEntry = sentMessageRegistry.current.get(tempId);
+          registryEntry.realId = realMessageId;
+          sentMessageRegistry.current.set(realMessageId, registryEntry);
+        }
         
         // Update the optimistic message with real data
         setMessages(prev => {
@@ -1411,7 +1650,7 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
               ? { 
                   ...m, 
                   status: 'delivered', 
-                  messageId: restRes.messageId || restRes.id || m.messageId, 
+                  messageId: realMessageId || m.messageId, 
                   timestamp: restRes.timestamp || restRes.time || m.timestamp 
                 }
               : m
@@ -1420,71 +1659,18 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
           return updated;
         });
         
-        // Reload messages to ensure consistency (especially for other user)
-        // Use longer delay to allow DynamoDB to process and index the message
-        if (selectedChat?.conversationId === conversationId || selectedChat?.id === conversationId) {
-          console.log('📤 Scheduling message reload in 1000ms to allow backend processing...');
-          setTimeout(async () => {
-            try {
-              console.log('📤 Reloading messages after send...');
-              // Instead of replacing all messages, merge with existing to preserve optimistic ones
-              const data = await chatApiService.getMessages(conversationId);
-              const loadedMessages = data.messages || data || [];
-              
-              // Merge: Keep optimistic messages that aren't confirmed yet, add/update from API
-              setMessages(prev => {
-                const existingTempIds = prev.filter(m => m.messageId.startsWith('temp_')).map(m => m.messageId);
-                
-                // Remove temp messages that are now in API (confirmed)
-                const confirmedTempIds = existingTempIds.filter(tempId => {
-                  // Check if text matches any API message within 2 seconds
-                  const tempMsg = prev.find(m => m.messageId === tempId);
-                  if (!tempMsg) return false;
-                  return loadedMessages.some(apiMsg => {
-                    const apiText = apiMsg.text || apiMsg.messageText || apiMsg.message || '';
-                    const timeDiff = Math.abs(new Date(apiMsg.timestamp || apiMsg.time || 0) - new Date(tempMsg.timestamp)) / 1000;
-                    return apiText === tempMsg.text && timeDiff < 2;
-                  });
-                });
-                
-                // Format API messages
-                const formattedApiMessages = loadedMessages.map(msg => ({
-                  messageId: msg.SK || msg.messageId || msg.id,
-                  conversationId: msg.conversationId || conversationId,
-                  senderId: msg.senderId || msg.senderFirebaseUid,
-                  senderName: msg.senderName || msg.sender,
-                  receiverId: msg.receiverId || msg.receiverFirebaseUid,
-                  receiverName: msg.receiverName || msg.receiver,
-                  text: msg.text || msg.messageText || msg.message || '',
-                  timestamp: msg.timestamp || msg.time || msg.createdAt || new Date().toISOString(),
-                  status: msg.status || 'delivered',
-                  isOwn: currentUserId && String(msg.senderId || msg.senderFirebaseUid) === String(currentUserId)
-                }));
-                
-                // Combine: confirmed API messages + unconfirmed temp messages
-                const unconfirmedTemp = prev.filter(m => 
-                  m.messageId.startsWith('temp_') && !confirmedTempIds.includes(m.messageId)
-                );
-                
-                // Merge and deduplicate by messageId
-                const allMessages = [...formattedApiMessages, ...unconfirmedTemp];
-                const uniqueMessages = Array.from(
-                  new Map(allMessages.map(m => [m.messageId, m])).values()
-                ).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-                
-                console.log('📤 Merged messages after reload:', uniqueMessages.length);
-                return uniqueMessages;
-              });
-              
-              console.log('✅ Messages reloaded and merged after send');
-            } catch (err) {
-              console.error('❌ Error reloading messages after send:', err);
-            }
-          }, 1000); // Increased to 1 second to allow DynamoDB processing
-        }
+        // Clean up temp message from registry after 10 seconds
+        setTimeout(() => {
+          sentMessageRegistry.current.delete(tempId);
+          if (realMessageId) {
+            sentMessageRegistry.current.delete(realMessageId);
+          }
+        }, 10000);
+        
       } catch (restErr) {
         console.error('Error sending message via REST:', restErr);
         setMessages(prev => prev.map(m => m.messageId === tempId ? { ...m, status: 'failed' } : m));
+        setError('Failed to send message. Please try again.');
       }
 
     } catch (err) {

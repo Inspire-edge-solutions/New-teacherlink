@@ -13,6 +13,7 @@ const ORG_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/org
 const FAV_JOBS_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteJobs';
 const JOBS_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes';
 const REDEEM_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral';
+const COIN_HISTORY_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history';
 
 const formatRelativeTime = (dateString) => {
   if (!dateString) return 'Just now';
@@ -357,6 +358,26 @@ const RecruiterActions = () => {
               firebase_uid: firebaseUid,
               coin_value: newCoinBalance
             });
+
+            // Record coin history for recruiter actions
+            try {
+              const coinHistoryPayload = {
+                firebase_uid: firebaseUid,
+                candidate_id: candidateId, // Already fetched from personal API earlier
+                job_id: null,
+                coin_value: newCoinBalance, // Remaining balance after deduction
+                reduction: COIN_COST, // Amount deducted (20)
+                reason: "Recruiter action viewed",
+                unblocked_candidate_id: null,
+                unblocked_candidate_name: null
+              };
+
+              await axios.post(COIN_HISTORY_API, coinHistoryPayload);
+              console.log('✅ Coin history recorded successfully for recruiter actions');
+            } catch (historyError) {
+              console.error('Error recording coin history for recruiter actions:', historyError);
+              // Don't fail the main flow if history recording fails
+            }
 
             // Mark new actions as seen
             const updatedSeenIds = [...Array.from(seenActionIds), ...newActions.map(a => a.id)];
