@@ -68,7 +68,7 @@ const ChatInput = ({ onSendMessage, onTyping, disabled = false }) => {
   }, []);
 
   return (
-    <div className="bg-white border-t border-gray-200 px-3 sm:px-6 py-3 sm:py-4">
+    <div className="bg-yellow border-t border-gray-200 px-3 sm:px-6 py-3 sm:py-4">
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Input Field */}
         <div className="flex-1">

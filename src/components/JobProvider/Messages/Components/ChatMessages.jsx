@@ -48,7 +48,7 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, typingUsers = n
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 p-3 sm:p-6">
+    <div className="flex-1 overflow-y-auto bg-rose-50 p-3 sm:p-6">
       <div className="max-w-4xl mx-auto space-y-4">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
@@ -76,8 +76,8 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, typingUsers = n
                 <div
                   className={`max-w-[85%] sm:max-w-xs md:max-w-md px-3 sm:px-4 py-2 sm:py-3 rounded-lg relative ${
                     isOwn
-                      ? 'bg-red-100 text-gray-800'
-                      : 'bg-white text-gray-800 border border-gray-200'
+                      ? 'bg-red-100 text-gray-800 border-2 border-red-200'
+                      : 'bg-gray-50 text-gray-800 border-2 border-gray-200'
                   }`}
                 >
                   <p className="text-sm break-words">
@@ -87,23 +87,26 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, typingUsers = n
                     )}
                   </p>
                 <div className="flex items-center justify-between mt-2">
-                  <span className="text-xs text-gray-500">
-                    {formatMessageTime(message.timestamp || message.time)}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">
+                      {formatMessageTime(message.timestamp || message.time)}
+                    </span>
+                    {isOwn && (
+                      <>
+                        <span className="text-xs text-gray-400">
+                          {message.status === 'sending' && 'Sending...'}
+                          {message.status === 'delivered' && 'Delivered'}
+                          {message.status === 'read' && 'Read'}
+                        </span>
+                        {message.status === 'read' && (
+                          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                        )}
+                      </>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     {isOwn && (
                       <>
-                        <div className={`flex items-center gap-1 ${statusInfo.color}`}>
-                          <StatusIcon size={12} />
-                          <span className="text-xs">
-                            {message.status === 'sending' && 'Sending...'}
-                            {message.status === 'delivered' && 'Delivered'}
-                            {message.status === 'read' && 'Read'}
-                          </span>
-                          {message.status === 'read' && (
-                            <span className="w-2 h-2 bg-blue-500 rounded-full ml-1"></span>
-                          )}
-                        </div>
                         {/* Edit button - always visible for own messages, more prominent on hover */}
                         {onEditMessage && (
                           <button
@@ -111,10 +114,10 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, typingUsers = n
                               e.stopPropagation();
                               onEditMessage(message.messageId || message.id);
                             }}
-                            className={`text-blue-500 hover:text-blue-700 transition-all p-1 rounded hover:bg-blue-50 ${
+                            className={`${isOwn ? 'text-blue-600 hover:text-blue-700 hover:bg-pink-200' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'} transition-all p-1 rounded ${
                               hoveredMessageId === (message.messageId || message.id) 
                                 ? 'opacity-100' 
-                                : 'opacity-40 hover:opacity-100'
+                                : 'opacity-60 hover:opacity-100'
                             }`}
                             title="Edit message"
                             onMouseEnter={(e) => e.stopPropagation()}
@@ -129,10 +132,10 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, typingUsers = n
                               e.stopPropagation();
                               onDeleteMessage(message.messageId || message.id);
                             }}
-                            className={`text-red-500 hover:text-red-700 transition-all p-1 rounded hover:bg-red-50 ${
+                            className={`${isOwn ? 'text-red-600 hover:text-red-700 hover:bg-pink-200' : 'text-red-500 hover:text-red-700 hover:bg-red-50'} transition-all p-1 rounded ${
                               hoveredMessageId === (message.messageId || message.id) 
                                 ? 'opacity-100' 
-                                : 'opacity-40 hover:opacity-100'
+                                : 'opacity-60 hover:opacity-100'
                             }`}
                             title="Delete message"
                             onMouseEnter={(e) => e.stopPropagation()}

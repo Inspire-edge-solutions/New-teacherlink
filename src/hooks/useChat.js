@@ -23,7 +23,6 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
   const sentMessageRegistry = useRef(new Map()); // Track temp messages: tempId -> { realId, timestamp, text }
   const unreadCountUpdateTimeout = useRef(null); // Debounce unread count updates
   const messagesRef = useRef([]); // Keep ref in sync with messages state for reliable access
-  const messagePollIntervalRef = useRef(null); // Poll for new messages as WebSocket fallback
   
   // Keep refs in sync with state
   useEffect(() => {
@@ -1474,59 +1473,11 @@ const useChat = (currentUserId, currentUserName, currentUserRole) => {
       // Clear messages first to show loading state, then load fresh messages
       setMessages([]);
       await loadMessages(conversationId);
-      
-      // Clear any existing poll interval
-      if (messagePollIntervalRef.current) {
-        clearInterval(messagePollIntervalRef.current);
-        messagePollIntervalRef.current = null;
-      }
-      
-      // Start polling for new messages as a fallback if WebSocket isn't delivering
-      // This ensures messages appear even if WebSocket routing fails
-      console.log('🔄 Starting message polling (WebSocket fallback)...');
-      messagePollIntervalRef.current = setInterval(async () => {
-        // Only poll if this chat is still selected
-        const currentChat = selectedChatRef.current;
-        const currentConvId = currentChat?.conversationId || currentChat?.id;
-        if (currentConvId === conversationId) {
-          console.log('🔄 Polling for new messages...');
-          try {
-            const currentMessageCount = messagesRef.current.length;
-            await loadMessages(conversationId);
-            const newMessageCount = messagesRef.current.length;
-            if (newMessageCount > currentMessageCount) {
-              console.log(`✅ Polling found ${newMessageCount - currentMessageCount} new message(s)!`);
-            }
-          } catch (err) {
-            console.error('❌ Error polling messages:', err);
-          }
-        } else {
-          // Chat changed, stop polling
-          console.log('🔄 Chat changed, stopping message polling');
-          if (messagePollIntervalRef.current) {
-            clearInterval(messagePollIntervalRef.current);
-            messagePollIntervalRef.current = null;
-          }
-        }
-      }, 3000); // Poll every 3 seconds
     } else {
       console.warn('⚠️ No conversationId or id in selected chat:', chat);
       // If no conversation ID, clear messages
       setMessages([]);
-      // Clear polling
-      if (messagePollIntervalRef.current) {
-        clearInterval(messagePollIntervalRef.current);
-        messagePollIntervalRef.current = null;
-      }
     }
-    
-    // Cleanup: Clear polling when chat is deselected
-    return () => {
-      if (messagePollIntervalRef.current) {
-        clearInterval(messagePollIntervalRef.current);
-        messagePollIntervalRef.current = null;
-      }
-    };
   }, [currentUserId, loadMessages]);
 
   const sendMessage = useCallback(async (messageText, receiverId, receiverName) => {

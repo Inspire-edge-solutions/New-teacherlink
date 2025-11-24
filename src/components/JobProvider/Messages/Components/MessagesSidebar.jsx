@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiSearch, FiPlus, FiClock, FiUser, FiSlash, FiUnlock, FiX } from 'react-icons/fi';
 import LoadingState from "../../../common/LoadingState";
+import ModalPortal from "../../../common/ModalPortal";
 
 const MessagesSidebar = ({ 
   people = [], 
@@ -51,10 +52,11 @@ const MessagesSidebar = ({
     <>
       {/* Blocked Candidates Modal */}
       {showBlockedList && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] flex flex-col">
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <ModalPortal>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] flex flex-col">
+              {/* Modal Header */}
+              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <FiSlash className="text-red-500" size={20} />
                 Blocked Candidates ({blockedUsers.length})
@@ -66,9 +68,9 @@ const MessagesSidebar = ({
                 <FiX size={20} />
               </button>
             </div>
-            
-            {/* Modal Body - Blocked List */}
-            <div className="flex-1 overflow-y-auto p-4">
+              
+              {/* Modal Body - Blocked List */}
+              <div className="flex-1 overflow-y-auto p-4 min-h-0">
               {blockedUsers.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <FiSlash className="mx-auto mb-2 text-gray-300" size={32} />
@@ -116,6 +118,7 @@ const MessagesSidebar = ({
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full shadow-lg md:shadow-none">
@@ -173,8 +176,9 @@ const MessagesSidebar = ({
       <div className="flex-1 overflow-y-auto">
         {/* Candidates Modal */}
         {showCandidates && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden shadow-xl">
+          <ModalPortal>
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden shadow-xl">
               {/* Modal Header */}
               <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
                 <h3 className="text-lg font-semibold text-gray-900">Select Candidate</h3>
@@ -270,6 +274,7 @@ const MessagesSidebar = ({
               </div>
             </div>
           </div>
+          </ModalPortal>
         )}
         {/* Loading State */}
         {isLoading && (
