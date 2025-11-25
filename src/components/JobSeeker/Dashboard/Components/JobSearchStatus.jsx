@@ -3,7 +3,7 @@ import { useAuth } from "../../../../Context/AuthContext";
 import { IoChevronDownOutline } from 'react-icons/io5';
 import axios from 'axios';
 
-const JobSearch = () => {
+const JobSearchStatus = () => {
   const { user } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const [jobSearchStatus, setJobSearchStatus] = useState({
@@ -391,4 +391,4 @@ const JobSearch = () => {
   );
 };
 
-export default JobSearch;
+export default JobSearchStatus;

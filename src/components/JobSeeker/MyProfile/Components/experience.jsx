@@ -136,7 +136,7 @@ const ExperienceEntry = ({
         <h5 className="text-black font-semibold">Experience Details {index + 1}</h5>
         <button
           type="button"
-          className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:opacity-90 font-medium shadow-sm transition-opacity"
+          className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover font-medium shadow-sm transition-colors"
           onClick={() => removeExperience(index)}
         >
           Remove

@@ -49,6 +49,13 @@ const formatSubjects = (subjects) => {
   return [String(subjects)];
 };
 
+const formatSalary = (minSalary, maxSalary) => {
+  if (!minSalary && !maxSalary) return 'Salary not specified';
+  if (!maxSalary) return `₹${minSalary}`;
+  if (!minSalary) return `₹${maxSalary}`;
+  return `₹${minSalary} - ₹${maxSalary}`;
+};
+
 const BlurWrapper = ({ isUnlocked, children }) => {
   return isUnlocked
     ? children
@@ -956,7 +963,7 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
                 <BsCash className="w-5 h-5 text-blue-500 flex-shrink-0" />
                 <span className="text-base font-medium text-gray-500">Salary Range:</span>
               </div>
-              <span className="text-base font-semibold text-gray-800 col-span-1">{job.min_salary && job.max_salary ? `₹${job.min_salary} - ₹${job.max_salary}` : 'Not specified'}</span>
+              <span className="text-base font-semibold text-gray-800 col-span-1">{formatSalary(job.min_salary, job.max_salary)}</span>
             </div>
             <div className="grid grid-cols-[auto,1fr] items-center gap-3 p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-3 col-span-1">

@@ -82,10 +82,11 @@ const NotificationItem = ({ notification, index, checked, onMarkAsRead, onDelete
                 {!notification.read && (
                   <button
                     onClick={() => onMarkAsRead(notification.id)}
-                    className="p-2 text-gray-500 hover:text-green-500 hover:bg-green-50 rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 border border-gray-300 hover:text-green-500 hover:bg-green-50 hover:border-green-500 rounded-lg transition-colors"
                     title="Mark as read"
                   >
                     <FaCheckCircle />
+                    <span>Mark this as read</span>
                   </button>
                 )}
                 <button

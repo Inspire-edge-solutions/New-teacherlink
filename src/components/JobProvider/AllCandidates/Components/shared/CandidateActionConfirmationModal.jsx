@@ -3,25 +3,14 @@ import ModalPortal from '../../../../common/ModalPortal';
 
 /**
  * Shared CandidateActionConfirmationModal component
- * Used across all candidate sections when adding a candidate to favorites or saving a candidate
- * @param {string} actionType - 'favorite' or 'save'
+ * Used across all candidate sections when adding a candidate to favorites
  */
 const CandidateActionConfirmationModal = ({
   isOpen,
-  actionType = 'favorite', // 'favorite' or 'save'
   onConfirm,
   onCancel
 }) => {
   if (!isOpen) return null;
-
-  const getTitle = () => {
-    return actionType === 'save' ? 'Save Candidate' : 'Add to Favourites';
-  };
-
-  const getMessage = () => {
-    const actionText = actionType === 'save' ? 'save candidates' : 'add candidates as favourites';
-    return `When you ${actionText}, you'll receive an instant status alert when the candidate changes their job status to "Actively Searching Jobs". A fee of <strong>20 coins per notification</strong> will apply.`;
-  };
 
   return (
     <ModalPortal>
@@ -42,11 +31,11 @@ const CandidateActionConfirmationModal = ({
 
           <div className="mb-4 mt-0.5 text-center">
             <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
-              {getTitle()}
+              Add to Favourites
             </h3>
             <p 
               className="text-gray-600 text-[15px] leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: getMessage() }}
+              dangerouslySetInnerHTML={{ __html: `When you add candidates as favourites, you'll receive an instant status alert when the candidate changes their job status to "Actively Searching Jobs". A fee of <strong>20 coins per notification</strong> will apply.` }}
             />
           </div>
 

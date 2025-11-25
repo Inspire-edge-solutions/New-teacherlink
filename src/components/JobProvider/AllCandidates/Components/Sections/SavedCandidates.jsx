@@ -14,6 +14,7 @@ import '../styles/candidate-highlight.css';
 import LoadingState from '../../../../common/LoadingState';
 import { HiOutlineArrowRight } from 'react-icons/hi';
 import CandidateActionConfirmationModal from '../shared/CandidateActionConfirmationModal';
+import ModalPortal from '../../../../common/ModalPortal';
 
 const SavedCandidates = ({ 
   onViewCandidate, 
@@ -516,12 +517,13 @@ const SavedCandidates = ({
 
       {/* Unlock Prompt Modal */}
       {showUnlockPrompt && candidateToUnlock && (
-        <div
-          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-          onClick={handleUnlockPromptClose}
-        >
+        <ModalPortal>
           <div
-            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+            onClick={handleUnlockPromptClose}
+          >
+          <div
+            className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -556,16 +558,18 @@ const SavedCandidates = ({
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Message Modal */}
       {showMessageModal && (
-        <div 
-          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-          onClick={handleMessageModalOk}
-        >
+        <ModalPortal>
           <div 
-            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+            onClick={handleMessageModalOk}
+          >
+          <div 
+            className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
             onClick={(e) => e.stopPropagation()}
           >
             <button 
@@ -600,6 +604,7 @@ const SavedCandidates = ({
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Favourite Confirmation Modal */}

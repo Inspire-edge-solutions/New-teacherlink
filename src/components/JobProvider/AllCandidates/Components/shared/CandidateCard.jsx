@@ -40,7 +40,7 @@ const CandidateCard = ({
 
   return (
     <div 
-      className="bg-white rounded-lg shadow-sm border border-gray-500 p-3 sm:p-4 mb-3 hover:shadow-md transition-all duration-200 hover:bg-[#F0D8D9] cursor-pointer"
+      className="bg-white rounded-lg shadow-sm border border-gray-500 p-3 sm:p-4 mb-3 hover:shadow-md transition-all duration-200 hover:bg-[#F0D8D9]"
       data-candidate-id={candidateId}
     >
       {/* Top Row: Checkbox + Photo + Name/Actions */}
@@ -80,106 +80,235 @@ const CandidateCard = ({
 
         {/* Name and Actions Section */}
         <div className="flex-1 min-w-0">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-start gap-2 sm:gap-0">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base sm:text-lg font-bold text-gray-800 leading-tight truncate">
-                {candidate.fullName || candidate.name || 'Name not available'}
-              </h3>
-              {(candidate.job_name || candidate.designation) && (
-                <p className="text-xs sm:text-sm text-gray-600 mt-0.5 truncate">
-                  {candidate.job_name ? (
-                    <>
-                      Applied for <span className="font-semibold">{candidate.job_name}</span>
-                    </>
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-start gap-2 sm:gap-0">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base sm:text-lg font-bold text-gray-800 leading-tight truncate">
+                  {candidate.fullName || candidate.name || 'Name not available'}
+                </h3>
+                {(candidate.job_name || candidate.designation) && (
+                  <p className="text-xs sm:text-sm text-gray-600 mt-0.5 truncate">
+                    {candidate.job_name ? (
+                      <>
+                        Applied for <span className="font-semibold">{candidate.job_name}</span>
+                      </>
+                    ) : (
+                      candidate.designation
+                    )}
+                  </p>
+                )}
+              </div>
+
+              {/* Action Icons - Desktop view */}
+              <div className="hidden sm:flex items-center gap-1.5 sm:gap-2.5 sm:ml-3 flex-shrink-0">
+                {/* Status Dropdown */}
+                {showStatusControl && (
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <select
+                      className="text-xs sm:text-sm border border-gray-300 rounded-md px-2 py-1.5 sm:px-3 sm:py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-[120px] sm:min-w-[140px]"
+                      value={statusValue}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        onStatusChange && onStatusChange(e.target.value);
+                      }}
+                    >
+                      {statusOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                {/* View Full Icon */}
+                <button
+                  className="group relative p-2 rounded-xl sm:p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-blue-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewFull && onViewFull(candidate);
+                  }}
+                  title="View Full Profile"
+                  disabled={loading}
+                >
+                  <AiOutlineEye className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                </button>
+                
+                {/* View Short Icon */}
+                <button
+                  className="group relative p-2 rounded-xl sm:p-2.5 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white border border-purple-200 hover:border-purple-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-purple-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewShort && onViewShort(candidate);
+                  }}
+                  title="View Short Profile"
+                  disabled={loading}
+                >
+                  <AiOutlineFileText className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                </button>
+                
+                {/* Save Icon */}
+                <button
+                  className={`group relative p-2 rounded-xl sm:p-2.5 border transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg ${
+                    isSaved 
+                      ? 'text-green-700 bg-green-50 border-green-300 hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-green-200' 
+                      : 'text-green-600 bg-green-50 border-green-200 hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-green-200'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSave && onSave(candidate);
+                  }}
+                  title={isSaved ? 'Remove from Saved' : 'Save Candidate'}
+                  disabled={loading}
+                >
+                  {isSaved ? (
+                    <AiFillSave className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110 group-hover:rotate-12" />
                   ) : (
-                    candidate.designation
+                    <AiOutlineSave className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
                   )}
-                </p>
-              )}
+                </button>
+                
+                {/* Favourite Icon */}
+                <button
+                  className={`group relative p-2 rounded-xl sm:p-2.5 border transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg ${
+                    isFavourite 
+                      ? 'text-red-600 bg-red-50 border-red-300 hover:bg-red-600 hover:text-white hover:border-red-600 hover:shadow-red-200' 
+                      : 'text-gray-600 bg-gray-50 border-gray-200 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-red-200'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleFavourite && onToggleFavourite(candidateId, candidate, !isFavourite);
+                  }}
+                  title={isFavourite ? 'Remove from Favourites' : 'Mark as Favourite'}
+                  disabled={loading}
+                >
+                  {isFavourite ? (
+                    <AiFillHeart className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-125 group-hover:animate-pulse" />
+                  ) : (
+                    <AiOutlineHeart className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                  )}
+                </button>
+                
+                {/* Message Icon */}
+                <button
+                  className="group relative p-2 rounded-xl sm:p-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-indigo-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-indigo-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMessage && onMessage(candidate);
+                  }}
+                  title="Message Candidate"
+                  disabled={loading}
+                >
+                  <AiOutlineMessage className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                </button>
+              </div>
             </div>
 
-            {/* Action Icons */}
-            <div className="flex items-center gap-1.5 sm:gap-2.5 sm:ml-3 flex-shrink-0">
-              {/* View Full Icon */}
-              <button
-                className="group relative p-2 rounded-xl sm:p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-blue-200"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onViewFull && onViewFull(candidate);
-                }}
-                title="View Full Profile"
-                disabled={loading}
-              >
-                <AiOutlineEye className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
-              </button>
-              
-              {/* View Short Icon */}
-              <button
-                className="group relative p-2 rounded-xl sm:p-2.5 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white border border-purple-200 hover:border-purple-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-purple-200"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onViewShort && onViewShort(candidate);
-                }}
-                title="View Short Profile"
-                disabled={loading}
-              >
-                <AiOutlineFileText className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
-              </button>
-              
-              {/* Save Icon */}
-              <button
-                className={`group relative p-2 rounded-xl sm:p-2.5 border transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg ${
-                  isSaved 
-                    ? 'text-green-700 bg-green-50 border-green-300 hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-green-200' 
-                    : 'text-green-600 bg-green-50 border-green-200 hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-green-200'
-                }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSave && onSave(candidate);
-                }}
-                title={isSaved ? 'Remove from Saved' : 'Save Candidate'}
-                disabled={loading}
-              >
-                {isSaved ? (
-                  <AiFillSave className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110 group-hover:rotate-12" />
-                ) : (
-                  <AiOutlineSave className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
-                )}
-              </button>
-              
-              {/* Favourite Icon */}
-              <button
-                className={`group relative p-2 rounded-xl sm:p-2.5 border transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg ${
-                  isFavourite 
-                    ? 'text-red-600 bg-red-50 border-red-300 hover:bg-red-600 hover:text-white hover:border-red-600 hover:shadow-red-200' 
-                    : 'text-gray-600 bg-gray-50 border-gray-200 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-red-200'
-                }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleFavourite && onToggleFavourite(candidateId, candidate, !isFavourite);
-                }}
-                title={isFavourite ? 'Remove from Favourites' : 'Mark as Favourite'}
-                disabled={loading}
-              >
-                {isFavourite ? (
-                  <AiFillHeart className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-125 group-hover:animate-pulse" />
-                ) : (
-                  <AiOutlineHeart className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
-                )}
-              </button>
-              
-              {/* Message Icon */}
-              <button
-                className="group relative p-2 rounded-xl sm:p-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-indigo-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-indigo-200"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onMessage && onMessage(candidate);
-                }}
-                title="Message Candidate"
-                disabled={loading}
-              >
-                <AiOutlineMessage className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
-              </button>
+            {/* Status Dropdown and Action Icons - Mobile view */}
+            <div className="flex sm:hidden flex-col gap-2">
+              {/* Status Dropdown - Mobile */}
+              {showStatusControl && (
+                <div className="w-auto max-w-[200px]">
+                  <select
+                    className="w-auto min-w-[140px] max-w-[200px] text-xs border border-gray-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    value={statusValue}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      onStatusChange && onStatusChange(e.target.value);
+                    }}
+                  >
+                    {statusOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {/* Action Icons - Mobile */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {/* View Full Icon */}
+                <button
+                  className="group relative p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-blue-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewFull && onViewFull(candidate);
+                  }}
+                  title="View Full Profile"
+                  disabled={loading}
+                >
+                  <AiOutlineEye className="w-4 h-4 transition-transform group-hover:scale-110" />
+                </button>
+                
+                {/* View Short Icon */}
+                <button
+                  className="group relative p-2 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white border border-purple-200 hover:border-purple-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-purple-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewShort && onViewShort(candidate);
+                  }}
+                  title="View Short Profile"
+                  disabled={loading}
+                >
+                  <AiOutlineFileText className="w-4 h-4 transition-transform group-hover:scale-110" />
+                </button>
+                
+                {/* Save Icon */}
+                <button
+                  className={`group relative p-2 rounded-xl border transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg ${
+                    isSaved 
+                      ? 'text-green-700 bg-green-50 border-green-300 hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-green-200' 
+                      : 'text-green-600 bg-green-50 border-green-200 hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-green-200'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSave && onSave(candidate);
+                  }}
+                  title={isSaved ? 'Remove from Saved' : 'Save Candidate'}
+                  disabled={loading}
+                >
+                  {isSaved ? (
+                    <AiFillSave className="w-4 h-4 transition-transform group-hover:scale-110 group-hover:rotate-12" />
+                  ) : (
+                    <AiOutlineSave className="w-4 h-4 transition-transform group-hover:scale-110" />
+                  )}
+                </button>
+                
+                {/* Favourite Icon */}
+                <button
+                  className={`group relative p-2 rounded-xl border transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg ${
+                    isFavourite 
+                      ? 'text-red-600 bg-red-50 border-red-300 hover:bg-red-600 hover:text-white hover:border-red-600 hover:shadow-red-200' 
+                      : 'text-gray-600 bg-gray-50 border-gray-200 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-red-200'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleFavourite && onToggleFavourite(candidateId, candidate, !isFavourite);
+                  }}
+                  title={isFavourite ? 'Remove from Favourites' : 'Mark as Favourite'}
+                  disabled={loading}
+                >
+                  {isFavourite ? (
+                    <AiFillHeart className="w-4 h-4 transition-transform group-hover:scale-125 group-hover:animate-pulse" />
+                  ) : (
+                    <AiOutlineHeart className="w-4 h-4 transition-transform group-hover:scale-110" />
+                  )}
+                </button>
+                
+                {/* Message Icon */}
+                <button
+                  className="group relative p-2 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-indigo-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-indigo-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMessage && onMessage(candidate);
+                  }}
+                  title="Message Candidate"
+                  disabled={loading}
+                >
+                  <AiOutlineMessage className="w-4 h-4 transition-transform group-hover:scale-110" />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -253,26 +382,6 @@ const CandidateCard = ({
         </div>
       </div>
 
-      {showStatusControl && (
-        <div className="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-          <span className="text-sm font-medium text-gray-700">Status</span>
-          <select
-            className="w-full sm:w-auto text-sm sm:text-base border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-            value={statusValue}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) => {
-              e.stopPropagation();
-              onStatusChange && onStatusChange(e.target.value);
-            }}
-          >
-            {statusOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
     </div>
   );
 };

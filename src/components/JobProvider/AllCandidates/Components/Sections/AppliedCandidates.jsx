@@ -14,6 +14,7 @@ import noCandidateIllustration from '../../../../../assets/Illustrations/No cand
 import '../styles/candidate-highlight.css';
 import LoadingState from '../../../../common/LoadingState';
 import CandidateActionConfirmationModal from '../shared/CandidateActionConfirmationModal';
+import ModalPortal from '../../../../common/ModalPortal';
 
 const AppliedCandidates = ({ 
   onViewCandidate, 
@@ -60,8 +61,6 @@ const AppliedCandidates = ({
   const [candidateToUnlock, setCandidateToUnlock] = useState(null);
   const [showFavouriteConfirmModal, setShowFavouriteConfirmModal] = useState(false);
   const [candidateToFavourite, setCandidateToFavourite] = useState(null);
-  const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
-  const [candidateToSave, setCandidateToSave] = useState(null);
 
   const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
     if (!user) return [];
@@ -426,59 +425,24 @@ const AppliedCandidates = ({
     setCurrentPage(1);
   }, [appliedCandidates, isSearching]);
 
+  // Handle save candidate - saves directly without coin deduction modal
   const handleSaveCandidate = async (candidate) => {
     if (!user) return toast.error("Please login to save candidates.");
     const isSaved = savedCandidates.includes(candidate.firebase_uid);
     
-    // If saving (not removing), show confirmation modal first
-    if (!isSaved) {
-      setCandidateToSave({ candidate, isSaved });
-      setShowSaveConfirmModal(true);
-      return;
-    }
-    
-    // If removing from saved, proceed directly
+    // Save directly without showing any confirmation modal
     try {
-      await CandidateApiService.toggleSaveCandidate(candidate, user, false);
+      await CandidateApiService.toggleSaveCandidate(candidate, user, !isSaved);
       await fetchAppliedCandidates();
-      toast.info(
-        `${candidate.fullName || candidate.name || 'Candidate'} removed from saved list!`
+      toast[isSaved ? 'info' : 'success'](
+        `${candidate.fullName || candidate.name || 'Candidate'} ${
+          isSaved ? 'removed from saved list!' : 'has been saved successfully!'
+        }`
       );
     } catch (error) {
       console.error('Error saving candidate:', error);
       toast.error('Failed to save candidate. Please try again.');
     }
-  };
-
-  // Handle confirm save after modal confirmation
-  const handleConfirmSave = async () => {
-    if (!candidateToSave || !user) {
-      setShowSaveConfirmModal(false);
-      setCandidateToSave(null);
-      return;
-    }
-    
-    const { candidate } = candidateToSave;
-    
-    try {
-      await CandidateApiService.toggleSaveCandidate(candidate, user, true);
-      await fetchAppliedCandidates();
-      toast.success(
-        `${candidate.fullName || candidate.name || 'Candidate'} has been saved successfully!`
-      );
-    } catch (error) {
-      console.error('Error saving candidate:', error);
-      toast.error('Failed to save candidate. Please try again.');
-    } finally {
-      setShowSaveConfirmModal(false);
-      setCandidateToSave(null);
-    }
-  };
-
-  // Handle cancel save confirmation
-  const handleCancelSave = () => {
-    setShowSaveConfirmModal(false);
-    setCandidateToSave(null);
   };
 
   const handleToggleFavourite = async (candidateId, candidate, isFavourite) => {
@@ -997,12 +961,13 @@ const AppliedCandidates = ({
 
       {/* Unlock Prompt Modal */}
       {showUnlockPrompt && candidateToUnlock && (
-        <div
-          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-          onClick={handleUnlockPromptClose}
-        >
+        <ModalPortal>
           <div
-            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+            onClick={handleUnlockPromptClose}
+          >
+          <div
+            className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -1037,16 +1002,18 @@ const AppliedCandidates = ({
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Message Modal */}
       {showMessageModal && (
-        <div
-          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-          onClick={handleMessageModalOk}
-        >
+        <ModalPortal>
           <div
-            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+            onClick={handleMessageModalOk}
+          >
+          <div
+            className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -1081,6 +1048,7 @@ const AppliedCandidates = ({
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Favourite Confirmation Modal */}
@@ -1091,13 +1059,6 @@ const AppliedCandidates = ({
         onCancel={handleCancelFavourite}
       />
 
-      {/* Save Confirmation Modal */}
-      <CandidateActionConfirmationModal
-        isOpen={showSaveConfirmModal && !!candidateToSave}
-        actionType="save"
-        onConfirm={handleConfirmSave}
-        onCancel={handleCancelSave}
-      />
     </div>
   );
 };

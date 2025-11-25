@@ -475,9 +475,9 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
   };
 
   return (
-    <div className={`rounded-lg pt-0 px-4 pb-4 md:pt-0 md:px-6 md:pb-6 bg-rose-100 ${className} overflow-x-hidden`}>
-      <form onSubmit={handleSubmit} className="overflow-x-hidden">
-        <div className="space-y-4">
+    <div className={`rounded-lg pt-0 px-4 pb-4 md:pt-0 md:px-6 md:pb-6 bg-rose-100 ${className || ""} overflow-x-auto max-w-full`}>
+      <form onSubmit={handleSubmit} className="w-full">
+        <div className="space-y-4 w-full max-w-full">
           {/* PERMANENT ADDRESS */}
           <div>
             <h6 className="text-lg font-semibold mb-4 text-black">Permanent Address</h6>

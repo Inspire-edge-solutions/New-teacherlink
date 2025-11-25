@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import ReactDOM from 'react-dom';
 import axios from 'axios';
+import ModalPortal from '../../../../common/ModalPortal';
 import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
 import '../styles/cv-pdf-print.css';
@@ -36,7 +36,7 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
   // Portal modal content
   const modalContent = (
     <div className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[10050] animate-fadeIn overflow-y-auto p-5" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()}>
         <button className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all" onClick={onClose}>
           &times;
         </button>
@@ -87,7 +87,7 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
   );
 
   // Render modal using Portal
-  return ReactDOM.createPortal(modalContent, document.body);
+  return <ModalPortal>{modalContent}</ModalPortal>;
 }
 
 const BlurWrapper = ({ children, isUnlocked }) => {

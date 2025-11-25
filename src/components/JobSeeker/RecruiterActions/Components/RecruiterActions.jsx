@@ -431,7 +431,7 @@ const RecruiterActions = () => {
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-[#F0D8D9] rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           {loading ? (
             <div className="px-6 py-10 text-center">
               <h2 className="text-lg font-semibold text-gray-800 mb-2">

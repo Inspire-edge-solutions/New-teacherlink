@@ -338,6 +338,12 @@ export const useNotificationCount = () => {
     // Listen for window focus (when user switches back to the browser window)
     window.addEventListener('focus', handleWindowFocus);
     
+    // Listen for notification updates to refresh count immediately
+    const handleNotificationUpdate = () => {
+      fetchCount();
+    };
+    window.addEventListener('notificationUpdated', handleNotificationUpdate);
+    
     // Setup initial interval
     setupInterval();
     
@@ -347,6 +353,7 @@ export const useNotificationCount = () => {
       }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleWindowFocus);
+      window.removeEventListener('notificationUpdated', handleNotificationUpdate);
     };
   }, [user]);
 

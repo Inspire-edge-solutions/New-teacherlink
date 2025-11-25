@@ -79,8 +79,6 @@ const FavouriteCandidates = ({
   const [isSendingBulk, setIsSendingBulk] = useState(false);
   const [showInsufficientCoinsModal, setShowInsufficientCoinsModal] = useState(false);
   const [requiredCoins, setRequiredCoins] = useState(0);
-  const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
-  const [candidateToSave, setCandidateToSave] = useState(null);
   const candidateLoginCacheRef = useRef({});
 
   const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
@@ -518,7 +516,7 @@ const FavouriteCandidates = ({
     setCurrentPage(1);
   }, [favouriteCandidates, isSearching]);
 
-  // Handle save candidate
+  // Handle save candidate - saves directly without coin deduction modal
   const handleSaveCandidate = async (candidate) => {
     if (!user) {
       toast.error("Please login to save candidates.");
@@ -527,55 +525,19 @@ const FavouriteCandidates = ({
 
     const isSaved = savedCandidates.includes(candidate.firebase_uid);
     
-    // If saving (not removing), show confirmation modal first
-    if (!isSaved) {
-      setCandidateToSave({ candidate, isSaved });
-      setShowSaveConfirmModal(true);
-      return;
-    }
-    
-    // If removing from saved, proceed directly
+    // Save directly without showing any confirmation modal
     try {
-      await CandidateApiService.toggleSaveCandidate(candidate, user, false);
+      await CandidateApiService.toggleSaveCandidate(candidate, user, !isSaved);
       await fetchFavouriteCandidates();
-      toast.info(
-        `${candidate.fullName || candidate.name || 'Candidate'} removed from saved list!`
+      toast[isSaved ? 'info' : 'success'](
+        `${candidate.fullName || candidate.name || 'Candidate'} ${
+          isSaved ? 'removed from saved list!' : 'has been saved successfully!'
+        }`
       );
     } catch (error) {
       console.error('Error saving candidate:', error);
       toast.error('Failed to save candidate. Please try again.');
     }
-  };
-
-  // Handle confirm save after modal confirmation
-  const handleConfirmSave = async () => {
-    if (!candidateToSave || !user) {
-      setShowSaveConfirmModal(false);
-      setCandidateToSave(null);
-      return;
-    }
-    
-    const { candidate } = candidateToSave;
-    
-    try {
-      await CandidateApiService.toggleSaveCandidate(candidate, user, true);
-      await fetchFavouriteCandidates();
-      toast.success(
-        `${candidate.fullName || candidate.name || 'Candidate'} has been saved successfully!`
-      );
-    } catch (error) {
-      console.error('Error saving candidate:', error);
-      toast.error('Failed to save candidate. Please try again.');
-    } finally {
-      setShowSaveConfirmModal(false);
-      setCandidateToSave(null);
-    }
-  };
-
-  // Handle cancel save confirmation
-  const handleCancelSave = () => {
-    setShowSaveConfirmModal(false);
-    setCandidateToSave(null);
   };
 
   // Handle toggle favourite (removes from this list)
@@ -963,12 +925,13 @@ const FavouriteCandidates = ({
 
       {/* Unlock Prompt Modal */}
       {showUnlockPrompt && candidateToUnlock && (
-        <div
-          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-          onClick={handleUnlockPromptClose}
-        >
+        <ModalPortal>
           <div
-            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+            onClick={handleUnlockPromptClose}
+          >
+          <div
+            className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -1003,16 +966,18 @@ const FavouriteCandidates = ({
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Message Modal */}
       {showMessageModal && (
-        <div 
-          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-          onClick={handleMessageModalOk}
-        >
+        <ModalPortal>
           <div 
-            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+            onClick={handleMessageModalOk}
+          >
+          <div 
+            className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
             onClick={(e) => e.stopPropagation()}
           >
             <button 
@@ -1047,6 +1012,7 @@ const FavouriteCandidates = ({
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Bulk Message Modal */}
@@ -1224,12 +1190,13 @@ const FavouriteCandidates = ({
 
       {/* Insufficient Coins Modal */}
       {showInsufficientCoinsModal && (
-        <div
-          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-          onClick={handleCloseInsufficientCoinsModal}
-        >
+        <ModalPortal>
           <div
-            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+            onClick={handleCloseInsufficientCoinsModal}
+          >
+          <div
+            className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -1267,15 +1234,9 @@ const FavouriteCandidates = ({
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
-      {/* Save Confirmation Modal */}
-      <CandidateActionConfirmationModal
-        isOpen={showSaveConfirmModal && !!candidateToSave}
-        actionType="save"
-        onConfirm={handleConfirmSave}
-        onCancel={handleCancelSave}
-      />
 
     </div>
   );
