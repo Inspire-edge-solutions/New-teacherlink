@@ -30,7 +30,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/closeJob?firebase_uid=${user.uid}`
+        `https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/jobClose?firebase_uid=${user.uid}`
       );
       
       console.log("=== SAVED JOBS DEBUG ===");
@@ -139,7 +139,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
       
       // Send the job ID in the request body as JSON array, matching backend expectation
       await axios.delete(
-        `https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/closeJob`,
+        `https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/jobClose`,
         {
           data: [jobToDelete.id], // Send as array as expected by backend
           headers: { "Content-Type": "application/json" }
@@ -173,7 +173,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
       if (savedJobId) {
         try {
           await axios.delete(
-            `https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/closeJob`,
+            `https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/jobClose`,
             {
               data: [savedJobId],
               headers: { "Content-Type": "application/json" }

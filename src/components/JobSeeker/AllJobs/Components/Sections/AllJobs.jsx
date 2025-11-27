@@ -1,9 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { IoLocationOutline } from "react-icons/io5";
-import { BsBriefcase, BsCash, BsMortarboard } from "react-icons/bs";
-import { AiOutlineEye, AiOutlineSave, AiOutlineHeart, AiFillHeart } from "react-icons/ai";
-import axios from "axios";
 import { toast } from "react-toastify";
 import SearchBar from '../shared/SearchBar';
 import ApplyModal from '../shared/ApplyModal';
@@ -28,7 +24,7 @@ const JOB_PREFERENCE_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.
 const PROFILE_APPROVED_API = "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved";
 const APPLY_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate';
 const FAV_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteJobs';
-const REDEEM_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral';
+const REDEEM_API = 'https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem';
 const LOGIN_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login';
 const ORG_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation';
 const WHATSAPP_API = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp';
@@ -36,6 +32,9 @@ const RCS_API = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/rcs
 const PERSONAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal';
 const COIN_HISTORY_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history';
 
+// Allowed values for jobs per page - ensures consistency
+const ALLOWED_JOBS_PER_PAGE = [5, 10, 20, 50, 100];
+const DEFAULT_JOBS_PER_PAGE = 10;
 
 const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
   const { user, loading: userLoading } = useAuth();
@@ -44,7 +43,28 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [jobsPerPage, setJobsPerPage] = useState(10);
+  
+  // Validated setter for jobsPerPage - ensures only allowed values are set
+  const [jobsPerPage, setJobsPerPageState] = useState(DEFAULT_JOBS_PER_PAGE);
+  const setJobsPerPage = useCallback((value) => {
+    const numValue = Number(value);
+    if (ALLOWED_JOBS_PER_PAGE.includes(numValue)) {
+      setJobsPerPageState(numValue);
+    } else {
+      // If invalid value, default to 10
+      console.warn(`Invalid jobsPerPage value: ${value}. Resetting to ${DEFAULT_JOBS_PER_PAGE}`);
+      setJobsPerPageState(DEFAULT_JOBS_PER_PAGE);
+    }
+  }, []);
+  
+  // Validate jobsPerPage on mount and whenever it changes to ensure it's always valid
+  useEffect(() => {
+    if (!ALLOWED_JOBS_PER_PAGE.includes(jobsPerPage)) {
+      console.warn(`Invalid jobsPerPage detected: ${jobsPerPage}. Resetting to ${DEFAULT_JOBS_PER_PAGE}`);
+      setJobsPerPageState(DEFAULT_JOBS_PER_PAGE);
+    }
+  }, [jobsPerPage]);
+  
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [pendingScrollJob, setPendingScrollJob] = useState(null);
@@ -517,11 +537,10 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
     setCoinValue(null);
 
     try {
-      const coinRes = await fetch(REDEEM_API);
+      const userId = user.firebase_uid || user.uid;
+      const coinRes = await fetch(`${REDEEM_API}?firebase_uid=${userId}`);
       const coinData = await coinRes.json();
-      const found = Array.isArray(coinData)
-        ? coinData.find(d => d.firebase_uid === (user.firebase_uid || user.uid))
-        : null;
+      const found = Array.isArray(coinData) && coinData.length > 0 ? coinData[0] : null;
       setCoinValue(found?.coin_value ?? 0);
     } catch {
       setCoinValue(0);

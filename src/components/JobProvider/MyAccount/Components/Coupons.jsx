@@ -152,7 +152,7 @@ const Coupons = ({
 
       // 1. Get coupon details
       const couponRes = await fetch(
-        `https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/generateCoupon`
+        `https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/couponGeneration`
       );
       const allCoupons = await couponRes.json();
       couponData = Array.isArray(allCoupons)
@@ -220,7 +220,7 @@ const Coupons = ({
       }
 
       // STANDARDIZED API ENDPOINTS
-      const REDEEM_GENERAL_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral";
+      const REDEEM_GENERAL_API = "https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem";
       const REDEEM_UNIQUE_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemUnique";
       const REDEEM_SAME_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemSame";
 

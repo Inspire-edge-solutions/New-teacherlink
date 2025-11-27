@@ -9,7 +9,7 @@ const API_ENDPOINTS = {
   FAV_API: "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteUser",
   PROFILE_APPROVED_API: "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved",
   IMAGE_API_URL: "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image",
-  REDEEM_API: "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral",
+  REDEEM_API: "https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem",
   WHATSAPP_API: "https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp",
   UNLOCK_API: "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/unlockCandidate",
   APPLIED_CANDIDATES_API: "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate",

@@ -25,11 +25,11 @@ const AboutUs = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Left Text Section */}
           <div className="flex flex-col justify-center">
-            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4">
+            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 leading-tight tracking-tight">
               India's First Dedicated Job Portal for{' '}
               <span className="bg-gradient-brand-text bg-clip-text text-transparent">Teachers</span>
             </h1>
-            <p className="text-lg text-gray-600 leading-relaxed">
+            <p className="text-lg text-gray-600 leading-normal tracking-tight">
               Designed exclusively to connect educators with institutions directly and efficiently.
             </p>
           </div>
@@ -65,10 +65,10 @@ const AboutUs = () => {
               
               {/* Card Content */}
               <div>
-                <h3 className="text-xl font-bold text-gray-800 mb-4">
+                <h3 className="text-xl font-bold text-gray-800 mb-4 leading-tight tracking-tight">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-gray-600 leading-normal tracking-tight">
                   {feature.description}
                 </p>
               </div>

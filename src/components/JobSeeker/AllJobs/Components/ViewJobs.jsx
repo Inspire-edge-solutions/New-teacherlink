@@ -10,7 +10,7 @@ import { formatQualification } from '../utils/formatUtils';
 import ApplyModal from './shared/ApplyModal';
 
 // === Add your new API endpoints for WhatsApp, login/org, RCS ===
-const REDEEM_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral';
+const REDEEM_API = 'https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem';
 const APPLY_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate';
 const PERSONAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal';
 const JOB_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes';
@@ -47,13 +47,6 @@ const formatSubjects = (subjects) => {
     return subjects.split(/[,;]/).map(subject => subject.trim()).filter(Boolean);
   }
   return [String(subjects)];
-};
-
-const formatSalary = (minSalary, maxSalary) => {
-  if (!minSalary && !maxSalary) return 'Salary not specified';
-  if (!maxSalary) return `₹${minSalary}`;
-  if (!minSalary) return `₹${maxSalary}`;
-  return `₹${minSalary} - ₹${maxSalary}`;
 };
 
 const BlurWrapper = ({ isUnlocked, children }) => {
@@ -216,9 +209,9 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
 
   useEffect(() => {
     if (showUnlockModal && userId) {
-      axios.get(REDEEM_API)
+      axios.get(`${REDEEM_API}?firebase_uid=${userId}`)
         .then(({ data }) => {
-          const found = Array.isArray(data) ? data.find(d => d.firebase_uid === userId) : null;
+          const found = Array.isArray(data) && data.length > 0 ? data[0] : null;
           setCoinValue(found?.coin_value ?? 0);
         }).catch(() => setCoinValue(0));
     }
@@ -243,8 +236,8 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
     setUnlockError("");
     setUnlockStatus("");
     try {
-      const { data } = await axios.get(REDEEM_API);
-      const found = Array.isArray(data) ? data.find(d => d.firebase_uid === userId) : null;
+      const { data } = await axios.get(`${REDEEM_API}?firebase_uid=${userId}`);
+      const found = Array.isArray(data) && data.length > 0 ? data[0] : null;
       const coins = found?.coin_value ?? 0;
       setCoinValue(coins);
 
@@ -254,7 +247,7 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
         setUnlockLoading(false);
         return;
       }
-      await axios.put(REDEEM_API, {
+      await axios.put(`${REDEEM_API}?firebase_uid=${userId}`, {
         firebase_uid: userId,
         coin_value: coins - 50
       });
@@ -352,9 +345,9 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
     setApplyStatus("");
     setApplyError("");
     // Fetch latest coins for apply modal
-    axios.get(REDEEM_API)
+    axios.get(`${REDEEM_API}?firebase_uid=${userId}`)
       .then(({ data }) => {
-        const found = Array.isArray(data) ? data.find(d => d.firebase_uid === userId) : null;
+        const found = Array.isArray(data) && data.length > 0 ? data[0] : null;
         setApplyCoin(found?.coin_value ?? 0);
       }).catch(() => setApplyCoin(0));
   };
@@ -758,8 +751,8 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
       }
 
       // 2. Get latest coins
-      const { data: coinsData } = await axios.get(REDEEM_API);
-      const found = Array.isArray(coinsData) ? coinsData.find(d => d.firebase_uid === userId) : null;
+      const { data: coinsData } = await axios.get(`${REDEEM_API}?firebase_uid=${userId}`);
+      const found = Array.isArray(coinsData) && coinsData.length > 0 ? coinsData[0] : null;
       const coins = found?.coin_value ?? 0;
       setApplyCoin(coins);
 
@@ -790,8 +783,8 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
         } catch {}
       }
 
-      // 5. Deduct 30 coins
-      await axios.put(REDEEM_API, {
+      // 5. Deduct 100 coins
+      await axios.put(`${REDEEM_API}?firebase_uid=${userId}`, {
         firebase_uid: userId,
         coin_value: coins - 100
       });
@@ -963,7 +956,7 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
                 <BsCash className="w-5 h-5 text-blue-500 flex-shrink-0" />
                 <span className="text-base font-medium text-gray-500">Salary Range:</span>
               </div>
-              <span className="text-base font-semibold text-gray-800 col-span-1">{formatSalary(job.min_salary, job.max_salary)}</span>
+              <span className="text-base font-semibold text-gray-800 col-span-1">{job.min_salary && job.max_salary ? `₹${job.min_salary} - ₹${job.max_salary}` : 'Not specified'}</span>
             </div>
             <div className="grid grid-cols-[auto,1fr] items-center gap-3 p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-3 col-span-1">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import axios from 'axios';
-import ModalPortal from '../../../../common/ModalPortal';
 import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
 import { FaMapMarkerAlt, FaPhone, FaWhatsapp, FaEnvelope } from 'react-icons/fa';
@@ -17,7 +17,7 @@ const EDUCATION_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/d
 const EXPERIENCE_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/workExperience';
 const JOB_PREFERENCE_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference';
 const IMAGE_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image";
-const REDEEM_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral';
+const REDEEM_API = 'https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem';
 const COIN_HISTORY_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history';
 const ORGANISATION_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation';
 const UNLOCK_COST = 50;
@@ -33,7 +33,7 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
   // Portal modal content
   const modalContent = (
     <div className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[10050] animate-fadeIn overflow-y-auto p-5" onClick={onClose}>
-      <div className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()}>
         <button className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all" onClick={onClose}>
           &times;
         </button>
@@ -83,7 +83,7 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
   );
 
   // Render modal using Portal
-  return <ModalPortal>{modalContent}</ModalPortal>;
+  return ReactDOM.createPortal(modalContent, document.body);
 }
 
 const BlurWrapper = ({ children, isUnlocked }) => {
@@ -158,10 +158,8 @@ const ViewShort = ({
   useEffect(() => {
     const checkUnlocked = async () => {
       try {
-        const { data } = await axios.get(REDEEM_API);
-        const found = Array.isArray(data) ? data.find(
-          d => d.firebase_uid === userId
-        ) : null;
+        const { data } = await axios.get(`${REDEEM_API}?firebase_uid=${userId}`);
+        const found = Array.isArray(data) && data.length > 0 ? data[0] : data;
         setCoinValue(found?.coin_value ?? null);
         
         // Fetch unlock info if already unlocked
@@ -204,8 +202,8 @@ const ViewShort = ({
     setUnlockStatus("");
     try {
       // Get current coins again
-      const { data } = await axios.get(REDEEM_API);
-      const found = Array.isArray(data) ? data.find(d => d.firebase_uid === userId) : null;
+      const { data } = await axios.get(`${REDEEM_API}?firebase_uid=${userId}`);
+      const found = Array.isArray(data) && data.length > 0 ? data[0] : data;
       const coins = found?.coin_value ?? 0;
       setCoinValue(coins);
 

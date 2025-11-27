@@ -22,24 +22,24 @@ const Footer = () => {
 
           {/* Middle Column - Quick Links */}
           <div className="flex flex-col">
-          <h2 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4">Quick Links</h2>
+          <h2 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 leading-tight tracking-tight">Quick Links</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Link
                   to="/why-teacherlink"
-                  className="block text-gray-800 hover:text-red-600 transition-colors duration-200"
+                  className="block text-gray-800 hover:text-red-600 transition-colors duration-200 leading-normal tracking-tight"
                 >
                   Why Teacherlink
                 </Link>
                 <Link
                   to="/salient-features"
-                  className="block text-gray-800 hover:text-red-600 transition-colors duration-200"
+                  className="block text-gray-800 hover:text-red-600 transition-colors duration-200 leading-normal tracking-tight"
                 >
                   Salient features
                 </Link>
                 <Link
                   to="/subscription-plans"
-                  className="block text-gray-800 hover:text-red-600 transition-colors duration-200"
+                  className="block text-gray-800 hover:text-red-600 transition-colors duration-200 leading-normal tracking-tight"
                 >
                   Subscription plans
                 </Link>
@@ -47,13 +47,13 @@ const Footer = () => {
               <div className="space-y-2">
                 <Link
                   to="/about-us"
-                  className="block text-gray-800 hover:text-red-600 transition-colors duration-200"
+                  className="block text-gray-800 hover:text-red-600 transition-colors duration-200 leading-normal tracking-tight"
                 >
                   About us
                 </Link>
                 <Link
                   to="/contact-us"
-                  className="block text-gray-800 hover:text-red-600 transition-colors duration-200"
+                  className="block text-gray-800 hover:text-red-600 transition-colors duration-200 leading-normal tracking-tight"
                 >
                   Contact us
                 </Link>
@@ -63,7 +63,7 @@ const Footer = () => {
 
           {/* Right Column - Social Media */}
           <div className="flex flex-col">
-            <h3 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4">Follow Us</h3>
+            <h3 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 leading-tight tracking-tight">Follow Us</h3>
             <div className="flex space-x-4">
               {/* Facebook */}
                <a
@@ -117,7 +117,7 @@ const Footer = () => {
       {/* Copyright Bar */}
       <div className="bg-gradient-brand py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-white text-sm">
+          <div className="text-center text-white text-sm leading-normal tracking-tight">
             <span>© 2025 TeacherLink by Inspire Edge Innovation. All Rights Reserved.</span>
             <span className="mx-2">|</span>
             <Link

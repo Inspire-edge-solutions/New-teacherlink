@@ -6,7 +6,7 @@ const API_ENDPOINTS = {
   FAV_API: "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteJobs",
   JOBS_API: "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes",
   APPLY_API: "https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate",
-  REDEEM_API: "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral",
+  REDEEM_API: "https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem",
   PERSONAL_API: "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal",
   LOGIN_API: "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login",
   ORG_API: "https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation",
@@ -29,6 +29,11 @@ const getJobId = (job) => Number(job.id);
 
 // Utility function to sort jobs by recency
 const sortJobsByRecency = (jobs) => {
+  // Ensure jobs is an array before processing
+  if (!Array.isArray(jobs)) {
+    console.warn('sortJobsByRecency received non-array data:', jobs);
+    return [];
+  }
   return [...jobs].sort((a, b) => {
     const dateA = new Date(a.created_at || a.createdAt || 0);
     const dateB = new Date(b.created_at || b.createdAt || 0);
@@ -64,7 +69,23 @@ class JobApiService {
   static async fetchJobs() {
     try {
       const response = await fetch(API_ENDPOINTS.JOBS_API);
+      
+      // Check if response is OK before parsing
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error fetching jobs: ${response.status} ${response.statusText}`, errorText);
+        toast.error("Could not load job list. Please refresh.");
+        return [];
+      }
+      
       const data = await response.json();
+      
+      // Ensure data is an array before processing
+      if (!Array.isArray(data)) {
+        console.warn('API returned non-array data:', data);
+        return [];
+      }
+      
       return sortJobsByRecency(data);
     } catch (error) {
       console.error('Error fetching jobs:', error);
@@ -124,11 +145,10 @@ class JobApiService {
   // Get user's coin balance
   static async getUserCoins(user) {
     try {
-      const response = await fetch(API_ENDPOINTS.REDEEM_API);
+      const userId = getUserId(user);
+      const response = await fetch(`${API_ENDPOINTS.REDEEM_API}?firebase_uid=${userId}`);
       const data = await response.json();
-      const found = Array.isArray(data)
-        ? data.find(d => d.firebase_uid === getUserId(user))
-        : null;
+      const found = Array.isArray(data) && data.length > 0 ? data[0] : null;
       return found?.coin_value ?? 0;
     } catch (error) {
       console.error('Error fetching user coins:', error);
@@ -190,7 +210,7 @@ class JobApiService {
       const fullName = personalDetails?.fullName || "Candidate";
 
       // 4. Deduct coins
-      await fetch(API_ENDPOINTS.REDEEM_API, {
+      await fetch(`${API_ENDPOINTS.REDEEM_API}?firebase_uid=${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -618,7 +638,7 @@ class JobApiService {
     }
 
     try {
-      await fetch(API_ENDPOINTS.REDEEM_API, {
+      await fetch(`${API_ENDPOINTS.REDEEM_API}?firebase_uid=${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

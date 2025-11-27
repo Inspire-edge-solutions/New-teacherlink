@@ -7,42 +7,43 @@ import whyTeacherlink5 from '../../../assets/whyTeacherlink5.png'
 
 const WhyTeacherlink = () => {
     const features = [
+        
+        {
+            title: "Wide Range of Opportunities",
+            description: "Discover thousands of teaching jobs across schools, colleges, universities, coaching centers, and even home tuitions : all in one place! Your perfect role is just a click away.",
+            image: whyTeacherlink1,
+            imagePosition: "right"
+        },
+        {
+            title: "User-Friendly Experience",
+            description: "Navigate with ease! Our intuitive platform is built to make your job search smooth, simple, and stress free.",
+            image: whyTeacherlink2,
+            imagePosition: "left"
+        },
+        {
+            title: "Instant Job Alerts",
+            description: "Be the first to know! Get real time updates and personalized notifications so you never miss the perfect opportunity. Stay ahead, always.",
+            image: whyTeacherlink3,
+            imagePosition: "right"
+        },
+        {
+            title: "Direct Access to Top Employers",
+            description: "Skip the wait! Connect instantly with leading employers and recruiters who are actively looking for talent like yours. Your next big opportunity is just a click away.",
+            image: whyTeacherlink4,
+            imagePosition: "left"
+        },
+        {
+            title: "Verified Profiles & Institutions",
+            description: "Apply and hire with confidence! All job postings and user profiles on TeacherLink are verified for authenticity, ensuring a secure and trustworthy experience for both seekers and providers.",
+            image: whyTeacherlink5,
+            imagePosition: "right"
+        },
         {
             title: "Inaugural Free Offer!",
             description: "Unlock full access to TeacherLink's premium features: absolutely FREE for a limited time! Start hiring or job hunting with zero cost. Don't miss out!",
             image: whyTeacherlink1,
             imagePosition: "left"
         },
-        {
-            title: "Wide Range of Opportunities",
-            description: "Discover thousands of teaching jobs across schools, colleges, universities, coaching centers, and even home tuitions : all in one place! Your perfect role is just a click away.",
-            image: whyTeacherlink2,
-            imagePosition: "right"
-        },
-        {
-            title: "User-Friendly Experience",
-            description: "Navigate with ease! Our intuitive platform is built to make your job search smooth, simple, and stress free.",
-            image: whyTeacherlink3,
-            imagePosition: "left"
-        },
-        {
-            title: "Instant Job Alerts",
-            description: "Be the first to know! Get real time updates and personalized notifications so you never miss the perfect opportunity. Stay ahead, always.",
-            image: whyTeacherlink4,
-            imagePosition: "right"
-        },
-        {
-            title: "Direct Access to Top Employers",
-            description: "Skip the wait! Connect instantly with leading employers and recruiters who are actively looking for talent like yours. Your next big opportunity is just a click away.",
-            image: whyTeacherlink5,
-            imagePosition: "left"
-        },
-        {
-            title: "Verified Profiles & Institutions",
-            description: "Apply and hire with confidence! All job postings and user profiles on TeacherLink are verified for authenticity, ensuring a secure and trustworthy experience for both seekers and providers.",
-            image: whyTeacherlink1,
-            imagePosition: "right"
-        }
     ];
 
     return (
@@ -57,7 +58,7 @@ const WhyTeacherlink = () => {
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                     {/* Header Banner */}
                     <div className="bg-gradient-brand text-white py-6 px-8">
-                        <h1 className="text-3xl font-bold text-center">Why Choose TeacherLink.in?</h1>
+                        <h1 className="text-3xl font-bold text-center leading-tight tracking-tight">Why Choose TeacherLink.in?</h1>
                     </div>
                     
                     {/* Features Content */}
@@ -81,9 +82,9 @@ const WhyTeacherlink = () => {
                                 <div className="flex-1 space-y-4">
                                     <div className="flex items-center gap-3">
                                         {/* <span className="text-4xl">{feature.emoji}</span> */}
-                                        <h3 className="text-2xl font-bold text-gray-900">{feature.title}</h3>
+                                        <h3 className="text-2xl font-bold text-gray-900 leading-tight tracking-tight">{feature.title}</h3>
                                     </div>
-                                    <p className="text-gray-700 text-lg leading-relaxed">
+                                    <p className="text-gray-700 text-lg leading-normal tracking-tight">
                                         {feature.description}
                                     </p>
                                 </div>
@@ -93,20 +94,20 @@ const WhyTeacherlink = () => {
                     
                     {/* Call to Action Section */}
                     <div className="text-center py-12 px-8 bg-gray-50 rounded-xl mx-8 mb-8">
-                        <h3 className="text-3xl font-bold mb-5 text-gradient-brand">
+                        <h3 className="text-3xl font-bold mb-5 leading-tight tracking-tight">
                             🎯 Your Teaching Career Starts Here
                         </h3>
-                        <p className="text-lg mb-5 text-gray-700">
+                        <p className="text-lg mb-5 text-gray-700 leading-normal tracking-tight">
                             Join thousands of teachers who've found success with us.
                         </p>
-                        <h3 className="text-2xl font-bold mb-8 text-gray-800">
+                        <h3 className="text-2xl font-bold mb-8 text-gray-800 leading-tight tracking-tight">
                             TeacherLink.in – Your Gateway to Career Success!
                         </h3>
                         <a 
                             href="/register" 
                             className="inline-block bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold text-lg px-8 py-4 rounded-lg transition-colors duration-300 shadow-lg hover:shadow-xl"
                         >
-                            🔗 Visit Now & Apply Free
+                        Apply Here
                         </a>
                     </div>
                 </div>

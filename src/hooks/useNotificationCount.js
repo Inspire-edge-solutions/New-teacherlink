@@ -118,8 +118,19 @@ const fetchClosedJobNotificationsCount = async (userId) => {
     const appliedJobIds = appliedJobs.map(app => Number(app.job_id));
 
     // Fetch all jobs to check which ones are closed
-    const jobsRes = await axios.get(JOBS_API);
-    const allJobs = Array.isArray(jobsRes.data) ? jobsRes.data : [];
+    let allJobs = [];
+    try {
+      const jobsRes = await axios.get(JOBS_API);
+      allJobs = Array.isArray(jobsRes.data) ? jobsRes.data : [];
+    } catch (axiosError) {
+      // Handle 400/403 errors gracefully - just return 0 count
+      if (axiosError?.response?.status === 400 || axiosError?.response?.status === 403) {
+        console.warn('Jobs API returned error status, skipping closed job notifications:', axiosError.response.status);
+        return 0;
+      }
+      // Re-throw other errors to be caught by outer catch
+      throw axiosError;
+    }
 
     // Filter for closed jobs that user applied to (closed in last 7 days)
     const sevenDaysAgo = new Date();
@@ -158,8 +169,19 @@ const fetchClosedJobNotificationsCount = async (userId) => {
 const fetchProfileViewNotificationsCount = async (userId) => {
   try {
     // Fetch profile views for this user
-    const viewRes = await axios.get(`${PROFILE_VIEW_API}?viewed_user_id=${userId}`);
-    const profileViews = Array.isArray(viewRes.data) ? viewRes.data : [];
+    let profileViews = [];
+    try {
+      const viewRes = await axios.get(`${PROFILE_VIEW_API}?viewed_user_id=${userId}`);
+      profileViews = Array.isArray(viewRes.data) ? viewRes.data : [];
+    } catch (axiosError) {
+      // Handle 400/403 errors gracefully - just return 0 count
+      if (axiosError?.response?.status === 400 || axiosError?.response?.status === 403) {
+        console.warn('Profile views API returned error status, skipping profile view notifications:', axiosError.response.status);
+        return 0;
+      }
+      // Re-throw other errors to be caught by outer catch
+      throw axiosError;
+    }
 
     if (profileViews.length === 0) {
       return 0; // No profile views
@@ -195,8 +217,19 @@ const fetchProfileViewNotificationsCount = async (userId) => {
 const fetchRecommendedCandidatesNotificationsCount = async (userId) => {
   try {
     // Fetch provider's approved jobs (approved in last 7 days)
-    const jobsRes = await axios.get(`${JOBS_API}?firebase_uid=${userId}`);
-    const allJobs = Array.isArray(jobsRes.data) ? jobsRes.data : [];
+    let allJobs = [];
+    try {
+      const jobsRes = await axios.get(`${JOBS_API}?firebase_uid=${userId}`);
+      allJobs = Array.isArray(jobsRes.data) ? jobsRes.data : [];
+    } catch (axiosError) {
+      // Handle 400/403 errors gracefully - just return 0 count
+      if (axiosError?.response?.status === 400 || axiosError?.response?.status === 403) {
+        console.warn('Jobs API returned error status, skipping recommended candidates notifications:', axiosError.response.status);
+        return 0;
+      }
+      // Re-throw other errors to be caught by outer catch
+      throw axiosError;
+    }
     
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -338,12 +371,6 @@ export const useNotificationCount = () => {
     // Listen for window focus (when user switches back to the browser window)
     window.addEventListener('focus', handleWindowFocus);
     
-    // Listen for notification updates to refresh count immediately
-    const handleNotificationUpdate = () => {
-      fetchCount();
-    };
-    window.addEventListener('notificationUpdated', handleNotificationUpdate);
-    
     // Setup initial interval
     setupInterval();
     
@@ -353,7 +380,6 @@ export const useNotificationCount = () => {
       }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleWindowFocus);
-      window.removeEventListener('notificationUpdated', handleNotificationUpdate);
     };
   }, [user]);
 

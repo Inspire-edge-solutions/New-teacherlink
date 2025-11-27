@@ -163,8 +163,8 @@ const SupportModal = ({ isOpen, onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
           <div>
-            <h2 className="text-xl font-semibold text-gray-800">Report Issues</h2>
-            <p className="text-sm text-gray-600 mt-1">Report any issues or bugs you encounter</p>
+            <h2 className="text-xl font-semibold text-gray-800 leading-tight tracking-tight">Report Issues</h2>
+            <p className="text-sm text-gray-600 mt-1 leading-normal tracking-tight">Report any issues or bugs you encounter</p>
           </div>
           <button
             onClick={onClose}
@@ -179,7 +179,7 @@ const SupportModal = ({ isOpen, onClose }) => {
         <form onSubmit={handleSubmit} className="p-6">
           {/* Issue Category */}
           <div className="mb-4">
-            <label htmlFor="reportType" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="reportType" className="block text-sm font-medium text-gray-700 mb-2 leading-snug tracking-tight">
               Select Issue Category <span className="text-red-500">*</span>
             </label>
             <select 
@@ -198,7 +198,7 @@ const SupportModal = ({ isOpen, onClose }) => {
           
           {/* Title */}
           <div className="mb-4">
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2 leading-snug tracking-tight">
               Title <span className="text-red-500">*</span>
             </label>
             <input
@@ -212,12 +212,12 @@ const SupportModal = ({ isOpen, onClose }) => {
               placeholder="Example: Unable to upload the resume."
               required
             />
-            <p className="text-xs text-gray-500 mt-1">3-6 words OR 15-25 characters</p>
+            <p className="text-xs text-gray-500 mt-1 leading-normal tracking-tight">3-6 words OR 15-25 characters</p>
           </div>
           
           {/* Description */}
           <div className="mb-6">
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2 leading-snug tracking-tight">
               Description <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -231,7 +231,7 @@ const SupportModal = ({ isOpen, onClose }) => {
               placeholder="Describe the issue in detail and any error messages or impact."
               required
             ></textarea>
-            <p className="text-xs text-gray-500 mt-1">2-3 sentences OR 50-100 characters</p>
+            <p className="text-xs text-gray-500 mt-1 leading-normal tracking-tight">2-3 sentences OR 50-100 characters</p>
           </div>
 
           {/* Footer Buttons */}
@@ -239,14 +239,14 @@ const SupportModal = ({ isOpen, onClose }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors leading-normal tracking-tight"
               disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-gradient-to-r from-[#F34B58] to-[#A1025D] text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-gradient-to-r from-[#F34B58] to-[#A1025D] text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Submitting..." : "Submit Report"}

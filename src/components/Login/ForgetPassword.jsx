@@ -224,11 +224,11 @@ const ForgetPassword = () => {
         {/* Content */}
         <div className="flex flex-col justify-center px-12 py-16 relative z-10">
           <div className="space-y-6">
-            <h1 className="text-4xl font-bold text-red-600 leading-tight">
+            <h1 className="text-4xl font-bold text-red-600 leading-tight tracking-tight">
               Reset Your Password
             </h1>
             <div className="space-y-4">
-              <p className="text-lg text-gray-700 leading-relaxed">
+              <p className="text-lg text-gray-700 leading-normal tracking-tight">
                 Don't worry! We'll help you regain access to your account with a secure password reset process.
               </p>
               <div className="space-y-3">
@@ -236,19 +236,19 @@ const ForgetPassword = () => {
                   <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-sm">1</span>
                   </div>
-                  <span className="text-gray-700">Enter your registered email address</span>
+                  <span className="text-gray-700 leading-normal tracking-tight">Enter your registered email address</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-sm">2</span>
                   </div>
-                  <span className="text-gray-700">Verify with the OTP sent to your email</span>
+                  <span className="text-gray-700 leading-normal tracking-tight">Verify with the OTP sent to your email</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-sm">3</span>
                   </div>
-                  <span className="text-gray-700">Create a new secure password</span>
+                  <span className="text-gray-700 leading-normal tracking-tight">Create a new secure password</span>
                 </div>
               </div>
             </div>
@@ -260,7 +260,7 @@ const ForgetPassword = () => {
       {/* Right Section - Forget Password Form */}
       <div className="w-full lg:w-1/2 bg-white flex items-center justify-center px-3 sm:px-6 md:px-8 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg">
         <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
-          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-black mb-4 sm:mb-6 text-center lg:text-left">Reset Password</h2>
+          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-black mb-4 sm:mb-6 text-center lg:text-left leading-tight tracking-tight">Reset Password</h2>
           
           {!isCompleted ? (
             <>
@@ -391,8 +391,8 @@ const ForgetPassword = () => {
                 </svg>
               </div>
               <div>
-                <h4 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-2">Success!</h4>
-                <p className="text-sm sm:text-base md:text-lg text-gray-600">Your password has been changed successfully!</p>
+                <h4 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-2 leading-tight tracking-tight">Success!</h4>
+                <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-normal tracking-tight">Your password has been changed successfully!</p>
               </div>
               <button 
                 onClick={() => navigate('/login')}

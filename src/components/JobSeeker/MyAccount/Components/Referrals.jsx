@@ -293,7 +293,7 @@ const Referrals = ({ user, onSuccess }) => {
   const checkCanGiveReward = async () => {
     try {
       const res = await fetch(
-        `https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral?firebase_uid=${firebase_uid}`
+        `https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem?firebase_uid=${firebase_uid}`
       );
       if (!res.ok) return true;
       const rows = await res.json();
@@ -318,7 +318,7 @@ const Referrals = ({ user, onSuccess }) => {
       const couponValue = Array.isArray(referConfig) && referConfig.length > 0 ? Number(referConfig[0]?.coupon_value || 8000) : 8000;
 
       const redeemRes = await fetch(
-        `https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral?firebase_uid=${firebase_uid}`
+        `https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem?firebase_uid=${firebase_uid}`
       );
       let coinValue = couponValue;
       let oldValidTo = null, oldRec = {};
@@ -351,7 +351,7 @@ const Referrals = ({ user, onSuccess }) => {
       if ("is_razor_pay" in oldRec) payload.is_razor_pay = oldRec.is_razor_pay;
       if ("is_coupon" in oldRec) payload.is_coupon = oldRec.is_coupon;
 
-      await fetch("https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral", {
+      await fetch("https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem", {
         method: method,
         headers: getAuthHeaders(),
         body: JSON.stringify(payload)

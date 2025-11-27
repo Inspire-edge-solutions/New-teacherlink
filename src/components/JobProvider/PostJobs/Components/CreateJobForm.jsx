@@ -957,7 +957,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
       console.log("=== END SAVE DEBUG ===");
       
       await axios.post(
-        "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/closeJob",
+        "https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/jobClose",
         payload,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -1067,12 +1067,11 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
       let recentJobId = null;
       try {
         const jobsRes = await axios.get(
-          "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes"
+          `https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes?firebase_uid=${user.uid}`
         );
         const jobList = Array.isArray(jobsRes.data) ? jobsRes.data : [];
-        const jobsOfUser = jobList.filter((j) => j.firebase_uid === user.uid);
-        jobsOfUser.sort((a, b) => Number(b.id) - Number(a.id));
-        recentJobId = jobsOfUser[0]?.id || null;
+        jobList.sort((a, b) => Number(b.id) - Number(a.id));
+        recentJobId = jobList[0]?.id || null;
       } catch (e) {}
 
       // const mapPayload = {

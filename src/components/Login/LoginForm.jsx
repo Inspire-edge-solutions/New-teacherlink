@@ -345,9 +345,9 @@ const LoginForm = () => {
           
           <div className="text-[clamp(2.5rem,8vw,3.5rem)] text-red-600 mb-6 drop-shadow-[0_3px_6px_rgba(220,53,69,0.2)] animate-gentlePulse">⚠</div>
           
-          <h2 className="text-[clamp(1.2rem,4vw,1.6rem)] mb-5 text-gray-800 font-bold bg-gradient-to-br from-red-600 to-red-700 bg-clip-text text-transparent">{blockedTitle}</h2>
+          <h2 className="text-[clamp(1.2rem,4vw,1.6rem)] mb-5 text-gray-800 font-bold bg-gradient-to-br from-red-600 to-red-700 bg-clip-text text-transparent leading-tight tracking-tight">{blockedTitle}</h2>
           
-          <div className="text-[clamp(0.9rem,3vw,1.05rem)] leading-[1.7] text-gray-600 whitespace-pre-line text-left bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] mt-2">
+          <div className="text-[clamp(0.9rem,3vw,1.05rem)] leading-normal text-gray-600 whitespace-pre-line text-left bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] mt-2 tracking-tight">
             {blockedMsg}
           </div>
         </div>
@@ -373,11 +373,11 @@ const LoginForm = () => {
               {/* Content */}
               <div className="flex flex-col justify-center px-12 py-16 relative z-10">
                 <div className="space-y-6">
-                  <h1 className="text-4xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight">
+                  <h1 className="text-4xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
                     Welcome Back!
                   </h1>
                   <div className="space-y-4">
-                    <p className="text-lg text-gray-700 leading-relaxed">
+                    <p className="text-lg text-gray-700 leading-normal tracking-tight">
                       Continue your journey with us and connect with qualified educators and professionals effortlessly!
                     </p>
                   </div>
@@ -427,12 +427,12 @@ const LoginForm = () => {
         {/* Content */}
         <div className="flex flex-col justify-center px-12 py-16 relative z-10">
           <div className="space-y-6">
-            <h1 className="text-4xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight">
+            <h1 className="text-4xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
               Welcome Back!
             </h1>
             <div className="space-y-4">
              
-              <p className="text-lg text-gray-700 leading-relaxed">
+              <p className="text-lg text-gray-700 leading-normal tracking-tight">
                 Continue your journey with us and connect with qualified educators and professionals effortlessly!
               </p>
             </div>
@@ -457,7 +457,7 @@ const LoginForm = () => {
        
 
         <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
-          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center lg:text-left">Login</h2>
+          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center lg:text-left leading-tight tracking-tight">Login</h2>
           
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 md:space-y-8">
             {/* Email Field */}
@@ -466,7 +466,7 @@ const LoginForm = () => {
                 <input
                   type="email"
                   name="email"
-                  placeholder="Email"
+                  placeholder=" Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -481,7 +481,7 @@ const LoginForm = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
-                  placeholder="Password"
+                  placeholder=" Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -509,7 +509,7 @@ const LoginForm = () => {
 
           {/* Forgot Password Link */}
           <div className="mt-4 sm:mt-6 md:mt-8 text-center">
-            <span className="text-gray-600 text-sm sm:text-base md:text-lg">Forgot Password? </span>
+            <span className="text-gray-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight">Forgot Password? </span>
             <Link
               to="/forget-password"
               onClick={() => {
@@ -519,7 +519,7 @@ const LoginForm = () => {
                 }
                 cleanupModals();
               }}
-              className="text-red-500 font-semibold hover:text-red-600 text-sm sm:text-base md:text-lg"
+              className="text-red-500 font-semibold hover:text-red-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight"
             >
               Click here to Change Password
             </Link>
@@ -527,7 +527,7 @@ const LoginForm = () => {
 
           {/* Signup Link */}
           <div className="mt-4 sm:mt-6 md:mt-8 text-center">
-            <span className="text-gray-600 text-sm sm:text-base md:text-lg">Don't have an account? </span>
+            <span className="text-gray-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight">Don't have an account? </span>
             <Link
               to="/register"
               onClick={() => {
@@ -537,7 +537,7 @@ const LoginForm = () => {
                 }
                 cleanupModals();
               }}
-              className="text-red-500 font-semibold hover:text-red-600 text-sm sm:text-base md:text-lg"
+              className="text-red-500 font-semibold hover:text-red-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight"
             >
               Signup Here
             </Link>

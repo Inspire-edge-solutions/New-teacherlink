@@ -1,4 +1,3 @@
-
 import { React, useState, useEffect } from "react";
 import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
@@ -20,7 +19,7 @@ const Content = () => {
   const [selectedYear, setSelectedYear] = useState("");
   const [filteredHistory, setFilteredHistory] = useState([]);
 
-  const COINS_API_URL = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral";
+  const COINS_API_URL = "https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem";
   const COIN_HISTORY_API_URL = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history";
 
   // Get current year for filter options
@@ -47,12 +46,10 @@ const Content = () => {
         return;
       }
 
-      const { data } = await axios.get(COINS_API_URL);
+      const { data } = await axios.get(`${COINS_API_URL}?firebase_uid=${encodeURIComponent(user.uid)}`);
       
-      // Find the coin data for the current user
-      const userCoinData = Array.isArray(data) 
-        ? data.find(item => item.firebase_uid === user.uid)
-        : data;
+      // Get the coin data for the current user
+      const userCoinData = Array.isArray(data) && data.length > 0 ? data[0] : data;
 
       if (userCoinData) {
         setCoinData(userCoinData);

@@ -77,7 +77,7 @@ const DashboardHeader = ({ onMenuClick , activeTab }) => {
         {/* Active Tab - Left Side */}
         <div className="ml-4 flex items-center">
           <h2 
-            className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent"
+            className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight"
           >
             {activeTab}
           </h2>

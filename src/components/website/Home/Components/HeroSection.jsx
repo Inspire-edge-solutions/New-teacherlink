@@ -15,28 +15,28 @@ const HeroSection = () => {
           <div className="flex-1 lg:w-3/5 space-y-2 lg:space-y-4 text-center lg:text-left">
             <div className="space-y-0 sm:space-y-1">
               {/* First Line */}
-              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-700 leading-tight">
+              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-700 leading-tight tracking-tight">
                 Looking For a
               </div>
               
               {/* Second Line - Teaching Job */}
-              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight">
+              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight tracking-tight">
                 <span className="bg-gradient-brand-text bg-clip-text text-transparent">Teaching</span>
                 <span className="text-gray-700"> Job?</span>
               </div>
               
               {/* Third Line */}
-              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-700 leading-tight">
+              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-700 leading-tight tracking-tight">
                 Or Providing Job
               </div>
               
               {/* Fourth Line */}
-              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-700 leading-tight">
+              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-700 leading-tight tracking-tight">
                 to Teachers?
               </div>
               
               {/* Tagline */}
-              <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl text-gray-600 font-normal mt-1 lg:mt-2">
+              <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl text-gray-600 font-normal mt-1 lg:mt-2 leading-normal tracking-tight">
                 You are at the right place !
               </div>
             </div>

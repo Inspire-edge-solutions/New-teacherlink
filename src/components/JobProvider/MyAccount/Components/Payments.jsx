@@ -236,9 +236,9 @@ const Payment = ({ user, onSuccess }) => {
               .toISOString()
               .slice(0, 10);
 
-            // Fetch current coin_value from redeemGeneral to add coins
+            // Fetch current coin_value from coinRedeem to add coins
             const redeemRes = await fetch(
-              `https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral?firebase_uid=${firebase_uid}`
+              `https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem?firebase_uid=${firebase_uid}`
             );
             const redeemData = await redeemRes.json();
 
@@ -265,9 +265,9 @@ const Payment = ({ user, onSuccess }) => {
               sended_email: "",
             };
 
-            // Update redeemGeneral with new coin value and validity
+            // Update coinRedeem with new coin value and validity
             const redeemUpdateRes = await fetch(
-              "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral",
+              "https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem",
               {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { MdEmail, MdPhone, MdLocationOn } from 'react-icons/md'
+import { MdEmail, MdPhone, MdLocationOn, MdContactSupport } from 'react-icons/md'
+import { FaWhatsapp } from 'react-icons/fa'
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 
@@ -72,11 +73,11 @@ const ContactUs = () => {
               <div className="h-full flex flex-col justify-center">
                 {/* Heading */}
                 <div className="mb-8">
-                  <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
+                  <h1 className="text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
                     <span className="bg-gradient-brand-text bg-clip-text text-transparent">Connect</span>
                     <span className="text-gray-800"> with</span>
                   </h1>
-                  <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 mt-2">
+                  <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 mt-2 leading-tight tracking-tight">
                     Our Team of Experts
                   </h2>
                 </div>
@@ -87,58 +88,72 @@ const ContactUs = () => {
                   <div className="flex flex-col">
                     <div className="flex items-center space-x-3 text-red-600">
                       <MdLocationOn className="w-6 h-6" />
-                      <p className="text-lg font-semibold text-gray-900">Address</p>
+                      <p className="text-lg font-semibold text-gray-900 tracking-tight">Address</p>
                     </div>
-                    <p className="mt-3 text-gray-800 leading-relaxed">
+                    <p className="mt-3 text-gray-800 leading-normal tracking-tight">
                       Pulikeshi Nagar, Bengaluru, Karnataka, India 560005
                     </p>
                   </div>
 
-                  {/* Contact Support */}
+                  {/* Contact Support - Phone & Email */}
                   <div className="flex flex-col">
                     <div className="flex items-center space-x-3 text-red-600">
-                      <MdPhone className="w-6 h-6" />
-                      <p className="text-lg font-semibold text-gray-900">Contact Support</p>
+                      <MdContactSupport className="w-6 h-6" />
+                      <p className="text-lg font-semibold text-gray-900 tracking-tight">Connect with us</p>
                     </div>
-                    <div className="mt-3 space-y-1 text-gray-800">
-                      <p className="text-gray-700">
+                    <div className="mt-3 space-y-4">
+                      <p className="text-gray-700 leading-normal tracking-tight">
                         <span className="font-semibold">Timings:</span> 11:00 AM to 6:00 PM
                       </p>
-                      <p>
-                        <span className="font-semibold">General Support:</span>
-                        <a href="tel:+919980333603" className="ml-2 hover:text-red-600 transition-colors">+91 9980833603</a>
-                      </p>
-                      <p>
-                        <span className="font-semibold">Technical Support:</span>
-                        <a href="tel:+919100731810" className="ml-2 hover:text-red-600 transition-colors">+91 9100731810</a>
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Contact Email */}
-                  <div className="flex flex-col">
-                    <div className="flex items-center space-x-3 text-red-600">
-                      <MdEmail className="w-6 h-6" />
-                      <p className="text-lg font-semibold text-gray-900">Contact Email</p>
-                    </div>
-                    <div className="mt-3 space-y-3 sm:space-y-1">
-                      <div className="text-gray-800 flex flex-col sm:flex-row sm:items-baseline">
-                        <span className="font-semibold">General Support:</span>
-                        <a
-                          href="mailto:info@inspireedgesolutions.com"
-                          className="sm:ml-2 mt-1 sm:mt-0 hover:text-red-600 transition-colors break-all"
-                        >
-                          info@inspireedgesolutions.com
-                        </a>
+                      
+                      {/* General Queries */}
+                      <div className="space-y-2">
+                        <p className="font-semibold text-gray-900 tracking-tight">For General Queries:</p>
+                        <div className="space-y-1 text-gray-800 ml-4">
+                          <p className="flex items-center gap-2 leading-normal tracking-tight">
+                            <a href="tel:+919980333603" className="hover:opacity-80 transition-opacity">
+                              <MdPhone className="text-red-600 w-5 h-5" />
+                            </a>
+                            <a href="https://wa.me/919980333603" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                              <FaWhatsapp className="text-green-600 w-5 h-5" />
+                            </a>
+                            <span className="text-gray-800">+91 9980833603</span>
+                          </p>
+                          <p className="flex flex-col sm:flex-row sm:items-baseline leading-normal tracking-tight">
+                            <MdEmail className="text-red-600 w-5 h-5 mr-2 flex-shrink-0" />
+                            <a
+                              href="mailto:info@inspireedgesolutions.com"
+                              className="hover:text-red-600 transition-colors break-all"
+                            >
+                              info@inspireedgesolutions.com
+                            </a>
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-gray-800 flex flex-col sm:flex-row sm:items-baseline">
-                        <span className="font-semibold">Technical Support:</span>
-                        <a
-                          href="mailto:support@inspireedgesolutions.com"
-                          className="sm:ml-2 mt-1 sm:mt-0 hover:text-red-600 transition-colors break-all"
-                        >
-                          support@inspireedgesolutions.com
-                        </a>
+
+                      {/* Technical Queries */}
+                      <div className="space-y-2">
+                        <p className="font-semibold text-gray-900 tracking-tight">For Technical Queries:</p>
+                        <div className="space-y-1 text-gray-800 ml-4">
+                          <p className="flex items-center gap-2 leading-normal tracking-tight">
+                            <a href="tel:+919100731810" className="hover:opacity-80 transition-opacity">
+                              <MdPhone className="text-red-600 w-5 h-5" />
+                            </a>
+                            <a href="https://wa.me/919100731810" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                              <FaWhatsapp className="text-green-600 w-5 h-5" />
+                            </a>
+                            <span className="text-gray-800">+91 9100731810</span>
+                          </p>
+                          <p className="flex flex-col sm:flex-row sm:items-baseline leading-normal tracking-tight">
+                            <MdEmail className="text-red-600 w-5 h-5 mr-2 flex-shrink-0" />
+                            <a
+                              href="mailto:support@inspireedgesolutions.com"
+                              className="hover:text-red-600 transition-colors break-all"
+                            >
+                              support@inspireedgesolutions.com
+                            </a>
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>

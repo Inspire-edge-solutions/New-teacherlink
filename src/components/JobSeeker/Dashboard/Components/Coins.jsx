@@ -1,3 +1,4 @@
+
 import { React, useState, useEffect } from "react";
 import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
@@ -19,7 +20,7 @@ const Content = () => {
   const [selectedYear, setSelectedYear] = useState("");
   const [filteredHistory, setFilteredHistory] = useState([]);
 
-  const COINS_API_URL = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral";
+  const COINS_API_URL = "https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem";
   const COIN_HISTORY_API_URL = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history";
 
   const currentYear = new Date().getFullYear();

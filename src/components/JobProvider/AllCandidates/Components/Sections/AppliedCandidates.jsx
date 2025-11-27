@@ -103,7 +103,7 @@ const AppliedCandidates = ({
       
       // Fetch provider's posted jobs
       const jobsResponse = await axios.get(
-        `https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes?firebase_uid=${userId}`
+        `https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/jobPosting?firebase_uid=${userId}`
       );
       
       const allJobs = Array.isArray(jobsResponse.data) ? jobsResponse.data : [];

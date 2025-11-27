@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -15,6 +15,19 @@ const TERMS_VERSION = "1.0";
 const PRIVACY_VERSION = "1.0";
 
 const Register = ({ user_type }) => {
+  const [searchParams] = useSearchParams();
+  const roleFromUrl = searchParams.get('role');
+  
+  // Determine initial user type based on URL parameter
+  const getInitialUserType = () => {
+    if (roleFromUrl === 'job-seeker') {
+      return "Job Seeker";
+    } else if (roleFromUrl === 'job-provider') {
+      return "Job Provider";
+    }
+    return "Job Seeker"; // Default
+  };
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,23 +43,32 @@ const Register = ({ user_type }) => {
   const [hasStartedTyping, setHasStartedTyping] = useState(false);
   const [showPhoneValidation, setShowPhoneValidation] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedUserType, setSelectedUserType] = useState("Job Seeker");
+  const [selectedUserType, setSelectedUserType] = useState(() => getInitialUserType());
   const navigate = useNavigate();
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [hasReadTermsAndPrivacy, setHasReadTermsAndPrivacy] = useState(false);
 
+  // Update user type when URL parameter changes
+  useEffect(() => {
+    if (roleFromUrl === 'job-seeker') {
+      setSelectedUserType("Job Seeker");
+    } else if (roleFromUrl === 'job-provider') {
+      setSelectedUserType("Job Provider");
+    }
+  }, [roleFromUrl]);
+
   const getWelcomeText = () => {
     if (selectedUserType === "Job Seeker") {
       return (
         <div className="space-y-4">
-          <h1 className="text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight">
+          <h1 className="text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
             Looking for a teaching or non-teaching job in educational institutions?
           </h1>
-          <h2 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent">
+          <h2 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
             You're in the right place!
           </h2>
-          <p className="text-lg text-gray-700 leading-relaxed">
+          <p className="text-lg text-gray-700 leading-normal tracking-tight">
             Create your account today and unlock endless opportunities in the education sector! 🚀
           </p>
         </div>
@@ -54,13 +76,13 @@ const Register = ({ user_type }) => {
     } else {
       return (
         <div className="space-y-4">
-          <h1 className="text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight">
+          <h1 className="text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
             Looking to hire top talent for your educational institution?
           </h1>
-          <h2 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent">
+          <h2 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
             You're in the right place!
           </h2>
-          <p className="text-lg text-gray-700 leading-relaxed">
+          <p className="text-lg text-gray-700 leading-normal tracking-tight">
             Create your account today and connect with qualified educators and professionals effortlessly! 🎯
           </p>
         </div>
@@ -170,7 +192,7 @@ const Register = ({ user_type }) => {
   const TermsAndPrivacyModal = () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-2 sm:p-4">
       <div className="bg-white rounded-xl p-4 sm:p-6 md:p-8 max-w-4xl max-h-[90vh] w-full flex flex-col">
-        <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 text-center bg-gradient-brand-text bg-clip-text text-transparent">
+        <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 text-center bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
           Terms and Conditions & Privacy Policy
         </h3>
         <div 
@@ -226,7 +248,7 @@ const Register = ({ user_type }) => {
           
           {/* Additional Info */}
           <div className="text-center max-w-lg">
-            <p className="text-lg text-gray-600 leading-relaxed">
+            <p className="text-lg text-gray-600 leading-normal tracking-tight">
               Join thousands of educators and institutions who trust TeacherLink for their career and hiring needs.
             </p>
           </div>
@@ -245,7 +267,7 @@ const Register = ({ user_type }) => {
           /* Form Container */
           <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg bg-white p-3 sm:p-4 md:p-6 relative">
 
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center leading-tight tracking-tight">
               Create Account
             </h2>
 
@@ -281,7 +303,7 @@ const Register = ({ user_type }) => {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Full Name"
+                  placeholder=" Full Name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -295,7 +317,7 @@ const Register = ({ user_type }) => {
               <div className="relative">
                 <input
                   type="email"
-                  placeholder="Email"
+                  placeholder=" Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -309,7 +331,7 @@ const Register = ({ user_type }) => {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Password"
+                  placeholder=" Password"
                   value={password}
                   onChange={handlePasswordChange}
                   required
@@ -330,7 +352,7 @@ const Register = ({ user_type }) => {
               <div className="relative">
                 <input
                   type="tel"
-                  placeholder="Mobile Number (10 digits)"
+                  placeholder=" Mobile Number (10 digits)"
                   value={number}
                   onChange={handlePhoneChange}
                   required
@@ -372,7 +394,7 @@ const Register = ({ user_type }) => {
                 required
                 className="mt-1"
               />
-              <label htmlFor="terms-checkbox" className="text-xs sm:text-sm text-black-500 leading-relaxed">
+              <label htmlFor="terms-checkbox" className="text-xs sm:text-sm text-black-500 leading-normal tracking-tight">
                 I agree to the{" "}
                 <span
                   className="text-red-600 cursor-pointer underline"
@@ -403,12 +425,12 @@ const Register = ({ user_type }) => {
 
           {/* Login Link */}
           <div className="text-center mt-4 sm:mt-6 md:mt-8">
-            <span className="text-black-500 text-xs sm:text-sm md:text-base">
+            <span className="text-black-500 text-xs sm:text-sm md:text-base leading-normal tracking-tight">
               Already have an account?{" "}
             </span>
             <Link
               to="/login"
-              className="text-red-600 no-underline font-medium text-xs sm:text-sm md:text-base"
+              className="text-red-600 no-underline font-medium text-xs sm:text-sm md:text-base leading-normal tracking-tight"
             >
               Login
             </Link>
@@ -434,10 +456,10 @@ const Register = ({ user_type }) => {
       {showLoginPrompt && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-4">
           <div className="bg-white rounded-xl p-4 sm:p-6 md:p-8 max-w-md w-full text-center">
-            <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4">
+            <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 leading-tight tracking-tight">
               Welcome to TeacherLink! 🌟
             </h3>
-            <p className="text-gray-500 mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
+            <p className="text-gray-500 mb-4 sm:mb-6 leading-normal tracking-tight text-sm sm:text-base">
               🎉 Your account is ready. <br/> 
               Hire passionate educators or explore rewarding teaching opportunities. <br/>
               🚀 Log in now to continue your journey.

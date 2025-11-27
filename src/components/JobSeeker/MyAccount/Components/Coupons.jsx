@@ -199,7 +199,7 @@ const Coupons = ({
 
       // 1. Get coupon details
       const couponRes = await fetch(
-        `https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/generateCoupon`
+        `https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/couponGeneration`
       );
       const allCoupons = await couponRes.json();
       couponData = Array.isArray(allCoupons)
@@ -292,9 +292,9 @@ const Coupons = ({
         return;
       }
 
-      // 4. Check if user already used this coupon_code in /redeemGeneral
+      // 4. Check if user already used this coupon_code in /coinRedeem
       const generalRes = await fetch(
-        `https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral?firebase_uid=${firebase_uid}`
+        `https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem?firebase_uid=${firebase_uid}`
       );
       const generalData = await generalRes.json();
 
@@ -341,7 +341,7 @@ const Coupons = ({
           if (!redeemValidDate || redeemValidDate < today) {
             try {
               const resetResponse = await fetch(
-                "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral",
+                "https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem",
                 {
                   method: "PUT",
                   headers: { "Content-Type": "application/json" },
@@ -421,7 +421,7 @@ const Coupons = ({
       let coinsForWhatsapp = couponCoinValue;
       
       // STANDARDIZED API ENDPOINT: Use consistent endpoint for all operations
-      const REDEEM_GENERAL_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral";
+      const REDEEM_GENERAL_API = "https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem";
       const REDEEM_UNIQUE_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemUnique";
       const REDEEM_SAME_API = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemSame";
 

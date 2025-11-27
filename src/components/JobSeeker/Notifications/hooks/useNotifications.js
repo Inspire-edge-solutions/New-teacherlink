@@ -530,8 +530,6 @@ export const useNotifications = () => {
         });
         return updated;
       });
-      // Dispatch event to trigger immediate badge count refresh
-      window.dispatchEvent(new Event('notificationUpdated'));
     } catch (error) {
       console.error('Error marking notification as read:', error);
       toast.error('Failed to update notification');
@@ -554,8 +552,6 @@ export const useNotifications = () => {
           return { ...n, read: true };
         })
       );
-      // Dispatch event to trigger immediate badge count refresh
-      window.dispatchEvent(new Event('notificationUpdated'));
       toast.success('All notifications marked as read');
     } catch (error) {
       console.error('Error marking all as read:', error);
@@ -576,8 +572,6 @@ export const useNotifications = () => {
         }
         return prev.filter(n => n.id !== id);
       });
-      // Dispatch event to trigger immediate badge count refresh
-      window.dispatchEvent(new Event('notificationUpdated'));
       toast.success('Notification deleted');
     } catch (error) {
       console.error('Error deleting notification:', error);

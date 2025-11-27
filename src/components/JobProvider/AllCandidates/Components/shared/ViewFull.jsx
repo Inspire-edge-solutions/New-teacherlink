@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import axios from 'axios';
-import ModalPortal from '../../../../common/ModalPortal';
 import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
 import '../styles/cv-pdf-print.css';
@@ -19,7 +19,7 @@ const EXPERIENCE_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/
 const JOB_PREFERENCE_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference';
 const ADDITIONAL_INFO1_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/additional_info1';
 const SOCIAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/socialProfile';
-const REDEEM_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral';
+const REDEEM_API = 'https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem';
 const COIN_HISTORY_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history';
 const ORGANISATION_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation';
 const PERSONAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal';
@@ -36,7 +36,7 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
   // Portal modal content
   const modalContent = (
     <div className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[10050] animate-fadeIn overflow-y-auto p-5" onClick={onClose}>
-      <div className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()}>
         <button className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all" onClick={onClose}>
           &times;
         </button>
@@ -87,7 +87,7 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
   );
 
   // Render modal using Portal
-  return <ModalPortal>{modalContent}</ModalPortal>;
+  return ReactDOM.createPortal(modalContent, document.body);
 }
 
 const BlurWrapper = ({ children, isUnlocked }) => {
@@ -213,10 +213,8 @@ function CandidateDetail({
       setShowUnlock(false);
       setUnlockError('');
       try {
-        const { data } = await axios.get(REDEEM_API);
-        const found = Array.isArray(data) ? data.find(
-          d => d.firebase_uid === userId
-        ) : null;
+        const { data } = await axios.get(`${REDEEM_API}?firebase_uid=${userId}`);
+        const found = Array.isArray(data) && data.length > 0 ? data[0] : data;
         setCoinValue(found?.coin_value ?? null);
         
         // Fetch unlock info if already unlocked
@@ -257,8 +255,8 @@ function CandidateDetail({
     setUnlockError('');
     setCheckingCoins(true);
     try {
-      const { data } = await axios.get(REDEEM_API);
-      const found = Array.isArray(data) ? data.find(d => d.firebase_uid === userId) : null;
+      const { data } = await axios.get(`${REDEEM_API}?firebase_uid=${userId}`);
+      const found = Array.isArray(data) && data.length > 0 ? data[0] : data;
       if (!found) {
         setUnlockError("Don't have enough coin in your account");
         setCheckingCoins(false);
@@ -315,9 +313,9 @@ function CandidateDetail({
   // Fetch coins on modal open
   useEffect(() => {
     if (showUnlockModal && userId) {
-      axios.get(REDEEM_API)
+      axios.get(`${REDEEM_API}?firebase_uid=${userId}`)
         .then(({ data }) => {
-          const found = Array.isArray(data) ? data.find(d => d.firebase_uid === userId) : null;
+          const found = Array.isArray(data) && data.length > 0 ? data[0] : data;
           setCoinValue(found?.coin_value ?? 0);
         }).catch(() => setCoinValue(0));
     }
@@ -337,8 +335,8 @@ function CandidateDetail({
     setUnlockStatus("");
     try {
       // 1. Get current coins again (in case concurrent changes)
-      const { data } = await axios.get(REDEEM_API);
-      const found = Array.isArray(data) ? data.find(d => d.firebase_uid === userId) : null;
+      const { data } = await axios.get(`${REDEEM_API}?firebase_uid=${userId}`);
+      const found = Array.isArray(data) && data.length > 0 ? data[0] : data;
       const coins = found?.coin_value ?? 0;
       setCoinValue(coins);
 

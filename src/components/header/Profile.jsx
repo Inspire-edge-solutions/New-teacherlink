@@ -231,16 +231,32 @@ const Profile = () => {
                 variant="subtitle2"
                 color="textPrimary"
                 fontWeight={600}
+                sx={{
+                  fontFamily: 'Montserrat, sans-serif',
+                  lineHeight: '1.2',
+                  letterSpacing: '0'
+                }}
               >
                 {getUserName()}
               </Typography>
-              <Typography variant="subtitle2" color="textSecondary">
+              <Typography 
+                variant="subtitle2" 
+                color="textSecondary"
+                sx={{
+                  fontFamily: 'Montserrat, sans-serif',
+                  lineHeight: '1.4',
+                  letterSpacing: '0'
+                }}
+              >
                 {getUserDesignation()}
               </Typography>
               <Typography
                 variant="subtitle2"
                 color="textSecondary"
                 sx={{
+                  fontFamily: 'Montserrat, sans-serif',
+                  lineHeight: '1.5',
+                  letterSpacing: '0',
                   wordBreak: "break-word"
                 }}
               >
@@ -256,7 +272,12 @@ const Profile = () => {
                 startIcon={<MdReport />}
                 variant="text"
                 color="inherit"
-                sx={{ justifyContent: "flex-start" }}
+                sx={{ 
+                  justifyContent: "flex-start",
+                  fontFamily: 'Montserrat, sans-serif',
+                  lineHeight: '1.5',
+                  letterSpacing: '0'
+                }}
               >
                 Support
               </Button>
@@ -265,7 +286,12 @@ const Profile = () => {
                 startIcon={<MdLock />}
                 variant="text"
                 color="inherit"
-                sx={{ justifyContent: "flex-start" }}
+                sx={{ 
+                  justifyContent: "flex-start",
+                  fontFamily: 'Montserrat, sans-serif',
+                  lineHeight: '1.5',
+                  letterSpacing: '0'
+                }}
               >
                 Change Password
               </Button>
@@ -275,7 +301,12 @@ const Profile = () => {
                 startIcon={<MdLogout />}
                 variant="text"
                 color="error"
-                sx={{ justifyContent: "flex-start" }}
+                sx={{ 
+                  justifyContent: "flex-start",
+                  fontFamily: 'Montserrat, sans-serif',
+                  lineHeight: '1.5',
+                  letterSpacing: '0'
+                }}
               >
                 Logout
               </Button>

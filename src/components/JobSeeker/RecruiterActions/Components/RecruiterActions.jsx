@@ -12,7 +12,7 @@ const PROFILE_VIEW_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.co
 const ORG_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation';
 const FAV_JOBS_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteJobs';
 const JOBS_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes';
-const REDEEM_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/redeemGeneral';
+const REDEEM_API = 'https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem';
 const COIN_HISTORY_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history';
 
 const formatRelativeTime = (dateString) => {
@@ -105,7 +105,7 @@ const RecruiterActions = () => {
           }).catch(() => ({ data: [] })),
           axios.get(FAV_JOBS_API).catch(() => ({ data: [] })),
           axios.get(JOBS_API).catch(() => ({ data: [] })),
-          axios.get(REDEEM_API).catch(() => ({ data: [] })),
+          axios.get(`${REDEEM_API}?firebase_uid=${firebaseUid}`).catch(() => ({ data: [] })),
         ]);
 
         const requirementList = Array.isArray(requirementData.data)
@@ -120,7 +120,7 @@ const RecruiterActions = () => {
         
         // Get user's coin balance
         const coinList = Array.isArray(coinData.data) ? coinData.data : [];
-        const userCoinRecord = coinList.find(record => String(record.firebase_uid) === String(firebaseUid));
+        const userCoinRecord = coinList.length > 0 ? coinList[0] : null;
         const userCoins = userCoinRecord?.coin_value ? Number(userCoinRecord.coin_value) : 0;
         
         // Get job seeker's favorite job IDs (where added_by === firebaseUid and favroute_jobs === 1)
@@ -237,8 +237,10 @@ const RecruiterActions = () => {
           })
           .map((item) => {
             const timestamp = item?.created_at || item?.updated_at;
+            // Use stable identifier: added_by + firebase_uid + created_at (not Date.now())
+            const stableId = item?.id ?? `${item.added_by}-${item.firebase_uid}-${timestamp || 'unknown'}`;
             return {
-              id: `fav-${item?.id ?? `${item.added_by}-${item.firebase_uid}-${Date.now()}`}`,
+              id: `fav-${stableId}`,
               organisation:
                 orgNamesMap.get(item?.added_by) || 'An Institution',
               action: 'favorited',
@@ -259,8 +261,10 @@ const RecruiterActions = () => {
           })
           .map((item) => {
             const timestamp = item?.created_at || item?.updated_at;
+            // Use stable identifier: added_by + firebase_uid + created_at (not Date.now())
+            const stableId = item?.id ?? `${item.added_by}-${item.firebase_uid}-${timestamp || 'unknown'}`;
             return {
-              id: `save-${item?.id ?? `${item.added_by}-${item.firebase_uid}-${Date.now()}`}`,
+              id: `save-${stableId}`,
               organisation:
                 orgNamesMap.get(item?.added_by) || 'An Institution',
               action: 'saved',
@@ -280,8 +284,10 @@ const RecruiterActions = () => {
           })
           .map((item) => {
             const timestamp = item?.viewed_at || item?.created_at;
+            // Use stable identifier: viewer_user_id + viewed_user_id + viewed_at (not Date.now())
+            const stableId = item?.id ?? `${item.viewer_user_id}-${item.viewed_user_id}-${timestamp || 'unknown'}`;
             return {
-              id: `view-${item?.id ?? `${item.viewer_user_id}-${item.viewed_user_id}-${Date.now()}`}`,
+              id: `view-${stableId}`,
               organisation:
                 item?.institution_name ||
                 orgNamesMap.get(item?.viewer_user_id) ||
@@ -354,7 +360,7 @@ const RecruiterActions = () => {
           // Deduct coins before showing actions
           try {
             const newCoinBalance = userCoins - COIN_COST;
-            await axios.put(REDEEM_API, {
+            await axios.put(`${REDEEM_API}?firebase_uid=${firebaseUid}`, {
               firebase_uid: firebaseUid,
               coin_value: newCoinBalance
             });
@@ -431,7 +437,7 @@ const RecruiterActions = () => {
           </p>
         </div>
 
-        <div className="bg-[#F0D8D9] rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           {loading ? (
             <div className="px-6 py-10 text-center">
               <h2 className="text-lg font-semibold text-gray-800 mb-2">

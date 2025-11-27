@@ -384,7 +384,7 @@ const LoginWithSocial = () => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col">
         <div className="p-6 border-b">
-          <h3 className="text-xl font-semibold text-gray-800">Terms and Conditions & Privacy Policy</h3>
+          <h3 className="text-xl font-semibold text-gray-800 leading-tight tracking-tight">Terms and Conditions & Privacy Policy</h3>
         </div>
         <div className="flex-1 overflow-y-auto p-6" onScroll={handleTermsAndPrivacyScroll}>
           <TermsPrivacy />
@@ -436,7 +436,7 @@ const LoginWithSocial = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="p-6">
-              <h4 className="text-xl font-semibold text-gray-800 text-center mb-6">Complete Your Profile</h4>
+              <h4 className="text-xl font-semibold text-gray-800 text-center mb-6 leading-tight tracking-tight">Complete Your Profile</h4>
               
               {/* Role Selection Buttons
               <div className="flex gap-3 mb-6">
@@ -485,7 +485,7 @@ const LoginWithSocial = () => {
               
               {/* Phone Number Input */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal tracking-tight">Phone Number</label>
                 <div className="relative">
                   <input
                     type="tel"
@@ -525,7 +525,7 @@ const LoginWithSocial = () => {
                     className="mt-1 h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
                     required
                   />
-                  <label htmlFor="terms-checkbox-google" className="ml-2 text-sm text-gray-600">
+                  <label htmlFor="terms-checkbox-google" className="ml-2 text-sm text-gray-600 leading-normal tracking-tight">
                     I have read and agree to the{" "}
                     <span 
                       className="text-pink-600 cursor-pointer hover:underline" 
@@ -565,11 +565,11 @@ const LoginWithSocial = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-[#efe1e1] rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="p-8 text-center">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4 leading-tight tracking-tight">
                 Welcome to TeacherLink! 
                 <span className="ml-2">🌟</span>
               </h3>
-              <p className="text-gray-600 mb-6 leading-relaxed">
+              <p className="text-gray-600 mb-6 leading-normal tracking-tight">
                 <span className="mr-1">🎉</span>
                 Your account is ready! <br/> You can now {selectedRole === 'Employer' ? 'start hiring!' : 'explore all teaching & non-teaching opportunities'}.
                 <br/>

@@ -22,14 +22,14 @@ const RegBanner = () => {
             
             {/* Content */}
             <div className="p-6">
-              <h3 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4">Job Seekers</h3>
-              <p className="text-gray-700 mb-6 leading-relaxed">
+              <h3 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 leading-tight tracking-tight">Job Seekers</h3>
+              <p className="text-gray-700 mb-6 leading-normal tracking-tight">
               Welcome to TeacherLink - India's trusted job portal for teachers.
               Register today to explore opportunities that match your skills, passion, and career goals.
               </p>
               <button 
                 className="w-full text-white font-semibold py-3 px-6 rounded-lg duration-300 transition-colors transform hover:scale-105 shadow-lg bg-gradient-brand hover:bg-gradient-primary-hover"
-                onClick={() => navigate('/register')}
+                onClick={() => navigate('/register?role=job-seeker')}
               >
                 Register Account
               </button>
@@ -49,12 +49,12 @@ const RegBanner = () => {
             
             {/* Content */}
             <div className="p-6">
-              <h3 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4">Job Providers</h3>
-              <p className="text-gray-700 mb-6 leading-relaxed">
+              <h3 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 leading-tight tracking-tight">Job Providers</h3>
+              <p className="text-gray-700 mb-6 leading-normal tracking-tight">
               Welcome to TeacherLink - a platform for institutions/parents to find right teaching professionals. Register now to post jobs & connect with top educators.
               </p>
               <button 
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/register?role=job-provider')}
                 className="w-full text-white font-semibold py-3 px-6 rounded-lg duration-300 transition-colors transform hover:scale-105 shadow-lg bg-gradient-brand hover:bg-gradient-primary-hover"
               >
                 Register Account

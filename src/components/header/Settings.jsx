@@ -77,7 +77,7 @@ const Settings = () => {
               className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-150"
             >
               <MdReport className="w-5 h-5 text-gray-600" />
-              <span className="text-sm font-medium">Support</span>
+              <span className="text-sm font-medium leading-normal tracking-tight">Support</span>
             </button>
             
             <button 
@@ -85,7 +85,7 @@ const Settings = () => {
               className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-150"
             >
               <MdLock className="w-5 h-5 text-gray-600" />
-              <span className="text-sm font-medium">Change Password</span>
+              <span className="text-sm font-medium leading-normal tracking-tight">Change Password</span>
             </button>
             
             <div className="border-t border-gray-200 my-1"></div>
@@ -95,7 +95,7 @@ const Settings = () => {
               className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors duration-150"
             >
               <MdLogout className="w-5 h-5" />
-              <span className="text-sm font-medium">Logout</span>
+              <span className="text-sm font-medium leading-normal tracking-tight">Logout</span>
             </button>
           </div>
         )}

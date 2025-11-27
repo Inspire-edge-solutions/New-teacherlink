@@ -34,7 +34,7 @@ const Header = () => {
               to="/why-teacherlink"
               className={
                 ({ isActive }) => [
-                "px-3 py-2 transition-all duration-200",
+                "px-3 py-2 transition-all duration-200 leading-normal tracking-tight",
                 isActive
                   ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
                   : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
@@ -46,7 +46,7 @@ const Header = () => {
               to="/salient-features"
               className={
                 ({ isActive }) => [
-                "px-3 py-2 transition-all duration-200",
+                "px-3 py-2 transition-all duration-200 leading-normal tracking-tight",
                 isActive
                   ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
                   : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
@@ -58,7 +58,7 @@ const Header = () => {
               to="/subscription-plans"
               className={({ isActive }) =>
                 [
-                  "px-3 py-2 transition-all duration-200",
+                  "px-3 py-2 transition-all duration-200 leading-normal tracking-tight",
                   isActive
                     ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
                     : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
@@ -72,7 +72,7 @@ const Header = () => {
              
               className={
                 ({ isActive }) => [
-                "px-3 py-2 transition-all duration-200",
+                "px-3 py-2 transition-all duration-200 leading-normal tracking-tight",
                 isActive
                   ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
                   : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
@@ -84,7 +84,7 @@ const Header = () => {
               to="/contact-us"
               className={
                 ({ isActive }) => [
-                "px-3 py-2 transition-all duration-200",
+                "px-3 py-2 transition-all duration-200 leading-normal tracking-tight",
                 isActive
                   ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
                   : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
@@ -98,7 +98,7 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-4">
             <NavLink
               to="/login"
-              className="p-2 w-30 h-10 rounded text-white text-sm font-medium bg-gradient-brand hover:bg-gradient-primary-hover duration-200 transition-colors flex items-center justify-center"
+              className="p-2 w-30 h-10 rounded text-white text-sm font-medium bg-gradient-brand hover:bg-gradient-primary-hover duration-200 transition-colors flex items-center justify-center leading-normal tracking-tight"
             >
               Login/Register
             </NavLink>
@@ -142,7 +142,7 @@ const Header = () => {
               <NavLink
                 to="/why-teacherlink"
                 style={({ isActive }) => ({ color: isActive ? "red" : "black" })}
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md text-base font-medium transition-colors duration-200"
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md text-base font-medium transition-colors duration-200 leading-normal tracking-tight"
                 onClick={closeMobileMenu}
               >
                 Why TeacherLink
@@ -150,7 +150,7 @@ const Header = () => {
               <NavLink
                 to="/salient-features"
                 style={({ isActive }) => ({ color: isActive ? "red" : "black" })}
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md text-base font-medium transition-colors duration-200"
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md text-base font-medium transition-colors duration-200 leading-normal tracking-tight"
                 onClick={closeMobileMenu}
               >
                 Salient Features
@@ -158,7 +158,7 @@ const Header = () => {
               <NavLink
                 to="/subscription-plans"
                 style={({ isActive }) => ({ color: isActive ? "red" : "black" })}
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md text-base font-medium transition-colors duration-200"
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md text-base font-medium transition-colors duration-200 leading-normal tracking-tight"
                 onClick={closeMobileMenu}
               >
                 Subscription Plans
@@ -166,7 +166,7 @@ const Header = () => {
               <NavLink
                 to="/about-us"
                 style={({ isActive }) => ({ color: isActive ? "red" : "black" })}
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md text-base font-medium transition-colors duration-200"
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md text-base font-medium transition-colors duration-200 leading-normal tracking-tight"
                 onClick={closeMobileMenu}
               >
                 About Us
@@ -174,7 +174,7 @@ const Header = () => {
               <NavLink
                 to="/contact-us"
                 style={({ isActive }) => ({ color: isActive ? "red" : "black" })}
-                className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md text-base font-medium transition-colors duration-200"
+                className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md text-base font-medium transition-colors duration-200 leading-normal tracking-tight"
                 onClick={closeMobileMenu}
               >
                 Contact Us

@@ -6,6 +6,31 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Montserrat', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', '"Noto Sans"', 'sans-serif'],
+      },
+      fontSize: {
+        'montserrat-base': ['16px', {
+          lineHeight: '150%',
+          letterSpacing: '0%',
+          fontWeight: '400',
+        }],
+        'montserrat-h1': ['28px', {
+          lineHeight: '120%',
+          letterSpacing: '0%',
+          fontWeight: '400',
+        }],
+        'montserrat-h2': ['24px', {
+          lineHeight: '130%',
+          letterSpacing: '0%',
+          fontWeight: '400',
+        }],
+        'montserrat-h3': ['20px', {
+          lineHeight: '140%',
+          letterSpacing: '0%',
+          fontWeight: '400',
+        }],
+      },
       backgroundImage: {
         'gradient-primary': 'linear-gradient(to right, #ec4899, #ef4444)',
         'gradient-primary-hover': 'linear-gradient(to right, #db2777, #dc2626)',
