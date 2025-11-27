@@ -90,7 +90,7 @@ const ContactUs = () => {
                       <MdLocationOn className="w-6 h-6" />
                       <p className="text-lg font-semibold text-gray-900 tracking-tight">Address</p>
                     </div>
-                    <p className="mt-3 text-gray-800 leading-normal tracking-tight">
+                    <p className="mt-3 text-lg text-gray-800 leading-normal tracking-tight">
                       Pulikeshi Nagar, Bengaluru, Karnataka, India 560005
                     </p>
                   </div>
@@ -102,15 +102,15 @@ const ContactUs = () => {
                       <p className="text-lg font-semibold text-gray-900 tracking-tight">Connect with us</p>
                     </div>
                     <div className="mt-3 space-y-4">
-                      <p className="text-gray-700 leading-normal tracking-tight">
+                      <p className="text-lg text-gray-700 leading-normal tracking-tight">
                         <span className="font-semibold">Timings:</span> 11:00 AM to 6:00 PM
                       </p>
                       
                       {/* General Queries */}
                       <div className="space-y-2">
-                        <p className="font-semibold text-gray-900 tracking-tight">For General Queries:</p>
+                        <p className="text-lg font-semibold text-gray-900 tracking-tight">For General Queries:</p>
                         <div className="space-y-1 text-gray-800 ml-4">
-                          <p className="flex items-center gap-2 leading-normal tracking-tight">
+                          <p className="text-lg flex items-center gap-2 leading-normal tracking-tight">
                             <a href="tel:+919980333603" className="hover:opacity-80 transition-opacity">
                               <MdPhone className="text-red-600 w-5 h-5" />
                             </a>
@@ -119,7 +119,7 @@ const ContactUs = () => {
                             </a>
                             <span className="text-gray-800">+91 9980833603</span>
                           </p>
-                          <p className="flex flex-col sm:flex-row sm:items-baseline leading-normal tracking-tight">
+                          <p className="text-lg flex flex-col sm:flex-row sm:items-baseline leading-normal tracking-tight">
                             <MdEmail className="text-red-600 w-5 h-5 mr-2 flex-shrink-0" />
                             <a
                               href="mailto:info@inspireedgesolutions.com"
@@ -133,9 +133,9 @@ const ContactUs = () => {
 
                       {/* Technical Queries */}
                       <div className="space-y-2">
-                        <p className="font-semibold text-gray-900 tracking-tight">For Technical Queries:</p>
+                        <p className="text-lg font-semibold text-gray-900 tracking-tight">For Technical Queries:</p>
                         <div className="space-y-1 text-gray-800 ml-4">
-                          <p className="flex items-center gap-2 leading-normal tracking-tight">
+                          <p className="text-lg flex items-center gap-2 leading-normal tracking-tight">
                             <a href="tel:+919100731810" className="hover:opacity-80 transition-opacity">
                               <MdPhone className="text-red-600 w-5 h-5" />
                             </a>
@@ -144,7 +144,7 @@ const ContactUs = () => {
                             </a>
                             <span className="text-gray-800">+91 9100731810</span>
                           </p>
-                          <p className="flex flex-col sm:flex-row sm:items-baseline leading-normal tracking-tight">
+                          <p className="text-lg flex flex-col sm:flex-row sm:items-baseline leading-normal tracking-tight">
                             <MdEmail className="text-red-600 w-5 h-5 mr-2 flex-shrink-0" />
                             <a
                               href="mailto:support@inspireedgesolutions.com"
@@ -176,7 +176,7 @@ const ContactUs = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    placeholder="John Smith"
+                    placeholder="Enter your name"
                     className="w-full px-3 py-2 border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-red-600 transition-colors"
                     required
                   />
@@ -193,7 +193,7 @@ const ContactUs = () => {
                     name="phone_number"
                     value={formData.phone_number}
                     onChange={handleInputChange}
-                    placeholder="John Smith"
+                    placeholder="Enter your mobile number"
                     className="w-full px-3 py-2 border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-red-600 transition-colors"
                     required
                   />
@@ -210,7 +210,7 @@ const ContactUs = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="email@gmail.com"
+                    placeholder="Enter your email"
                     className="w-full px-3 py-2 border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-red-600 transition-colors"
                     required
                   />

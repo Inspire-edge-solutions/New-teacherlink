@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { FiSearch, FiPlus, FiX, FiMapPin } from 'react-icons/fi';
 import LoadingState from '../../../common/LoadingState';
 import ModalPortal from '../../../common/ModalPortal';
@@ -16,7 +15,6 @@ const MessagesSidebar = ({
   isLoading = false,
   onCloseSidebar
 }) => {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [orgSearch, setOrgSearch] = useState('');
 
@@ -103,25 +101,12 @@ const MessagesSidebar = ({
                     />
                   </div>
                 </div>
-                {/* Add More Favourite Jobs Button */}
-                <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
-                  <button
-                    onClick={() => {
-                      onSelectOrganisation(null);
-                      navigate('/seeker/all-jobs');
-                    }}
-                    className="w-full px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-primary-hover transition-colors font-medium text-sm flex items-center justify-center gap-2"
-                  >
-                    <FiPlus size={16} />
-                    Add more Favourite jobs
-                  </button>
-                </div>
                 <div className="flex-1 overflow-y-auto min-h-0">
                   {isLoading ? (
                     <div className="p-4">
                       <LoadingState
-                        title="Loading institutions…"
-                        subtitle="We're pulling your favourite organisations so you can start a conversation."
+                        title="Loading applied jobs institutions…"
+                        subtitle="We're gathering the institutions from jobs you've applied to so you can message them."
                         layout="card"
                       />
                     </div>
@@ -165,16 +150,7 @@ const MessagesSidebar = ({
                       ))
                   ) : (
                     <div className="p-4 text-center">
-                      <p className="text-gray-500 mb-4">No institutions available. Add jobs to favorites or saved to start messaging.</p>
-                      <button
-                        onClick={() => {
-                          onSelectOrganisation(null);
-                          navigate('/seeker/all-jobs');
-                        }}
-                        className="w-full px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-primary-hover transition-colors font-medium"
-                      >
-                        Go to All Jobs
-                      </button>
+                      <p className="text-gray-500">No applied jobs institutions available. Apply to jobs to start messaging institutions.</p>
                     </div>
                   )}
                 </div>

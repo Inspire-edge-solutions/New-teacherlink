@@ -68,7 +68,7 @@ const AboutUs = () => {
                 <h3 className="text-xl font-bold text-gray-800 mb-4 leading-tight tracking-tight">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 leading-normal tracking-tight">
+                <p className="text-lg text-gray-600 leading-normal tracking-tight">
                   {feature.description}
                 </p>
               </div>

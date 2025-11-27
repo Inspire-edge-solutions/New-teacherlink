@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import CandidateCard from '../shared/CandidateCard';
 import CandidateDetail from '../shared/ViewFull';
 import ViewShort from '../shared/ViewShort';
@@ -17,6 +18,8 @@ import '../styles/candidate-highlight.css';
 import LoadingState from '../../../../common/LoadingState';
 import CandidateActionConfirmationModal from '../shared/CandidateActionConfirmationModal';
 import ModalPortal from '../../../../common/ModalPortal';
+
+const REDEEM_API = 'https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem';
 
 const normalizeString = (value) =>
   (value ?? '')
@@ -381,6 +384,8 @@ const AllCandidates = ({
   const [candidateToMessage, setCandidateToMessage] = useState(null);
   const [showUnlockPrompt, setShowUnlockPrompt] = useState(false);
   const [candidateToUnlock, setCandidateToUnlock] = useState(null);
+  const [unlockLoading, setUnlockLoading] = useState(false);
+  const [unlockError, setUnlockError] = useState('');
   const [showFavouriteConfirmModal, setShowFavouriteConfirmModal] = useState(false);
   const [candidateToFavourite, setCandidateToFavourite] = useState(null);
 
@@ -1132,6 +1137,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
       console.log('AllCandidates: Candidate not unlocked, prompting unlock:', candidateId);
       setCandidateToUnlock(candidate);
       setShowUnlockPrompt(true);
+      setUnlockError('');
       return;
     }
 
@@ -1167,14 +1173,106 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
   const handleUnlockPromptClose = () => {
     setShowUnlockPrompt(false);
     setCandidateToUnlock(null);
+    setUnlockError('');
+    setUnlockLoading(false);
   };
 
-  const handleUnlockPromptViewProfile = () => {
-    if (candidateToUnlock) {
-      handleViewFull(candidateToUnlock);
+  const handleUnlockForMessaging = async () => {
+    if (!candidateToUnlock || !user) return;
+
+    setUnlockLoading(true);
+    setUnlockError('');
+
+    try {
+      const userId = user.firebase_uid || user.uid;
+      if (!userId) {
+        throw new Error('User not found');
+      }
+
+      const candidateId = String(candidateToUnlock.firebase_uid || '');
+      if (!candidateId) {
+        throw new Error('Candidate not found');
+      }
+
+      // Check if already unlocked
+      if (unlockedCandidateIds.includes(candidateId)) {
+        // Already unlocked, redirect to messages
+        const messagingCandidate = buildMessagingCandidate(candidateToUnlock);
+        setShowUnlockPrompt(false);
+        setCandidateToUnlock(null);
+        navigate('/provider/messages', {
+          state: {
+            selectedCandidate: messagingCandidate,
+            startConversation: true
+          },
+          replace: false
+        });
+        setUnlockLoading(false);
+        return;
+      }
+
+      // Get current coins
+      const { data: redeemData } = await axios.get(`${REDEEM_API}?firebase_uid=${userId}`);
+      const userCoinRecord = Array.isArray(redeemData) && redeemData.length > 0
+        ? redeemData[0]
+        : redeemData;
+      
+      if (!userCoinRecord) {
+        throw new Error("Don't have enough coins in your account");
+      }
+
+      const coins = userCoinRecord.coin_value || 0;
+      const UNLOCK_COST = 60; // 50 for profile + 10 for messaging
+
+      if (coins < UNLOCK_COST) {
+        throw new Error(`You do not have enough coins. Required: ${UNLOCK_COST}, Available: ${coins}`);
+      }
+
+      // Deduct 60 coins
+      await axios.put(REDEEM_API, {
+        firebase_uid: userId,
+        coin_value: coins - UNLOCK_COST
+      });
+
+      // Mark candidate as unlocked
+      await CandidateApiService.upsertCandidateAction(candidateToUnlock, user, {
+        unlocked_candidate: 1,
+        unblocked_candidate: 1
+      });
+
+      // Update local state
+      const candidateIdStr = String(candidateId);
+      setUnlockedCandidateIds(prev => [...prev, candidateIdStr]);
+      
+      // Store in localStorage
+      const userIdStr = String(userId);
+      const unlockKey = `unlocked_${userIdStr}_${candidateIdStr}`;
+      localStorage.setItem(unlockKey, JSON.stringify({
+        unlocked: true,
+        timestamp: new Date().toISOString()
+      }));
+
+      // Show success message
+      toast.success('Candidate unlocked successfully!');
+
+      // Redirect to messages section
+      const messagingCandidate = buildMessagingCandidate(candidateToUnlock);
+      setShowUnlockPrompt(false);
+      setCandidateToUnlock(null);
+      setUnlockLoading(false);
+      
+      navigate('/provider/messages', {
+        state: {
+          selectedCandidate: messagingCandidate,
+          startConversation: true
+        },
+        replace: false
+      });
+    } catch (error) {
+      console.error('Error unlocking candidate:', error);
+      setUnlockError(error.message || 'Failed to unlock candidate. Please try again.');
+      setUnlockLoading(false);
     }
-    setShowUnlockPrompt(false);
-    setCandidateToUnlock(null);
   };
 
   // Function to scroll to a specific candidate
@@ -1458,31 +1556,40 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
             <button 
               className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all" 
               onClick={handleUnlockPromptClose}
+              disabled={unlockLoading}
             >
               &times;
             </button>
 
-            <div className="mb-4 mt-0.5 text-center">
+            <div className="mb-6 mt-0.5 text-center">
               <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
-                Unlock Candidate
+                Unlock Candidate Contact Details
               </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
-                To message {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, please unlock their contact details first. View the profile to unlock and access messaging.
+              <p className="text-gray-600 text-[15px] leading-relaxed mb-4">
+                To start messaging {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, you'll need to unlock their contact information first. <span className="font-semibold">Unlocking costs 50 coins</span> (one-time payment) and gives you full access to their profile. After unlocking, <span className="font-semibold">each message you send costs 10 coins</span>.
               </p>
+
+              {unlockError && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg text-left">
+                  <p className="text-red-700 text-[13px]">{unlockError}</p>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button 
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleUnlockPromptClose}
+                disabled={unlockLoading}
               >
                 Cancel
               </button>
               <button 
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
-                onClick={handleUnlockPromptViewProfile}
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleUnlockForMessaging}
+                disabled={unlockLoading}
               >
-                View Profile
+                {unlockLoading ? 'Unlocking...' : 'Confirm'}
               </button>
             </div>
           </div>
@@ -1513,7 +1620,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
                 Message Candidate
               </h3>
               <p className="text-gray-600 text-[15px] mb-6 text-center leading-relaxed">
-                If you want to send bulk message, add candidate to favourite
+                If you want to send bulk message, save the candidate.
               </p>
             </div>
 

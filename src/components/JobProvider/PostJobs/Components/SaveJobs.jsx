@@ -18,6 +18,21 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [jobToDelete, setJobToDelete] = useState(null);
+  
+  // Bulk messaging state
+  const [selectedJobs, setSelectedJobs] = useState(new Set());
+  const [selectAll, setSelectAll] = useState(false);
+  const [showBulkMessageModal, setShowBulkMessageModal] = useState(false);
+  const [bulkChannel, setBulkChannel] = useState(null);
+  const [bulkMessage, setBulkMessage] = useState('');
+  const [bulkMessageChars, setBulkMessageChars] = useState(0);
+  const [bulkError, setBulkError] = useState('');
+  const [coinBalance, setCoinBalance] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [bulkSummary, setBulkSummary] = useState(null);
+  const [isSendingBulk, setIsSendingBulk] = useState(false);
+  const [showInsufficientCoinsModal, setShowInsufficientCoinsModal] = useState(false);
+  const [requiredCoins, setRequiredCoins] = useState(0);
 
   // Fetch user's saved jobs
   useEffect(() => {
@@ -163,7 +178,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
       delete jobData.id; // Remove ID to create new job
       delete jobData.created_at; // Remove created date
       
-      const response = await axios.post(
+      await axios.post(
         "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes",
         [jobData],
         { headers: { "Content-Type": "application/json" } }
@@ -205,6 +220,266 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  // Bulk messaging handlers
+  const handleCheckboxChange = (jobId) => {
+    setSelectedJobs((prevSelected) => {
+      const next = new Set(prevSelected);
+      const jobIdString = String(jobId);
+      if (next.has(jobIdString)) {
+        next.delete(jobIdString);
+      } else {
+        next.add(jobIdString);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    setSelectAll((prev) => {
+      const nextSelectAll = !prev;
+      setSelectedJobs((prevSelected) => {
+        const next = new Set(prevSelected);
+        if (nextSelectAll) {
+          filteredJobs.forEach((job) => {
+            next.add(String(job.id || job.job_id));
+          });
+        } else {
+          filteredJobs.forEach((job) => {
+            next.delete(String(job.id || job.job_id));
+          });
+        }
+        return next;
+      });
+      return nextSelectAll;
+    });
+  };
+
+  useEffect(() => {
+    setSelectedJobs(new Set());
+    setSelectAll(false);
+  }, [filteredJobs]);
+
+  useEffect(() => {
+    const pageJobIds = new Set(filteredJobs.map(job => String(job.id || job.job_id)));
+    const selectedFromPage = Array.from(selectedJobs).filter(id => pageJobIds.has(id));
+    setSelectAll(pageJobIds.size > 0 && selectedFromPage.length === pageJobIds.size);
+  }, [filteredJobs, selectedJobs]);
+
+  const resetBulkMessageForm = () => {
+    setBulkChannel(null);
+    setBulkMessage('');
+    setBulkMessageChars(0);
+    setBulkError('');
+    setBulkSummary(null);
+    setIsSendingBulk(false);
+  };
+
+  const handleOpenBulkMessageModal = () => {
+    if (selectedJobs.size === 0) {
+      toast.info('Select at least one job to send a message.');
+      return;
+    }
+    resetBulkMessageForm();
+    setShowBulkMessageModal(true);
+  };
+
+  const handleCloseBulkMessageModal = () => {
+    setShowBulkMessageModal(false);
+    resetBulkMessageForm();
+  };
+
+  const handleChannelSelect = (channel) => {
+    setBulkChannel(channel);
+    setBulkError('');
+  };
+
+  const handleBulkMessageChange = (event) => {
+    const value = event.target.value || '';
+    if (value.length <= 500) {
+      setBulkMessage(value);
+      setBulkMessageChars(value.length);
+    } else {
+      const trimmed = value.slice(0, 500);
+      setBulkMessage(trimmed);
+      setBulkMessageChars(500);
+    }
+  };
+
+  useEffect(() => {
+    if (!showBulkMessageModal || !user) return;
+    (async () => {
+      try {
+        const response = await axios.get(`https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem?firebase_uid=${user.uid}`);
+        const data = response.data;
+        const found = Array.isArray(data) && data.length > 0 ? data[0] : data;
+        setCoinBalance(found?.coin_value ?? 0);
+      } catch (error) {
+        console.error('Error fetching coin balance:', error);
+        setCoinBalance(0);
+      }
+    })();
+  }, [showBulkMessageModal, user]);
+
+  const getSelectedJobRecords = () => {
+    if (selectedJobs.size === 0) return [];
+    return filteredJobs.filter(job => selectedJobs.has(String(job.id || job.job_id)));
+  };
+
+  const handlePrepareBulkSend = () => {
+    if (!bulkChannel) {
+      setBulkError('Choose a channel to continue.');
+      return;
+    }
+    const trimmedMessage = bulkMessage.trim();
+    if (!trimmedMessage) {
+      setBulkError('Enter a message to send.');
+      return;
+    }
+    const selectedRecords = getSelectedJobRecords();
+    if (selectedRecords.length === 0) {
+      setBulkError('Could not find the selected jobs.');
+      return;
+    }
+    
+    setBulkSummary({
+      channel: bulkChannel,
+      message: trimmedMessage,
+      jobs: selectedRecords
+    });
+    setShowConfirmModal(true);
+    setShowBulkMessageModal(false);
+  };
+
+  const handleCancelConfirmation = () => {
+    setShowConfirmModal(false);
+    if (bulkSummary) {
+      setBulkChannel(bulkSummary.channel);
+      setBulkMessage(bulkSummary.message);
+      setBulkMessageChars(bulkSummary.message.length);
+      setBulkSummary(null);
+      setBulkError('');
+      setShowBulkMessageModal(true);
+    } else {
+      resetBulkMessageForm();
+    }
+  };
+
+  const handleCloseInsufficientCoinsModal = () => {
+    setShowInsufficientCoinsModal(false);
+    setRequiredCoins(0);
+  };
+
+  const handleRechargeNavigate = () => {
+    setShowInsufficientCoinsModal(false);
+    // Navigate to provider account page
+    window.location.href = '/provider/my-account';
+  };
+
+  const handleConfirmSend = async () => {
+    if (!bulkSummary || !user) return;
+    setIsSendingBulk(true);
+    try {
+      // For JobProvider's saved jobs, we need to get candidate firebase_uids who applied to these jobs
+      // Since these are job posts, we'll need to fetch applied candidates for each job
+      // For now, using job firebase_uid as placeholder - this might need adjustment based on actual requirements
+      const sendedTo = bulkSummary.jobs.map((job, index) => {
+        let firebaseUid = null;
+        
+        // Try to get firebase_uid from job (this would be the institute/organization uid)
+        if (job.firebase_uid) {
+          firebaseUid = job.firebase_uid;
+        } else if (job.user_id) {
+          firebaseUid = job.user_id;
+        } else if (job.posted_by) {
+          firebaseUid = job.posted_by;
+        }
+        
+        if (!firebaseUid) {
+          console.warn(`⚠️ No firebase_uid found for job at index ${index}:`, {
+            jobId: job.id,
+            jobTitle: job.job_title,
+            jobKeys: job ? Object.keys(job) : []
+          });
+        }
+        
+        return firebaseUid;
+      }).filter(uid => uid !== null && uid !== undefined);
+
+      if (sendedTo.length === 0) {
+        toast.error('No valid recipients found in selected jobs. Please ensure jobs have valid information.');
+        setIsSendingBulk(false);
+        return;
+      }
+      
+      if (sendedTo.length < bulkSummary.jobs.length) {
+        const missingCount = bulkSummary.jobs.length - sendedTo.length;
+        console.warn(`⚠️ ${missingCount} job(s) missing firebase_uid and will be skipped`);
+        toast.warning(`${missingCount} job(s) missing information and will be skipped.`);
+      }
+
+      const userFirebaseUid = user.firebase_uid || user.uid;
+      if (!userFirebaseUid) {
+        toast.error('User authentication required.');
+        setIsSendingBulk(false);
+        return;
+      }
+
+      if (!Array.isArray(sendedTo) || sendedTo.length === 0) {
+        console.error('❌ Invalid sendedTo array:', sendedTo);
+        toast.error('No valid recipients found. Cannot submit message for approval.');
+        setIsSendingBulk(false);
+        return;
+      }
+
+      const approvalPayload = {
+        firebase_uid: userFirebaseUid,
+        message: bulkSummary.message.trim(),
+        sendedeTo: sendedTo,
+        channel: bulkSummary.channel || 'whatsapp',
+        isApproved: false,
+        isRejected: false,
+        reason: ""
+      };
+      
+      if (!approvalPayload.sendedeTo || !Array.isArray(approvalPayload.sendedeTo) || approvalPayload.sendedeTo.length === 0) {
+        console.error('❌ Validation failed - sendedeTo is invalid:', approvalPayload.sendedeTo);
+        toast.error('Invalid recipient data. Please try again.');
+        setIsSendingBulk(false);
+        return;
+      }
+
+      const response = await fetch(
+        'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/approveMessage',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(approvalPayload)
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+
+      await response.json();
+      
+      toast.success(`Bulk message request submitted successfully! Your message is pending admin approval.`);
+      
+    } catch (error) {
+      console.error('Error submitting bulk message for approval:', error);
+      toast.error('Failed to submit message request. Please try again.');
+    } finally {
+      setIsSendingBulk(false);
+      setShowConfirmModal(false);
+      setBulkSummary(null);
+      resetBulkMessageForm();
+      setSelectedJobs(new Set());
+      setSelectAll(false);
+    }
   };
 
   // Confirmation Modal Component
@@ -468,12 +743,54 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                 </div>
               </div>
               
-              {filteredJobs.map((job, index) => (
+              <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="selectAllSavedJobs"
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      checked={selectAll}
+                      onChange={handleSelectAll}
+                    />
+                    <label htmlFor="selectAllSavedJobs" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
+                      Select All Jobs on This Page
+                      {selectedJobs.size > 0 && (
+                        <span className="text-gray-500 ml-2">({selectedJobs.size} total selected)</span>
+                      )}
+                    </label>
+                  </div>
+                  {selectedJobs.size > 0 && (
+                    <button
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-brand rounded-lg shadow-lg hover:bg-gradient-primary-hover transition-colors"
+                      onClick={handleOpenBulkMessageModal}
+                    >
+                      <span role="img" aria-label="message">💬</span>
+                      Send Message
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              {filteredJobs.map((job, index) => {
+                const jobId = String(job.id || job.job_id || index);
+                return (
                 <div key={job.id || index} className="mb-4 border border-gray-200 rounded-lg shadow-sm transition-all duration-300 overflow-hidden bg-white p-3 sm:p-4 w-full hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300 hover:bg-[#F0D8D9]">
                   {/* Job Card - Clean One Line */}
                   <div className="border-none shadow-none bg-none m-0 p-0 w-full">
                     <div className="p-0 m-0 bg-none w-full">
                       <div className="flex flex-row items-start m-0 w-full gap-3 overflow-x-hidden">
+                        {/* Checkbox */}
+                        <div className="flex-shrink-0 flex items-center pt-1">
+                          <input
+                            type="checkbox"
+                            id={`job-checkbox-${jobId}`}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            checked={selectedJobs.has(jobId)}
+                            onChange={() => handleCheckboxChange(job.id || job.job_id || index)}
+                          />
+                        </div>
+                        
                         {/* Left Side: ID, Title, Date */}
                         <div className="flex flex-col gap-2 flex-1 min-w-0 overflow-hidden">
                           {/* Top Row: ID and Title */}
@@ -566,11 +883,229 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                     )}
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           )}
         </div>
       </div>
+
+      {/* Bulk Message Modal */}
+      {showBulkMessageModal && (
+        <div
+          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+          onClick={handleCloseBulkMessageModal}
+        >
+          <div
+            className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
+              onClick={handleCloseBulkMessageModal}
+            >
+              &times;
+            </button>
+
+            <div className="mb-4 mt-0.5 text-center">
+              <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+                Send Bulk Message
+              </h3>
+              <div className="text-gray-600 text-[15px] leading-relaxed space-y-1">
+                <p>
+                  <strong>20 coins</strong> per recipient via WhatsApp
+                </p>
+                <p>
+                  <strong>10 coins</strong> per recipient via RCS
+                </p>
+                {coinBalance !== null && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    Current balance: <strong>{coinBalance}</strong> coins
+                  </p>
+                )}
+                <p className="text-xs text-gray-400 mt-2">
+                  Coins will be deducted after admin approval
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              <button
+                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md ${bulkChannel === 'whatsapp' ? 'bg-[#25D366] text-white border-[#25D366]' : 'bg-white text-[#25D366] border-[#25D366]'}`}
+                onClick={() => handleChannelSelect('whatsapp')}
+              >
+                Through WhatsApp
+              </button>
+              <button
+                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md ${bulkChannel === 'rcs' ? 'bg-[#0a84ff] text-white border-[#0a84ff]' : 'bg-white text-[#0a84ff] border-[#0a84ff]'}`}
+                onClick={() => handleChannelSelect('rcs')}
+              >
+                Through RCS
+              </button>
+            </div>
+
+            {bulkChannel && (
+              <div className="space-y-3">
+                <textarea
+                  value={bulkMessage}
+                  onChange={handleBulkMessageChange}
+                  maxLength={500}
+                  rows={5}
+                  placeholder="Enter your message here..."
+                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-gradient-brand resize-none"
+                />
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span>{selectedJobs.size} job{selectedJobs.size !== 1 ? 's' : ''} selected</span>
+                  <span>{bulkMessageChars}/500</span>
+                </div>
+              </div>
+            )}
+
+            {bulkError && (
+              <div className="mt-3 text-sm text-red-500 text-left">
+                {bulkError}
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
+              <button
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                onClick={handleCloseBulkMessageModal}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handlePrepareBulkSend}
+                disabled={!bulkChannel || bulkMessageChars === 0}
+              >
+                Review & Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Message Confirmation Modal */}
+      {showConfirmModal && bulkSummary && (
+        <div
+          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+          onClick={handleCancelConfirmation}
+        >
+          <div
+            className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-lg relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
+              onClick={handleCancelConfirmation}
+              disabled={isSendingBulk}
+            >
+              &times;
+            </button>
+
+            <div className="mb-4 mt-0.5 text-center space-y-2">
+              <h3 className="font-semibold text-[18px] text-gray-800">
+                Confirm &amp; Submit for Approval
+              </h3>
+              <p className="text-gray-600 text-[15px] leading-relaxed">
+                You are about to submit a <strong>{bulkSummary.channel === 'whatsapp' ? 'WhatsApp' : 'RCS'}</strong> message request for <strong>{bulkSummary.jobs.length}</strong> job{bulkSummary.jobs.length !== 1 ? 's' : ''} for admin approval.
+              </p>
+              <p className="text-gray-600 text-[15px] leading-relaxed">
+                Your message will be reviewed by admin before being sent.
+              </p>
+            </div>
+
+            <div className="mb-4 space-y-2 max-h-60 overflow-y-auto">
+              {bulkSummary.jobs.map((job, idx) => (
+                <div key={job.id || idx} className="p-3 bg-gray-50 border border-gray-100 rounded-lg">
+                  <div className="font-semibold text-sm text-gray-800">
+                    {job.job_title || 'Untitled Job'}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    ID: {job.id || 'N/A'}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mb-4 p-3 bg-gray-50 border border-gray-100 rounded-lg text-left text-sm text-gray-700 whitespace-pre-line">
+              {bulkSummary.message}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                onClick={handleCancelConfirmation}
+                disabled={isSendingBulk}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleConfirmSend}
+                disabled={isSendingBulk}
+              >
+                {isSendingBulk ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    Submitting...
+                  </span>
+                ) : (
+                  'Submit for Approval'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Insufficient Coins Modal */}
+      {showInsufficientCoinsModal && (
+        <div
+          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+          onClick={handleCloseInsufficientCoinsModal}
+        >
+          <div
+            className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
+              onClick={handleCloseInsufficientCoinsModal}
+            >
+              &times;
+            </button>
+
+            <div className="mb-4 mt-0.5 text-center space-y-3">
+              <h3 className="font-semibold text-[18px] text-gray-800">
+                Insufficient Coins
+              </h3>
+              <p className="text-gray-600 text-[15px] leading-relaxed">
+                You need <strong>{requiredCoins}</strong> coins to send this bulk message.
+              </p>
+              <p className="text-gray-600 text-[15px] leading-relaxed">
+                Current balance: <strong>{coinBalance ?? 0}</strong> coins. You are short by <strong>{Math.max(requiredCoins - (coinBalance ?? 0), 0)}</strong> coins.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                onClick={handleCloseInsufficientCoinsModal}
+              >
+                Close
+              </button>
+              <button
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
+                onClick={handleRechargeNavigate}
+              >
+                Recharge Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

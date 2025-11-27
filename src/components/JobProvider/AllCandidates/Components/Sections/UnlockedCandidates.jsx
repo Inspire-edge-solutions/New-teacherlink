@@ -605,7 +605,7 @@ const UnlockedCandidates = ({
                 Message Candidate
               </h3>
               <p className="text-gray-600 text-[15px] mb-6 text-center leading-relaxed">
-                If you want to send bulk message, add candidate to favourite
+                If you want to send bulk message, save the candidate.
               </p>
             </div>
 

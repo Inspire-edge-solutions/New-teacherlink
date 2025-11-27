@@ -122,6 +122,30 @@ const Referrals = ({ user, onSuccess }) => {
     } catch {}
   };
 
+  const sendWhatsAppInvite = async (contact, name) => {
+    // Format phone number with country code (+91 for India)
+    const formattedPhone = `+91${contact}`;
+    
+    const whatsappPayload = {
+      phone: formattedPhone,
+      templateName: "referal",
+      language: "en",
+      bodyParams: [
+        { "type": "text", "text": name }
+      ],
+      sent_by: name,
+      sent_email: user?.email || ""
+    };
+
+    try {
+      await fetch("https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(whatsappPayload)
+      });
+    } catch {}
+  };
+
   const handleAddContact = async (e) => {
     e.preventDefault();
     const normalized = normalizePhoneNumber(contactNumber);
@@ -167,6 +191,7 @@ const Referrals = ({ user, onSuccess }) => {
 
       const name = await fetchCurrentUserName(firebase_uid);
       await sendRcsInvite(normalized, name);
+      await sendWhatsAppInvite(normalized, name);
 
       const reg = calculateRegisteredContacts(newContacts, allUsers);
       setRegisteredContacts(reg);
@@ -222,6 +247,7 @@ const Referrals = ({ user, onSuccess }) => {
 
       const name = await fetchCurrentUserName(firebase_uid);
       await sendRcsInvite(normalized, name);
+      await sendWhatsAppInvite(normalized, name);
 
       const reg = calculateRegisteredContacts(updatedContacts, allUsers);
       setRegisteredContacts(reg);
@@ -361,6 +387,7 @@ const Referrals = ({ user, onSuccess }) => {
       let loginData = await loginRes.json();
       let userLogin = loginData.find(u => u.firebase_uid === firebase_uid);
       let candidate_id = null;
+      let foundOrg = null;
       if (userLogin?.user_type === "Candidate") {
         let personalRes = await fetch('https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal');
         let personalData = await personalRes.json();
@@ -369,7 +396,7 @@ const Referrals = ({ user, onSuccess }) => {
       } else if (userLogin?.user_type === "Employer") {
         let orgRes = await fetch('https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation');
         let orgData = await orgRes.json();
-        let foundOrg = orgData.find(o => o.firebase_uid === firebase_uid);
+        foundOrg = orgData.find(o => o.firebase_uid === firebase_uid);
         candidate_id = foundOrg?.id;
       }
       let coinHistoryPayload = {
@@ -397,11 +424,47 @@ const Referrals = ({ user, onSuccess }) => {
       }
 
       toast.success("Congratulations! You have received your referral coins.");
+      
+      // Send WhatsApp notification about the reward
+      try {
+        const userPhone = foundOrg?.phone_number || foundOrg?.callingNumber || userLogin?.phone_number;
+        if (userPhone) {
+          const formattedPhone = userPhone.replace(/[^0-9]/g, "").slice(-10);
+          if (formattedPhone.length === 10) {
+            await sendReferralRewardWhatsApp(`+91${formattedPhone}`, couponValue.toString());
+          }
+        }
+      } catch (whatsappError) {
+        console.error("Failed to send WhatsApp notification:", whatsappError);
+        // Don't fail the reward process if WhatsApp fails
+      }
+      
       if (onSuccess) onSuccess();
       navigate("/provider/dashboard");
     } catch {
       toast.error("Failed to redeem referral coins or update coin history. Please contact support.");
     }
+  };
+
+  const sendReferralRewardWhatsApp = async (phone, coinAmount) => {
+    const whatsappPayload = {
+      phone: phone,
+      templateName: "insti_refer",
+      language: "en",
+      bodyParams: [
+        { "type": "text", "text": coinAmount }
+      ],
+      sent_by: user?.displayName || "Admin",
+      sent_email: user?.email || ""
+    };
+
+    try {
+      await fetch("https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(whatsappPayload)
+      });
+    } catch {}
   };
 
   useEffect(() => {
@@ -470,7 +533,7 @@ const Referrals = ({ user, onSuccess }) => {
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
-                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                    className="bg-gradient-brand h-2 rounded-full transition-all duration-300"
                     style={{ width: `${(contacts.length / 10) * 100}%` }}
                   />
                 </div>
@@ -483,7 +546,7 @@ const Referrals = ({ user, onSuccess }) => {
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
-                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                    className="bg-gradient-brand h-2 rounded-full transition-all duration-300"
                     style={{ width: `${(registeredContacts.length / 5) * 100}%` }}
                   />
                 </div>

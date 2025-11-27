@@ -53,7 +53,7 @@ const HowItWorks = () => {
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-6 leading-tight tracking-tight">
             How It Works?
           </h1>
-          <div className="text-base md:text-lg text-gray-600 max-w-3xl mx-auto leading-normal tracking-tight">
+          <div className="text-lg text-gray-600 max-w-3xl mx-auto leading-normal tracking-tight">
             It's super easy! Just follow a few quick steps to land your dream job or find the perfect teacher - all on TeacherLink.
           </div>
         </div>
@@ -78,7 +78,7 @@ const HowItWorks = () => {
                     <h3 className="text-xl font-semibold text-gray-800 leading-snug tracking-tight">
                       {step.title}
                     </h3>
-                    <p className="text-gray-600 leading-normal tracking-tight">
+                    <p className="text-lg text-gray-600 leading-normal tracking-tight">
                       {step.text}
                     </p>
                   </div>

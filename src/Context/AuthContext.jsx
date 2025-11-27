@@ -116,6 +116,7 @@ import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { getFirebaseAuth, getAuthMethods } from '../firebase';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { checkIfBlocked } from '../utils/blockedUserCheck';
 
 // Define a more complete context type
 const AuthContext = createContext({
@@ -207,6 +208,23 @@ export const AuthProvider = ({ children }) => {
 
                   // Only use stored data if it matches the current Firebase user
                   if (parsedUser.firebase_uid === firebaseUser.uid) {
+                    // SECURITY: Check if user is blocked before using cached data
+                    console.log("Checking if cached user is blocked...");
+                    const blockedCheck = await checkIfBlocked(firebaseUser.uid, firebaseUser.email);
+                    
+                    if (blockedCheck.isBlocked) {
+                      console.log("Cached user is blocked, signing out...");
+                      const auth = await getFirebaseAuth();
+                      const { signOut } = await getAuthMethods();
+                      await signOut(auth);
+                      localStorage.removeItem("user");
+                      localStorage.removeItem("token");
+                      setUser(null);
+                      setLoading(false);
+                      toast.error("Your account has been blocked. Please contact support.");
+                      return;
+                    }
+
                     // Create a merged user object with Firebase and stored data
                     const mergedUser = {
                       ...firebaseUser,
@@ -236,6 +254,24 @@ export const AuthProvider = ({ children }) => {
               // Add a small delay to allow Google login component to complete its API call
               await new Promise(resolve => setTimeout(resolve, 100));
 
+              // SECURITY: Check if user is blocked (critical for persistent auth)
+              console.log("Checking if user is blocked on auto-login...");
+              const blockedCheck = await checkIfBlocked(firebaseUser.uid, firebaseUser.email);
+              
+              if (blockedCheck.isBlocked) {
+                console.log("User is blocked, signing out and clearing session...");
+                // User is blocked - sign out and clear everything
+                const auth = await getFirebaseAuth();
+                const { signOut } = await getAuthMethods();
+                await signOut(auth);
+                localStorage.removeItem("user");
+                localStorage.removeItem("token");
+                setUser(null);
+                setLoading(false);
+                toast.error("Your account has been blocked. Please contact support.");
+                return;
+              }
+
               // Try to get user data from the working login API
               try {
                 const LOGIN_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login";
@@ -253,6 +289,20 @@ export const AuthProvider = ({ children }) => {
 
                 if (userData) {
                   console.log("User data found from API:", userData);
+
+                  // SECURITY: Double-check isBlocked from API response (if available)
+                  if (userData.isBlocked === 1 || userData.isBlocked === "1") {
+                    console.log("User is blocked according to API, signing out...");
+                    const auth = await getFirebaseAuth();
+                    const { signOut } = await getAuthMethods();
+                    await signOut(auth);
+                    localStorage.removeItem("user");
+                    localStorage.removeItem("token");
+                    setUser(null);
+                    setLoading(false);
+                    toast.error("Your account has been blocked. Please contact support.");
+                    return;
+                  }
 
                   // Create a merged user object with the correct user_type
                   const mergedUser = {

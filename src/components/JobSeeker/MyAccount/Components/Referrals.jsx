@@ -123,6 +123,30 @@ const Referrals = ({ user, onSuccess }) => {
     } catch {}
   };
 
+  const sendWhatsAppInvite = async (contact, name) => {
+    // Format phone number with country code (+91 for India)
+    const formattedPhone = `+91${contact}`;
+    
+    const whatsappPayload = {
+      phone: formattedPhone,
+      templateName: "referal",
+      language: "en",
+      bodyParams: [
+        { "type": "text", "text": name }
+      ],
+      sent_by: name,
+      sent_email: user?.email || ""
+    };
+
+    try {
+      await fetch("https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(whatsappPayload)
+      });
+    } catch {}
+  };
+
   const handleAddContact = async (e) => {
     e.preventDefault();
     const normalized = normalizePhoneNumber(contactNumber);
@@ -168,6 +192,7 @@ const Referrals = ({ user, onSuccess }) => {
 
       const name = await fetchCurrentUserName(firebase_uid);
       await sendRcsInvite(normalized, name);
+      await sendWhatsAppInvite(normalized, name);
 
       const reg = calculateRegisteredContacts(newContacts, allUsers);
       setRegisteredContacts(reg);
@@ -223,6 +248,7 @@ const Referrals = ({ user, onSuccess }) => {
 
       const name = await fetchCurrentUserName(firebase_uid);
       await sendRcsInvite(normalized, name);
+      await sendWhatsAppInvite(normalized, name);
 
       const reg = calculateRegisteredContacts(updatedContacts, allUsers);
       setRegisteredContacts(reg);
@@ -362,10 +388,11 @@ const Referrals = ({ user, onSuccess }) => {
       let loginData = await loginRes.json();
       let userLogin = loginData.find(u => u.firebase_uid === firebase_uid);
       let candidate_id = null;
+      let foundPersonal = null;
       if (userLogin?.user_type === "Candidate") {
         let personalRes = await fetch('https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal');
         let personalData = await personalRes.json();
-        let foundPersonal = personalData.find(p => p.firebase_uid === firebase_uid);
+        foundPersonal = personalData.find(p => p.firebase_uid === firebase_uid);
         candidate_id = foundPersonal?.id;
       } else if (userLogin?.user_type === "Employer") {
         let orgRes = await fetch('https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation');
@@ -388,11 +415,47 @@ const Referrals = ({ user, onSuccess }) => {
       });
 
       toast.success("Congratulations! You have received your referral coins.");
+      
+      // Send WhatsApp notification about the reward
+      try {
+        const userPhone = foundPersonal?.phone_number || foundPersonal?.callingNumber || userLogin?.phone_number;
+        if (userPhone) {
+          const formattedPhone = userPhone.replace(/[^0-9]/g, "").slice(-10);
+          if (formattedPhone.length === 10) {
+            await sendReferralRewardWhatsApp(`+91${formattedPhone}`, couponValue.toString());
+          }
+        }
+      } catch (whatsappError) {
+        console.error("Failed to send WhatsApp notification:", whatsappError);
+        // Don't fail the reward process if WhatsApp fails
+      }
+      
       if (onSuccess) onSuccess();
       navigate("/seeker/dashboard");
     } catch {
       toast.error("Failed to redeem referral coins or update coin history. Please contact support.");
     }
+  };
+
+  const sendReferralRewardWhatsApp = async (phone, coinAmount) => {
+    const whatsappPayload = {
+      phone: phone,
+      templateName: "candi_refer",
+      language: "en",
+      bodyParams: [
+        { "type": "text", "text": coinAmount }
+      ],
+      sent_by: user?.displayName || "Admin",
+      sent_email: user?.email || ""
+    };
+
+    try {
+      await fetch("https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(whatsappPayload)
+      });
+    } catch {}
   };
 
   useEffect(() => {

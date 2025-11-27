@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import CandidateCard from '../shared/CandidateCard';
 import CandidateDetail from '../shared/ViewFull';
 import ViewShort from '../shared/ViewShort';
@@ -16,6 +17,7 @@ import { HiOutlineArrowRight } from 'react-icons/hi';
 import CandidateActionConfirmationModal from '../shared/CandidateActionConfirmationModal';
 import ModalPortal from '../../../../common/ModalPortal';
 
+const REDEEM_API = 'https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem';
 const WHATSAPP_API_URL = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp';
 const RCS_API_URL = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/rcsMessage';
 const WHATSAPP_TEMPLATE_NAME = 'insti_blukingg';
@@ -63,23 +65,8 @@ const FavouriteCandidates = ({
   const [candidateToMessage, setCandidateToMessage] = useState(null);
   const [showUnlockPrompt, setShowUnlockPrompt] = useState(false);
   const [candidateToUnlock, setCandidateToUnlock] = useState(null);
-  
-  // Bulk messaging state
-  const [selectedCandidates, setSelectedCandidates] = useState(new Set());
-  const [selectAll, setSelectAll] = useState(false);
-  const [showBulkMessageModal, setShowBulkMessageModal] = useState(false);
-  const [bulkChannel, setBulkChannel] = useState(null);
-  const [bulkMessage, setBulkMessage] = useState('');
-  const [bulkMessageChars, setBulkMessageChars] = useState(0);
-  const [bulkError, setBulkError] = useState('');
-  const [coinBalance, setCoinBalance] = useState(null);
-  const [instituteInfo, setInstituteInfo] = useState(null);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [bulkSummary, setBulkSummary] = useState(null);
-  const [isSendingBulk, setIsSendingBulk] = useState(false);
-  const [showInsufficientCoinsModal, setShowInsufficientCoinsModal] = useState(false);
-  const [requiredCoins, setRequiredCoins] = useState(0);
-  const candidateLoginCacheRef = useRef({});
+  const [unlockLoading, setUnlockLoading] = useState(false);
+  const [unlockError, setUnlockError] = useState('');
 
   const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
     if (!user) return [];
@@ -117,333 +104,6 @@ const FavouriteCandidates = ({
   const indexOfLastCandidate = currentPage * candidatesPerPage;
   const indexOfFirstCandidate = indexOfLastCandidate - candidatesPerPage;
   const currentCandidates = filteredCandidates.slice(indexOfFirstCandidate, indexOfLastCandidate);
-
-  const handleCheckboxChange = useCallback((candidateId) => {
-    setSelectedCandidates((prevSelected) => {
-      const next = new Set(prevSelected);
-      if (next.has(candidateId)) {
-        next.delete(candidateId);
-      } else {
-        next.add(candidateId);
-      }
-      return next;
-    });
-  }, []);
-
-  const handleSelectAll = useCallback(() => {
-    setSelectAll((prev) => {
-      const nextSelectAll = !prev;
-      setSelectedCandidates((prevSelected) => {
-        const next = new Set(prevSelected);
-        if (nextSelectAll) {
-          currentCandidates.forEach((candidate) => {
-            next.add(candidate.firebase_uid);
-          });
-        } else {
-          currentCandidates.forEach((candidate) => {
-            next.delete(candidate.firebase_uid);
-          });
-        }
-        return next;
-      });
-      return nextSelectAll;
-    });
-  }, [currentCandidates]);
-
-  useEffect(() => {
-    setSelectedCandidates(new Set());
-    setSelectAll(false);
-  }, [filteredCandidates]);
-
-  useEffect(() => {
-    const pageIds = new Set(currentCandidates.map(candidate => candidate.firebase_uid));
-    const selectedFromPage = Array.from(selectedCandidates).filter(id => pageIds.has(id));
-    setSelectAll(pageIds.size > 0 && selectedFromPage.length === pageIds.size);
-  }, [currentCandidates, selectedCandidates]);
-
-  const resetBulkMessageForm = useCallback(() => {
-    setBulkChannel(null);
-    setBulkMessage('');
-    setBulkMessageChars(0);
-    setBulkError('');
-    setBulkSummary(null);
-    setIsSendingBulk(false);
-  }, []);
-
-  const handleOpenBulkMessageModal = useCallback(() => {
-    if (selectedCandidates.size === 0) {
-      toast.info('Select at least one candidate to send a message.');
-      return;
-    }
-    resetBulkMessageForm();
-    setShowBulkMessageModal(true);
-  }, [selectedCandidates.size, resetBulkMessageForm]);
-
-  const handleCloseBulkMessageModal = useCallback(() => {
-    setShowBulkMessageModal(false);
-    resetBulkMessageForm();
-  }, [resetBulkMessageForm]);
-
-  const handleChannelSelect = useCallback((channel) => {
-    setBulkChannel(channel);
-    setBulkError('');
-  }, []);
-
-  const handleBulkMessageChange = useCallback((event) => {
-    const value = event.target.value || '';
-    if (value.length <= 500) {
-      setBulkMessage(value);
-      setBulkMessageChars(value.length);
-    } else {
-      const trimmed = value.slice(0, 500);
-      setBulkMessage(trimmed);
-      setBulkMessageChars(500);
-    }
-  }, []);
-
-  const getCandidateLoginDetails = useCallback(async (candidateId) => {
-    if (!candidateId) return null;
-    if (candidateLoginCacheRef.current[candidateId]) {
-      return candidateLoginCacheRef.current[candidateId];
-    }
-    const details = await CandidateApiService.fetchUserLoginDetails(candidateId);
-    if (details) {
-      candidateLoginCacheRef.current[candidateId] = details;
-    }
-    return details;
-  }, []);
-
-  const formatPhoneNumber = useCallback((rawPhone) => {
-    if (!rawPhone) return null;
-    let phone = String(rawPhone).trim();
-    if (!phone) return null;
-    phone = phone.replace(/\s+/g, '');
-    if (phone.startsWith('+')) {
-      return phone;
-    }
-    phone = phone.replace(/^0+/, '');
-    if (phone.startsWith('91') && phone.length === 12) {
-      return `+${phone}`;
-    }
-    if (phone.length === 10) {
-      return `+91${phone}`;
-    }
-    return `+${phone}`;
-  }, []);
-
-  useEffect(() => {
-    if (!showBulkMessageModal) return;
-    (async () => {
-      try {
-        const coins = await CandidateApiService.getUserCoins(user);
-        setCoinBalance(coins);
-        const userId = user?.firebase_uid || user?.uid || user?.id;
-        if (userId) {
-          const instituteDetails = await CandidateApiService.fetchUserLoginDetails(userId);
-          setInstituteInfo(instituteDetails);
-        }
-      } catch (error) {
-        console.error('Error preparing bulk messaging modal:', error);
-      }
-    })();
-  }, [showBulkMessageModal, user]);
-
-  const getSelectedCandidateRecords = useCallback(() => {
-    if (selectedCandidates.size === 0) return [];
-    return favouriteCandidates.filter(candidate => selectedCandidates.has(candidate.firebase_uid));
-  }, [favouriteCandidates, selectedCandidates]);
-
-  const handlePrepareBulkSend = useCallback(() => {
-    if (!bulkChannel) {
-      setBulkError('Choose a channel to continue.');
-      return;
-    }
-    const trimmedMessage = bulkMessage.trim();
-    if (!trimmedMessage) {
-      setBulkError('Enter a message to send.');
-      return;
-    }
-    const selectedRecords = getSelectedCandidateRecords();
-    if (selectedRecords.length === 0) {
-      setBulkError('Could not find the selected candidates.');
-      return;
-    }
-    // No coin balance check needed - submitting for admin approval, not sending directly
-    
-    // Debug: Log the structure to see what we have
-    console.log('📋 Building summary for candidates:', selectedRecords.map(candidate => ({
-      candidateId: candidate.id,
-      candidateName: candidate.fullName || candidate.name,
-      firebaseUid: candidate.firebase_uid,
-      hasFirebaseUid: !!candidate.firebase_uid
-    })));
-    
-    setBulkSummary({
-      channel: bulkChannel,
-      message: trimmedMessage,
-      candidates: selectedRecords
-    });
-    setShowConfirmModal(true);
-    setShowBulkMessageModal(false);
-  }, [bulkChannel, bulkMessage, getSelectedCandidateRecords]);
-
-  const handleCancelConfirmation = useCallback(() => {
-    setShowConfirmModal(false);
-    if (bulkSummary) {
-      setBulkChannel(bulkSummary.channel);
-      setBulkMessage(bulkSummary.message);
-      setBulkMessageChars(bulkSummary.message.length);
-      setBulkSummary(null);
-      setBulkError('');
-      setShowBulkMessageModal(true);
-    } else {
-      resetBulkMessageForm();
-    }
-  }, [bulkSummary, resetBulkMessageForm]);
-
-  const handleCloseInsufficientCoinsModal = useCallback(() => {
-    setShowInsufficientCoinsModal(false);
-    setRequiredCoins(0);
-  }, []);
-
-  const handleRechargeNavigate = useCallback(() => {
-    setShowInsufficientCoinsModal(false);
-    navigate('/provider/my-account');
-  }, [navigate]);
-
-  const handleConfirmSend = useCallback(async () => {
-    if (!bulkSummary || !user) return;
-    setIsSendingBulk(true);
-    try {
-      // Collect firebase_uid from all selected candidates
-      const sendedTo = bulkSummary.candidates.map((candidate, index) => {
-        // Try multiple ways to get firebase_uid
-        let firebaseUid = null;
-        
-        // Try direct firebase_uid
-        if (candidate.firebase_uid) {
-          firebaseUid = candidate.firebase_uid;
-        }
-        // Try other possible fields
-        else if (candidate.uid) {
-          firebaseUid = candidate.uid;
-        }
-        else if (candidate.user_id) {
-          firebaseUid = candidate.user_id;
-        }
-        else if (candidate.id && typeof candidate.id === 'string' && candidate.id.length > 20) {
-          // Sometimes id might be the firebase_uid
-          firebaseUid = candidate.id;
-        }
-        
-        if (!firebaseUid) {
-          console.warn(`⚠️ No firebase_uid found for candidate at index ${index}:`, {
-            candidateId: candidate.id,
-            candidateName: candidate.fullName || candidate.name,
-            hasFirebaseUid: !!candidate.firebase_uid,
-            candidateKeys: candidate ? Object.keys(candidate) : []
-          });
-        }
-        
-        return firebaseUid;
-      }).filter(uid => uid !== null && uid !== undefined); // Remove any null/undefined values
-
-      console.log('📤 Collected firebase_uids for sendedTo (candidates):', sendedTo);
-      console.log('📊 Total valid candidate uids:', sendedTo.length, 'out of', bulkSummary.candidates.length);
-
-      if (sendedTo.length === 0) {
-        toast.error('No valid candidates found in selected list. Please ensure candidates have valid firebase_uid.');
-        setIsSendingBulk(false);
-        return;
-      }
-      
-      if (sendedTo.length < bulkSummary.candidates.length) {
-        const missingCount = bulkSummary.candidates.length - sendedTo.length;
-        console.warn(`⚠️ ${missingCount} candidate(s) missing firebase_uid and will be skipped`);
-        toast.warning(`${missingCount} candidate(s) missing firebase_uid and will be skipped.`);
-      }
-
-      // Get current user's firebase_uid
-      const userFirebaseUid = user.firebase_uid || user.uid;
-      if (!userFirebaseUid) {
-        toast.error('User authentication required.');
-        setIsSendingBulk(false);
-        return;
-      }
-
-      // Validate sendedTo array before sending
-      if (!Array.isArray(sendedTo) || sendedTo.length === 0) {
-        console.error('❌ Invalid sendedTo array:', sendedTo);
-        toast.error('No valid recipients found. Cannot submit message for approval.');
-        setIsSendingBulk(false);
-        return;
-      }
-
-      // Prepare payload for approval API
-      // Note: Backend expects 'sendedeTo' (lowercase 'e'), not 'sendedTo'
-      // Backend will JSON.stringify the array, so send as array (not string)
-      const approvalPayload = {
-        firebase_uid: userFirebaseUid,
-        message: bulkSummary.message.trim(),
-        sendedeTo: sendedTo, // Send as array - backend will JSON.stringify it
-        channel: bulkSummary.channel || 'whatsapp', // Store selected channel (whatsapp or rcs)
-        isApproved: false,
-        isRejected: false,
-        reason: ""
-      };
-      
-      // Final validation - ensure sendedeTo is present and is an array
-      if (!approvalPayload.sendedeTo || !Array.isArray(approvalPayload.sendedeTo) || approvalPayload.sendedeTo.length === 0) {
-        console.error('❌ Validation failed - sendedeTo is invalid:', approvalPayload.sendedeTo);
-        toast.error('Invalid recipient data. Please try again.');
-        setIsSendingBulk(false);
-        return;
-      }
-      
-      console.log('📦 Final approval payload:', {
-        firebase_uid: approvalPayload.firebase_uid,
-        message: approvalPayload.message.substring(0, 50) + '...',
-        sendedeTo: approvalPayload.sendedeTo,
-        sendedeToLength: approvalPayload.sendedeTo.length,
-        sendedeToType: Array.isArray(approvalPayload.sendedeTo) ? 'array' : typeof approvalPayload.sendedeTo,
-        channel: approvalPayload.channel
-      });
-      
-      // Log the actual JSON that will be sent
-      console.log('📤 JSON payload to be sent:', JSON.stringify(approvalPayload));
-
-      // Send to approval API
-      const response = await fetch(
-        'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/approveMessage',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(approvalPayload)
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
-      }
-
-      await response.json(); // Response received, no need to use the result
-      
-      toast.success(`Bulk message request submitted successfully! Your message is pending admin approval.`);
-      
-    } catch (error) {
-      console.error('Error submitting bulk message for approval:', error);
-      toast.error('Failed to submit message request. Please try again.');
-    } finally {
-      setIsSendingBulk(false);
-      setShowConfirmModal(false);
-      setBulkSummary(null);
-      resetBulkMessageForm();
-      setSelectedCandidates(new Set());
-      setSelectAll(false);
-    }
-  }, [bulkSummary, resetBulkMessageForm, user]);
 
   // Fetch favourite candidates
   const fetchFavouriteCandidates = useCallback(async () => {
@@ -598,6 +258,7 @@ const FavouriteCandidates = ({
       console.log('FavouriteCandidates: Candidate not unlocked, prompting unlock:', candidateId);
       setCandidateToUnlock(candidate);
       setShowUnlockPrompt(true);
+      setUnlockError('');
       return;
     }
 
@@ -610,14 +271,106 @@ const FavouriteCandidates = ({
   const handleUnlockPromptClose = () => {
     setShowUnlockPrompt(false);
     setCandidateToUnlock(null);
+    setUnlockError('');
+    setUnlockLoading(false);
   };
 
-  const handleUnlockPromptViewProfile = () => {
-    if (candidateToUnlock) {
-      handleViewFull(candidateToUnlock);
+  const handleUnlockForMessaging = async () => {
+    if (!candidateToUnlock || !user) return;
+
+    setUnlockLoading(true);
+    setUnlockError('');
+
+    try {
+      const userId = user.firebase_uid || user.uid;
+      if (!userId) {
+        throw new Error('User not found');
+      }
+
+      const candidateId = String(candidateToUnlock.firebase_uid || '');
+      if (!candidateId) {
+        throw new Error('Candidate not found');
+      }
+
+      // Check if already unlocked
+      if (unlockedCandidateIds.includes(candidateId)) {
+        // Already unlocked, redirect to messages
+        const messagingCandidate = buildMessagingCandidate(candidateToUnlock);
+        setShowUnlockPrompt(false);
+        setCandidateToUnlock(null);
+        navigate('/provider/messages', {
+          state: {
+            selectedCandidate: messagingCandidate,
+            startConversation: true
+          },
+          replace: false
+        });
+        setUnlockLoading(false);
+        return;
+      }
+
+      // Get current coins
+      const { data: redeemData } = await axios.get(`${REDEEM_API}?firebase_uid=${userId}`);
+      const userCoinRecord = Array.isArray(redeemData) && redeemData.length > 0
+        ? redeemData[0]
+        : redeemData;
+      
+      if (!userCoinRecord) {
+        throw new Error("Don't have enough coins in your account");
+      }
+
+      const coins = userCoinRecord.coin_value || 0;
+      const UNLOCK_COST = 60; // 50 for profile + 10 for messaging
+
+      if (coins < UNLOCK_COST) {
+        throw new Error(`You do not have enough coins. Required: ${UNLOCK_COST}, Available: ${coins}`);
+      }
+
+      // Deduct 60 coins
+      await axios.put(REDEEM_API, {
+        firebase_uid: userId,
+        coin_value: coins - UNLOCK_COST
+      });
+
+      // Mark candidate as unlocked
+      await CandidateApiService.upsertCandidateAction(candidateToUnlock, user, {
+        unlocked_candidate: 1,
+        unblocked_candidate: 1
+      });
+
+      // Update local state
+      const candidateIdStr = String(candidateId);
+      setUnlockedCandidateIds(prev => [...prev, candidateIdStr]);
+      
+      // Store in localStorage
+      const userIdStr = String(userId);
+      const unlockKey = `unlocked_${userIdStr}_${candidateIdStr}`;
+      localStorage.setItem(unlockKey, JSON.stringify({
+        unlocked: true,
+        timestamp: new Date().toISOString()
+      }));
+
+      // Show success message
+      toast.success('Candidate unlocked successfully!');
+
+      // Redirect to messages section
+      const messagingCandidate = buildMessagingCandidate(candidateToUnlock);
+      setShowUnlockPrompt(false);
+      setCandidateToUnlock(null);
+      setUnlockLoading(false);
+      
+      navigate('/provider/messages', {
+        state: {
+          selectedCandidate: messagingCandidate,
+          startConversation: true
+        },
+        replace: false
+      });
+    } catch (error) {
+      console.error('Error unlocking candidate:', error);
+      setUnlockError(error.message || 'Failed to unlock candidate. Please try again.');
+      setUnlockLoading(false);
     }
-    setShowUnlockPrompt(false);
-    setCandidateToUnlock(null);
   };
 
   // Handle "Ok" button - close modal, stay on page
@@ -819,34 +572,6 @@ const FavouriteCandidates = ({
       {/* Candidates List */}
       {currentCandidates.length > 0 ? (
         <div className="candidates-results">
-          <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="selectAllFavouriteCandidates"
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  checked={selectAll}
-                  onChange={handleSelectAll}
-                />
-                <label htmlFor="selectAllFavouriteCandidates" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
-                  Select All Candidates on This Page
-                  {selectedCandidates.size > 0 && (
-                    <span className="text-gray-500 ml-2">({selectedCandidates.size} total selected)</span>
-                  )}
-                </label>
-              </div>
-              {selectedCandidates.size > 0 && (
-                <button
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-brand rounded-lg shadow-lg hover:bg-gradient-primary-hover duration-300 transition-colors"
-                  onClick={handleOpenBulkMessageModal}
-                >
-                  <span role="img" aria-label="message">💬</span>
-                  Send Message
-                </button>
-              )}
-            </div>
-          </div>
           <div className="candidates-list">
             {currentCandidates.map((candidate) => {
               const candidateId = candidate.firebase_uid;
@@ -868,9 +593,6 @@ const FavouriteCandidates = ({
                   onToggleFavourite={handleToggleFavourite}
                   onMessage={handleMessage}
                   candidatePhoto={candidatePhotos[candidateId]}
-                  showCheckbox={true}
-                  isChecked={selectedCandidates.has(candidateId)}
-                  onCheckboxChange={handleCheckboxChange}
                 />
               );
             })}
@@ -937,6 +659,7 @@ const FavouriteCandidates = ({
             <button
               className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
               onClick={handleUnlockPromptClose}
+              disabled={unlockLoading}
             >
               &times;
             </button>
@@ -945,23 +668,50 @@ const FavouriteCandidates = ({
               <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
                 Unlock Candidate
               </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
-                To message {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, please unlock their contact details first. View the profile to unlock and access messaging.
+              <p className="text-gray-600 text-[15px] leading-relaxed mb-4">
+                To message {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, please unlock their contact details first.
               </p>
+              
+              {/* Coin Breakdown */}
+              <div className="bg-white/80 rounded-lg p-4 mb-4">
+                <p className="text-gray-700 text-[14px] font-medium mb-2">Coin Deduction:</p>
+                <div className="space-y-1 text-left">
+                  <div className="flex justify-between text-[13px] text-gray-600">
+                    <span>Profile Unlock:</span>
+                    <span className="font-semibold">50 coins</span>
+                  </div>
+                  <div className="flex justify-between text-[13px] text-gray-600">
+                    <span>Messaging:</span>
+                    <span className="font-semibold">10 coins</span>
+                  </div>
+                  <div className="border-t border-gray-300 pt-1 mt-1 flex justify-between text-[14px] font-semibold text-gray-800">
+                    <span>Total:</span>
+                    <span>60 coins</span>
+                  </div>
+                </div>
+              </div>
+
+              {unlockError && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg">
+                  <p className="text-red-700 text-[13px]">{unlockError}</p>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleUnlockPromptClose}
+                disabled={unlockLoading}
               >
                 Cancel
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
-                onClick={handleUnlockPromptViewProfile}
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleUnlockForMessaging}
+                disabled={unlockLoading}
               >
-                View Profile
+                {unlockLoading ? 'Unlocking...' : 'Unlock Details'}
               </button>
             </div>
           </div>
@@ -992,7 +742,7 @@ const FavouriteCandidates = ({
                 Message Candidate
               </h3>
               <p className="text-gray-600 text-[15px] mb-6 text-center leading-relaxed">
-                To send a bulk message, select multiple candidates using the checkboxes and click <strong>Send Message</strong>. Choose <strong>Continue Single</strong> below to message just this candidate.
+                If you want to send bulk message, save the candidate.
               </p>
             </div>
 
@@ -1014,229 +764,6 @@ const FavouriteCandidates = ({
         </div>
         </ModalPortal>
       )}
-
-      {/* Bulk Message Modal */}
-      {showBulkMessageModal && (
-        <ModalPortal>
-          <div
-            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-            onClick={handleCloseBulkMessageModal}
-          >
-            <div
-              className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
-              onClick={(e) => e.stopPropagation()}
-            >
-            <button
-              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
-              onClick={handleCloseBulkMessageModal}
-            >
-              &times;
-            </button>
-
-            <div className="mb-4 mt-0.5 text-center">
-              <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
-                Send Bulk Message
-              </h3>
-              <div className="text-gray-600 text-[15px] leading-relaxed space-y-1">
-                <p>
-                  <strong>20 coins</strong> per candidate via WhatsApp
-                </p>
-                <p>
-                  <strong>10 coins</strong> per candidate via RCS
-                </p>
-                {coinBalance !== null && (
-                  <p className="text-sm text-gray-500 mt-2">
-                    Current balance: <strong>{coinBalance}</strong> coins
-                  </p>
-                )}
-                <p className="text-xs text-gray-400 mt-2">
-                  Coins will be deducted after admin approval
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 mb-4">
-              <button
-                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md ${bulkChannel === 'whatsapp' ? 'bg-[#25D366] text-white border-[#25D366]' : 'bg-white text-[#25D366] border-[#25D366]'}`}
-                onClick={() => handleChannelSelect('whatsapp')}
-              >
-                Through WhatsApp
-              </button>
-              <button
-                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md ${bulkChannel === 'rcs' ? 'bg-[#0a84ff] text-white border-[#0a84ff]' : 'bg-white text-[#0a84ff] border-[#0a84ff]'}`}
-                onClick={() => handleChannelSelect('rcs')}
-              >
-                Through RCS
-              </button>
-            </div>
-
-            {bulkChannel && (
-              <div className="space-y-3">
-                <textarea
-                  value={bulkMessage}
-                  onChange={handleBulkMessageChange}
-                  maxLength={500}
-                  rows={5}
-                  placeholder="Enter your message here..."
-                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-gradient-brand resize-none"
-                />
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>{selectedCandidates.size} candidate{selectedCandidates.size !== 1 ? 's' : ''} selected</span>
-                  <span>{bulkMessageChars}/500</span>
-                </div>
-              </div>
-            )}
-
-            {bulkError && (
-              <div className="mt-3 text-sm text-red-500 text-left">
-                {bulkError}
-              </div>
-            )}
-
-            <div className="flex flex-col sm:flex-row gap-3 mt-6">
-              <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
-                onClick={handleCloseBulkMessageModal}
-              >
-                Cancel
-              </button>
-              <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={handlePrepareBulkSend}
-                disabled={!bulkChannel || bulkMessageChars === 0}
-              >
-                Review & Send
-              </button>
-            </div>
-            </div>
-          </div>
-        </ModalPortal>
-      )}
-
-      {/* Bulk Message Confirmation Modal */}
-      {showConfirmModal && bulkSummary && (
-        <ModalPortal>
-          <div
-            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-            onClick={handleCancelConfirmation}
-          >
-            <div
-              className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-lg relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
-              onClick={(e) => e.stopPropagation()}
-            >
-            <button
-              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
-              onClick={handleCancelConfirmation}
-            >
-              &times;
-            </button>
-
-            <div className="mb-4 mt-0.5 text-center space-y-2">
-              <h3 className="font-semibold text-[18px] text-gray-800">
-                Confirm &amp; Submit for Approval
-              </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
-                You are about to submit a <strong>{bulkSummary.channel === 'whatsapp' ? 'WhatsApp' : 'RCS'}</strong> message request to <strong>{bulkSummary.candidates.length}</strong> candidate{bulkSummary.candidates.length !== 1 ? 's' : ''} for admin approval.
-              </p>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
-                Your message will be reviewed by admin before being sent.
-              </p>
-            </div>
-
-            <div className="mb-4 space-y-2 max-h-60 overflow-y-auto">
-              {bulkSummary.candidates.map(candidate => (
-                <div key={candidate.firebase_uid} className="p-3 bg-gray-50 border border-gray-100 rounded-lg">
-                  <div className="font-semibold text-sm text-gray-800">
-                    {candidate.fullName || candidate.name || 'Candidate'}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {candidate.present_city_name || candidate.city || candidate.permanent_city_name || 'City not available'}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mb-4 p-3 bg-gray-50 border border-gray-100 rounded-lg text-left text-sm text-gray-700 whitespace-pre-line">
-              {bulkSummary.message}
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
-                onClick={handleCancelConfirmation}
-                disabled={isSendingBulk}
-              >
-                Cancel
-              </button>
-              <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={handleConfirmSend}
-                disabled={isSendingBulk}
-              >
-                {isSendingBulk ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    Submitting...
-                  </span>
-                ) : (
-                  'Submit for Approval'
-                )}
-              </button>
-            </div>
-            </div>
-          </div>
-        </ModalPortal>
-      )}
-
-      {/* Insufficient Coins Modal */}
-      {showInsufficientCoinsModal && (
-        <ModalPortal>
-          <div
-            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-            onClick={handleCloseInsufficientCoinsModal}
-          >
-          <div
-            className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
-              onClick={handleCloseInsufficientCoinsModal}
-            >
-              &times;
-            </button>
-
-            <div className="mb-4 mt-0.5 text-center space-y-3">
-              <h3 className="font-semibold text-[18px] text-gray-800">
-                Insufficient Coins
-              </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
-                You need <strong>{requiredCoins}</strong> coins to send this bulk message.
-              </p>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
-                Current balance: <strong>{coinBalance ?? 0}</strong> coins. You are short by <strong>{Math.max(requiredCoins - (coinBalance ?? 0), 0)}</strong> coins.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
-                onClick={handleCloseInsufficientCoinsModal}
-              >
-                Close
-              </button>
-              <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
-                onClick={handleRechargeNavigate}
-              >
-                Recharge Now
-              </button>
-            </div>
-          </div>
-        </div>
-        </ModalPortal>
-      )}
-
 
     </div>
   );

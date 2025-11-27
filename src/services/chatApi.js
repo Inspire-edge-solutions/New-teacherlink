@@ -3,6 +3,8 @@ const CHAT_API_BASE = 'https://etm4h8r37d.execute-api.ap-south-1.amazonaws.com/d
 const ORGANISATION_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation';
 const FAVROUTE_JOBS_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteJobs';
 const FAVROUTE_USERS_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/favrouteUser';
+const APPLY_CANDIDATE_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/applyCandidate';
+const JOB_POSTING_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes';
 const PERSONAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal';
 const LOGIN_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login';
 
@@ -423,25 +425,90 @@ class ChatApiService {
     }
   }
 
+  async getAppliedJobs(currentUserId) {
+    try {
+      const response = await fetch(`${APPLY_CANDIDATE_API}?user_id=${currentUserId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      // Filter by is_applied === 1
+      const appliedJobs = Array.isArray(data)
+        ? data.filter(job => job.is_applied === 1)
+        : [];
+      return appliedJobs;
+    } catch (error) {
+      console.error('Error fetching applied jobs:', error);
+      throw error;
+    }
+  }
+
+  async getJobs() {
+    try {
+      const response = await fetch(JOB_POSTING_API);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      // Only return approved jobs
+      return Array.isArray(data) ? data.filter(job => job.isApproved === 1) : [];
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      throw error;
+    }
+  }
+
   async getOrganisationsForJobSeeker(currentUserId) {
     try {
       // Removed excessive logging - uncomment for debugging if needed
       // console.log('Fetching organizations for job seeker:', currentUserId);
       
-      // First, fetch favrouteJobs data
-      const favrouteJobsData = await this.getFavrouteJobs();
+      // First, fetch applied jobs data
+      const appliedJobsData = await this.getAppliedJobs(currentUserId);
       
-      // Filter by added_by === currentUserId AND favroute_jobs === 1
-      const userJobs = favrouteJobsData.filter(job => 
-        String(job.added_by) === String(currentUserId) && job.favroute_jobs === 1
-      );
-      
-      if (userJobs.length === 0) {
+      if (appliedJobsData.length === 0) {
         return [];
       }
       
-      // Extract unique firebase_uids
-      const uniqueFirebaseUids = [...new Set(userJobs.map(job => job.firebase_uid))];
+      // Extract job_ids from applied jobs
+      const appliedJobIds = appliedJobsData
+        .map(job => Number(job.job_id))
+        .filter(id => !isNaN(id) && id > 0);
+      
+      if (appliedJobIds.length === 0) {
+        return [];
+      }
+      
+      // Fetch all jobs to get firebase_uid for each applied job
+      const allJobs = await this.getJobs();
+      
+      // Create a map of job_id -> firebase_uid
+      const jobIdToFirebaseUid = {};
+      allJobs.forEach(job => {
+        if (job.id && job.firebase_uid) {
+          jobIdToFirebaseUid[Number(job.id)] = job.firebase_uid;
+        }
+      });
+      
+      // Get unique firebase_uids from applied jobs
+      // First try job_firebase_uid from applied jobs response, then fallback to job details
+      const uniqueFirebaseUids = [...new Set(
+        appliedJobsData
+          .map(job => {
+            // First try job_firebase_uid from applied jobs response
+            if (job.job_firebase_uid) {
+              return job.job_firebase_uid;
+            }
+            // Fallback: get firebase_uid from job details using job_id
+            const jobId = Number(job.job_id);
+            return jobIdToFirebaseUid[jobId];
+          })
+          .filter(Boolean) // Remove undefined/null values
+      )];
+      
+      if (uniqueFirebaseUids.length === 0) {
+        return [];
+      }
       
       // Fetch all organizations
       const allOrgs = await this.getOrganisations();
@@ -486,32 +553,79 @@ class ChatApiService {
     }
   }
 
+  // Helper function to get unlocked candidate IDs from localStorage
+  getUnlockedCandidatesFromLocalStorage(currentUserId) {
+    if (!currentUserId) return [];
+    
+    const unlockedCandidateIds = [];
+    
+    // Check all localStorage keys for unlocked candidates
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(`unlocked_${currentUserId}_`)) {
+        try {
+          const stored = localStorage.getItem(key);
+          if (!stored) continue;
+          
+          const parsed = JSON.parse(stored);
+          
+          if (parsed.unlocked && parsed.timestamp) {
+            const unlockTime = new Date(parsed.timestamp);
+            const now = new Date();
+            const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
+            
+            // Only include if unlocked within 30 days (matching UnlockedCandidates component)
+            if (daysDiff <= 30) {
+              const candidateId = key.replace(`unlocked_${currentUserId}_`, '');
+              if (candidateId) {
+                unlockedCandidateIds.push(candidateId);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error parsing localStorage item:', key, error);
+          // Continue to next item if parsing fails
+        }
+      }
+    }
+    
+    return unlockedCandidateIds;
+  }
+
   async getCandidatesForJobProvider(currentUserId) {
     try {
       // Removed excessive logging - uncomment for debugging if needed
       // console.log('Fetching candidates for job provider:', currentUserId);
       
-      // First, fetch favrouteUsers data
+      // Get unlocked candidate IDs from localStorage (backward compatibility)
+      const localStorageUnlockedIds = this.getUnlockedCandidatesFromLocalStorage(currentUserId);
+      
+      // Get unlocked candidate IDs from database (favrouteUsers table)
       const favrouteUsersData = await this.getFavrouteUsers();
+      const databaseUnlockedIds = favrouteUsersData
+        .filter(user => 
+          String(user.added_by) === String(currentUserId) && 
+          (user.unlocked_candidate === 1 || user.unblocked_candidate === 1)
+        )
+        .map(user => user.firebase_uid)
+        .filter(Boolean);
       
-      // Filter by added_by === currentUserId AND favroute_candidate === 1
-      const userCandidates = favrouteUsersData.filter(user => 
-        String(user.added_by) === String(currentUserId) && user.favroute_candidate === 1
-      );
+      // Merge both sources (remove duplicates using Set)
+      const allUnlockedIds = new Set([
+        ...localStorageUnlockedIds.map(String),
+        ...databaseUnlockedIds.map(String)
+      ]);
       
-      if (userCandidates.length === 0) {
+      if (allUnlockedIds.size === 0) {
         return [];
       }
-      
-      // Extract unique firebase_uids
-      const uniqueFirebaseUids = [...new Set(userCandidates.map(user => user.firebase_uid))];
       
       // Fetch all personal users
       const allUsers = await this.getPersonalUsers();
       
       // Filter users by firebase_uid and return with fullName
       const filteredCandidates = allUsers
-        .filter(user => uniqueFirebaseUids.includes(user.firebase_uid))
+        .filter(user => allUnlockedIds.has(String(user.firebase_uid)))
         .map(user => ({
           firebase_uid: user.firebase_uid,
           fullName: user.fullName,

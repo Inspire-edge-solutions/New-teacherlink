@@ -2,6 +2,7 @@ import React, { lazy } from "react";
 import { Navigate } from "react-router-dom";
 import Loadable from "../layouts/shared/loadable/Loadable.jsx";
 import { ProtectedRoute } from "../components/common/form/ProtectedRoute.jsx";
+import { RootRedirect } from "../components/common/form/RootRedirect.jsx";
 
 // const BlankLayout = Loadable(
 //   lazy(() => import("../layouts/blank/BlankLayout.jsx"))
@@ -59,7 +60,7 @@ const Router = [
     children: [
       {
         path: "/",
-        element: <Navigate to="/home" />,
+        element: <RootRedirect />,
       },
       {
         path: "/login",

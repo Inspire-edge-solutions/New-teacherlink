@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { FiSearch, FiPlus, FiClock, FiUser, FiSlash, FiUnlock, FiX } from 'react-icons/fi';
 import LoadingState from "../../../common/LoadingState";
 import ModalPortal from "../../../common/ModalPortal";
@@ -20,7 +19,6 @@ const MessagesSidebar = ({
   onUnblock,
   onCloseSidebar
 }) => {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [candidateSearch, setCandidateSearch] = useState('');
 
@@ -178,7 +176,7 @@ const MessagesSidebar = ({
         {showCandidates && (
           <ModalPortal>
             <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden shadow-xl">
+              <div className="bg-[#F0D8D9] rounded-lg max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden shadow-xl">
               {/* Modal Header */}
               <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
                 <h3 className="text-lg font-semibold text-gray-900">Select Candidate</h3>
@@ -202,26 +200,13 @@ const MessagesSidebar = ({
                   />
                 </div>
               </div>
-              {/* Add More Favourite Candidates Button */}
-              <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
-                <button
-                  onClick={() => {
-                    onSelectCandidate(null);
-                    navigate('/provider/all-candidates');
-                  }}
-                  className="w-full px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors font-medium text-sm flex items-center justify-center gap-2"
-                >
-                  <FiPlus size={16} />
-                  Add favorite Candidate
-                </button>
-              </div>
               {/* Scrollable Candidate List */}
               <div className="flex-1 overflow-y-auto min-h-0">
                 {isLoading ? (
                   <div className="p-4">
                     <LoadingState
-                      title="Loading favourite candidates…"
-                      subtitle="We’re gathering the candidates you’ve bookmarked so you can message them."
+                      title="Loading unlocked candidates…"
+                      subtitle="We're gathering the candidates you've unlocked so you can message them."
                       layout="card"
                     />
                   </div>
@@ -259,16 +244,7 @@ const MessagesSidebar = ({
                     ))
                 ) : (
                   <div className="p-4 text-center">
-                    <p className="text-gray-500 mb-4">No favorite candidates available. Add candidates to favorites to start messaging.</p>
-                    <button
-                      onClick={() => {
-                        onSelectCandidate(null);
-                        navigate('/provider/all-candidates');
-                      }}
-                      className="w-full px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors font-medium"
-                    >
-                      Go to All Candidates
-                    </button>
+                    <p className="text-gray-500">No unlocked candidates available. Unlock candidates to start messaging them.</p>
                   </div>
                 )}
               </div>
