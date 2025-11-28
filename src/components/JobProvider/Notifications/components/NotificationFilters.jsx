@@ -2,12 +2,11 @@ import React from 'react';
 import { FaBell, FaCheckCircle, FaUserShield, FaUserCheck } from 'react-icons/fa';
 import { MdNotificationsNone } from 'react-icons/md';
 
-const NotificationFilters = ({ filter, setFilter, unreadCount }) => {
+const NotificationFilters = ({ filter, setFilter, }) => {
   const filterOptions = [
     { key: 'all', label: 'All', icon: <FaBell /> },
-    { key: 'unread', label: 'Unread', icon: <MdNotificationsNone />, count: unreadCount },
     { key: 'read', label: 'Read', icon: <FaCheckCircle /> },
-    { key: 'application', label: 'Applications', icon: <FaUserCheck /> },
+    { key: 'application', label: 'Candidates', icon: <FaUserCheck /> },
     { key: 'Admin', label: 'Admin', icon: <FaUserShield /> }
   ];
 

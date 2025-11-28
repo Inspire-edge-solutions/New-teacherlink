@@ -37,7 +37,7 @@ const Header = () => {
             </div>
           </Zoom>
           <Fade in={checked} timeout={1000} style={{ transitionDelay: '400ms' }}>
-            <h1 className="text-4xl mb-4 p-2 font-bold bg-gradient-brand-text bg-clip-text text-transparent">
+            <h1 className="text-2xl mb-4 p-2 font-bold bg-gradient-brand-text bg-clip-text text-transparent">
               Premium Advertising Services
             </h1>
           </Fade>

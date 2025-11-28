@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../../Context/AuthContext';
 import RecruiterActionItem from './RecruiterActionItem';
+import LoadingState from '../../../../components/common/LoadingState';
 
 const PERSONAL_API =
   'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal';
@@ -439,14 +440,11 @@ const RecruiterActions = () => {
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           {loading ? (
-            <div className="px-6 py-10 text-center">
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">
-                Fetching recruiter activity
-              </h2>
-              <p className="text-sm text-gray-500 max-w-sm mx-auto">
-                Please wait while we check for the latest updates.
-              </p>
-            </div>
+            <LoadingState
+              title="Fetching recruiter activity"
+              subtitle="Please wait while we check for the latest updates."
+              layout="card"
+            />
           ) : insufficientCoins ? (
             <div className="px-6 py-10 text-center bg-[#F0D8D9] rounded-2xl">
               <h2 className="text-lg font-semibold text-gray-800 mb-2">

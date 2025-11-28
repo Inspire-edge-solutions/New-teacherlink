@@ -136,7 +136,7 @@ export const useNotifications = () => {
 
       return applicationNotifications;
     } catch (error) {
-      console.error('Error fetching application notifications:', error);
+      console.error('Error fetching candidates notifications:', error);
       return [];
     }
   };

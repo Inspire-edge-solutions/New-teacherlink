@@ -666,28 +666,28 @@ const ActiveJobs = ({
                         <div className="flex-shrink-0 px-2">
                           <div className="flex flex-col sm:flex-row gap-2 items-end sm:items-center lg:flex-nowrap">
                             <button
-                              className="border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md"
+                              className="border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md"
                               onClick={() => handlePostSameJob(job)}
                             >
                               Post Same
                             </button>
 
                             <button
-                              className="border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md"
+                              className="border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md"
                               onClick={() => handleEditAndPost(job)}
                             >
                               Edit & Post
                             </button>
 
                             <button
-                              className={`border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md ${expandedJobId === (job.id || index) ? 'opacity-90' : ''}`}
+                              className={`border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md ${expandedJobId === (job.id || index) ? 'opacity-90' : ''}`}
                               onClick={() => handleViewJob(job.id || index)}
                             >
                               {expandedJobId === (job.id || index) ? 'Hide' : 'View'}
                             </button>
 
                             <button
-                              className="border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand text-white hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
+                              className="border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
                               onClick={() => handleCloseJob(job)}
                               disabled={isJobClosed(job)}
                             >

@@ -227,7 +227,7 @@ const CandidateCard = ({
                 </div>
               )}
               {/* Action Icons - Mobile */}
-              <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="flex items-center justify-center gap-1.5 flex-wrap">
                 {/* View Full Icon */}
                 <button
                   className="group relative p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-blue-200"

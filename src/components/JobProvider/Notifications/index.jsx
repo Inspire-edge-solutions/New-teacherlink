@@ -46,7 +46,39 @@ const NotificationsComponent = () => {
           <Skeleton variant="text" width="40%" height={32} className="mb-4" />
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} variant="rectangular" height={80} className="rounded-lg" />
+              <div key={i} className="p-3 sm:p-4 rounded-lg border-2 border-gray-200 bg-white">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  {/* Icon Skeleton */}
+                  <div className="p-2 sm:p-3 rounded-lg bg-gray-100 flex-shrink-0">
+                    <Skeleton variant="circular" width={24} height={24} className="sm:w-6 sm:h-6" />
+                  </div>
+                  
+                  {/* Content Skeleton */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex-1 min-w-0">
+                        {/* Title Skeleton */}
+                        <div className="flex items-center gap-2 mb-1">
+                          <Skeleton variant="text" width="60%" height={24} className="sm:h-6" />
+                          <Skeleton variant="circular" width={8} height={8} />
+                        </div>
+                        {/* Message Skeleton */}
+                        <Skeleton variant="text" width="100%" height={28} className="mb-2 sm:h-7" />
+                        <Skeleton variant="text" width="80%" height={28} className="sm:h-7" />
+                      </div>
+                      
+                      {/* Date/Time and Actions Skeleton */}
+                      <div className="flex items-center justify-between gap-2">
+                        <Skeleton variant="text" width="30%" height={20} />
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Skeleton variant="rectangular" width={100} height={32} className="rounded-lg sm:w-32" />
+                          <Skeleton variant="circular" width={32} height={32} className="sm:w-8 sm:h-8" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </Paper>

@@ -10,7 +10,7 @@ const NotificationHeader = ({ unreadCount, onMarkAllAsRead }) => {
             <FaBell className="text-white text-xl" />
           </div>
           <div className="flex-1">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Notifications</h1>
+            <h1 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent">Notifications</h1>
             <p className="text-sm text-gray-600">
               {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
             </p>
