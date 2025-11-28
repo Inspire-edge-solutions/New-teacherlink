@@ -27,7 +27,7 @@ const ORG_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/org
 const WHATSAPP_API = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/whatsapp';
 const RCS_API = 'https://aqi0ep5u95.execute-api.ap-south-1.amazonaws.com/dev/rcsMessage';
 
-const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJobId }) => {
+const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJobId, refreshTrigger }) => {
   const { user, loading: userLoading } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
@@ -52,8 +52,6 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJobId 
   const [selectedJob, setSelectedJob] = useState(null);
   const [showFavouriteConfirmModal, setShowFavouriteConfirmModal] = useState(false);
   const [jobToFavourite, setJobToFavourite] = useState(null);
-  const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
-  const [jobToSave, setJobToSave] = useState(null);
 
   // Sort helper: recent first using date-like fields or id fallback
   const sortJobsByRecency = useCallback((list) => {
@@ -107,6 +105,13 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJobId 
   useEffect(() => {
     fetchSavedAndFavJobs();
   }, [user, fetchSavedAndFavJobs]);
+
+  // Refresh saved jobs when refreshTrigger changes (when tab becomes active or manual refresh)
+  useEffect(() => {
+    if (refreshTrigger && user) {
+      fetchSavedAndFavJobs();
+    }
+  }, [refreshTrigger, user, fetchSavedAndFavJobs]);
 
   // Only display jobs that are saved and still available in the main jobs API
   const getVisibleJobs = useCallback(() => {
@@ -570,6 +575,9 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJobId 
 
   const {
     selectedJobs,
+    selectAll,
+    handleCheckboxChange,
+    handleSelectAll,
     showMessageModal,
     jobToMessage,
     handleMessage,
@@ -580,6 +588,7 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJobId 
     handleApplyPromptClose,
     handleApplyPromptApplyJob,
     showBulkMessageModal,
+    handleOpenBulkMessageModal,
     handleCloseBulkMessageModal,
     bulkChannel,
     bulkMessage,
@@ -665,37 +674,64 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJobId 
 
   return (
     <div className="widget-content">
-      <div className="widget-title mb-3">
-        <div className="d-flex justify-content-between align-items-center w-100">
-          <div className="d-flex">
+      <div className="mb-4">
+        <div className="flex justify-between items-center gap-4 flex-wrap">
+          <div className="flex-1 max-w-md">
             <SearchBar onSearch={handleSearch} placeholder="Search saved jobs..." />
           </div>
-          <div className="d-flex">
-          </div>
+          <RecordsPerPageDropdown
+            itemsPerPage={jobsPerPage}
+            onItemsPerPageChange={(v) => { setJobsPerPage(v); setCurrentPage(1); }}
+          />
         </div>
       </div>
 
       <div className="job-listing">
-        <div className="flex justify-between items-center mb-3">
+        <div className="mb-3">
           <h5 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
             {isSearching
               ? `Found ${filteredJobs.length} saved job${filteredJobs.length !== 1 ? 's' : ''}`
               : `${filteredJobs.length} Jobs Saved`
             }
           </h5>
-          <RecordsPerPageDropdown 
-            itemsPerPage={jobsPerPage}
-            onItemsPerPageChange={setJobsPerPage}
-          />
         </div>
 
         {currentJobs.length > 0 ? (
           <div className="job-results">
+            <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="selectAllSavedJobs"
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    checked={selectAll}
+                    onChange={handleSelectAll}
+                  />
+                  <label htmlFor="selectAllSavedJobs" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
+                    Select All Jobs on This Page
+                    {selectedJobs.size > 0 && (
+                      <span className="text-gray-500 ml-2">({selectedJobs.size} total selected)</span>
+                    )}
+                  </label>
+                </div>
+                {selectedJobs.size > 0 && (
+                  <button
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-brand rounded-lg shadow-lg hover:bg-gradient-primary-hover duration-300 transition-colors"
+                    onClick={handleOpenBulkMessageModal}
+                  >
+                    <span role="img" aria-label="message">💬</span>
+                    Send Message
+                  </button>
+                )}
+              </div>
+            </div>
             <div className="job-list">
-              {currentJobs.map((job, index) => {
+              {currentJobs.map((job) => {
                 const jobId = getJobId(job);
                 const isFavourite = favouriteJobs.includes(jobId);
                 const isApplied = appliedJobs.includes(jobId);
+                const isSelected = selectedJobs.has(String(jobId));
                 
                 return (
                   <JobCard
@@ -713,6 +749,9 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJobId 
                     messageDisabled={!isApplied}
                     messageTooltip={!isApplied ? 'Apply to message this institute' : ''}
                     isHighlighted={highlightedJobId === jobId}
+                    showCheckbox={true}
+                    isChecked={isSelected}
+                    onCheckboxChange={handleCheckboxChange}
                   />
                 );
               })}

@@ -42,101 +42,105 @@ const JobMessagingModals = ({
     <>
       {/* Apply Prompt Modal */}
       {showApplyPrompt && jobToApplyPrompt && (
-        <div
-          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-          onClick={onApplyPromptClose}
-        >
+        <ModalPortal>
           <div
-            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+            onClick={onApplyPromptClose}
           >
-            <button
-              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
-              onClick={onApplyPromptClose}
+            <div
+              className="bg-[#F0D8D9] rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+              onClick={(e) => e.stopPropagation()}
             >
-              &times;
-            </button>
-
-            <div className="mb-4 mt-0.5 text-center">
-              <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
-                Apply To Message
-              </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
-                To message the institute about the job titled - <strong>{jobToApplyPrompt.job_title || jobToApplyPrompt.title || 'this job'}</strong>, please apply to the job first. View the job to apply and unlock messaging.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
               <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
                 onClick={onApplyPromptClose}
               >
-                Cancel
+                &times;
               </button>
-              <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
-                onClick={() => {
-                  if (typeof onApplyPromptApply === 'function') {
-                    onApplyPromptApply();
-                  } else {
-                    onApplyPromptClose();
-                  }
-                }}
-              >
-                Apply Job
-              </button>
+
+              <div className="mb-4 mt-0.5 text-center">
+                <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+                  Apply To Message
+                </h3>
+                <p className="text-gray-600 text-[15px] leading-relaxed">
+                  To message the institute about the job titled - <strong>{jobToApplyPrompt.job_title || jobToApplyPrompt.title || 'this job'}</strong>, please apply to the job first. View the job to apply and unlock messaging.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                  onClick={onApplyPromptClose}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
+                  onClick={() => {
+                    if (typeof onApplyPromptApply === 'function') {
+                      onApplyPromptApply();
+                    } else {
+                      onApplyPromptClose();
+                    }
+                  }}
+                >
+                  Apply Job
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {/* Message Modal */}
       {showMessageModal && jobToMessage && (
-        <div
-          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-          onClick={onMessageModalOk}
-        >
+        <ModalPortal>
           <div
-            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+            onClick={onMessageModalOk}
           >
-            <button
-              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
-              onClick={onMessageModalOk}
+            <div
+              className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+              onClick={(e) => e.stopPropagation()}
             >
-              &times;
-            </button>
-
-            <div className="mb-4 mt-0.5">
-              <h3 className="font-semibold text-[18px] mb-4 text-center text-gray-800">
-                Message Institute
-              </h3>
-              <p className="text-gray-600 text-[15px] mb-6 text-center leading-relaxed">
-                To send a bulk message, select multiple jobs using the checkboxes and click <strong>Send Message</strong>. Choose <strong>Continue Single</strong> below to message just this institute.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
               <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
                 onClick={onMessageModalOk}
               >
-                Ok
+                &times;
               </button>
-              <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (onMessageModalContinue) {
-                    onMessageModalContinue();
-                  }
-                }}
-              >
-                Continue Single
-              </button>
+
+              <div className="mb-4 mt-0.5">
+                <h3 className="font-semibold text-[18px] mb-4 text-center text-gray-800">
+                  Message Institute
+                </h3>
+                <p className="text-gray-600 text-[15px] mb-6 text-center leading-relaxed">
+                  To send a bulk message, select multiple jobs using the checkboxes and click <strong>Send Message</strong>. Choose <strong>Continue Single</strong> below to message just this institute.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                  onClick={onMessageModalOk}
+                >
+                  Ok
+                </button>
+                <button
+                  className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onMessageModalContinue) {
+                      onMessageModalContinue();
+                    }
+                  }}
+                >
+                  Continue Single
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {/* Bulk Message Modal */}
@@ -173,7 +177,7 @@ const JobMessagingModals = ({
                     Current balance: <strong>{coinBalance}</strong> coins
                   </p>
                 )}
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-sm text-gray-600 mt-2">
                   Coins will be deducted after admin approval
                 </p>
               </div>
@@ -249,7 +253,7 @@ const JobMessagingModals = ({
               onClick={(e) => e.stopPropagation()}
             >
             <button
-              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900hover:scale-110 transition-all"
+              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
               onClick={onCancelConfirmation}
               disabled={isSendingBulk}
             >
@@ -318,49 +322,51 @@ const JobMessagingModals = ({
 
       {/* Insufficient Coins Modal */}
       {showInsufficientCoinsModal && (
-        <div
-          className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
-          onClick={onCloseInsufficientCoinsModal}
-        >
+        <ModalPortal>
           <div
-            className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 w-full h-screen bg-black/65 flex items-center justify-center z-[1050] animate-fadeIn overflow-y-auto p-5"
+            onClick={onCloseInsufficientCoinsModal}
           >
-            <button
-              className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
-              onClick={onCloseInsufficientCoinsModal}
+            <div
+              className="bg-white rounded-2xl p-8 w-[90%] max-w-md relative shadow-2xl animate-slideUp my-auto max-h-[calc(100vh-40px)] overflow-y-auto overscroll-contain"
+              onClick={(e) => e.stopPropagation()}
             >
-              &times;
-            </button>
-
-            <div className="mb-4 mt-0.5 text-center space-y-3">
-              <h3 className="font-semibold text-[18px] text-gray-800">
-                Insufficient Coins
-              </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
-                You need <strong>{requiredCoins}</strong> coins to send this bulk message.
-              </p>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
-                Current balance: <strong>{coinBalance ?? 0}</strong> coins. You are short by <strong>{Math.max(requiredCoins - (coinBalance ?? 0), 0)}</strong> coins.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
               <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                className="absolute top-4 right-4 bg-transparent border-none text-2xl text-gray-600 cursor-pointer p-1.5 leading-none hover:text-gray-900 hover:scale-110 transition-all"
                 onClick={onCloseInsufficientCoinsModal}
               >
-                Close
+                &times;
               </button>
-              <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
-                onClick={onRechargeNavigate}
-              >
-                Recharge Now
-              </button>
+
+              <div className="mb-4 mt-0.5 text-center space-y-3">
+                <h3 className="font-semibold text-[18px] text-gray-800">
+                  Insufficient Coins
+                </h3>
+                <p className="text-gray-600 text-[15px] leading-relaxed">
+                  You need <strong>{requiredCoins}</strong> coins to send this bulk message.
+                </p>
+                <p className="text-gray-600 text-[15px] leading-relaxed">
+                  Current balance: <strong>{coinBalance ?? 0}</strong> coins. You are short by <strong>{Math.max(requiredCoins - (coinBalance ?? 0), 0)}</strong> coins.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                  onClick={onCloseInsufficientCoinsModal}
+                >
+                  Close
+                </button>
+                <button
+                  className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
+                  onClick={onRechargeNavigate}
+                >
+                  Recharge Now
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </>
   );

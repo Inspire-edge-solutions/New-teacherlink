@@ -23,6 +23,7 @@ const TabDisplay = () => {
   const [appliedJobsBackHandler, setAppliedJobsBackHandler] = useState(null);
   const [lastSelectedJobId, setLastSelectedJobId] = useState(null);
   const [fromNotifications, setFromNotifications] = useState(false);
+  const [saveJobsRefreshTrigger, setSaveJobsRefreshTrigger] = useState(0);
 
   // Handle job view
   const handleViewJob = (job) => {
@@ -130,6 +131,10 @@ const TabDisplay = () => {
     setActiveTab(tabId);
     setViewMode('list');
     setSelectedJob(null);
+    // Refresh SaveJobs when switching to it
+    if (tabId === 'save') {
+      setSaveJobsRefreshTrigger(prev => prev + 1);
+    }
   };
 
   const tabs = [
@@ -188,6 +193,7 @@ const TabDisplay = () => {
                     }
                     onNavigateTab={handleNavigateToTab}
                     highlightJobId={viewMode === 'list' ? lastSelectedJobId : null}
+                    refreshTrigger={activeTab === 'save' ? saveJobsRefreshTrigger : undefined}
                   />
           )}
         </div>

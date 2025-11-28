@@ -268,13 +268,19 @@ class JobApiService {
         ? data.find(r => Number(r.id) === jobId && String(r.added_by) === String(userId))
         : null;
 
+      // Preserve existing values if not explicitly provided
+      // This ensures that saving a job doesn't remove it from favourites
+      const currentFavroute = existingPref ? (existingPref.favroute_jobs || 0) : 0;
+      const currentSaved = existingPref ? (existingPref.saved_jobs || 0) : 0;
+
       const payload = {
         id: jobId,
         firebase_uid: job.firebase_uid,
         job_name: job.job_title,
         added_by: userId,
-        favroute_jobs: favroute_jobs ? 1 : 0,
-        saved_jobs: saved_jobs ? 1 : 0
+        // Only update the fields that are explicitly provided, preserve others
+        favroute_jobs: favroute_jobs !== undefined ? (favroute_jobs ? 1 : 0) : currentFavroute,
+        saved_jobs: saved_jobs !== undefined ? (saved_jobs ? 1 : 0) : currentSaved
       };
 
       const response = await fetch(API_ENDPOINTS.FAV_API, {

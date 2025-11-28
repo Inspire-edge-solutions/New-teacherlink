@@ -174,6 +174,29 @@ const Content = () => {
     return new Date(validTo) > new Date() ? "Active" : "Expired";
   };
 
+  const getRechargeMode = (coinData) => {
+    if (!coinData) return "N/A";
+    
+    const modes = [];
+    
+    // Check all possible sources
+    if (coinData.is_razor_pay === 1) modes.push("Payment");
+    if (coinData.is_coupon === 1) modes.push("Coupon");
+    if (coinData.is_refer === 1) modes.push("Referral");
+    
+    // Fallback: if coupon_code exists but no flags, determine from coupon_code
+    if (modes.length === 0 && coinData.coupon_code && coinData.coupon_code !== "") {
+      if (coinData.coupon_code.toLowerCase() === "refer") {
+        modes.push("Referral");
+      } else {
+        modes.push("Coupon");
+      }
+    }
+    
+    // Return all modes joined with comma, or N/A if none found
+    return modes.length > 0 ? modes.join(", ") : "N/A";
+  };
+
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
@@ -263,19 +286,30 @@ const Content = () => {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
         {/* Left Side - Coupon Details (60% width) */}
         <div className="lg:col-span-3">
-          {coinData && coinData.coupon_code ? (
+          {coinData && (coinData.coin_value > 0 || coinData.is_razor_pay === 1 || coinData.is_coupon === 1 || coinData.is_refer === 1) ? (
             <>
               {/* Heading centered */}
-              <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4 text-center">Coupon Details</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4 text-center">Coin Details</h3>
               
               {/* Two Column Layout */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3 sm:mb-4">
-                {/* Left Column: Coupon Code and Status */}
+                {/* Left Column: Recharge Mode, Coupon Code (if exists), and Status */}
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm sm:text-base text-gray-700 font-bold">Coupon Code:</span>
-                    <span className="text-base sm:text-lg font-bold text-red-500">{coinData.coupon_code}</span>
+                  <div className="flex flex-row items-center gap-2 flex-wrap">
+                    <span className="text-sm sm:text-base text-gray-700 font-bold whitespace-nowrap">Recharge Mode:</span>
+                    <span className="text-base sm:text-lg font-bold text-red-500 break-words">{getRechargeMode(coinData)}</span>
                   </div>
+                  {/* Only show coupon code for actual coupons, not for referrals or payments */}
+                  {coinData.coupon_code && 
+                   coinData.coupon_code !== "" && 
+                   coinData.coupon_code.toLowerCase() !== "refer" &&
+                   coinData.is_coupon === 1 && 
+                   coinData.is_razor_pay !== 1 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm sm:text-base text-gray-700 font-bold">Coupon Code:</span>
+                      <span className="text-base sm:text-lg font-bold text-red-500">{coinData.coupon_code}</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
                     <span className="text-sm sm:text-base text-gray-700 font-bold">Status:</span>
                     <span className={`text-sm sm:text-base font-bold ${

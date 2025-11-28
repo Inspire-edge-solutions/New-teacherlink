@@ -68,6 +68,8 @@ const buildSupplementalRecord = (candidate) => {
     administrative_designations: candidate.administrative_designations ?? null,
     teaching_administrative_designations: candidate.teaching_administrative_designations ?? null,
     designation: candidate.designation ?? null,
+    dateOfBirth: candidate.dateOfBirth ?? candidate.date_of_birth ?? candidate.dob ?? candidate.birthDate ?? null,
+    gender: candidate.gender ?? null,
     preferable_timings: candidate.preferable_timings ?? candidate.timing_preference ?? null,
     expected_salary: candidate.expected_salary ?? candidate.salary_expectation ?? null,
     total_experience_years:
@@ -353,14 +355,23 @@ class CandidateApiService {
       throw new Error("Missing candidate identifier for status update.");
     }
 
+    // id is required for PUT requests to identify which record to update
+    if (!candidate.id) {
+      throw new Error("Missing record ID. Cannot update status without database record ID.");
+    }
+
     try {
       const payload = {
+        id: candidate.id, // REQUIRED: Database record ID to identify which record to update
         job_id: candidate.job_id,
         user_id: candidateId,
-        status
+        firebase_uid: candidateId,
+        status: status, // Update the status field in applyJobs table
+        application_status: status, // Also update application_status for backward compatibility
+        is_applied: candidate.is_applied !== undefined ? candidate.is_applied : 1
       };
+      
       await axios.put(API_ENDPOINTS.APPLIED_CANDIDATES_API, payload);
-      toast.success("Status updated");
       return { success: true };
     } catch (error) {
       console.error("Error updating candidate status:", error);
@@ -593,11 +604,7 @@ class CandidateApiService {
           const candidateUserId = appliedCandidate.user_id; // This is the candidate's ID
           
           // Determine the name - prioritize appliedCandidate.fullName from API
-          const candidateName = appliedCandidate.fullName || 
-                                appliedCandidate.name || 
-                                profile?.name || 
-                                profile?.fullName || 
-                                'Unknown Candidate';
+          const candidateName = appliedCandidate.fullName || appliedCandidate.name || profile?.name || profile?.fullName || 'Unknown Candidate';
           
           const enriched = {
             ...(profile || {}),
@@ -605,6 +612,7 @@ class CandidateApiService {
             firebase_uid: candidateUserId, // Candidate's ID for photo fetching and other operations
             user_id: candidateUserId, // Also store as user_id for clarity
             // Keep application-specific data
+            id: appliedCandidate.id, // IMPORTANT: Preserve the database ID for updates
             job_id: appliedCandidate.job_id,
             job_name: appliedCandidate.job_name,
             applied_at: appliedCandidate.applied_at,

@@ -1,13 +1,17 @@
 import React from 'react';
 import { AiOutlineEye, AiOutlineFileText, AiOutlineSave, AiFillSave, AiOutlineHeart, AiFillHeart, AiOutlineMessage } from 'react-icons/ai';
-import { FaBriefcase, FaWallet, FaMapMarkerAlt, FaGraduationCap, FaStar } from 'react-icons/fa';
+import { FaBriefcase, FaWallet, FaMapMarkerAlt, FaGraduationCap, FaStar, FaBook, FaUser, FaBirthdayCake } from 'react-icons/fa';
 import { AvatarImage } from '../utils/avatarUtils.jsx';
 import { 
   getExperience, 
   parseEducationDetails, 
   parseCoreExpertise, 
   getLocationString,
-  formatSalary
+  formatSalary,
+  getSubjectsString,
+  getGenderString,
+  getAgeString,
+  getQualificationString
 } from '../utils/candidateUtils.js';
 
 /**
@@ -32,7 +36,8 @@ const CandidateCard = ({
   showStatusControl = false,
   statusValue = '',
   statusOptions = [],
-  onStatusChange
+  onStatusChange,
+  forceMobileLayout = false
 }) => {
   const candidateId = candidate.firebase_uid;
 
@@ -81,13 +86,13 @@ const CandidateCard = ({
         {/* Name and Actions Section */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-col gap-2">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-start gap-2 sm:gap-0">
+            <div className={`flex flex-col ${forceMobileLayout ? '' : 'sm:flex-row'} justify-between items-start ${forceMobileLayout ? '' : 'sm:items-start'} gap-2 ${forceMobileLayout ? '' : 'sm:gap-0'}`}>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base sm:text-lg font-bold text-gray-800 leading-tight truncate">
+                <h3 className={`${forceMobileLayout ? 'text-base' : 'text-base sm:text-lg'} font-bold text-gray-800 leading-tight truncate`}>
                   {candidate.fullName || candidate.name || 'Name not available'}
                 </h3>
                 {(candidate.job_name || candidate.designation) && (
-                  <p className="text-xs sm:text-sm text-gray-600 mt-0.5 truncate">
+                  <p className={`${forceMobileLayout ? 'text-xs' : 'text-xs sm:text-sm'} text-gray-600 mt-0.5 truncate`}>
                     {candidate.job_name ? (
                       <>
                         Applied for <span className="font-semibold">{candidate.job_name}</span>
@@ -100,7 +105,7 @@ const CandidateCard = ({
               </div>
 
               {/* Action Icons - Desktop view */}
-              <div className="hidden sm:flex items-center gap-1.5 sm:gap-2.5 sm:ml-3 flex-shrink-0">
+              <div className={`${forceMobileLayout ? 'hidden' : 'hidden sm:flex'} items-center gap-1.5 sm:gap-2.5 sm:ml-3 flex-shrink-0`}>
                 {/* Status Dropdown */}
                 {showStatusControl && (
                   <div className="flex items-center gap-1.5 sm:gap-2">
@@ -123,7 +128,7 @@ const CandidateCard = ({
                 )}
                 {/* View Full Icon */}
                 <button
-                  className="group relative p-2 rounded-xl sm:p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-blue-200"
+                  className={`group relative ${forceMobileLayout ? 'p-2' : 'p-2 rounded-xl sm:p-2.5'} bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-blue-200`}
                   onClick={(e) => {
                     e.stopPropagation();
                     onViewFull && onViewFull(candidate);
@@ -131,12 +136,12 @@ const CandidateCard = ({
                   title="View Full Profile"
                   disabled={loading}
                 >
-                  <AiOutlineEye className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                  <AiOutlineEye className={`${forceMobileLayout ? 'w-4 h-4' : 'w-4 h-4 sm:w-6 sm:h-6'} transition-transform group-hover:scale-110`} />
                 </button>
                 
                 {/* View Short Icon */}
                 <button
-                  className="group relative p-2 rounded-xl sm:p-2.5 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white border border-purple-200 hover:border-purple-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-purple-200"
+                  className={`group relative ${forceMobileLayout ? 'p-2' : 'p-2 rounded-xl sm:p-2.5'} bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white border border-purple-200 hover:border-purple-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-purple-200`}
                   onClick={(e) => {
                     e.stopPropagation();
                     onViewShort && onViewShort(candidate);
@@ -144,12 +149,12 @@ const CandidateCard = ({
                   title="View Short Profile"
                   disabled={loading}
                 >
-                  <AiOutlineFileText className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                  <AiOutlineFileText className={`${forceMobileLayout ? 'w-4 h-4' : 'w-4 h-4 sm:w-6 sm:h-6'} transition-transform group-hover:scale-110`} />
                 </button>
                 
                 {/* Save Icon */}
                 <button
-                  className={`group relative p-2 rounded-xl sm:p-2.5 border transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg ${
+                  className={`group relative ${forceMobileLayout ? 'p-2' : 'p-2 rounded-xl sm:p-2.5'} border transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg ${
                     isSaved 
                       ? 'text-green-700 bg-green-50 border-green-300 hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-green-200' 
                       : 'text-green-600 bg-green-50 border-green-200 hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-green-200'
@@ -162,15 +167,15 @@ const CandidateCard = ({
                   disabled={loading}
                 >
                   {isSaved ? (
-                    <AiFillSave className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110 group-hover:rotate-12" />
+                    <AiFillSave className={`${forceMobileLayout ? 'w-4 h-4' : 'w-4 h-4 sm:w-6 sm:h-6'} transition-transform group-hover:scale-110 group-hover:rotate-12`} />
                   ) : (
-                    <AiOutlineSave className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                    <AiOutlineSave className={`${forceMobileLayout ? 'w-4 h-4' : 'w-4 h-4 sm:w-6 sm:h-6'} transition-transform group-hover:scale-110`} />
                   )}
                 </button>
                 
                 {/* Favourite Icon */}
                 <button
-                  className={`group relative p-2 rounded-xl sm:p-2.5 border transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg ${
+                  className={`group relative ${forceMobileLayout ? 'p-2' : 'p-2 rounded-xl sm:p-2.5'} border transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg ${
                     isFavourite 
                       ? 'text-red-600 bg-red-50 border-red-300 hover:bg-red-600 hover:text-white hover:border-red-600 hover:shadow-red-200' 
                       : 'text-gray-600 bg-gray-50 border-gray-200 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-red-200'
@@ -183,15 +188,15 @@ const CandidateCard = ({
                   disabled={loading}
                 >
                   {isFavourite ? (
-                    <AiFillHeart className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-125 group-hover:animate-pulse" />
+                    <AiFillHeart className={`${forceMobileLayout ? 'w-4 h-4' : 'w-4 h-4 sm:w-6 sm:h-6'} transition-transform group-hover:scale-125 group-hover:animate-pulse`} />
                   ) : (
-                    <AiOutlineHeart className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                    <AiOutlineHeart className={`${forceMobileLayout ? 'w-4 h-4' : 'w-4 h-4 sm:w-6 sm:h-6'} transition-transform group-hover:scale-110`} />
                   )}
                 </button>
                 
                 {/* Message Icon */}
                 <button
-                  className="group relative p-2 rounded-xl sm:p-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-indigo-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-indigo-200"
+                  className={`group relative ${forceMobileLayout ? 'p-2' : 'p-2 rounded-xl sm:p-2.5'} bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-indigo-600 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-indigo-200`}
                   onClick={(e) => {
                     e.stopPropagation();
                     onMessage && onMessage(candidate);
@@ -199,13 +204,13 @@ const CandidateCard = ({
                   title="Message Candidate"
                   disabled={loading}
                 >
-                  <AiOutlineMessage className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
+                  <AiOutlineMessage className={`${forceMobileLayout ? 'w-4 h-4' : 'w-4 h-4 sm:w-6 sm:h-6'} transition-transform group-hover:scale-110`} />
                 </button>
               </div>
             </div>
 
             {/* Status Dropdown and Action Icons - Mobile view */}
-            <div className="flex sm:hidden flex-col gap-2">
+            <div className={`flex ${forceMobileLayout ? '' : 'sm:hidden'} flex-col gap-2`}>
               {/* Status Dropdown - Mobile */}
               {showStatusControl && (
                 <div className="w-auto max-w-[200px]">
@@ -313,72 +318,112 @@ const CandidateCard = ({
           </div>
 
           {/* Details Grid for Desktop - After name/actions */}
-          <div className="hidden lg:block space-y-2 mt-2">
+          <div className={`${forceMobileLayout ? 'hidden' : 'hidden lg:block'} space-y-2 mt-2`}>
             {/* First Row - 4 cols on desktop */}
             <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-sm sm:text-base">
+              {/* Gender */}
+              <div className="flex items-center gap-2 text-gray-700 min-w-0">
+                <FaUser className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <span className="truncate font-medium">{getGenderString(candidate)}</span>
+              </div>
               {/* Experience */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaBriefcase className="w-4 h-4 text-gray-600 flex-shrink-0" />
                 <span className="truncate font-medium">Exp: {getExperience(candidate.total_experience_years)}</span>
               </div>
+              {/* Subject */}
+              <div className="flex items-center gap-2 text-gray-700 min-w-0">
+                <FaBook className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <span className="truncate font-medium" title={getSubjectsString(candidate)}>
+                  {getSubjectsString(candidate)}
+                </span>
+              </div>
+              {/* Core Expertise */}
+              <div className="flex items-center gap-2 text-gray-700 min-w-0">
+                <FaStar className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <span className="truncate font-medium" title={typeof expertise === 'object' && expertise.hasMore ? expertise.full : expertise}>
+                  {typeof expertise === 'object' && expertise.hasMore ? expertise.display : expertise}
+                </span>
+              </div>
+            </div>
+            {/* Second Row - 4 cols on desktop */}
+            <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-sm sm:text-base">
+              {/* Qualification */}
+              <div className="flex items-center gap-2 text-gray-700 min-w-0">
+                <FaGraduationCap className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <span className="truncate font-medium">{getQualificationString(candidate.education_details_json)}</span>
+              </div>
+              {/* Age */}
+              <div className="flex items-center gap-2 text-gray-700 min-w-0">
+                <FaBirthdayCake className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <span className="truncate font-medium">{getAgeString(candidate)}</span>
+              </div>
               {/* Salary */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaWallet className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium">₹{candidate.expected_salary?.toLocaleString() || 'Not specified'}</span>
+                <span className="truncate font-medium">{formatSalary(candidate.expected_salary)}</span>
               </div>
               {/* Location */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaMapMarkerAlt className="w-4 h-4 text-gray-600 flex-shrink-0" />
                 <span className="truncate font-medium">{getLocationString(candidate)}</span>
               </div>
-              {/* Education */}
-              <div className="flex items-center gap-2 text-gray-700 min-w-0">
-                <FaGraduationCap className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium">{parseEducationDetails(candidate.education_details_json)}</span>
-              </div>
-            </div>
-            {/* Second Row - Full width */}
-            <div className="flex items-center gap-2 text-gray-700 text-sm sm:text-base">
-              <FaStar className="w-4 h-4 text-gray-600 flex-shrink-0" />
-              <span className="truncate font-medium" title={typeof expertise === 'object' && expertise.hasMore ? expertise.full : expertise}>
-                {typeof expertise === 'object' && expertise.hasMore ? expertise.display : expertise}
-              </span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Details Grid for Mobile - Starts below profile photo, aligned with photo left edge */}
-      <div className={`lg:hidden space-y-2 mt-2 ${showCheckbox ? 'pl-6' : 'pl-0'}`}>
+      <div className={`${forceMobileLayout ? 'block' : 'lg:hidden'} space-y-2 mt-2 ${showCheckbox ? 'pl-6' : 'pl-0'}`}>
         {/* First Row - 2 cols on mobile */}
         <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm sm:text-base">
+          {/* Gender */}
+          <div className="flex items-center gap-2 text-gray-700 min-w-0">
+            <FaUser className="w-4 h-4 text-gray-600 flex-shrink-0" />
+            <span className="truncate font-medium">{getGenderString(candidate)}</span>
+          </div>
           {/* Experience */}
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaBriefcase className="w-4 h-4 text-gray-600 flex-shrink-0" />
             <span className="truncate font-medium">Exp: {getExperience(candidate.total_experience_years)}</span>
           </div>
+          {/* Subject */}
+          <div className="flex items-center gap-2 text-gray-700 min-w-0">
+            <FaBook className="w-4 h-4 text-gray-600 flex-shrink-0" />
+            <span className="truncate font-medium" title={getSubjectsString(candidate)}>
+              {getSubjectsString(candidate)}
+            </span>
+          </div>
+          {/* Core Expertise */}
+          <div className="flex items-center gap-2 text-gray-700 min-w-0">
+            <FaStar className="w-4 h-4 text-gray-600 flex-shrink-0" />
+            <span className="truncate font-medium" title={typeof expertise === 'object' && expertise.hasMore ? expertise.full : expertise}>
+              {typeof expertise === 'object' && expertise.hasMore ? expertise.display : expertise}
+            </span>
+          </div>
+        </div>
+        {/* Second Row - 2 cols on mobile */}
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm sm:text-base">
+          {/* Qualification */}
+          <div className="flex items-center gap-2 text-gray-700 min-w-0">
+            <FaGraduationCap className="w-4 h-4 text-gray-600 flex-shrink-0" />
+            <span className="truncate font-medium">{getQualificationString(candidate.education_details_json)}</span>
+          </div>
+          {/* Age */}
+          <div className="flex items-center gap-2 text-gray-700 min-w-0">
+            <FaBirthdayCake className="w-4 h-4 text-gray-600 flex-shrink-0" />
+            <span className="truncate font-medium">{getAgeString(candidate)}</span>
+          </div>
           {/* Salary */}
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaWallet className="w-4 h-4 text-gray-600 flex-shrink-0" />
-            <span className="truncate font-medium">₹{candidate.expected_salary?.toLocaleString() || 'Not specified'}</span>
+            <span className="truncate font-medium">{formatSalary(candidate.expected_salary)}</span>
           </div>
           {/* Location */}
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaMapMarkerAlt className="w-4 h-4 text-gray-600 flex-shrink-0" />
             <span className="truncate font-medium">{getLocationString(candidate)}</span>
           </div>
-          {/* Education */}
-          <div className="flex items-center gap-2 text-gray-700 min-w-0">
-            <FaGraduationCap className="w-4 h-4 text-gray-600 flex-shrink-0" />
-            <span className="truncate font-medium">{parseEducationDetails(candidate.education_details_json)}</span>
-          </div>
-        </div>
-        {/* Second Row - Full width */}
-        <div className="flex items-center gap-2 text-gray-700 text-sm sm:text-base">
-          <FaStar className="w-4 h-4 text-gray-600 flex-shrink-0" />
-          <span className="truncate font-medium" title={typeof expertise === 'object' && expertise.hasMore ? expertise.full : expertise}>
-            {typeof expertise === 'object' && expertise.hasMore ? expertise.display : expertise}
-          </span>
         </div>
       </div>
 

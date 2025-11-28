@@ -329,6 +329,53 @@ const Payment = ({ user, onSuccess }) => {
               }
             );
 
+            // Add coin history entry after successful coin update
+            if (redeemUpdateRes.ok) {
+              try {
+                // Get candidate_id (personal id for job seekers)
+                let loginRes = await fetch('https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login');
+                let loginData = await loginRes.json();
+                let userLogin = loginData.find(u => u.firebase_uid === firebase_uid);
+                let candidate_id = null;
+                
+                if (userLogin?.user_type === "Candidate") {
+                  let personalRes = await fetch('https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal');
+                  let personalData = await personalRes.json();
+                  let foundPersonal = personalData.find(p => p.firebase_uid === firebase_uid);
+                  candidate_id = foundPersonal?.id;
+                }
+
+                // Create coin history entry
+                const coinHistoryPayload = {
+                  firebase_uid: firebase_uid,
+                  candidate_id: candidate_id,
+                  job_id: null,
+                  coin_value: selectedPlan.coins,
+                  reduction: null,
+                  reason: `Payment via ${selectedPlan.name}`,
+                  payment_id: response.razorpay_payment_id || null,
+                };
+
+                const historyResponse = await fetch(
+                  "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history",
+                  {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(coinHistoryPayload)
+                  }
+                );
+
+                if (!historyResponse.ok) {
+                  console.error('Failed to record coin history for payment');
+                } else {
+                  console.log('Coin history recorded successfully for payment');
+                }
+              } catch (historyError) {
+                console.error('Error recording coin history for payment:', historyError);
+                // Don't fail the payment process if history recording fails
+              }
+            }
+
             toast.dismiss("pay-done");
 
             if (redeemUpdateRes.ok) {

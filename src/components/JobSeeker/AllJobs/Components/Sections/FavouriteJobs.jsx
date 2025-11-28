@@ -50,8 +50,6 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJ
   const [applyStatus, setApplyStatus] = useState("");
   const [applyError, setApplyError] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
-  const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
-  const [jobToSave, setJobToSave] = useState(null);
 
   // Sort helper: recent first using date-like fields or id fallback
   const sortJobsByRecency = useCallback((list) => {
@@ -229,7 +227,7 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJ
     }
   };
 
-  // Save job (for button UI, in case you want to support save/unsave here)
+  // Save job - only toggles saved status, does NOT remove from favourites
   const handleSaveJob = async (job) => {
     if (!user) {
       toast.error("Please login to save jobs.");
@@ -238,59 +236,20 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJ
     const jobId = getJobId(job);
     const isSaved = savedJobs.includes(jobId);
     
-    // If saving (not removing), show confirmation modal first
-    if (!isSaved) {
-      setJobToSave({ job, isSaved });
-      setShowSaveConfirmModal(true);
-      return;
-    }
-    
-    // If removing from saved, proceed directly
+    // Save directly without showing any confirmation modal
+    // This will only update saved_jobs, preserving favroute_jobs status
     try {
-      await JobApiService.toggleSaveJob(job, user, false);
+      await JobApiService.toggleSaveJob(job, user, !isSaved);
       await fetchFavAndSavedJobs();
-      toast.success(
-        `Removed "${job.job_title}" from your saved jobs.`
+      toast[isSaved ? 'info' : 'success'](
+        `${job.job_title} ${isSaved ? 'removed from saved list!' : 'has been saved successfully!'}`
       );
     } catch (error) {
       console.error('Error saving job:', error);
       toast.error(
-        `Failed to remove "${job.job_title}" from saved. Please try again.`
+        `Failed to ${isSaved ? 'remove' : 'save'} "${job.job_title}". Please try again.`
       );
     }
-  };
-
-  // Handle confirm save after modal confirmation
-  const handleConfirmSave = async () => {
-    if (!jobToSave || !user) {
-      setShowSaveConfirmModal(false);
-      setJobToSave(null);
-      return;
-    }
-    
-    const { job } = jobToSave;
-    
-    try {
-      await JobApiService.toggleSaveJob(job, user, true);
-      await fetchFavAndSavedJobs();
-      toast.success(
-        `Saved "${job.job_title}" to your jobs!`
-      );
-    } catch (error) {
-      console.error('Error saving job:', error);
-      toast.error(
-        `Failed to save "${job.job_title}". Please try again.`
-      );
-    } finally {
-      setShowSaveConfirmModal(false);
-      setJobToSave(null);
-    }
-  };
-
-  // Handle cancel save confirmation
-  const handleCancelSave = () => {
-    setShowSaveConfirmModal(false);
-    setJobToSave(null);
   };
 
   // === APPLY JOB ===
@@ -638,7 +597,7 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJ
         {currentJobs.length > 0 ? (
           <div className="job-results">
             <div className="job-list">
-              {currentJobs.map((job, index) => {
+              {currentJobs.map((job) => {
                 const jobId = getJobId(job);
                 const isSaved = savedJobs.includes(jobId);
                 const isApplied = appliedJobs.includes(jobId);
@@ -731,13 +690,6 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJ
         />
       </div>
 
-      {/* Save Confirmation Modal */}
-      <JobActionConfirmationModal
-        isOpen={showSaveConfirmModal && !!jobToSave}
-        actionType="save"
-        onConfirm={handleConfirmSave}
-        onCancel={handleCancelSave}
-      />
 
       <JobMessagingModals
         showApplyPrompt={showApplyPrompt}

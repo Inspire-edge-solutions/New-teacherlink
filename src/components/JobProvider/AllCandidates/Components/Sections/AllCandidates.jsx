@@ -122,13 +122,24 @@ const mapNoticeValueToLabel = (value) => {
   if (!normalized) return null;
 
   const mappings = new Map([
+    // From JobPreferences.jsx (Job Seeker)
+    ['immediatejoiner', 'Immediate Joiner'],
+    ['lessthan7', '< 7 days'],
+    ['lessthan15', '< 15 days'],
+    ['lessthan1month', '< 1 month'],
+    ['morethan1month', '> 1 Month'],
+    // From CreateJobForm.jsx (Job Provider)
+    ['<7', '< 7 days'],
+    ['<15', '< 15 days'],
+    ['<30', '< 1 month'],
+    ['>30', '> 1 Month'],
+    // Legacy/alternative formats (for backward compatibility)
     ['immediate', 'Immediate'],
-    ['less_than_15', '15 days'],
-    ['15days', '15 days'],
-    ['15 days', '15 days'],
-    ['lessthan1month', '1 month'],
-    ['1month', '1 month'],
-    ['1 month', '1 month'],
+    ['less_than_15', '< 15 days'],
+    ['15days', '< 15 days'],
+    ['15 days', '< 15 days'],
+    ['1month', '< 1 month'],
+    ['1 month', '< 1 month'],
     ['2months', '2 months'],
     ['2 months', '2 months'],
     ['3months', '3 months'],
@@ -1566,7 +1577,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
                 Unlock Candidate Contact Details
               </h3>
               <p className="text-gray-600 text-[15px] leading-relaxed mb-4">
-                To start messaging {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, you'll need to unlock their contact information first. <span className="font-semibold">Unlocking costs 50 coins</span> (one-time payment) and gives you full access to their profile. After unlocking, <span className="font-semibold">each message you send costs 10 coins</span>.
+                To start messaging {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, you'll need to unlock their contact information first. <span className="font-semibold">Unlocking costs 50 coins</span> (one-time payment) and gives you full access to their profile. After unlocking, <span className="font-semibold">each message you sent costs 10 coins</span>.
               </p>
 
               {unlockError && (

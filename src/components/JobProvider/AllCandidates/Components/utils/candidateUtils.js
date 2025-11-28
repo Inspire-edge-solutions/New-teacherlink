@@ -171,6 +171,38 @@ export const getExperience = (years) => {
 };
 
 /**
+ * Map education type value to display label
+ * Maps actual stored values from Education.jsx dropdowns
+ * @param {string} educationType - Education type value from database
+ * @returns {string} Formatted education type label
+ */
+export const formatEducationType = (educationType) => {
+  if (!educationType) return 'Not specified';
+  
+  const normalized = String(educationType).toLowerCase().trim();
+  
+  // Map actual stored values from Education.jsx educationTypes array
+  const mappings = {
+    'grade10': 'Grade 10',
+    'grade12': 'Grade 12',
+    'degree': 'Degree',
+    'masterdegree': 'Master Degree',
+    'doctorate': 'Doctorate',
+    'bed': 'B.Ed',
+    'ded': 'D.Ed/D.EID',
+    'nttmtt': 'NTT/MTT',
+    'certificate': 'Certificate/Other Course'
+  };
+  
+  if (mappings[normalized]) {
+    return mappings[normalized];
+  }
+  
+  // Return capitalized version if not in mappings
+  return String(educationType).charAt(0).toUpperCase() + String(educationType).slice(1);
+};
+
+/**
  * Parse education details and return the primary education type
  * @param {string} eduJson - Education details JSON string
  * @returns {string} Primary education type or default message
@@ -185,7 +217,8 @@ export const parseEducationDetails = (eduJson) => {
         try {
           const details = JSON.parse(jsonStr);
           if (details.education_type) {
-            return details.education_type;
+            // Format the education type using the mapping function
+            return formatEducationType(details.education_type);
           }
         } catch (e) {
           continue;
@@ -201,52 +234,58 @@ export const parseEducationDetails = (eduJson) => {
 
 /**
  * Parse core expertise from candidate object
- * Checks multiple possible fields and formats the output
+ * Checks ONLY core expertise fields (not subjects)
  * @param {Object} candidate - Candidate object
  * @returns {string|Object} Core expertise string or object with display/full text
  */
 export const parseCoreExpertise = (candidate) => {
-  const formatSubjects = (subjects) => {
-    if (!Array.isArray(subjects)) return subjects;
-    if (subjects.length <= 3) {
-      return subjects.join(', ');
+  const formatExpertise = (expertise) => {
+    if (!Array.isArray(expertise)) return expertise;
+    if (expertise.length <= 3) {
+      return expertise.join(', ');
     } else {
-      const displayedSubjects = subjects.slice(0, 3).join(', ');
-      const remainingCount = subjects.length - 3;
-      const allSubjects = subjects.join(', ');
+      const displayedExpertise = expertise.slice(0, 3).join(', ');
+      const remainingCount = expertise.length - 3;
+      const allExpertise = expertise.join(', ');
       return {
-        display: `${displayedSubjects} +${remainingCount} more`,
-        full: allSubjects,
+        display: `${displayedExpertise} +${remainingCount} more`,
+        full: allExpertise,
         hasMore: true
       };
     }
   };
 
-  // Check various fields in order of priority
-  if (candidate.teaching_coreExpertise && candidate.teaching_coreExpertise.length > 0) {
-    return formatSubjects(candidate.teaching_coreExpertise);
+  // Helper to convert to array
+  const toArray = (value) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value.filter(Boolean);
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed.filter(Boolean) : [parsed].filter(Boolean);
+      } catch {
+        return value.split(',').map(s => s.trim()).filter(Boolean);
+      }
+    }
+    return [value].filter(Boolean);
+  };
+
+  // Check ONLY core expertise fields (not subjects)
+  const coreExpertiseFields = [
+    candidate.teaching_coreExpertise,
+    candidate.teaching_core_expertise,
+    candidate.core_expertise,
+    candidate.teaching_administrative_coreExpertise,
+    candidate.teaching_administrative_core_expertise
+  ];
+
+  for (const field of coreExpertiseFields) {
+    const expertiseArray = toArray(field);
+    if (expertiseArray.length > 0) {
+      return formatExpertise(expertiseArray);
+    }
   }
-  if (candidate.teaching_subjects && candidate.teaching_subjects.length > 0) {
-    return formatSubjects(candidate.teaching_subjects);
-  }
-  if (candidate.teaching_administrative_coreExpertise && candidate.teaching_administrative_coreExpertise.length > 0) {
-    return formatSubjects(candidate.teaching_administrative_coreExpertise);
-  }
-  if (candidate.teaching_administrative_subjects && candidate.teaching_administrative_subjects.length > 0) {
-    return formatSubjects(candidate.teaching_administrative_subjects);
-  }
-  if (candidate.subjects_taught && candidate.subjects_taught.length > 0) {
-    return formatSubjects(candidate.subjects_taught);
-  }
-  if (candidate.core_subjects && candidate.core_subjects.length > 0) {
-    return formatSubjects(candidate.core_subjects);
-  }
-  if (candidate.grades_taught) {
-    return `Grade ${candidate.grades_taught}`;
-  }
-  if (candidate.curriculum_taught) {
-    return candidate.curriculum_taught;
-  }
+
   return 'Core expertise not available';
 };
 
@@ -276,13 +315,61 @@ export const getCandidateId = (candidate) => {
 };
 
 /**
- * Format salary to readable string with currency
- * @param {number} salary - Salary amount
+ * Format salary to readable string
+ * Maps actual stored values from JobPreferences.jsx salaryRanges dropdown
+ * @param {string|number} salary - Salary value from database
  * @returns {string} Formatted salary string
  */
 export const formatSalary = (salary) => {
-  if (!salary || isNaN(salary)) return 'Not specified';
-  return `₹${parseInt(salary).toLocaleString()}`;
+  if (!salary && salary !== 0) return 'Not specified';
+  
+  // If it's a string (stored range value), map it to display label
+  if (typeof salary === 'string') {
+    const normalized = salary.toLowerCase().trim();
+    
+    // Map actual stored values from JobPreferences.jsx salaryRanges
+    const mappings = {
+      'less_than_40k': 'Less than 40k',
+      '40k_60k': '40k-60k',
+      '60k_80k': '60k-80k',
+      '80k_100k': '80k-1 lakh',
+      '100k_120k': '1 lakh-1.2 lakh',
+      '120k_140k': '1.2 lakh-1.4 lakh',
+      '140k_160k': '1.4 lakh-1.6 lakh',
+      '160k_180k': '1.6 lakh-1.8 lakh',
+      '180k_200k': '1.8 lakh-2 lakh',
+      'more_than_200k': 'More than 2 lakh'
+    };
+    
+    if (mappings[normalized]) {
+      return mappings[normalized];
+    }
+    
+    // If it's a numeric string, try to parse it
+    const numeric = parseFloat(salary);
+    if (!Number.isNaN(numeric)) {
+      // Validate: numbers less than 1000 are likely invalid salary values
+      if (numeric < 1000) {
+        return 'Not specified';
+      }
+      return `₹${parseInt(numeric).toLocaleString()}`;
+    }
+    
+    // Return as-is if it's a string but not in mappings
+    return salary;
+  }
+  
+  // If it's a number, validate and format it with currency
+  if (typeof salary === 'number') {
+    // Validate: numbers less than 1000 are likely invalid salary values
+    // (minimum valid salary range starts at 40k, so anything < 1000 is invalid)
+    if (salary < 1000) {
+      return 'Not specified';
+    }
+    return `₹${parseInt(salary).toLocaleString()}`;
+  }
+  
+  return 'Not specified';
 };
 
 /**
@@ -415,5 +502,242 @@ export const buildCandidateSubjects = (candidate) => {
   });
   
   return Array.from(subjects);
+};
+
+/**
+ * Get formatted subjects string for display
+ * Uses ONLY subject fields (not core expertise)
+ * @param {Object} candidate - Candidate object
+ * @returns {string} Formatted subjects string
+ */
+export const getSubjectsString = (candidate) => {
+  if (!candidate) return 'Not specified';
+  
+  const subjects = buildCandidateSubjects(candidate);
+  if (subjects.length === 0) return 'Not specified';
+  
+  // Show first 2 subjects, then "+X more" if there are more
+  if (subjects.length <= 2) {
+    return subjects.join(', ');
+  } else {
+    const displayed = subjects.slice(0, 2).join(', ');
+    const remaining = subjects.length - 2;
+    return `${displayed} +${remaining} more`;
+  }
+};
+
+/**
+ * Format job type (Job Status) to readable string
+ * @param {string} jobType - Job type value
+ * @returns {string} Formatted job type string
+ */
+export const formatJobType = (jobType) => {
+  if (!jobType) return 'Not specified';
+  
+  const normalized = String(jobType).toLowerCase().trim();
+  const mappings = {
+    'teaching': 'Teaching',
+    'administration': 'Administration',
+    'teachingandadmin': 'Teaching & Admin',
+    'teaching_admin': 'Teaching & Admin',
+    'teaching & admin': 'Teaching & Admin'
+  };
+  
+  return mappings[normalized] || String(jobType).charAt(0).toUpperCase() + String(jobType).slice(1);
+};
+
+/**
+ * Format notice period to readable string
+ * Maps actual stored values from dropdowns to display labels
+ * @param {string|number} noticePeriod - Notice period value
+ * @returns {string} Formatted notice period string
+ */
+export const formatNoticePeriod = (noticePeriod) => {
+  if (!noticePeriod && noticePeriod !== 0) return 'Not specified';
+  
+  const normalized = String(noticePeriod).toLowerCase().trim();
+  
+  // Map actual stored values from dropdowns
+  const mappings = {
+    // From JobPreferences.jsx (Job Seeker)
+    'immediatejoiner': 'Immediate Joiner',
+    'lessthan7': '< 7 days',
+    'lessthan15': '< 15 days',
+    'lessthan1month': '< 1 month',
+    'morethan1month': '> 1 Month',
+    // From CreateJobForm.jsx (Job Provider) - these use < and > symbols
+    '<7': '< 7 days',
+    '<15': '< 15 days',
+    '<30': '< 1 month',
+    '>30': '> 1 Month',
+    // Legacy/alternative formats (for backward compatibility)
+    'immediate': 'Immediate',
+    'less_than_15': '< 15 days',
+    '15days': '< 15 days',
+    '15 days': '< 15 days',
+    '1month': '< 1 month',
+    '1 month': '< 1 month',
+    '2months': '2 months',
+    '2 months': '2 months',
+    '3months': '3 months',
+    '3 months': '3 months'
+  };
+  
+  if (mappings[normalized]) {
+    return mappings[normalized];
+  }
+  
+  // Handle case-sensitive matches for < and > symbols
+  if (noticePeriod === '<7') return '< 7 days';
+  if (noticePeriod === '<15') return '< 15 days';
+  if (noticePeriod === '<30') return '< 1 month';
+  if (noticePeriod === '>30') return '> 1 Month';
+  
+  // Handle numeric values
+  const numeric = parseFloat(normalized);
+  if (!Number.isNaN(numeric)) {
+    if (numeric === 0) return 'Immediate';
+    if (numeric < 7) return '< 7 days';
+    if (numeric < 15) return '< 15 days';
+    if (numeric < 30) return '< 1 month';
+    if (numeric === 30) return '< 1 month';
+    if (numeric > 30) return '> 1 Month';
+  }
+  
+  return String(noticePeriod);
+};
+
+/**
+ * Get preferred location string from candidate data
+ * @param {Object} candidate - Candidate object
+ * @returns {string} Formatted preferred location string
+ */
+export const getPreferredLocationString = (candidate) => {
+  if (!candidate) return 'Not specified';
+  
+  const city = candidate.preferred_city;
+  const state = candidate.preferred_state;
+  const country = candidate.preferred_country;
+  
+  const parts = [];
+  if (city) parts.push(city);
+  if (state) parts.push(state);
+  if (country) parts.push(country);
+  
+  if (parts.length === 0) return 'Not specified';
+  return parts.join(', ');
+};
+
+/**
+ * Get formatted gender string
+ * @param {Object} candidate - Candidate object
+ * @returns {string} Formatted gender string
+ */
+export const getGenderString = (candidate) => {
+  if (!candidate) return 'Not specified';
+  
+  const gender = candidate.gender || candidate.profileData?.gender;
+  if (!gender) return 'Not specified';
+  
+  // Capitalize first letter
+  return String(gender).charAt(0).toUpperCase() + String(gender).slice(1).toLowerCase();
+};
+
+/**
+ * Get age from date of birth
+ * Checks multiple possible field names for date of birth
+ * @param {Object} candidate - Candidate object
+ * @returns {string} Age string or 'Not specified'
+ */
+export const getAgeString = (candidate) => {
+  if (!candidate) return 'Not specified';
+  
+  // Check multiple possible field names for date of birth
+  const dateOfBirth = 
+    candidate.dateOfBirth || 
+    candidate.date_of_birth ||
+    candidate.dob ||
+    candidate.birthDate ||
+    candidate.birth_date ||
+    candidate.profileData?.dateOfBirth ||
+    candidate.profileData?.date_of_birth ||
+    candidate.profileData?.dob ||
+    candidate.profile?.dateOfBirth ||
+    candidate.profile?.date_of_birth;
+  
+  if (!dateOfBirth) return 'Not specified';
+  
+  try {
+    const birthDate = new Date(dateOfBirth);
+    if (isNaN(birthDate.getTime())) return 'Not specified';
+    
+    // Validate that the date is reasonable (not in the future, not too old)
+    const today = new Date();
+    if (birthDate > today) return 'Not specified'; // Future date is invalid
+    if (birthDate.getFullYear() < 1950) return 'Not specified'; // Too old to be valid
+    
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    // Validate age is reasonable (between 18 and 100)
+    if (age < 18 || age > 100) return 'Not specified';
+    
+    return `${age} Years`;
+  } catch (error) {
+    return 'Not specified';
+  }
+};
+
+/**
+ * Get highest qualification from education details
+ * @param {string} eduJson - Education details JSON string
+ * @returns {string} Highest qualification or default message
+ */
+export const getQualificationString = (eduJson) => {
+  if (!eduJson) return 'Not specified';
+  
+  try {
+    const { types } = parseEducation(eduJson);
+    if (types.length === 0) return 'Not specified';
+    
+    // Priority order: doctorate > masterDegree > degree > bEd > dEd > grade12 > grade10 > others
+    const priority = {
+      'doctorate': 8,
+      'masterdegree': 7,
+      'degree': 6,
+      'bed': 5,
+      'ded': 4,
+      'nttmtt': 3,
+      'grade12': 2,
+      'grade10': 1
+    };
+    
+    // Find highest priority qualification
+    let highestQual = null;
+    let highestPriority = 0;
+    
+    types.forEach(type => {
+      const normalized = String(type).toLowerCase().trim();
+      const currentPriority = priority[normalized] || 0;
+      if (currentPriority > highestPriority) {
+        highestPriority = currentPriority;
+        highestQual = type;
+      }
+    });
+    
+    if (highestQual) {
+      return formatEducationType(highestQual);
+    }
+    
+    // If no priority match, return first type formatted
+    return formatEducationType(types[0]);
+  } catch (error) {
+    console.error('Error parsing qualification:', error);
+    return 'Not specified';
+  }
 };
 

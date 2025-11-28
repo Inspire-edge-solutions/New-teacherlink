@@ -179,7 +179,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
       delete jobData.created_at; // Remove created date
       
       await axios.post(
-        "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes",
+        "https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/jobPosting",
         [jobData],
         { headers: { "Content-Type": "application/json" } }
       );
@@ -571,7 +571,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
             </button>
             <button 
               type="button" 
-              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-brand text-white font-medium hover:bg-gradient-primary-hover transition-opacity transition-colors min-w-[150px] shadow-md"
+              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-brand text-white font-medium hover:bg-gradient-primary-hover transition-colors min-w-[150px] shadow-md"
               onClick={confirmPostSavedJob}
             >
               ✅ Post Job

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import CandidateCard from '../shared/CandidateCard';
 import CandidateDetail from '../shared/ViewFull';
 import ViewShort from '../shared/ViewShort';
@@ -724,6 +725,7 @@ const AppliedCandidates = ({
       const candidateKey = getCandidateKey(candidate);
       const previousStatus = getCandidateStatus(candidate);
 
+      // Optimistically update UI
       updateCandidateCollections(candidateKey, (existing) => ({
         ...existing,
         status: newStatus,
@@ -732,8 +734,12 @@ const AppliedCandidates = ({
 
       try {
         await CandidateApiService.updateAppliedCandidateStatus(candidate, newStatus);
+        // Refresh data from backend to ensure persistence
+        await fetchAppliedCandidates();
+        toast.success("Status updated successfully");
       } catch (error) {
         toast.error(error.message || 'Failed to update status. Please try again.');
+        // Revert optimistic update on error
         updateCandidateCollections(candidateKey, (existing) => ({
           ...existing,
           status: previousStatus,
@@ -741,7 +747,7 @@ const AppliedCandidates = ({
         }));
       }
     },
-    [getCandidateKey, getCandidateStatus, updateCandidateCollections]
+    [getCandidateKey, getCandidateStatus, updateCandidateCollections, fetchAppliedCandidates]
   );
 
   useEffect(() => {
@@ -820,44 +826,6 @@ const AppliedCandidates = ({
           />
         </div>
       </div>
-      
-      {/* Recommended Candidates Section */}
-      {recommendedCandidates.length > 0 && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h3 className="text-lg sm:text-xl font-semibold text-blue-800 mb-3">
-            💡 Recommended Candidates ({recommendedCandidates.length})
-          </h3>
-          <p className="text-sm text-blue-700 mb-4">
-            These candidates match your posted jobs but haven't applied yet. Consider reaching out to them!
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recommendedCandidates.slice(0, 6).map((candidate) => {
-              const candidateId = candidate.firebase_uid;
-              return (
-                <CandidateCard
-                  key={`recommended-${candidateId}`}
-                  candidate={candidate}
-                  isSaved={savedCandidates.includes(candidateId)}
-                  isFavourite={favouriteCandidates.includes(candidateId)}
-                  loading={false}
-                  onViewFull={handleViewFull}
-                  onViewShort={handleViewShort}
-                  onSave={handleSaveCandidate}
-                  onToggleFavourite={handleToggleFavourite}
-                  candidatePhoto={candidatePhotos[candidateId]}
-                  showCheckbox={false}
-                  onMessage={handleMessage}
-                />
-              );
-            })}
-          </div>
-          {recommendedCandidates.length > 6 && (
-            <p className="text-sm text-blue-600 mt-3 text-center">
-              Showing 6 of {recommendedCandidates.length} recommended candidates
-            </p>
-          )}
-        </div>
-      )}
 
       <div className="mb-3">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-2 mb-2 sm:mb-0">
@@ -948,6 +916,46 @@ const AppliedCandidates = ({
           currentPageStart={indexOfFirstCandidate + 1}
           currentPageEnd={Math.min(indexOfLastCandidate, filteredCandidates.length)}
         />
+      )}
+
+      {/* Recommended Candidates Section */}
+      {recommendedCandidates.length > 0 && (
+        <div className="mb-6 mt-6 p-4 bg-[#F0D8D9] rounded-lg">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">
+            💡 Recommended Candidates ({recommendedCandidates.length})
+          </h3>
+          <p className="text-sm text-gray-700 mb-4">
+            These candidates match your posted jobs but haven't applied yet. Consider reaching out to them!
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {recommendedCandidates.slice(0, 6).map((candidate) => {
+              const candidateId = candidate.firebase_uid;
+              return (
+                <div key={`recommended-${candidateId}`} className="[&>div]:mb-0">
+                  <CandidateCard
+                    candidate={candidate}
+                    isSaved={savedCandidates.includes(candidateId)}
+                    isFavourite={favouriteCandidates.includes(candidateId)}
+                    loading={false}
+                    onViewFull={handleViewFull}
+                    onViewShort={handleViewShort}
+                    onSave={handleSaveCandidate}
+                    onToggleFavourite={handleToggleFavourite}
+                    candidatePhoto={candidatePhotos[candidateId]}
+                    showCheckbox={false}
+                    onMessage={handleMessage}
+                    forceMobileLayout={true}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          {recommendedCandidates.length > 6 && (
+            <p className="text-sm text-gray-600 mt-3 text-center">
+              Showing 6 of {recommendedCandidates.length} recommended candidates
+            </p>
+          )}
+        </div>
       )}
 
       {/* Hidden Print Wrapper - renders all selected profiles for printing */}
@@ -1063,4 +1071,4 @@ const AppliedCandidates = ({
   );
 };
 
-export default AppliedCandidates; 
+export default AppliedCandidates;

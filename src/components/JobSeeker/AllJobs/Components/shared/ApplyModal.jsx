@@ -18,7 +18,7 @@ function ApplyModal({ isOpen, onClose, onApply, coinValue, loading, applyStatus,
 
         const modalContent = (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-5" onClick={onClose}>
-            <div className="bg-gradient-to-br from-teal-50 via-green-50 to-orange-50 rounded-2xl border border-gray-200 p-7 w-80 max-w-[90vw] shadow-lg flex flex-col items-center relative" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-[#F0D8D9] rounded-2xl border p-7 w-80 max-w-[90vw] shadow-lg flex flex-col items-center relative" onClick={(e) => e.stopPropagation()}>
               <button className="absolute top-2.5 right-4 bg-none border-none text-2xl text-gray-500 cursor-pointer p-0.5 z-10 transition-colors hover:text-red-500" onClick={onClose}>
                 &times;
               </button>
