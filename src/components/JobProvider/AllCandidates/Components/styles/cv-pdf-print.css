@@ -176,7 +176,7 @@
 .pdf-generating {
   background: white !important;
   color: black !important;
-  font-family: Arial, sans-serif !important;
+  font-family: 'Montserrat', sans-serif !important;
 }
 
 /* Hide elements that shouldn't appear in PDF */
@@ -392,7 +392,7 @@
 
 /* Styles for the dedicated print window */
 .print-version {
-  font-family: Arial, sans-serif;
+  font-family: 'Montserrat', sans-serif;
   line-height: 1.4;
   color: #333;
   background: white;
@@ -568,7 +568,7 @@
 }
 
 .print-window-document body {
-  font-family: Arial, sans-serif;
+  font-family: 'Montserrat', sans-serif;
   line-height: 1.4;
   color: #333;
   background: white;

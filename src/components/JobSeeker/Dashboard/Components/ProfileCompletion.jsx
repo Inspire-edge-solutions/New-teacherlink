@@ -374,17 +374,17 @@ const ProfileCompletion = () => {
     <div className="bg-white rounded-lg shadow-md p-2 sm:p-3 relative">
       {/* Title at top */}
       <div className="text-center mb-1 sm:mb-2">
-        <h5 className="text-sm sm:text-base font-bold text-gray-800">Profile Completion</h5>
+        <h5 className="text-xl font-bold text-gray-800 leading-tight tracking-tight">Profile Completion</h5>
       </div>
 
       {/* Two Column Grid for Short and Complete Profile */}
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <div className="flex flex-col">
-          <h6 className="text-center text-xs sm:text-sm font-semibold mb-1 text-gray-700">Short Profile</h6>
+          <h6 className="text-center text-xl font-semibold mb-1 text-gray-700 leading-tight tracking-tight">Short Profile</h6>
           {renderEasyModeContent()}
         </div>
         <div className="flex flex-col">
-          <h6 className="text-center text-xs sm:text-sm font-semibold mb-1 text-gray-700">Complete Profile</h6>
+          <h6 className="text-center text-xl font-semibold mb-1 text-gray-700 leading-tight tracking-tight">Complete Profile</h6>
           {renderFullModeContent()}
         </div>
       </div>

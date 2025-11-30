@@ -446,20 +446,20 @@ const Payment = ({ user, onSuccess }) => {
               &times;
             </button>
             <div className="bg-orange-500 text-white p-3 sm:p-4 rounded-t-xl sm:rounded-t-2xl -m-4 sm:-m-6 mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
-              <h3 className="text-base sm:text-lg font-semibold m-0">📝 Complete Your Profile First</h3>
+              <h3 className="text-xl font-semibold m-0 leading-tight tracking-tight">📝 Complete Your Profile First</h3>
             </div>
             <div className="mb-4 sm:mb-6">
-              <p className="mb-3 sm:mb-4 text-gray-700 leading-relaxed text-sm sm:text-base">
+              <p className="mb-3 sm:mb-4 text-gray-700 leading-relaxed text-lg sm:text-base tracking-tight">
                 We noticed that your profile is not complete. To purchase subscription plans and access our services, 
                 please complete your profile information first.
               </p>
-              <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+              <p className="text-gray-700 leading-relaxed text-lg sm:text-base tracking-tight">
                 <strong>Please go to your profile section and fill in all required information.</strong>
               </p>
             </div>
             <div className="text-center">
               <button 
-                className="bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base"
+                className="bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-base leading-normal tracking-tight"
                 onClick={handleProfilePopupClose}
               >
                 OK, I'll Complete My Profile
@@ -480,26 +480,26 @@ const Payment = ({ user, onSuccess }) => {
               &times;
             </button>
             <div className="bg-yellow-500 text-gray-800 p-3 sm:p-4 rounded-t-xl sm:rounded-t-2xl -m-4 sm:-m-6 mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
-              <h3 className="text-base sm:text-lg font-semibold m-0">⚠️ Coins Already Available</h3>
+              <h3 className="text-xl font-semibold m-0 leading-tight tracking-tight">⚠️ Coins Already Available</h3>
             </div>
             <div className="mb-4 sm:mb-6">
-              <p className="mb-3 sm:mb-4 text-gray-700 leading-relaxed text-sm sm:text-base">
+              <p className="mb-3 sm:mb-4 text-gray-700 leading-relaxed text-lg sm:text-base tracking-tight">
                 You already have coins in your account that are currently blocked from use.
                 We recommend using your existing coins first before purchasing additional ones.
               </p>
-              <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+              <p className="text-gray-700 leading-relaxed text-lg sm:text-base tracking-tight">
                 <strong>Would you like to proceed with the payment anyway?</strong>
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
               <button
-                className="bg-gray-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-gray-700 transition-colors font-medium text-sm sm:text-base"
+                className="bg-gray-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-gray-700 transition-colors font-medium text-base leading-normal tracking-tight"
                 onClick={handleCancelPayment}
               >
                 Use Existing Coins
               </button>
               <button
-                className="bg-green-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-green-700 transition-colors font-medium text-sm sm:text-base"
+                className="bg-green-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-green-700 transition-colors font-medium text-base leading-normal tracking-tight"
                 onClick={handleProceedWithBlockedCoins}
               >
                 Proceed with Payment
@@ -523,35 +523,34 @@ const Payment = ({ user, onSuccess }) => {
                   borderRadius: '20px 4px 20px 4px',
                 }}
               >
-                <span className="text-gray-800 font-bold text-xs sm:text-sm">{plan.name}</span>
+                <span className="text-gray-800 font-bold text-base leading-normal tracking-tight">{plan.name}</span>
               </div>
             </div>
             
             <div className="p-4 sm:p-6 pt-12 sm:pt-16">
               {/* Price Section */}
               <div className="text-center mb-4 sm:mb-6">
-                <div className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
-                  ₹{plan.discountedPrice}
-                </div>
-                <div className="text-gray-500 text-xs sm:text-sm">/ per year</div>
+                <div className="text-2xl font-bold text-gray-800 mb-1 leading-tight tracking-tight">
+                  ₹{plan.discountedPrice}</div>
+                <div className="text-gray-500 text-lg sm:text-base leading-normal tracking-tight">/ per year</div>
                 {plan.originalPrice > plan.discountedPrice && (
                   <div className="mt-1 sm:mt-2">
-                    <span className="text-gray-500 text-xs sm:text-sm">Originally </span>
-                    <span className="text-red-500 line-through text-xs sm:text-sm">₹{plan.originalPrice}</span>
+                    <span className="text-gray-500 text-lg sm:text-base leading-normal tracking-tight">Originally </span>
+                    <span className="text-red-500 line-through text-lg sm:text-base leading-normal tracking-tight">₹{plan.originalPrice}</span>
                   </div>
                 )}
               </div>
               
               {/* Features Section */}
               <div className="mb-4 sm:mb-6">
-                <h4 className="font-bold text-gray-800 mb-3 sm:mb-4 text-sm sm:text-base">Features</h4>
+                <h4 className="font-bold text-gray-800 mb-3 sm:mb-4 text-base leading-normal tracking-tight">Features</h4>
                 <ul className="space-y-2 sm:space-y-3">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-center gap-2 sm:gap-3">
                       <div className="w-4 h-4 sm:w-5 sm:h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-green-600 text-xs">✓</span>
+                        <span className="text-green-600 text-base">✓</span>
                       </div>
-                      <span className="text-gray-700 text-xs sm:text-sm">{feature}</span>
+                      <span className="text-gray-700 text-lg sm:text-base leading-normal tracking-tight">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -559,7 +558,7 @@ const Payment = ({ user, onSuccess }) => {
               
               {/* Choose Plan Button */}
               <button 
-                className="w-full bg-gradient-brand text-white py-2 sm:py-3 rounded-lg font-medium hover:bg-gradient-primary-hover duration-200 transition-colors shadow-lg text-sm sm:text-base"
+                className="w-full bg-gradient-brand text-white py-2 sm:py-3 rounded-lg font-medium hover:bg-gradient-primary-hover duration-200 transition-colors shadow-lg text-base leading-normal tracking-tight"
                 onClick={() => handlePurchase(plan)}
               >
                 Choose Plan

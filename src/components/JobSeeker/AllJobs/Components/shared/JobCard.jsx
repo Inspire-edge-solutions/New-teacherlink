@@ -80,15 +80,15 @@ const JobCard = ({
                 onClick={(e) => e.stopPropagation()}
               />
             )}
-            <h3 className="text-lg font-bold text-gray-800 leading-tight break-words max-w-full" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+            <h3 className="text-xl font-bold text-gray-800 leading-tight tracking-tight break-words max-w-full" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
               {job.job_title || 'Position not specified'}
             </h3>
-            <span className="bg-pink-100 text-red-500 text-xs px-2 py-0.5 rounded-full font-medium">
+            <span className="bg-pink-100 text-red-500 text-base px-2 py-0.5 rounded-full font-medium leading-normal tracking-tight">
               {formatTimeAgo(job.created_at || job.posted_at)}
             </span>
           </div>
           {job.institute_name && (
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">
               {job.institute_name}
             </p>
           )}
@@ -96,7 +96,7 @@ const JobCard = ({
         {/* Action Icons */}
         <div className="flex items-center gap-2 flex-wrap md:flex-nowrap md:gap-1 md:ml-3">
           {showApplicationStatus && (
-            <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${
+            <span className={`px-2 py-0.5 text-base rounded-full font-medium leading-normal tracking-tight ${
               job.application_status_variant === 'hired' ? 'bg-green-100 text-green-700' :
               job.application_status_variant === 'rejected' ? 'bg-red-100 text-red-700' :
               job.application_status_variant === 'shortlisted' ? 'bg-blue-100 text-blue-700' :
@@ -162,7 +162,7 @@ const JobCard = ({
           <div className="space-y-2 sm:col-span-2 md:col-span-3">
             <div className="flex items-center gap-2 text-gray-600 break-words">
               <BsMortarboard className="w-3.5 h-3.5 text-gray-500" />
-              <span className="text-base md:text-lg">{formatQualification(job.qualification)}</span>
+              <span className="text-lg sm:text-base leading-normal tracking-tight">{formatQualification(job.qualification)}</span>
             </div>
             <div className="flex items-center gap-2 text-gray-600 break-words">
               <IoLocationOutline className="w-3.5 h-3.5 text-gray-500" />
@@ -187,21 +187,21 @@ const JobCard = ({
         <div className="md:ml-4 md:flex-shrink-0">
           {job.is_closed === 1 ? (
             <button 
-              className="w-full md:w-auto px-4 py-2 bg-gray-300 text-gray-600 rounded-lg text-sm font-medium cursor-not-allowed"
+              className="w-full md:w-auto px-4 py-2 bg-gray-300 text-gray-600 rounded-lg text-base font-medium cursor-not-allowed leading-normal tracking-tight"
               disabled
             >
               Closed
             </button>
           ) : isApplied ? (
             <button 
-              className="w-full md:w-auto px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium cursor-not-allowed"
+              className="w-full md:w-auto px-4 py-2 bg-green-500 text-white rounded-lg text-base font-medium cursor-not-allowed leading-normal tracking-tight"
               disabled
             >
               Applied ✓
             </button>
           ) : (
             <button 
-              className="w-full md:w-auto px-4 py-2 bg-gradient-brand text-white rounded-lg text-sm font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full md:w-auto px-4 py-2 bg-gradient-brand text-white rounded-lg text-base font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight"
               disabled={loading}
               onClick={(e) => {
                 e.stopPropagation();

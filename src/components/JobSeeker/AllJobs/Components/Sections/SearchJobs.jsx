@@ -1139,7 +1139,7 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
       <div className="filter-section mb-4">
         <div className="row">
           <div className="col-12">
-            <h4 className="mb-3">Search & Filter Jobs</h4>
+            <h4 className="mb-3 text-xl leading-tight tracking-tight">Search & Filter Jobs</h4>
           </div>
         </div>
 
@@ -1409,7 +1409,7 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
       {/* Results Section */}
       <div className="results-section">
         <div className="flex justify-between items-center mb-3">
-          <h5 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent m-0">Search Results ({filteredJobs.length} jobs found)</h5>
+          <h5 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent m-0 leading-tight tracking-tight">Search Results ({filteredJobs.length} jobs found)</h5>
           <RecordsPerPageDropdown 
             itemsPerPage={jobsPerPage}
             onItemsPerPageChange={setJobsPerPage}
@@ -1419,8 +1419,8 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
                         {/* Job Results */}
                 {filteredJobs.length === 0 ? (
                   <div className="no-results text-center py-5">
-                    <p>No jobs found matching your criteria.</p>
-                    <button className="btn btn-outline-primary" onClick={handleReset}>
+                    <p className="text-lg sm:text-base leading-normal tracking-tight">No jobs found matching your criteria.</p>
+                    <button className="btn btn-outline-primary text-base leading-normal tracking-tight" onClick={handleReset}>
                       Reset Filters
                     </button>
                   </div>
@@ -1456,7 +1456,7 @@ const SearchJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
           </div>
         ) : (
           <div className="text-center py-5">
-            <p>No jobs found in current page. Try navigating to another page or adjusting the records per page setting.</p>
+            <p className="text-lg sm:text-base leading-normal tracking-tight">No jobs found in current page. Try navigating to another page or adjusting the records per page setting.</p>
           </div>
         )}
 

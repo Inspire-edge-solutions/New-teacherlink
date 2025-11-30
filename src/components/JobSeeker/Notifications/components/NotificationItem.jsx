@@ -39,15 +39,15 @@ const NotificationItem = ({ notification, index, checked, onMarkAsRead, onDelete
     >
       <div
         onClick={handleNotificationClick}
-        className={`p-4 rounded-lg border-2 transition-all duration-200 hover:shadow-md hover:bg-[#F0D8D9] cursor-pointer ${
+        className={`p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 hover:shadow-md hover:bg-[#F0D8D9] cursor-pointer ${
           notification.read
             ? 'bg-gray-50 border-gray-200'
             : 'bg-white border-pink-200 shadow-sm'
         }`}
       >
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 sm:gap-4">
           {/* Icon */}
-          <div className={`p-3 rounded-lg ${
+          <div className={`p-2 sm:p-3 rounded-lg flex-shrink-0 ${
             notification.read ? 'bg-gray-100' : 'bg-pink-50'
           }`}>
             {getNotificationIcon(notification.type)}
@@ -55,47 +55,55 @@ const NotificationItem = ({ notification, index, checked, onMarkAsRead, onDelete
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1">
+            <div className="flex flex-col gap-2">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className={`font-semibold ${
+                  <h3 className={`text-lg sm:text-xl font-semibold leading-tight tracking-tight truncate ${
                     notification.read ? 'text-gray-700' : 'text-gray-900'
                   }`}>
                     {notification.title}
                   </h3>
                   {!notification.read && (
-                    <span className="w-2 h-2 bg-gradient-brand rounded-full"></span>
+                    <span className="w-2 h-2 bg-gradient-brand rounded-full flex-shrink-0"></span>
                   )}
                 </div>
-                <p className={`text-sm mb-2 ${
+                <p className={`text-base sm:text-lg mb-2 leading-normal tracking-tight ${
                   notification.read ? 'text-gray-600' : 'text-gray-700'
                 }`}>
                   {notification.message}
                 </p>
-                <p className="text-xs text-gray-500">
-                  {formatTimestamp(notification.timestamp)}
-                </p>
               </div>
 
-              {/* Actions */}
-              <div className="flex items-center gap-2">
-                {!notification.read && (
+              {/* Date/Time and Actions in same line */}
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm text-gray-500 leading-normal tracking-tight">
+                  {formatTimestamp(notification.timestamp)}
+                </p>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {!notification.read && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onMarkAsRead(notification.id);
+                      }}
+                      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-gray-500 border border-gray-300 hover:text-green-500 hover:bg-green-50 hover:border-green-500 rounded-lg transition-colors leading-normal tracking-tight whitespace-nowrap"
+                      title="Mark as read"
+                    >
+                      <FaCheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span>Mark as read</span>
+                    </button>
+                  )}
                   <button
-                    onClick={() => onMarkAsRead(notification.id)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500 border border-gray-300 hover:text-green-500 hover:bg-green-50 hover:border-green-500 rounded-lg transition-colors"
-                    title="Mark as read"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(notification.id);
+                    }}
+                    className="p-1.5 sm:p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                    title="Delete"
                   >
-                    <FaCheckCircle />
-                    <span>Mark this as read</span>
+                    <FaTrash className="w-3 h-3 sm:w-4 sm:h-4" />
                   </button>
-                )}
-                <button
-                  onClick={() => onDelete(notification.id)}
-                  className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Delete"
-                >
-                  <FaTrash />
-                </button>
+                </div>
               </div>
             </div>
           </div>

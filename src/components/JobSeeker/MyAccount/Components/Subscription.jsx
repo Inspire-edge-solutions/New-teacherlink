@@ -20,10 +20,10 @@ const SuccessModal = ({ open, onClose, message }) => {
             alt="Coin"
             className="w-16 h-16 mx-auto mb-4"
           />
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Congrats!!</h2>
-          <p className="text-gray-600 mb-6">{message}</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 leading-tight tracking-tight">Congrats!!</h2>
+          <p className="text-gray-600 mb-6 text-lg sm:text-base leading-normal tracking-tight">{message}</p>
           <button 
-            className="bg-gradient-brand text-white px-6 py-3 rounded-lg hover:bg-gradient-primary-hover duration-200 transition-colors"
+            className="bg-gradient-brand text-white px-6 py-3 rounded-lg hover:bg-gradient-primary-hover duration-200 transition-colors text-base leading-normal tracking-tight"
             onClick={onClose}
           >
             OK
@@ -52,10 +52,10 @@ const InfoModal = ({ open, onClose, iconUrl, message, loading }) => {
               />
             )}
           </div>
-          <h3 className="text-xl font-bold text-red-600 mb-4">Info</h3>
-          <p className="text-gray-600 mb-6">{message}</p>
+          <h3 className="text-xl font-bold text-red-600 mb-4 leading-tight tracking-tight">Info</h3>
+          <p className="text-gray-600 mb-6 text-lg sm:text-base leading-normal tracking-tight">{message}</p>
           <button 
-            className="bg-gradient-brand text-white px-6 py-3 rounded-lg hover:bg-gradient-primary-hover duration-200 transition-colors"
+            className="bg-gradient-brand text-white px-6 py-3 rounded-lg hover:bg-gradient-primary-hover duration-200 transition-colors text-base leading-normal tracking-tight"
             onClick={onClose}
           >
             OK
@@ -74,14 +74,14 @@ const SubscriptionDetailsView = ({ subscription }) => {
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-2xl text-green-600">✓</span>
         </div>
-        <h3 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent">Premium Subscription Activated!</h3>
+        <h3 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">Premium Subscription Activated!</h3>
       </div>
       
       <div className="bg-gray-50 rounded-xl p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex justify-between items-center py-2">
             <span className="text-gray-600 font-medium">Status</span>
-            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">Active</span>
+            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-base font-semibold leading-normal tracking-tight">Active</span>
           </div>
           <div className="flex justify-between items-center py-2">
             <span className="text-gray-600 font-medium">Start Date</span>
@@ -97,7 +97,7 @@ const SubscriptionDetailsView = ({ subscription }) => {
           </div>
           <div className="flex justify-between items-center py-2 md:col-span-2">
             <span className="text-gray-600 font-medium">Coins Balance</span>
-            <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold">
+            <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-base font-semibold leading-normal tracking-tight">
               {subscription.coins_balance} coins
             </span>
           </div>
@@ -105,7 +105,7 @@ const SubscriptionDetailsView = ({ subscription }) => {
       </div>
       
       <div className="text-center">
-        <h4 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-6">Premium Benefits Unlocked</h4>
+        <h4 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-6 leading-tight tracking-tight">Premium Benefits Unlocked</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
             <span className="text-2xl">🎯</span>
@@ -161,8 +161,8 @@ const Subscription = () => {
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🔒</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Access Denied</h2>
-          <p className="text-gray-600">Please log in to access subscription features.</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2 leading-tight tracking-tight">Access Denied</h2>
+          <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Please log in to access subscription features.</p>
         </div>
       </div>
     );
@@ -303,8 +303,8 @@ const Subscription = () => {
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
         <div className="text-center">
           <div className="text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Error</h2>
-          <p className="text-gray-600">{error}</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2 leading-tight tracking-tight">Error</h2>
+          <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">{error}</p>
         </div>
       </div>
     );
@@ -321,8 +321,8 @@ const Subscription = () => {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl text-green-600">✓</span>
             </div>
-            <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4">Active Subscription</h2>
-            <div className="space-y-2 text-gray-600">
+            <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 leading-tight tracking-tight">Active Subscription</h2>
+            <div className="space-y-2 text-gray-600 text-lg sm:text-base leading-normal tracking-tight">
               <p>Valid until: {new Date(subscription.endDate).toLocaleDateString()}</p>
               <p>Status: <span className="text-green-600 font-semibold">Active</span></p>
             </div>
@@ -339,7 +339,7 @@ const Subscription = () => {
         <div className="mb-6 sm:mb-8">
           {/* Title */}
           <div className="mb-4 sm:mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent text-center sm:text-left">
+            <h1 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent text-center sm:text-left leading-tight tracking-tight">
               Subscription plans
             </h1>
           </div>
@@ -350,7 +350,7 @@ const Subscription = () => {
             <div className={`flex justify-center ${activeTab === 'payment' ? 'w-full sm:flex-1' : 'w-full'}`}>
               <div className="flex bg-white rounded-full p-1 shadow-lg w-full sm:w-auto">
                 <button
-                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-sm sm:text-base ${
+                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-base leading-normal tracking-tight ${
                     activeTab === 'payment' 
                       ? 'bg-gradient-brand text-white shadow-md hover:bg-gradient-primary-hover' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -362,7 +362,7 @@ const Subscription = () => {
                 </button>
                 
                 <button
-                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-sm sm:text-base ${
+                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-base leading-normal tracking-tight ${
                     activeTab === 'referral' 
                       ? 'bg-gradient-brand text-white shadow-md hover:bg-gradient-primary-hover' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -374,7 +374,7 @@ const Subscription = () => {
                 </button>
                 
                 <button
-                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-sm sm:text-base ${
+                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-base leading-normal tracking-tight ${
                     activeTab === 'coupon' 
                       ? 'bg-gradient-brand text-white shadow-md hover:bg-gradient-primary-hover' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -391,7 +391,7 @@ const Subscription = () => {
             {activeTab === 'payment' && (
               <div className="flex justify-center sm:justify-end">
                 <button
-                  className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-lg font-medium text-sm sm:text-base"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-lg font-medium text-base leading-normal tracking-tight"
                   onClick={fetchPaymentHistory}
                   disabled={historyLoading}
                 >
@@ -447,10 +447,10 @@ const Subscription = () => {
             {/* Header with Close Button */}
             <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-start relative">
               <div className="flex-1 pr-3 sm:pr-4">
-                <h3 className="text-lg sm:text-2xl font-semibold text-gray-800 flex items-center gap-2 m-0">
+                <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2 m-0 leading-tight tracking-tight">
                   💳 Payment History
                 </h3>
-                <p className="text-gray-600 text-xs sm:text-sm mt-1 m-0">
+                <p className="text-gray-600 text-lg sm:text-base mt-1 m-0 leading-normal tracking-tight">
                   Your transaction history and payment details
                 </p>
               </div>
@@ -479,29 +479,29 @@ const Subscription = () => {
                     alt="No payment history" 
                     className="w-48 h-48 sm:w-64 sm:h-64 mb-4 mx-auto"
                   />
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">No Payment History</h3>
-                  <p className="text-sm sm:text-base">You haven't made any payments yet.</p>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2 leading-tight tracking-tight">No Payment History</h3>
+                  <p className="text-lg sm:text-base leading-normal tracking-tight">You haven't made any payments yet.</p>
                 </div>
               ) : (
                 <div className="flex-1 overflow-y-auto flex flex-col">
                   <div className="flex-1 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-sm">
                     <div className="overflow-x-auto">
-                      <table className="w-full border-collapse text-xs sm:text-sm bg-white min-w-[600px]">
+                      <table className="w-full border-collapse text-base bg-white min-w-[600px] leading-normal tracking-tight">
                       <thead className="sticky top-0 z-10">
                         <tr className="bg-gray-50 border-b-2 border-gray-200">
-                          <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-xs">
+                          <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-base leading-normal tracking-tight">
                             Amount
                           </th>
-                          <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-xs">
+                          <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-base leading-normal tracking-tight">
                             Status
                           </th>
-                          <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-xs">
+                          <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-base leading-normal tracking-tight">
                             Transaction ID
                           </th>
-                          <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 min-w-[100px] text-xs">
+                          <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 min-w-[100px] text-base leading-normal tracking-tight">
                             Date
                           </th>
-                          <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 text-xs">
+                          <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 text-base leading-normal tracking-tight">
                             Receipt
                           </th>
                         </tr>
@@ -514,12 +514,12 @@ const Subscription = () => {
                             key={payment.id || index}
                             className="border-b border-gray-200 transition-all duration-200 cursor-pointer hover:bg-gray-50"
                           >
-                            <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 font-semibold text-gray-800 text-xs sm:text-sm">
+                            <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 font-semibold text-gray-800 text-base leading-normal tracking-tight">
                               ₹{payment.amount}
                             </td>
                             <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200">
                               <span 
-                                className="inline-block px-1 sm:px-2 py-1 rounded-full text-xs font-semibold"
+                                className="inline-block px-1 sm:px-2 py-1 rounded-full text-base font-semibold leading-normal tracking-tight"
                                 style={{
                                   backgroundColor: statusInfo.color + '20',
                                   color: statusInfo.color,
@@ -529,19 +529,19 @@ const Subscription = () => {
                                 {statusInfo.text}
                               </span>
                             </td>
-                            <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 font-mono text-xs text-gray-600 break-all max-w-[120px] sm:max-w-[150px]">
+                            <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 font-mono text-base text-gray-600 break-all max-w-[120px] sm:max-w-[150px] leading-normal tracking-tight">
                               {payment.user_transaction_id}
                             </td>
                             <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 text-gray-600 min-w-[80px] sm:min-w-[100px]">
-                              <div className="text-xs sm:text-sm leading-tight">
+                              <div className="text-base leading-normal tracking-tight">
                                 {formatDate(payment.created_at)}
                                 <br />
-                                <span className="text-xs text-gray-500">
+                                <span className="text-base text-gray-500 leading-normal tracking-tight">
                                   {formatTime(payment.created_at)}
                                 </span>
                               </div>
                             </td>
-                            <td className="px-1 sm:px-2 py-2 sm:py-3 text-gray-600 text-xs max-w-[100px] sm:max-w-[120px] break-all">
+                            <td className="px-1 sm:px-2 py-2 sm:py-3 text-gray-600 text-base max-w-[100px] sm:max-w-[120px] break-all leading-normal tracking-tight">
                               {payment.receipt}
                             </td>
                           </tr>

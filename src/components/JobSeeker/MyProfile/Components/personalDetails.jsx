@@ -852,7 +852,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
               />
             </InputWithTooltip>
             {validationErrors.fullName && (
-              <span className="text-red-500 text-xs mt-1 block">{validationErrors.fullName}</span>
+              <span className="text-red-500 text-lg sm:text-base mt-1 block leading-normal tracking-tight">{validationErrors.fullName}</span>
             )}
           </div>
           {/* Profile Image */}
@@ -893,7 +893,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                 ) : (
                   <button
                     type="button"
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-xs md:text-sm font-medium shadow-sm transition-colors whitespace-nowrap"
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors whitespace-nowrap leading-normal tracking-tight"
                     onClick={sendEmailOtp}
                     disabled={isEmailVerifying}
                   >
@@ -904,7 +904,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
               </div>
             </InputWithTooltip>
             {validationErrors.email && (
-              <span className="text-red-500 text-xs mt-1 block">{validationErrors.email}</span>
+              <span className="text-red-500 text-lg sm:text-base mt-1 block leading-normal tracking-tight">{validationErrors.email}</span>
             )}
             {showEmailOtpInput && !emailVerified && !isGoogleAccount && (
               <div className="flex gap-2 mt-2">
@@ -918,7 +918,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                 />
                 <button 
                   type="button" 
-                  className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-sm font-medium shadow-sm transition-colors" 
+                  className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors leading-normal tracking-tight" 
                   onClick={verifyEmailOtp}
                 >
                   Submit
@@ -984,7 +984,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                 ) : (
                   <button
                     type="button"
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-xs md:text-sm font-medium shadow-sm transition-colors whitespace-nowrap"
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors whitespace-nowrap leading-normal tracking-tight"
                     onClick={sendPhoneOtp}
                     disabled={isPhoneVerifying}
                   >
@@ -995,7 +995,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
               </div>
             </InputWithTooltip>
             {validationErrors.callingNumber && (
-              <span className="text-red-500 text-xs mt-1 block">{validationErrors.callingNumber}</span>
+              <span className="text-red-500 text-lg sm:text-base mt-1 block leading-normal tracking-tight">{validationErrors.callingNumber}</span>
             )}
             {showPhoneOtpInput && !phoneVerified && (
               <div className="flex gap-2 mt-2">
@@ -1009,14 +1009,14 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                 />
                 <button 
                   type="button" 
-                  className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-sm font-medium shadow-sm transition-colors" 
+                  className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors leading-normal tracking-tight" 
                   onClick={verifyPhoneOtp}
                 >
                   Submit
                 </button>
                 <button 
                   type="button" 
-                  className="px-3 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-xs font-medium shadow-sm transition-colors" 
+                  className="px-3 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors leading-normal tracking-tight" 
                   onClick={sendPhoneOtp}
                 >
                   Resend
@@ -1033,7 +1033,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                 onChange={(e) => setSameAsCallingNumber(e.target.checked)}
                 className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
               />
-              <span className="text-sm text-gray-700">WhatsApp Number same as Mobile Number</span>
+              <span className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">WhatsApp Number same as Mobile Number</span>
             </label>
           </div>
           {/* WhatsApp Number */}
@@ -1057,7 +1057,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
               />
             </InputWithTooltip>
             {validationErrors.whatsappNumber && (
-              <span className="text-red-500 text-xs mt-1 block">{validationErrors.whatsappNumber}</span>
+              <span className="text-red-500 text-lg sm:text-base mt-1 block leading-normal tracking-tight">{validationErrors.whatsappNumber}</span>
             )}
           </div>
           {/* {showWhatsappHint && <small>Calling and WhatsApp numbers can be the same</small>} */}

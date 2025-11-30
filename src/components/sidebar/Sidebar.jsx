@@ -103,7 +103,7 @@ export default function Sidebar({
       </svg>
 
       {/* Top header */}
-      <div className="p-4 flex items-center justify-between">
+      <div className="p-3 flex items-center justify-between">
         <div className={`w-8 h-8 ${isCollapsed ? "mx-auto" : ""}`}></div>
         {!isCollapsed && (
          <Link to="/home">

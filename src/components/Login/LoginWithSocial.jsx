@@ -391,7 +391,7 @@ const LoginWithSocial = () => {
         </div>
         <div className="p-6 border-t bg-gray-50">
           <button
-            className="w-full py-3 px-6 text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 px-6 text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base leading-normal tracking-tight"
             style={{ background: 'linear-gradient(90deg, #FA5357 0%, #A2035D 100%)' }}
             onClick={() => {
               setShowTermsModal(false);
@@ -411,7 +411,7 @@ const LoginWithSocial = () => {
       <div className="w-full">
         {loading ? (
           <button
-            className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-300 text-gray-500 font-medium rounded-lg transition-all duration-200 disabled:opacity-80 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-300 text-gray-500 font-medium rounded-lg transition-all duration-200 disabled:opacity-80 disabled:cursor-not-allowed text-base leading-normal tracking-tight"
             type="button"
             disabled
             aria-live="polite"
@@ -421,7 +421,7 @@ const LoginWithSocial = () => {
           </button>
         ) : (
           <button
-            className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base leading-normal tracking-tight"
             onClick={handleGoogleSignIn}
             disabled={loading}
             type="button"
@@ -460,7 +460,7 @@ const LoginWithSocial = () => {
             <button
               type="button"
               onClick={() => setSelectedRole("Candidate")}
-              className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-sm sm:text-base ${
+              className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-base leading-normal tracking-tight ${
                 selectedRole === "Candidate" 
                   ? 'bg-red-200 text-red-600' 
                   : 'bg-transparent text-gray-500'
@@ -471,7 +471,7 @@ const LoginWithSocial = () => {
             <button
               type="button"
               onClick={() => setSelectedRole("Employer")}
-              className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-sm sm:text-base ${
+              className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-base leading-normal tracking-tight ${
                 selectedRole === "Employer" 
                   ? 'bg-red-200 text-red-600' 
                   : 'bg-transparent text-gray-500'
@@ -481,11 +481,11 @@ const LoginWithSocial = () => {
             </button>
           </div>
 
-              {roleError && <div className="text-red-500 text-sm mb-4">{roleError}</div>}
+              {roleError && <div className="text-red-500 text-base mb-4 leading-normal tracking-tight">{roleError}</div>}
               
               {/* Phone Number Input */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal tracking-tight">Phone Number</label>
+                <label className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Phone Number</label>
                 <div className="relative">
                   <input
                     type="tel"
@@ -504,7 +504,7 @@ const LoginWithSocial = () => {
                     </svg>
                   </div>
                 </div>
-                {phoneError && <div className="text-red-500 text-sm mt-1">{phoneError}</div>}
+                {phoneError && <div className="text-red-500 text-base mt-1 leading-normal tracking-tight">{phoneError}</div>}
               </div>
               
               {/* Terms and Conditions */}
@@ -525,7 +525,7 @@ const LoginWithSocial = () => {
                     className="mt-1 h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
                     required
                   />
-                  <label htmlFor="terms-checkbox-google" className="ml-2 text-sm text-gray-600 leading-normal tracking-tight">
+                  <label htmlFor="terms-checkbox-google" className="ml-2 text-base text-gray-600 leading-normal tracking-tight">
                     I have read and agree to the{" "}
                     <span 
                       className="text-pink-600 cursor-pointer hover:underline" 
@@ -569,14 +569,14 @@ const LoginWithSocial = () => {
                 Welcome to TeacherLink! 
                 <span className="ml-2">🌟</span>
               </h3>
-              <p className="text-gray-600 mb-6 leading-normal tracking-tight">
+              <p className="text-gray-600 mb-6 text-lg sm:text-base leading-normal tracking-tight">
                 <span className="mr-1">🎉</span>
                 Your account is ready! <br/> You can now {selectedRole === 'Employer' ? 'start hiring!' : 'explore all teaching & non-teaching opportunities'}.
                 <br/>
                 <span className="mr-1">🚀</span> Your dashboard awaits - let&apos;s get started!
               </p>
               <button 
-                className="w-full py-3 px-6 text-white font-medium rounded-lg transition-all duration-200" 
+                className="w-full py-3 px-6 text-white font-medium rounded-lg transition-all duration-200 text-base leading-normal tracking-tight" 
                 style={{ background: 'linear-gradient(90deg, #FA5357 0%, #A2035D 100%)' }}
                 onClick={async () => {
                   const userType = selectedRole;

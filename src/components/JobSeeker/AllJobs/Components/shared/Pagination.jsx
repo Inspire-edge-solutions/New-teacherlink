@@ -60,7 +60,7 @@ const Pagination = ({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+          className={`flex items-center px-3 py-2 text-base font-medium rounded-lg transition-all duration-200 leading-normal tracking-tight ${
             currentPage === 1
               ? 'text-gray-400 cursor-not-allowed bg-gray-100'
               : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400'
@@ -77,7 +77,7 @@ const Pagination = ({
               return (
                 <span
                   key={`ellipsis-${index}`}
-                  className="px-3 py-2 text-sm font-medium text-gray-500"
+                  className="px-3 py-2 text-base font-medium text-gray-500 leading-normal tracking-tight"
                 >
                   ...
                 </span>
@@ -89,7 +89,7 @@ const Pagination = ({
               <button
                 key={number}
                 onClick={() => onPageChange(number)}
-                className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                className={`px-3 py-2 text-base font-medium rounded-lg transition-all duration-200 leading-normal tracking-tight ${
                   isActive
                     ? 'bg-gradient-brand text-white shadow-sm'
                     : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400'
@@ -105,7 +105,7 @@ const Pagination = ({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+          className={`flex items-center px-3 py-2 text-base font-medium rounded-lg transition-all duration-200 leading-normal tracking-tight ${
             currentPage === totalPages
               ? 'text-gray-400 cursor-not-allowed bg-gray-100'
               : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400'
@@ -117,7 +117,7 @@ const Pagination = ({
       </nav>
 
       {/* Pagination Info */}
-      <div className="text-sm text-gray-600">
+      <div className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">
         Showing <span className="font-medium">{currentPageStart}</span> to{' '}
         <span className="font-medium">{currentPageEnd}</span> of{' '}
         <span className="font-medium">{totalItems}</span> jobs

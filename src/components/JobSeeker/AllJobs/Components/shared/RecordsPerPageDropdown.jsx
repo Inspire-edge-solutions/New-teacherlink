@@ -11,7 +11,7 @@ const RecordsPerPageDropdown = ({
 }) => {
   return (
     <div className={`flex items-center space-x-3 ${className}`}>
-      <label htmlFor="itemsPerPage" className="text-sm font-medium text-gray-700">
+      <label htmlFor="itemsPerPage" className="text-base font-medium text-gray-700 leading-normal tracking-tight">
         Records per page:
       </label>
       <div className="relative">
@@ -19,7 +19,7 @@ const RecordsPerPageDropdown = ({
           id="itemsPerPage"
           value={itemsPerPage}
           onChange={(e) => onItemsPerPageChange && onItemsPerPageChange(Number(e.target.value))}
-          className="appearance-none px-4 py-2.5 text-sm font-medium border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-[90px] pr-10 cursor-pointer hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md"
+          className="appearance-none px-4 py-2.5 text-base font-medium border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-[90px] pr-10 cursor-pointer hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md leading-normal tracking-tight"
         >
           <option value={5}>5</option>
           <option value={10}>10</option>

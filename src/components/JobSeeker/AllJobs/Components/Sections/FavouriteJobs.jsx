@@ -582,7 +582,7 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJ
 
       <div className="job-listing">
         <div className="flex justify-between items-center mb-3">
-          <h5 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
+          <h5 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 leading-tight tracking-tight">
             {isSearching
               ? `Found ${filteredJobs.length} favourite job${filteredJobs.length !== 1 ? 's' : ''}`
               : `${filteredJobs.length} Favourite Jobs`
@@ -631,8 +631,8 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJ
                 alt="No favourite jobs found" 
                 className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
               />
-              <h5 className="text-gray-700 text-lg font-semibold mb-2">No Results Found</h5>
-              <p className="text-gray-600">
+              <h5 className="text-gray-700 text-xl font-semibold mb-2 leading-tight tracking-tight">No Results Found</h5>
+              <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">
                 No favourite jobs match your search criteria. Try adjusting your search terms.
               </p>
             </div>
@@ -645,12 +645,12 @@ const FavouriteJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJ
                 alt="No favourite jobs" 
                 className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
               />
-              <h5 className="text-gray-700 text-lg font-semibold mb-2">No Favourite Jobs</h5>
-              <p className="text-gray-600 mb-4">
+              <h5 className="text-gray-700 text-xl font-semibold mb-2 leading-tight tracking-tight">No Favourite Jobs</h5>
+              <p className="text-gray-600 mb-4 text-lg sm:text-base leading-normal tracking-tight">
                 You haven't marked any jobs as favourites yet. Star the jobs you love most to find them easily later.
               </p>
               <button
-                className="px-4 py-2 bg-gradient-brand text-white rounded-lg text-sm font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500"
+                className="px-4 py-2 bg-gradient-brand text-white rounded-lg text-base font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500 leading-normal tracking-tight"
                 onClick={() => {
                   if (onNavigateTab) {
                     onNavigateTab('all');

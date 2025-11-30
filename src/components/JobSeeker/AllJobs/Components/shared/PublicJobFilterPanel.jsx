@@ -148,7 +148,7 @@ const PublicJobFilterPanel = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-2 sm:p-4">
       <div className="rounded-lg shadow-xl max-w-3xl w-full max-h-[95vh] overflow-y-auto z-[10000]" style={{ backgroundColor: '#F0D8D9' }}>
         <div className="flex justify-between items-center p-4 sm:p-6 border-b sticky top-0 bg-[#F0D8D9] z-10">
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-800">
+          <h3 className="text-xl font-semibold text-gray-800 leading-tight tracking-tight">
             Filter Jobs {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </h3>
           <button
@@ -277,7 +277,7 @@ const PublicJobFilterPanel = ({
                   value={filters.minSalary}
                   onChange={(e) => handleFilterChange('minSalary', e.target.value)}
                   placeholder="Min Salary"
-                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base leading-normal tracking-tight"
                 />
               </InputWithTooltip>
             </div>
@@ -289,7 +289,7 @@ const PublicJobFilterPanel = ({
                   value={filters.maxSalary}
                   onChange={(e) => handleFilterChange('maxSalary', e.target.value)}
                   placeholder="Max Salary"
-                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base leading-normal tracking-tight"
                 />
               </InputWithTooltip>
             </div>
@@ -299,13 +299,13 @@ const PublicJobFilterPanel = ({
           <div className="flex justify-end gap-3 mt-6">
             <button
               onClick={handleReset}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-base leading-normal tracking-tight"
             >
               Reset
             </button>
             <button
               onClick={handleApply}
-              className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors"
+              className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors text-base leading-normal tracking-tight"
             >
               Apply Filters
             </button>

@@ -13,19 +13,24 @@ const LoginConsentModal = ({
   if (!isOpen) return null;
 
   // Map actions to user-friendly messages
-  const getActionMessage = (action) => {
+  // userType helps determine context: 'Employer' = viewing candidates, 'Candidate' = viewing jobs
+  const getActionMessage = (action, userType) => {
     switch (action) {
       case 'view':
+        // 'view' is used for jobs (Candidate userType)
+        return userType === 'Candidate' ? 'view job details' : 'view candidate details';
       case 'view-full':
-        return 'view full job details';
+        // 'view-full' is used for candidates (Employer userType)
+        return userType === 'Employer' ? 'view full candidate profile' : 'view full job details';
       case 'view-short':
+        // 'view-short' is used for candidates (Employer userType)
         return 'view short profile';
       case 'apply':
         return 'apply for this job';
       case 'unlock':
         return 'unlock candidate details';
       case 'message':
-        return 'message';
+        return userType === 'Employer' ? 'message candidate' : 'message';
       default:
         return 'perform this action';
     }
@@ -34,15 +39,15 @@ const LoginConsentModal = ({
   const getUserTypeMessage = (userType) => {
     switch (userType) {
       case 'Candidate':
-        return 'candidate/teacher';
+        return 'Job Seeker';
       case 'Employer':
-        return 'employer';
+        return 'Job Provider';
       default:
-        return 'user';
+        return 'User';
     }
   };
 
-  const actionMessage = getActionMessage(action);
+  const actionMessage = getActionMessage(action, userType);
   const userTypeMessage = getUserTypeMessage(userType);
 
   return createPortal(
@@ -86,7 +91,7 @@ const LoginConsentModal = ({
         <div className="p-6 bg-[#F0D8D9]">
           <div className="mb-6">
             <p className="text-gray-700 mb-4 leading-relaxed text-lg sm:text-base tracking-tight">
-              To <span className="font-semibold text-gray-900 px-2 py-1 rounded-md">{actionMessage}</span>, you need to be logged in as a <span className="font-semibold text-gray-900 px-2 py-1 rounded-md">{userTypeMessage}</span>.
+              To <span className="font-semibold text-gray-900 px-2 py-1 rounded-md">{actionMessage},</span> you need to be logged in as a <span className="font-semibold text-gray-900 px-2 py-1 rounded-md">{userTypeMessage}.</span>
             </p>
             <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100">
               <AiOutlineInfoCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />

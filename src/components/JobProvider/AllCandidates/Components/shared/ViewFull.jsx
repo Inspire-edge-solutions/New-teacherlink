@@ -47,8 +47,8 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
               <span role="img" aria-label="coin">🪙</span>
               <span className="text-[#f7b901] font-bold text-xl ml-1.5">-50</span>
             </div>
-            <div className="text-[#2e7d32] text-xl font-semibold text-center my-4">Unlocked! <span role="img" aria-label="unlocked">🔓</span></div>
-            <div className="text-gray-500 text-sm text-center">Details unlocked successfully.</div>
+            <div className="text-[#2e7d32] text-xl font-semibold text-center my-4 leading-tight tracking-tight">Unlocked! <span role="img" aria-label="unlocked">🔓</span></div>
+            <div className="text-gray-500 text-lg sm:text-base text-center leading-normal tracking-tight">Details unlocked successfully.</div>
           </>
         ) : unlockStatus === "error" ? (
           <>
@@ -56,25 +56,25 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
               <span role="img" aria-label="coin">🪙</span>
               <span className="text-[#d72660] font-bold text-xl ml-1.5">×</span>
             </div>
-            <div className="text-[#d32f2f] text-base font-medium text-center my-4">{error || "Could not unlock details."}</div>
+            <div className="text-[#d32f2f] text-base font-medium text-center my-4 leading-normal tracking-tight">{error || "Could not unlock details."}</div>
           </>
         ) : (
           <>
             <div className="mb-4 mt-0.5">
-              <span className="font-semibold text-[17px]">Unlock candidate details?</span>
+              <span className="font-semibold text-xl leading-tight tracking-tight">Unlock candidate details?</span>
             </div>
-            <div className="text-gray-500 text-[15px] mb-1.5 text-center">
+            <div className="text-gray-500 text-lg sm:text-base mb-1.5 text-center leading-normal tracking-tight">
               Available Coins: <b>{coinValue === null ? "..." : coinValue}</b>
             </div>
-            <div className="text-gray-800 text-[15px] mb-2.5 text-center">
+            <div className="text-gray-800 text-lg sm:text-base mb-2.5 text-center leading-normal tracking-tight">
               <span>Use <b>50 Coins</b> to view email, phone, WhatsApp, and social details.</span>
             </div>
             
-            <div className="text-red-600 text-[15px] mb-4 text-center">
+            <div className="text-red-600 text-lg sm:text-base mb-4 text-center leading-normal tracking-tight">
               <i>Unlocked details remain visible for <b>30 days.</b></i>
             </div>
             <button 
-              className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none w-full justify-center mb-1.5"
+              className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none w-full justify-center mb-1.5 leading-normal tracking-tight"
               disabled={loading}
               onClick={onUnlock}
             >
@@ -95,7 +95,7 @@ const BlurWrapper = ({ children, isUnlocked }) => {
     return <>{children}</>;
   }
   return (
-    <span className="blur-sm select-none cursor-not-allowed relative after:content-['🔒'] after:absolute after:-right-6 after:top-1/2 after:-translate-y-1/2 after:text-sm">
+    <span className="blur-sm select-none cursor-not-allowed relative after:content-['🔒'] after:absolute after:-right-6 after:top-1/2 after:-translate-y-1/2 after:text-base">
       {children}
     </span>
   );
@@ -919,16 +919,16 @@ function CandidateDetail({
       if (education.specialization) additionalInfo.push(`${education.specialization}`);
       return (
         <div className={`${isMobile ? 'mb-3' : 'mb-5'} p-4 bg-[#f5f7fc] rounded-lg`} key={index}>
-          <div className="text-base text-[#202124] mb-2.5 font-semibold">{educationType}</div>
+          <div className="text-xl text-[#202124] mb-2.5 font-semibold leading-tight tracking-tight">{educationType}</div>
           <div>
             {details.map((detail, i) => (
-              <div key={i} className="my-1.5 text-gray-600 text-sm">{detail}</div>
+              <div key={i} className="my-1.5 text-gray-600 text-lg sm:text-base leading-normal tracking-tight">{detail}</div>
             ))}
-            <div className="text-sm text-gray-500 mt-1">
+            <div className="text-lg sm:text-base text-gray-500 mt-1 leading-normal tracking-tight">
               {additionalInfo.join(' | ')}
             </div>
             {education.coreSubjects && (
-              <div className="mt-2 text-sm">
+              <div className="mt-2 text-lg sm:text-base leading-normal tracking-tight">
                 <strong>Core Subjects:</strong> {
                   Array.isArray(education.coreSubjects) 
                     ? education.coreSubjects.join(', ') 
@@ -982,8 +982,8 @@ function CandidateDetail({
     }
     return (
       <div className="mb-4 p-2.5 border-b border-gray-200">
-        <div className="mb-2"><strong>Total Teaching Experience</strong>: {teachingYears} Years & {teachingMonths} months</div>
-        <div><strong>Total Experience (Teaching + Non-Teaching)</strong>: {totalYears} Years & {totalMonths} months</div>
+        <div className="mb-2 text-lg sm:text-base leading-normal tracking-tight"><strong>Total Teaching Experience</strong>: {teachingYears} Years & {teachingMonths} months</div>
+        <div className="text-lg sm:text-base leading-normal tracking-tight"><strong>Total Experience (Teaching + Non-Teaching)</strong>: {totalYears} Years & {totalMonths} months</div>
       </div>
     );
   };
@@ -993,7 +993,7 @@ function CandidateDetail({
                          experienceData.dynamoData.experienceEntries.length > 0;
     if (!hasExperience) {
       return (
-        <div className="p-4 text-center text-gray-600 bg-gray-50 rounded-lg mb-5">
+        <div className="p-4 text-center text-gray-600 bg-gray-50 rounded-lg mb-5 text-lg sm:text-base leading-normal tracking-tight">
           No work experience information available
         </div>
       );
@@ -1039,9 +1039,9 @@ function CandidateDetail({
       }
       const location = [exp.city, exp.state, exp.country].filter(Boolean).join(', ');
       return (
-        <div key={index} className="mb-6 text-base leading-relaxed">
+        <div key={index} className="mb-6 text-lg sm:text-base leading-normal tracking-tight">
           <div className="flex justify-between font-bold mb-1">
-            <div className="text-base">{exp.organizationName}</div>
+            <div className="text-lg sm:text-base">{exp.organizationName}</div>
             <div>
               {dateRange}
               <span className="font-normal text-gray-600">{durationText}</span>
@@ -1133,12 +1133,12 @@ function CandidateDetail({
     const isTablet = windowWidth > 768 && windowWidth <= 1024;
     return (
       <div className={`${isMobile ? 'mb-6 p-3' : isTablet ? 'mb-7 p-3.5' : 'mb-8 p-4'} bg-gray-50 rounded-lg`}>
-        <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>WORK EXPOSURE</h2>
+        <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>WORK EXPOSURE</h2>
         <div className={`flex flex-wrap ${isMobile ? 'gap-2' : isTablet ? 'gap-2.5' : 'gap-2.5'}`}>
           {workTypes.map(type => (
             <div key={type.key} style={{ flex: `0 0 ${columnWidth}` }} className={`bg-white rounded-md ${isMobile ? 'p-2' : isTablet ? 'p-2.5' : 'p-2.5'} shadow-sm flex justify-between items-center`}>
-              <div className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>{type.label}</div>
-              <div className={`${isMobile ? 'w-5 h-5 text-xs' : 'w-6 h-6'} rounded-full flex items-center justify-center ${isWorkTypeEnabled(type.key) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+              <div className={`text-lg sm:text-base font-medium leading-normal tracking-tight`}>{type.label}</div>
+              <div className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} rounded-full flex items-center justify-center ${isWorkTypeEnabled(type.key) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'} text-base leading-normal tracking-tight`}>
                 {isWorkTypeEnabled(type.key) ? '✓' : '×'}
               </div>
             </div>
@@ -1168,10 +1168,10 @@ function CandidateDetail({
       const isMobile = windowWidth <= 768;
       return (
         <div className={`language-item flex ${isMobile ? 'mb-2 py-1' : 'mb-1.5 py-1'} flex-row items-start flex-wrap`}>
-          <span className={`font-semibold mr-2 text-gray-800 ${isMobile ? 'text-base' : 'text-[16px]'} min-w-fit`}>
+          <span className={`font-semibold mr-2 text-gray-800 text-lg sm:text-base min-w-fit leading-normal tracking-tight`}>
             {label}:
           </span>
-          <span className={`${isMobile ? 'text-base' : 'text-[16px]'} leading-[1.5] flex-1 text-gray-700 font-medium`}>
+          <span className={`text-lg sm:text-base flex-1 text-gray-700 font-medium leading-normal tracking-tight`}>
             {languages.length > 0 ? languages.join(', ') : <span className="text-gray-500 italic font-normal">None</span>}
           </span>
         </div>
@@ -1209,10 +1209,10 @@ function CandidateDetail({
       if (!value) return null;
       return (
         <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
-          <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold ${isMobile ? 'text-[13px]' : 'text-sm'} text-gray-800 shrink-0`}>
+          <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-lg sm:text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
             {label}:
           </span>
-          <span className={`${isMobile ? 'text-[13px]' : 'text-sm'} leading-[1.4] ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600`}>
+          <span className={`text-lg sm:text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
             {value}
           </span>
         </div>
@@ -1394,13 +1394,13 @@ function CandidateDetail({
         {/* Left side: Profile counter or Unlock button */}
         <div className="flex items-center gap-2">
           {checkedProfiles && checkedProfiles.candidates && checkedProfiles.candidates.length > 1 && (
-            <span className={`${isMobile ? 'text-sm' : 'text-base'} font-medium text-gray-700 whitespace-nowrap`}>
+            <span className={`text-base font-medium text-gray-700 whitespace-nowrap leading-normal tracking-tight`}>
               Profile {checkedProfiles.currentIndex + 1} of {checkedProfiles.candidates.length}
             </span>
           )}
           {!isUnlocked && !checkedProfiles && (
             <button 
-              className={`inline-flex items-center justify-center gap-2.5 ${isMobile ? 'px-4 py-2.5 text-sm' : 'px-6 py-3 text-base'} bg-gradient-brand text-white border-none rounded-lg font-semibold cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none ${isMobile ? 'w-full sm:w-auto sm:min-w-[180px]' : 'w-[250px]'} flex-shrink-0`}
+              className={`inline-flex items-center justify-center gap-2.5 px-6 py-3 text-base bg-gradient-brand text-white border-none rounded-lg font-semibold cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl active:opacity-100 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none ${isMobile ? 'w-full sm:w-auto sm:min-w-[180px]' : 'w-[250px]'} flex-shrink-0 leading-normal tracking-tight`}
               onClick={handleUnlockClick}
               disabled={isUnlocked}
             >
@@ -1410,7 +1410,7 @@ function CandidateDetail({
           )}
         </div>
         <div className={`${isMobile ? 'w-full sm:w-auto sm:ml-auto' : 'ml-auto'} flex gap-2.5 items-center`}>
-          <button onClick={handleBack} className={`w-full sm:w-auto ${isMobile ? 'px-3 py-2 text-sm' : 'px-4 py-2.5 text-base'} bg-gradient-brand hover:bg-gradient-primary-hover text-white rounded-lg transition-colors whitespace-nowrap font-medium`}>
+          <button onClick={handleBack} className={`w-full sm:w-auto px-4 py-2.5 text-base bg-gradient-brand hover:bg-gradient-primary-hover text-white rounded-lg transition-colors whitespace-nowrap font-medium leading-normal tracking-tight`}>
             Back to List
           </button>
         </div>
@@ -1438,12 +1438,12 @@ function CandidateDetail({
           
           {/* Basic Information */}
           <div className="flex-1 min-w-0 overflow-hidden">
-            <h1 className={`candidate-name ${isMobile ? 'text-xl mb-1' : isTablet ? 'text-2xl mb-1.5' : 'text-3xl mb-2'} bg-gradient-brand bg-clip-text text-transparent break-words`}>
+            <h1 className={`candidate-name text-2xl mb-2 bg-gradient-brand bg-clip-text text-transparent break-words leading-tight tracking-tight`}>
               {candidate?.fullName || candidate?.name || 'Candidate Name'}
             </h1>
             
             {/* Personal Details */}
-            <div className={`${isMobile ? 'text-sm mb-2' : isTablet ? 'text-[14px] mb-2.5' : 'text-[15px] mb-3'} text-gray-600 break-words`}>
+            <div className={`text-lg sm:text-base mb-3 text-gray-600 break-words leading-normal tracking-tight`}>
               {profileData?.gender && <span>{profileData.gender}</span>}
               {profileData?.dateOfBirth && (
                 <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
@@ -1476,7 +1476,7 @@ function CandidateDetail({
             
             {/* Email */}
             {(profileData?.email || unlockedInfo?.email) && (
-              <div className={`flex items-center gap-1.5 ${isMobile ? 'text-sm' : isTablet ? 'text-[14px]' : 'text-[15px]'} min-w-0`}>
+              <div className={`flex items-center gap-1.5 text-lg sm:text-base min-w-0 leading-normal tracking-tight`}>
                 <FaEnvelope className="text-gray-400 shrink-0" />
                 <BlurWrapper isUnlocked={isUnlocked}>
                   <a href={isUnlocked ? `mailto:${unlockedInfo?.email || profileData?.email}` : undefined} className={`no-underline text-[#1967d2] break-words ${!isUnlocked ? 'pointer-events-none' : ''}`}>
@@ -1489,7 +1489,7 @@ function CandidateDetail({
         </div>
         
         {/* Right Side: Contact Information */}
-        <div className={`font-sans ${isMobile ? 'text-[13px] w-full' : 'text-sm w-1/2'} leading-[1.4] ${isMobile ? 'mt-2' : isTablet ? 'pl-4' : 'pl-6'} min-w-0`}>
+        <div className={`font-sans text-lg sm:text-base w-full sm:w-1/2 leading-normal tracking-tight ${isMobile ? 'mt-2' : isTablet ? 'pl-4' : 'pl-6'} min-w-0`}>
           {/* Address Information */}
           <div className={`flex ${isMobile ? 'flex-row' : 'flex-col'} ${isMobile ? 'gap-[15px]' : 'gap-2'} ${isMobile ? 'mb-2 flex-wrap' : 'mb-2.5'}`}>
             <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'} mb-1`}>
@@ -1578,12 +1578,12 @@ function CandidateDetail({
           {/* Candidate Materials Icons - Only show when unlocked */}
           {isUnlocked && (
             <div className="mt-3 flex items-center gap-3 flex-wrap demo-resume-section">
-              <span className="text-xs font-bold text-gray-600 mr-1 demo-resume-heading">Demo & Resume:</span>
+              <span className="text-base font-bold text-gray-600 mr-1 demo-resume-heading leading-normal tracking-tight">Demo & Resume:</span>
               
               {/* Demo Video Icon */}
               <button 
                 onClick={handleViewVideo}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-brand hover:bg-gradient-primary-hover text-white border-none rounded text-xs cursor-pointer transition-colors"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-brand hover:bg-gradient-primary-hover text-white border-none rounded text-base cursor-pointer transition-colors leading-normal tracking-tight"
                 title="View Demo Video"
               >
                 <span role="img" aria-label="video">🎥</span>
@@ -1611,7 +1611,7 @@ function CandidateDetail({
           {/* Education Section */}
           {educationData && educationData.length > 0 && (
             <div className={`${isMobile ? 'mb-6' : 'mb-8'}`}>
-              <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>EDUCATION</h2>
+              <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>EDUCATION</h2>
               <div>
                 {renderEducationBlocks()}
               </div>
@@ -1623,7 +1623,7 @@ function CandidateDetail({
         <div className={`${isMobile ? 'px-2 py-3' : isTablet ? 'p-4' : 'p-5'}`}>
           {/* Experience Section */}
           <div className={`${isMobile ? 'mb-6' : 'mb-8'} mt-0 pt-0`}>
-            <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>WORK EXPERIENCE</h2>
+            <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>WORK EXPERIENCE</h2>
             <div>
               {getExperienceText()}
               {renderExperienceBlocks()}
@@ -1636,8 +1636,8 @@ function CandidateDetail({
           {/* Job Preferences Section */}
           {hasJobPreferencesData() && (
             <div className={`${isMobile ? 'mb-6' : 'mb-8'}`}>
-              <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>JOB PREFERENCES</h2>
-              <div className={`mb-6 ${isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-5'} bg-[#f5f7fc] rounded-lg ${isMobile ? 'text-sm' : 'text-base'} leading-relaxed`}>
+              <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>JOB PREFERENCES</h2>
+              <div className={`mb-6 ${isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-5'} bg-[#f5f7fc] rounded-lg text-lg sm:text-base leading-normal tracking-tight`}>
                 {/* Two-column details grid */}
                 <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1' : 'grid-cols-2'} ${isMobile ? 'gap-x-0 gap-y-1' : isTablet ? 'gap-x-3 gap-y-1.5' : 'gap-x-5 gap-y-1.5'}`}>
                   {/* Basic Job Information */}
@@ -1756,7 +1756,7 @@ function CandidateDetail({
           {/* Language Proficiency */}
           {languages && languages.length > 0 && (
             <div className={`${isMobile ? 'mb-3' : 'mb-4'}`}>
-              <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>LANGUAGE PROFICIENCY</h2>
+              <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>LANGUAGE PROFICIENCY</h2>
               <div className={`${isMobile ? 'bg-white rounded-lg p-3 border border-gray-200' : 'bg-gray-50 rounded-lg p-3 border border-gray-200'}`}>
                 {renderLanguageProficiency()}
               </div>
@@ -1766,7 +1766,7 @@ function CandidateDetail({
           {/* Additional Information */}
           {additionalInfo1 && (
             <div className={`mb-[30px] ${isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-[15px]'} bg-gray-50 rounded-lg border border-gray-200`}>
-              <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>
+              <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>
                 ADDITIONAL INFORMATION
               </h2>
               {renderAdditionalInfo()}
@@ -1793,7 +1793,7 @@ function CandidateDetail({
             setTimeout(() => setIsDownloading(false), 1000);
           }}
           disabled={isDownloading}
-          className={`inline-flex items-center justify-center gap-2 ${isMobile ? 'px-4 py-2.5 text-sm w-full sm:w-auto' : 'px-6 py-3 text-base'} ${isMobile ? 'sm:min-w-[160px]' : 'min-w-[200px]'} bg-gradient-brand hover:bg-gradient-primary-hover text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`inline-flex items-center justify-center gap-2 px-6 py-3 text-base w-full sm:w-auto min-w-[200px] bg-gradient-brand hover:bg-gradient-primary-hover text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight`}
           title={isDownloading ? "Opening print dialog..." : "Download or Print CV"}
         >
           {isDownloading ? (
@@ -1816,7 +1816,7 @@ function CandidateDetail({
           <button
             onClick={onPrevious}
             disabled={isFirstProfile}
-            className={`inline-flex items-center justify-center gap-2 ${isMobile ? 'px-4 py-2.5 text-sm' : 'px-6 py-3 text-base'} bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all whitespace-nowrap font-medium`}
+            className={`inline-flex items-center justify-center gap-2 px-6 py-3 text-base bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all whitespace-nowrap font-medium leading-normal tracking-tight`}
             title="Previous Profile"
           >
             ← Previous
@@ -1824,7 +1824,7 @@ function CandidateDetail({
           <button
             onClick={onNext}
             disabled={isLastProfile}
-            className={`inline-flex items-center justify-center gap-2 ${isMobile ? 'px-4 py-2.5 text-sm' : 'px-6 py-3 text-base'} bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all whitespace-nowrap font-medium`}
+            className={`inline-flex items-center justify-center gap-2 px-6 py-3 text-base bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-all whitespace-nowrap font-medium leading-normal tracking-tight`}
             title="Next Profile"
           >
             Next →

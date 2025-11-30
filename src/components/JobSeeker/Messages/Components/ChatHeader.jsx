@@ -35,7 +35,7 @@ const ChatHeader = ({ chat, isConnected = true, typingUsers = new Set() }) => {
           {/* Avatar */}
           <div className="relative flex-shrink-0">
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center">
-              <span className="text-red-600 font-semibold text-base sm:text-lg">
+              <span className="text-red-600 font-semibold text-base leading-normal tracking-tight">
                 {chat.name.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -46,15 +46,15 @@ const ChatHeader = ({ chat, isConnected = true, typingUsers = new Set() }) => {
           
           {/* Chat Info */}
           <div className="min-w-0 flex-1">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{chat.name}</h3>
+            <h3 className="text-xl font-semibold text-gray-900 truncate leading-tight tracking-tight">{chat.name}</h3>
             <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-              <p className={`text-xs sm:text-sm ${getStatusColor()}`}>
+              <p className={`text-base ${getStatusColor()} leading-normal tracking-tight`}>
                 {getStatusText()}
               </p>
               {chat.city && chat.state && (
                 <>
                   <span className="text-gray-300 hidden sm:inline">•</span>
-                  <div className="flex items-center text-xs text-gray-500">
+                  <div className="flex items-center text-base text-gray-500 leading-normal tracking-tight">
                     <FiMapPin size={10} className="sm:w-3 sm:h-3 mr-1" />
                     <span className="hidden sm:inline">{chat.city}, {chat.state}</span>
                     <span className="sm:hidden">{chat.city}</span>
@@ -72,7 +72,7 @@ const ChatHeader = ({ chat, isConnected = true, typingUsers = new Set() }) => {
             <div className={`w-2 h-2 rounded-full ${
               isConnected ? 'bg-green-500' : 'bg-red-500'
             }`}></div>
-            <span className="text-xs text-gray-500">
+            <span className="text-base text-gray-500 leading-normal tracking-tight">
               {isConnected ? 'Connected' : 'Disconnected'}
             </span>
           </div>

@@ -508,8 +508,8 @@ const Referrals = ({ user, onSuccess }) => {
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-2">Refer candidates and get free access to our Basic Plan</h3>
-          <p className="text-gray-600 text-sm sm:text-base">Add up to 20 candidates contact numbers and get free access to our Basic Plan when 10 register</p>
+          <h3 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-2 leading-tight tracking-tight">Refer candidates and get free access to our Basic Plan</h3>
+          <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Add up to 20 candidates contact numbers and get free access to our Basic Plan when 10 register</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
@@ -519,8 +519,8 @@ const Referrals = ({ user, onSuccess }) => {
             <div className="space-y-3 sm:space-y-4">
               <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700">Candidates Added</label>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-800">{contacts.length}/20</span>
+                  <label className="text-base font-medium text-gray-700 leading-normal tracking-tight">Candidates Added</label>
+                  <span className="text-base font-semibold text-gray-800 leading-normal tracking-tight">{contacts.length}/20</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
@@ -532,8 +532,8 @@ const Referrals = ({ user, onSuccess }) => {
               
               <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700">Candidates Registered</label>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-800">{registeredContacts.length}/10</span>
+                  <label className="text-base font-medium text-gray-700 leading-normal tracking-tight">Candidates Registered</label>
+                  <span className="text-base font-semibold text-gray-800 leading-normal tracking-tight">{registeredContacts.length}/10</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
@@ -557,12 +557,12 @@ const Referrals = ({ user, onSuccess }) => {
                     maxLength="10"
                     minLength="10"
                     required
-                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm sm:text-base"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-lg sm:text-base leading-normal tracking-tight"
                   />
                   <button
                     type="submit"
                     disabled={contacts.length >= 20}
-                    className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed duration-200 transition-colors font-medium text-sm sm:text-base whitespace-nowrap"
+                    className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed duration-200 transition-colors font-medium text-base whitespace-nowrap leading-normal tracking-tight"
                   >
                     Add Candidate
                   </button>
@@ -573,7 +573,7 @@ const Referrals = ({ user, onSuccess }) => {
 
           {/* Right Side - Contacts List */}
           <div className="space-y-3 sm:space-y-4">
-            <h4 className="text-base sm:text-lg font-semibold text-gray-800">Added Candidates ({contacts.length}/20)</h4>
+            <h4 className="text-xl font-semibold text-gray-800 leading-tight tracking-tight">Added Candidates ({contacts.length}/20)</h4>
             
             {contacts.length > 0 ? (
               <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto">
@@ -588,17 +588,17 @@ const Referrals = ({ user, onSuccess }) => {
                             onChange={e => setEditValue(normalizePhoneNumber(e.target.value))}
                             maxLength="10"
                             pattern="[0-9]{10}"
-                            className="px-2 sm:px-3 py-1 border border-gray-300 rounded text-xs sm:text-sm w-24 sm:w-32"
+                            className="px-2 sm:px-3 py-1 border border-gray-300 rounded text-lg sm:text-base w-24 sm:w-32 leading-normal tracking-tight"
                           />
                           <div className="flex gap-1 sm:gap-2">
                             <button 
-                              className="px-2 sm:px-3 py-1 bg-green-600 text-white rounded text-xs sm:text-sm hover:bg-green-700 transition-colors"
+                              className="px-2 sm:px-3 py-1 bg-green-600 text-white rounded text-base hover:bg-green-700 transition-colors leading-normal tracking-tight"
                               onClick={() => handleEditSave(index)}
                             >
                               Save
                             </button>
                             <button 
-                              className="px-2 sm:px-3 py-1 bg-gray-600 text-white rounded text-xs sm:text-sm hover:bg-gray-700 transition-colors"
+                              className="px-2 sm:px-3 py-1 bg-gray-600 text-white rounded text-base hover:bg-gray-700 transition-colors leading-normal tracking-tight"
                               onClick={handleEditCancel}
                             >
                               Cancel
@@ -607,8 +607,8 @@ const Referrals = ({ user, onSuccess }) => {
                         </div>
                       ) : (
                         <div>
-                          <div className="font-medium text-gray-800 text-sm sm:text-base">{number}</div>
-                          <div className={`text-xs sm:text-sm ${
+                          <div className="font-medium text-gray-800 text-lg sm:text-base leading-normal tracking-tight">{number}</div>
+                          <div className={`text-lg sm:text-base leading-normal tracking-tight ${
                             registeredContacts.includes(number) 
                               ? 'text-gradient-brand font-semibold' 
                               : 'text-gray-500'
@@ -648,14 +648,14 @@ const Referrals = ({ user, onSuccess }) => {
             ) : (
               <div className="text-center py-6 sm:py-8 text-gray-500">
                 <div className="text-3xl sm:text-4xl mb-2">📱</div>
-                <p className="text-sm sm:text-base">No candidates added yet</p>
+                <p className="text-lg sm:text-base leading-normal tracking-tight">No candidates added yet</p>
               </div>
             )}
 
             {/* Submit Button */}
             {contacts.length > 0 && (
               <button
-                className={`w-full py-2 sm:py-3 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base ${
+                className={`w-full py-2 sm:py-3 rounded-lg font-medium transition-all duration-200 text-base leading-normal tracking-tight ${
                   contacts.length >= 20 
                     ? 'bg-green-600 text-white hover:bg-green-700' 
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'

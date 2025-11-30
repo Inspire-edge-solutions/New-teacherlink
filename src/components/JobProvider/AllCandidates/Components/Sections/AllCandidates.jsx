@@ -544,15 +544,15 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
         console.log('🔍 DEBUG: Single value converted to array');
       }
       
-      console.log('🔍 DEBUG: Normalized approved UIDs count:', normalizedApprovedUids.length);
-      console.log('🔍 DEBUG: Normalized approved UIDs sample:', normalizedApprovedUids.slice(0, 5));
+      console.log('🔍 AllCandidates: Normalized approved UIDs count:', normalizedApprovedUids.length);
+      console.log('🔍 AllCandidates: Normalized approved UIDs sample:', normalizedApprovedUids.slice(0, 5));
       
-      // IMPORTANT: Fallback logic - if no approved UIDs, show all candidates
+      // IMPORTANT: Filter logic - show only approved candidates, with fallback if filtering fails
       let approvedCandidates;
       
       // TEMPORARY BYPASS: Set BYPASS_APPROVAL_FILTER = true to test without filtering
       if (BYPASS_APPROVAL_FILTER) {
-        console.log('🧪 BYPASS MODE: Showing all candidates without approval filtering');
+        console.log('🧪 AllCandidates: BYPASS MODE - Showing all candidates without approval filtering');
         approvedCandidates = allCandidates;
       } else if (normalizedApprovedUids.length > 0) {
         // We have approved UIDs, filter the candidates
@@ -560,21 +560,26 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
           allCandidates,
           normalizedApprovedUids
         );
-        console.log('🔍 DEBUG: Filtered to approved candidates, count:', approvedCandidates?.length || 0);
+        console.log('🔍 AllCandidates: Filtered to approved candidates, count:', approvedCandidates?.length || 0);
+        console.log('🔍 AllCandidates: Total candidates before filtering:', allCandidates.length);
+        
+        // Safety check: if filtering resulted in 0 but we have candidates, investigate and show all as fallback
+        if (approvedCandidates.length === 0 && allCandidates.length > 0) {
+          console.error('❌ AllCandidates: Filtering resulted in 0 candidates but we have', allCandidates.length, 'total candidates');
+          console.error('❌ Sample candidate firebase_uid:', allCandidates[0]?.firebase_uid, 'type:', typeof allCandidates[0]?.firebase_uid);
+          console.error('❌ Sample approved UID:', normalizedApprovedUids[0], 'type:', typeof normalizedApprovedUids[0]);
+          console.error('❌ First 5 candidate IDs:', allCandidates.slice(0, 5).map(c => c.firebase_uid));
+          console.error('❌ First 5 approved UIDs:', normalizedApprovedUids.slice(0, 5));
+          console.error('❌ This indicates a mismatch in ID formats - showing all candidates as fallback');
+          approvedCandidates = allCandidates;
+        } else if (approvedCandidates.length > 0) {
+          console.log('✅ AllCandidates: Successfully filtered to', approvedCandidates.length, 'approved candidates');
+        }
       } else {
         // No approved UIDs found - fallback to showing all candidates
-        console.warn('⚠️ WARNING: No approved UIDs found – using all candidates as fallback');
+        console.warn('⚠️ AllCandidates: No approved UIDs found – using all candidates as fallback');
         console.warn('⚠️ This might mean the approval API is not working or returning empty');
         approvedCandidates = allCandidates;
-      }
-      
-      // Safety check: if filtering resulted in 0 but we have candidates, log warning
-      if (approvedCandidates.length === 0 && allCandidates.length > 0) {
-        console.warn('⚠️ WARNING: Filtering resulted in 0 candidates but backend returned', allCandidates.length);
-        console.warn('⚠️ Sample candidate firebase_uid:', allCandidates[0]?.firebase_uid);
-        console.warn('⚠️ Sample approved UID:', normalizedApprovedUids[0]);
-        console.warn('⚠️ Type match check:', typeof allCandidates[0]?.firebase_uid, 'vs', typeof normalizedApprovedUids[0]);
-        console.warn('⚠️ Check CandidateApiService.filterApprovedCandidates() implementation');
       }
       
       setCandidates(approvedCandidates);

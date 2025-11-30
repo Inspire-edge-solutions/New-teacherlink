@@ -352,7 +352,7 @@ const ProfileCompletionPopup = () => {
             <div className="p-2 bg-gradient-brand rounded-lg">
               <FaUserEdit className="text-white text-lg" />
             </div>
-            <h3 className="m-0 text-xl font-semibold text-gray-800">Complete Your Profile</h3>
+            <h3 className="m-0 text-xl font-semibold text-gray-800 leading-tight tracking-tight">Complete Your Profile</h3>
           </div>
           <button 
             className="bg-transparent border-none text-gray-400 text-lg cursor-pointer p-2 rounded-full transition-all duration-200 flex items-center justify-center hover:bg-gray-100 hover:text-gray-600"
@@ -399,7 +399,7 @@ const ProfileCompletionPopup = () => {
                     Complete Profile - {getCompletionStatus(completionData.fullMode.percentage).text}
                   </span>
                 </div>
-                <p className="m-0 text-gray-500 text-sm sm:text-base leading-relaxed text-center">
+                <p className="m-0 text-gray-500 text-lg sm:text-base leading-relaxed text-center tracking-tight">
                   {completionData.percentage === 0 
                     ? "Let's get started with your profile! Choose between Short Profile (4 sections) or Complete Profile (6 sections)." 
                     : completionData.percentage < 50 
@@ -415,24 +415,24 @@ const ProfileCompletionPopup = () => {
           <div className="mb-6">
             {displayMissingSections.length > 0 ? (
               <div>
-                <h4 className="m-0 mb-4 text-base sm:text-lg font-semibold text-gray-800">Missing Information:</h4>
+                <h4 className="m-0 mb-4 text-xl font-semibold text-gray-800 leading-tight tracking-tight">Missing Information:</h4>
                 <div className="flex flex-col gap-2">
                   {displayMissingSections.map((section, index) => (
                     <div key={index} className="flex items-center gap-2.5 p-3 bg-orange-50 text-orange-800 border-l-4 border-orange-400 rounded-lg">
                       <FaExclamationTriangle className="text-orange-500 text-sm flex-shrink-0" />
-                      <span className="text-sm sm:text-base">{section.name}</span>
+                      <span className="text-lg sm:text-base leading-normal tracking-tight">{section.name}</span>
                     </div>
                   ))}
                 </div>
               </div>
             ) : displayCompletedSections.length > 0 ? (
               <div>
-                <h4 className="m-0 mb-4 text-base sm:text-lg font-semibold text-gray-800">Great job! All sections are complete:</h4>
+                <h4 className="m-0 mb-4 text-xl font-semibold text-gray-800 leading-tight tracking-tight">Great job! All sections are complete:</h4>
                 <div className="flex flex-col gap-2">
                   {displayCompletedSections.map((section, index) => (
                     <div key={index} className="flex items-center gap-2.5 p-3 bg-green-50 text-green-800 border-l-4 border-green-500 rounded-lg">
                       <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
-                      <span className="text-sm sm:text-base">{section.name}</span>
+                      <span className="text-lg sm:text-base leading-normal tracking-tight">{section.name}</span>
                     </div>
                   ))}
                 </div>
@@ -441,10 +441,10 @@ const ProfileCompletionPopup = () => {
 
             {nextSteps.length > 0 && (
               <div className="mt-5 pt-5 border-t border-gray-200">
-                <h4 className="m-0 mb-3 text-base sm:text-lg font-semibold text-gray-800">Next Steps:</h4>
+                <h4 className="m-0 mb-3 text-xl font-semibold text-gray-800 leading-tight tracking-tight">Next Steps:</h4>
                 <ul className="list-none p-0 m-0">
                   {nextSteps.map((step, index) => (
-                    <li key={index} className="flex items-center gap-2.5 py-2 text-sm sm:text-base text-gray-700">
+                    <li key={index} className="flex items-center gap-2.5 py-2 text-lg sm:text-base text-gray-700 leading-normal tracking-tight">
                       <FaArrowRight className="text-[#F34B58] text-xs mt-0.5 flex-shrink-0" />
                       <span>{step}</span>
                     </li>
@@ -457,13 +457,13 @@ const ProfileCompletionPopup = () => {
 
         <div className="flex gap-3 p-4 sm:p-6 border-t border-gray-200 bg-white mx-4 mb-4 rounded-b-xl">
           <button 
-            className="flex-1 px-5 py-3 bg-gray-100 text-gray-600 border border-gray-300 rounded-lg text-sm sm:text-base font-semibold cursor-pointer transition-all duration-200 text-center hover:bg-gray-200 hover:text-gray-700"
+            className="flex-1 px-5 py-3 bg-gray-100 text-gray-600 border border-gray-300 rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 text-center hover:bg-gray-200 hover:text-gray-700 leading-normal tracking-tight"
             onClick={handleDismiss}
           >
             Remind me later
           </button>
           <button 
-            className="flex-1 px-5 py-3 bg-gradient-brand text-white rounded-lg text-sm sm:text-base font-semibold cursor-pointer transition-colors duration-200 shadow-lg text-center hover:bg-gradient-primary-hover hover:shadow-xl hover:-translate-y-0.5"
+            className="flex-1 px-5 py-3 bg-gradient-brand text-white rounded-lg text-base font-semibold cursor-pointer transition-colors duration-200 shadow-lg text-center hover:bg-gradient-primary-hover hover:shadow-xl hover:-translate-y-0.5 leading-normal tracking-tight"
             onClick={handleCompleteProfile}
           >
             Complete Profile Now
@@ -473,7 +473,7 @@ const ProfileCompletionPopup = () => {
         {/* Add a small refresh button for testing */}
         <div className="p-2 sm:p-4 text-center border-t border-gray-200 bg-white mx-4 mb-4 rounded-b-xl">
           <button 
-            className="bg-transparent border-none text-gray-400 text-xs sm:text-sm cursor-pointer px-3 py-1.5 rounded-md transition-all duration-200 hover:bg-gray-100 hover:text-gray-600"
+            className="bg-transparent border-none text-gray-400 text-lg sm:text-base cursor-pointer px-3 py-1.5 rounded-md transition-all duration-200 hover:bg-gray-100 hover:text-gray-600 leading-normal tracking-tight"
             onClick={handleRefresh} 
             title="Refresh completion status"
           >

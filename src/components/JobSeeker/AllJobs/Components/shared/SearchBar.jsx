@@ -47,7 +47,7 @@ const SearchBar = memo(({ onSearch, placeholder = "Search jobs..." }) => {
           position: 'absolute', 
           left: '12px', 
           color: '#6c757d', 
-          fontSize: '14px',
+          fontSize: '16px',
           zIndex: 2
         }} 
       />
@@ -61,7 +61,7 @@ const SearchBar = memo(({ onSearch, placeholder = "Search jobs..." }) => {
           border: 'none',
           outline: 'none',
           padding: '8px 12px 8px 35px',
-          fontSize: '14px',
+          fontSize: '16px',
           borderRadius: '6px',
           backgroundColor: 'transparent'
         }}

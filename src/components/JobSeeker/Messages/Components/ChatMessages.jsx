@@ -83,7 +83,7 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, currentUserId, 
       <div className="max-w-4xl mx-auto space-y-4">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
-            <p>No messages yet. Start the conversation!</p>
+            <p className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">No messages yet. Start the conversation!</p>
           </div>
         ) : (
           messages
@@ -107,20 +107,20 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, currentUserId, 
                       isOwn ? 'bg-red-100 border-2 border-red-200' : 'bg-gray-50 border-2 border-gray-200'
                     }`}
                   >
-                    <p className={`text-sm break-words ${isOwn ? 'text-gray-800' : 'text-gray-800'}`}>
+                    <p className={`text-base break-words ${isOwn ? 'text-gray-800' : 'text-gray-800'} leading-normal tracking-tight`}>
                       {message.text || message.messageText || message.message || ''}
                       {message.isEdited && (
-                        <span className={`text-xs italic ml-2 ${isOwn ? 'text-gray-400' : 'text-gray-400'}`}>(edited)</span>
+                        <span className={`text-base italic ml-2 ${isOwn ? 'text-gray-400' : 'text-gray-400'} leading-normal tracking-tight`}>(edited)</span>
                       )}
                     </p>
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs ${isOwn ? 'text-gray-500' : 'text-gray-500'}`}>
+                      <span className={`text-base ${isOwn ? 'text-gray-500' : 'text-gray-500'} leading-normal tracking-tight`}>
                         {formatMessageTime(message.timestamp || message.time)}
                       </span>
                       {isOwn && getMessageStatus(message) && (
                         <>
-                          <span className={`text-xs ${isOwn ? 'text-gray-400' : 'text-gray-400'}`}>
+                          <span className={`text-base ${isOwn ? 'text-gray-400' : 'text-gray-400'} leading-normal tracking-tight`}>
                             {getMessageStatus(message)}
                           </span>
                           {message.status === 'read' && (
@@ -188,7 +188,7 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, currentUserId, 
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
-                <span className="text-xs text-gray-500 ml-2">Typing...</span>
+                <span className="text-base text-gray-500 ml-2 leading-normal tracking-tight">Typing...</span>
               </div>
             </div>
           </div>

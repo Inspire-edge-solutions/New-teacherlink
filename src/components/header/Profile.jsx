@@ -303,7 +303,6 @@ const Profile = () => {
                 color="textPrimary"
                 fontWeight={600}
                 sx={{
-                  fontFamily: 'Montserrat, sans-serif',
                   lineHeight: '1.2',
                   letterSpacing: '0'
                 }}
@@ -314,7 +313,6 @@ const Profile = () => {
                 variant="subtitle2" 
                 color="textSecondary"
                 sx={{
-                  fontFamily: 'Montserrat, sans-serif',
                   lineHeight: '1.4',
                   letterSpacing: '0'
                 }}
@@ -325,7 +323,6 @@ const Profile = () => {
                 variant="subtitle2"
                 color="textSecondary"
                 sx={{
-                  fontFamily: 'Montserrat, sans-serif',
                   lineHeight: '1.5',
                   letterSpacing: '0',
                   wordBreak: "break-word"
@@ -345,7 +342,6 @@ const Profile = () => {
                 color="inherit"
                 sx={{ 
                   justifyContent: "flex-start",
-                  fontFamily: 'Montserrat, sans-serif',
                   lineHeight: '1.5',
                   letterSpacing: '0'
                 }}
@@ -359,7 +355,6 @@ const Profile = () => {
                 color="inherit"
                 sx={{ 
                   justifyContent: "flex-start",
-                  fontFamily: 'Montserrat, sans-serif',
                   lineHeight: '1.5',
                   letterSpacing: '0'
                 }}
@@ -374,7 +369,6 @@ const Profile = () => {
                 color="error"
                 sx={{ 
                   justifyContent: "flex-start",
-                  fontFamily: 'Montserrat, sans-serif',
                   lineHeight: '1.5',
                   letterSpacing: '0'
                 }}

@@ -848,57 +848,69 @@ const FormInfoBox = () => {
         <MediaUpload />
         
         <div className="rounded-lg shadow-sm p-4 md:p-6">
-          <h3 className="text-xl md:text-2xl font-bold text-center text-gray-800 mb-3 md:mb-6">
+          <h3 className="text-xl font-bold text-center text-gray-800 mb-3 md:mb-6 leading-tight tracking-tight">
             Select Mode
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             {/* Short Profile Card */}
             <div className="border-2 border-gray-200 rounded-xl p-3 md:p-4 hover:border-[#C2185B] hover:shadow-lg transition-all duration-300">
-              <h3 className="text-lg md:text-xl font-bold text-center text-black-500 mb-3">
+              <h3 className="text-xl font-bold text-center text-black-500 mb-3 leading-tight tracking-tight">
                 Short Profile
               </h3>
-              <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">
+              <p className="text-lg sm:text-base text-gray-600 mb-4 md:mb-6 leading-normal tracking-tight">
                 Quick and simple profile with basic information
               </p>
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-row gap-3">
                 <button
                   className="flex-1 px-4 py-2.5 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover transition-all duration-200 shadow-lg"
                   onClick={() => setViewMode("easy")}
                 >
-                  Fill Details
+                  <span className="sm:hidden">Fill</span>
+                  <span className="hidden sm:inline">Fill Details</span>
                 </button>
                 <button
                     className="flex-1 px-4 py-2.5 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                   onClick={() => handleViewChange("easy")}
                   disabled={loadingApproval}
                 >
-                  {loadingApproval ? "Checking..." : "View Details"}
+                  {loadingApproval ? "Checking..." : (
+                    <>
+                      <span className="sm:hidden">View</span>
+                      <span className="hidden sm:inline">View Details</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
 
             {/* Complete Profile Card */}
             <div className="border-2 border-gray-200 rounded-xl p-3 md:p-4 hover:border-[#C2185B] hover:shadow-lg transition-all duration-300">
-              <h3 className="text-lg md:text-xl font-bold text-center text-black-500 mb-3">
+              <h3 className="text-xl font-bold text-center text-black-500 mb-3 leading-tight tracking-tight">
                 Complete Profile
               </h3>
-              <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">
+              <p className="text-lg sm:text-base text-gray-600 mb-4 md:mb-6 leading-normal tracking-tight">
                 Comprehensive profile with detailed information
               </p>
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-row gap-3">
                 <button
                   className="flex-1 px-4 py-2.5 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover transition-all duration-200 shadow-lg"
                   onClick={() => setViewMode("full")}
                 >
-                  Fill Details
+                  <span className="sm:hidden">Fill</span>
+                  <span className="hidden sm:inline">Fill Details</span>
                 </button>
                 <button
                   className="flex-1 px-4 py-2.5 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                   onClick={() => handleViewChange("full")}
                   disabled={loadingApproval}
                 >
-                  {loadingApproval ? "Checking..." : "View Details"}
+                  {loadingApproval ? "Checking..." : (
+                    <>
+                      <span className="sm:hidden">View</span>
+                      <span className="hidden sm:inline">View Details</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -920,10 +932,10 @@ const FormInfoBox = () => {
           <div className="p-4 sm:p-6 border-b border-gray-200">
             <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-3 sm:gap-4">
               <div className="flex-1">
-                <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent">
+                <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
                   My Profile ({viewMode === "easy" ? "Short" : "Complete"})
                 </h2>
-                <p className="text-xs sm:text-sm text-gray-600">
+                <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">
                   <span className="text-red-500">★</span> Fields highlighted are mandatory to fill
                 </p>
               </div>
@@ -933,7 +945,7 @@ const FormInfoBox = () => {
                   setCurrentStep(1);
                   setShowProfile(false);
                 }}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-brand rounded-lg hover:bg-gradient-primary-hover transition-all duration-200 shadow-lg whitespace-nowrap"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-base font-medium text-white bg-gradient-brand rounded-lg hover:bg-gradient-primary-hover transition-all duration-200 shadow-lg whitespace-nowrap leading-normal tracking-tight"
               >
                 Change Mode
               </button>
@@ -943,11 +955,11 @@ const FormInfoBox = () => {
           {/* Preview Banner */}
           {isPreviewMode && (
             <div className="mx-4 sm:mx-6 mt-4 sm:mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="text-sm text-yellow-800">
+              <div className="text-lg sm:text-base text-yellow-800 leading-normal tracking-tight">
                 <strong>Preview mode:</strong> You can view fields here but cannot edit until you complete previous steps in sequence.
               </div>
               <button 
-                className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap"
+                className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white text-base rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap leading-normal tracking-tight"
                 onClick={goToNextRequired}
               >
                 Go to next required step
@@ -970,7 +982,7 @@ const FormInfoBox = () => {
                   <div key={step.id} className="relative mb-5 sm:mb-6 md:mb-7 pl-0 sm:pl-14 md:pl-16">
                     {/* Step Number Badge - timeline style for tablet/desktop */}
                     <div
-                      className={`hidden sm:absolute sm:flex sm:left-0 sm:top-0 h-10 w-10 items-center justify-center rounded-full border border-rose-100 font-semibold text-base sm:h-12 sm:w-12 sm:text-lg z-10 ${isActive ? 'bg-rose-100' : 'bg-gray-200'} text-rose-700`}
+                      className={`hidden sm:absolute sm:flex sm:left-0 sm:top-0 h-10 w-10 items-center justify-center rounded-full border border-rose-100 font-semibold text-base sm:h-12 sm:w-12 z-10 ${isActive ? 'bg-rose-100' : 'bg-gray-200'} text-rose-700 leading-tight tracking-tight`}
                     >
                       {step.id}
                     </div>
@@ -986,7 +998,7 @@ const FormInfoBox = () => {
                     >
                       {/* Mobile badge */}
                       <span
-                        className={`flex h-8 w-8 items-center justify-center rounded-full border border-rose-100 bg-rose-50 text-sm font-semibold text-rose-700 sm:hidden`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full border border-rose-100 bg-rose-50 text-base font-semibold text-rose-700 sm:hidden leading-tight tracking-tight`}
                       >
                         {step.id}
                       </span>
@@ -994,11 +1006,11 @@ const FormInfoBox = () => {
                       {/* Step Title */}
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-base sm:text-lg font-bold text-rose-700">
+                          <h3 className="text-xl font-bold text-rose-700 leading-tight tracking-tight">
                             {step.title}
                           </h3>
                           {isSaved && (
-                            <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
+                            <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-base font-medium text-green-700 leading-normal tracking-tight">
                               ✓ Saved
                             </span>
                           )}

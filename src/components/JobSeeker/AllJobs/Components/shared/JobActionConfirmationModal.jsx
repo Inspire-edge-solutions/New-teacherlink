@@ -41,24 +41,24 @@ const JobActionConfirmationModal = ({
           </button>
 
           <div className="mb-4 mt-0.5 text-center">
-            <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+            <h3 className="font-semibold text-xl mb-4 text-gray-800 leading-tight tracking-tight">
               {getTitle()}
             </h3>
             <p 
-              className="text-gray-600 text-[15px] leading-relaxed"
+              className="text-gray-600 text-lg sm:text-base leading-relaxed tracking-tight"
               dangerouslySetInnerHTML={{ __html: getMessage() }}
             />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
             <button
-              className="flex-1 px-6 py-3 bg-gray-400 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+              className="flex-1 px-6 py-3 bg-gray-400 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight"
               onClick={onCancel}
             >
               Cancel
             </button>
             <button
-              className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
+              className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl leading-normal tracking-tight"
               onClick={onConfirm}
             >
               Confirm

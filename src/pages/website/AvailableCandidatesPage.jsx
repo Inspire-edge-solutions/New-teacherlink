@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 import PublicCandidateCard from '../../components/JobProvider/AllCandidates/Components/shared/PublicCandidateCard';
 import SearchBar from '../../components/JobProvider/AllCandidates/Components/shared/SearchBar';
 import PublicCandidateFilterPanel from '../../components/JobProvider/AllCandidates/Components/shared/PublicCandidateFilterPanel';
@@ -13,6 +14,10 @@ import LoadingState from '../../components/common/LoadingState';
 import { useAuth } from '../../Context/AuthContext';
 import { FaFilter } from 'react-icons/fa';
 import noCandidateIllustration from '../../assets/Illustrations/No candidate.png';
+
+// API Endpoints - matching AllCandidates.jsx
+const CANDIDATES_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/change';
+const APPROVED_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved';
 
 const normalizeString = (value) =>
   (value ?? '').toString().toLowerCase().trim();
@@ -49,30 +54,98 @@ const AvailableCandidatesPage = () => {
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
   const [candidatePhotos, setCandidatePhotos] = useState({});
 
-  // Fetch candidates
+  // Fetch candidates - using direct API calls (matching AllCandidates.jsx)
   const fetchCandidates = useCallback(async () => {
     try {
       setLoading(true);
-      const [allCandidates, approvedUids] = await Promise.all([
-        CandidateApiService.fetchCandidates(),
-        CandidateApiService.fetchApprovedCandidates()
+      
+      // DIRECT API CALL - matching AllCandidates.jsx approach
+      const [candidatesRes, approvedRes] = await Promise.all([
+        axios.get(CANDIDATES_API),
+        axios.get(APPROVED_API)
       ]);
       
-      // Filter only approved candidates
-      const approvedCandidates = CandidateApiService.filterApprovedCandidates(
-        allCandidates,
-        approvedUids
-      );
+      // Handle API Gateway response format
+      let candidatesData = candidatesRes.data;
+      if (candidatesData && typeof candidatesData === 'object' && 'body' in candidatesData) {
+        try {
+          candidatesData = JSON.parse(candidatesData.body);
+        } catch (e) {
+          console.error('Error parsing candidates body:', e);
+        }
+      }
+      
+      const allCandidates = Array.isArray(candidatesData) ? candidatesData : [];
+      
+      // Handle API Gateway response format
+      let approvedData = approvedRes.data;
+      if (approvedData && typeof approvedData === 'object' && 'body' in approvedData) {
+        try {
+          approvedData = JSON.parse(approvedData.body);
+        } catch (e) {
+          console.error('Error parsing approved body:', e);
+        }
+      }
+      
+      let approvedUids = Array.isArray(approvedData) ? approvedData : [];
+      
+      // Check if allCandidates is empty
+      if (!allCandidates || allCandidates.length === 0) {
+        console.error('❌ AvailableCandidatesPage: No candidates fetched from API');
+        setCandidates([]);
+        setCandidatePhotos({});
+        return;
+      }
+      
+      // Normalize approvedUids to array of strings (matching AllCandidates.jsx logic)
+      let normalizedApprovedUids = [];
+      if (Array.isArray(approvedUids)) {
+        if (approvedUids.length > 0) {
+          // Check if it's array of objects or array of strings
+          if (typeof approvedUids[0] === 'object' && approvedUids[0] !== null) {
+            // Array of objects: extract firebase_uid
+            normalizedApprovedUids = approvedUids
+              .map(uid => String(uid?.firebase_uid || uid))
+              .filter(Boolean);
+          } else {
+            // Array of strings/numbers: convert to strings
+            normalizedApprovedUids = approvedUids.map(uid => String(uid)).filter(Boolean);
+          }
+        }
+      } else if (approvedUids) {
+        // Single value, convert to array
+        normalizedApprovedUids = [String(approvedUids)].filter(Boolean);
+      }
+      
+      // Filter only approved candidates (matching AllCandidates.jsx logic)
+      let approvedCandidates;
+      if (normalizedApprovedUids.length > 0) {
+        approvedCandidates = CandidateApiService.filterApprovedCandidates(
+          allCandidates,
+          normalizedApprovedUids
+        );
+      } else {
+        // No approved UIDs found - fallback to showing all candidates (matching AllCandidates.jsx)
+        approvedCandidates = allCandidates;
+      }
+      
+      // Safety check: if filtering resulted in 0 but we have candidates, show all as fallback (matching AllCandidates.jsx)
+      if (approvedCandidates.length === 0 && allCandidates.length > 0 && normalizedApprovedUids.length > 0) {
+        console.error('Filtering resulted in 0 candidates but we have', allCandidates.length, 'total candidates. Showing all as fallback.');
+        approvedCandidates = allCandidates;
+      }
       
       setCandidates(approvedCandidates);
       
       // Fetch photos for visible candidates
-      const photos = await CandidateApiService.fetchCandidatePhotos(approvedCandidates);
+      const finalCandidates = approvedCandidates.length > 0 ? approvedCandidates : allCandidates;
+      const photos = await CandidateApiService.fetchCandidatePhotos(finalCandidates);
       setCandidatePhotos(photos);
     } catch (err) {
       console.error('Error fetching candidates:', err);
       toast.error('Failed to load candidates. Please try again later.');
       setCandidates([]);
+      setCandidatePhotos({});
     } finally {
       setLoading(false);
     }
@@ -329,6 +402,9 @@ const AvailableCandidatesPage = () => {
             >
               Register Now to Unlock Details
             </button>
+            <p className="text-sm p-4 sm:text-base text-white-600 leading-normal tracking-tight">
+              Use coupon code <span className="font-bold text-xl">'HIRE25'</span> to get full access at no cost.
+              </p>
           </div>
 
           {/* Search and Filter Bar */}
@@ -355,8 +431,8 @@ const AvailableCandidatesPage = () => {
           </div>
 
           {/* Candidates Count and Records Per Page */}
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+            <h2 className="text-xl sm:text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight">
               {filteredCandidates.length} {filteredCandidates.length === 1 ? 'Profile' : 'Profiles'} Available
             </h2>
             <RecordsPerPageDropdown 

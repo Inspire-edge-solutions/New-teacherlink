@@ -261,13 +261,13 @@ const Register = ({ user_type }) => {
           /* Loading Spinner */
           <div className="flex flex-col items-center justify-center space-y-4">
             <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-gray-600 text-lg font-medium">Creating your account...</p>
+            <p className="text-gray-600 text-lg sm:text-base font-medium leading-normal tracking-tight">Creating your account...</p>
           </div>
         ) : (
           /* Form Container */
           <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg bg-white p-3 sm:p-4 md:p-6 relative">
 
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center leading-tight tracking-tight">
+            <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center leading-tight tracking-tight">
               Create Account
             </h2>
 
@@ -276,7 +276,7 @@ const Register = ({ user_type }) => {
             <button
               type="button"
               onClick={() => setSelectedUserType("Job Seeker")}
-              className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-sm sm:text-base ${
+              className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-base leading-normal tracking-tight ${
                 selectedUserType === "Job Seeker" 
                   ? 'bg-red-200 text-red-600' 
                   : 'bg-transparent text-gray-500'
@@ -287,7 +287,7 @@ const Register = ({ user_type }) => {
             <button
               type="button"
               onClick={() => setSelectedUserType("Job Provider")}
-              className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-sm sm:text-base ${
+              className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-base leading-normal tracking-tight ${
                 selectedUserType === "Job Provider" 
                   ? 'bg-red-200 text-red-600' 
                   : 'bg-transparent text-gray-500'
@@ -307,7 +307,7 @@ const Register = ({ user_type }) => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="w-full py-3 sm:py-4 md:py-5 border-b-2 border-gray-300 bg-transparent text-sm sm:text-base md:text-lg outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black"
+                  className="w-full py-3 sm:py-4 md:py-5 border-b-2 border-gray-300 bg-transparent text-base outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black leading-normal tracking-tight"
                 />
               </div>
             </InputWithTooltip>
@@ -321,7 +321,7 @@ const Register = ({ user_type }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full py-3 sm:py-4 md:py-5 border-b-2 border-gray-300 bg-transparent text-sm sm:text-base md:text-lg outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black"
+                  className="w-full py-3 sm:py-4 md:py-5 border-b-2 border-gray-300 bg-transparent text-base outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black leading-normal tracking-tight"
                 />
               </div>
             </InputWithTooltip>
@@ -340,7 +340,7 @@ const Register = ({ user_type }) => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 bg-none border-none cursor-pointer text-gray-500 text-lg sm:text-xl md:text-2xl"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 bg-none border-none cursor-pointer text-gray-500 text-xl"
                 >
                   {showPassword ? <MdVisibility /> : <MdVisibilityOff />}
                 </button>
@@ -358,7 +358,7 @@ const Register = ({ user_type }) => {
                   required
                   minLength={10}
                   maxLength={10}
-                  className="w-full py-3 sm:py-4 md:py-5 border-b-2 border-gray-300 bg-transparent text-sm sm:text-base md:text-lg outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black"
+                  className="w-full py-3 sm:py-4 md:py-5 border-b-2 border-gray-300 bg-transparent text-base outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black leading-normal tracking-tight"
                   onFocus={() => setShowPhoneValidation(true)}
                   onBlur={() => setShowPhoneValidation(false)}
                 />
@@ -394,7 +394,7 @@ const Register = ({ user_type }) => {
                 required
                 className="mt-1"
               />
-              <label htmlFor="terms-checkbox" className="text-xs sm:text-sm text-black-500 leading-normal tracking-tight">
+              <label htmlFor="terms-checkbox" className="text-base text-black-500 leading-normal tracking-tight">
                 I agree to the{" "}
                 <span
                   className="text-red-600 cursor-pointer underline"
@@ -413,7 +413,7 @@ const Register = ({ user_type }) => {
             <button
               type="submit"
               disabled={loading || !acceptedTerms}
-              className={`w-full py-3 sm:py-3.5 md:py-4 text-white border-none rounded-lg text-sm sm:text-base md:text-lg font-semibold transition-colors duration-200 ${
+              className={`w-full py-3 sm:py-3.5 md:py-4 text-white border-none rounded-lg text-base font-semibold transition-colors duration-200 leading-normal tracking-tight ${
                 loading || !acceptedTerms 
                   ? 'bg-gray-400 cursor-not-allowed opacity-60' 
                   : 'bg-red-600 hover:bg-red-700 cursor-pointer'
@@ -425,12 +425,12 @@ const Register = ({ user_type }) => {
 
           {/* Login Link */}
           <div className="text-center mt-4 sm:mt-6 md:mt-8">
-            <span className="text-black-500 text-xs sm:text-sm md:text-base leading-normal tracking-tight">
+            <span className="text-black-500 text-lg sm:text-base leading-normal tracking-tight">
               Already have an account?{" "}
             </span>
             <Link
               to="/login"
-              className="text-red-600 no-underline font-medium text-xs sm:text-sm md:text-base leading-normal tracking-tight"
+              className="text-red-600 no-underline font-medium text-base leading-normal tracking-tight"
             >
               Login
             </Link>
@@ -456,17 +456,17 @@ const Register = ({ user_type }) => {
       {showLoginPrompt && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-4">
           <div className="bg-white rounded-xl p-4 sm:p-6 md:p-8 max-w-md w-full text-center">
-            <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 leading-tight tracking-tight">
+            <h3 className="text-xl font-bold mb-4 leading-tight tracking-tight">
               Welcome to TeacherLink! 🌟
             </h3>
-            <p className="text-gray-500 mb-4 sm:mb-6 leading-normal tracking-tight text-sm sm:text-base">
+            <p className="text-gray-500 mb-4 sm:mb-6 leading-normal tracking-tight text-lg sm:text-base">
               🎉 Your account is ready. <br/> 
               Hire passionate educators or explore rewarding teaching opportunities. <br/>
               🚀 Log in now to continue your journey.
             </p>
             <button
               onClick={() => window.location.href = '/login'}
-              className="bg-red-600 text-white border-none rounded-lg px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-semibold cursor-pointer hover:bg-red-700 transition-colors duration-200"
+              className="bg-red-600 text-white border-none rounded-lg px-4 sm:px-6 py-2 sm:py-3 text-base font-semibold cursor-pointer hover:bg-red-700 transition-colors duration-200 leading-normal tracking-tight"
             >
               Proceed to Login ➡️
             </button>

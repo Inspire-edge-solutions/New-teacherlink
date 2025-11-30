@@ -29,8 +29,8 @@ function ApplyModal({ isOpen, onClose, onApply, coinValue, loading, applyStatus,
                     <span role="img" aria-label="coin" className="text-2xl">🪙</span>
                     <span className="text-yellow-500 font-bold text-xl ml-1.5">-100</span>
                   </div>
-                  <div className="text-green-600 font-bold text-lg mb-2">Applied! <span role="img" aria-label="applied">✅</span></div>
-                  <div className="text-gray-500 text-sm">Successfully applied for the job.</div>
+                  <div className="text-green-600 font-bold text-xl mb-2 leading-tight tracking-tight">Applied! <span role="img" aria-label="applied">✅</span></div>
+                  <div className="text-gray-500 text-lg sm:text-base leading-normal tracking-tight">Successfully applied for the job.</div>
                 </>
               ) : applyStatus === "already" ? (
                 <>
@@ -38,8 +38,8 @@ function ApplyModal({ isOpen, onClose, onApply, coinValue, loading, applyStatus,
                     <span role="img" aria-label="coin" className="text-2xl">🪙</span>
                     <span className="text-green-600 font-bold text-xl ml-1.5">✓</span>
                   </div>
-                  <div className="text-green-600 font-bold text-lg mb-2">Already Applied</div>
-                  <div className="text-gray-500 text-sm">You already applied for this job.</div>
+                  <div className="text-green-600 font-bold text-xl mb-2 leading-tight tracking-tight">Already Applied</div>
+                  <div className="text-gray-500 text-lg sm:text-base leading-normal tracking-tight">You already applied for this job.</div>
                 </>
               ) : applyStatus === "error" ? (
                 <>
@@ -47,22 +47,22 @@ function ApplyModal({ isOpen, onClose, onApply, coinValue, loading, applyStatus,
                     <span role="img" aria-label="coin" className="text-2xl">🪙</span>
                     <span className="text-red-600 font-bold text-xl ml-1.5">×</span>
                   </div>
-                  <div className="text-red-600 font-bold text-lg">{error || "Could not apply for this job."}</div>
+                  <div className="text-red-600 font-bold text-xl leading-tight tracking-tight">{error || "Could not apply for this job."}</div>
                 </>
               ) : (
                 <>
                   <div className="mb-4 mt-0.5">
-                    <span className="font-semibold text-lg">Apply for this job?</span>
+                    <span className="font-semibold text-xl leading-tight tracking-tight">Apply for this job?</span>
                   </div>
-                  <div className="text-gray-500 text-sm mb-4">
+                  <div className="text-gray-500 text-lg sm:text-base mb-4 leading-normal tracking-tight">
                     Available Coins: <b>{coinValue === null ? "..." : coinValue}</b>
                   </div>
-                  <div className="text-gray-800 text-sm mb-2.5">
+                  <div className="text-gray-800 text-lg sm:text-base mb-2.5 leading-normal tracking-tight">
                     <span>Use <b>100 Coins</b> to apply for this job.</span>
                   </div>
                   
                   <button
-                    className="w-full bg-gradient-brand text-white rounded-lg px-4 py-2 font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mb-1.5 text-base"
+                    className="w-full bg-gradient-brand text-white rounded-lg px-4 py-2 font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mb-1.5 text-base leading-normal tracking-tight"
                     disabled={loading}
                     onClick={onApply}
                   >

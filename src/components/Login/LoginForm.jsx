@@ -405,7 +405,7 @@ const LoginForm = () => {
                   layout="card"
                   className="shadow-xl"
                 >
-                  <p className="mt-6 text-sm text-slate-600 text-center">
+                  <p className="mt-6 text-lg sm:text-base text-slate-600 text-center leading-normal tracking-tight">
                     One moment while we prepare your workspace.
                   </p>
                 </LoadingState>
@@ -457,7 +457,7 @@ const LoginForm = () => {
        
 
         <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
-          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center lg:text-left leading-tight tracking-tight">Login</h2>
+          <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center lg:text-left leading-tight tracking-tight">Login</h2>
           
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 md:space-y-8">
             {/* Email Field */}
@@ -470,7 +470,7 @@ const LoginForm = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black"
+                  className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base placeholder-black leading-normal tracking-tight"
                 />
               </div>
             </InputWithTooltip>
@@ -485,7 +485,7 @@ const LoginForm = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black"
+                  className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base placeholder-black leading-normal tracking-tight"
                 />
                 <button
                   type="button"
@@ -501,7 +501,7 @@ const LoginForm = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full text-white font-semibold bg-gradient-brand hover:bg-gradient-primary-hover py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 text-base sm:text-lg md:text-xl"
+              className="w-full text-white font-semibold bg-gradient-brand hover:bg-gradient-primary-hover py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 text-base leading-normal tracking-tight"
             >
               {loading ? "Logging in..." : "Login"}
             </button>
@@ -509,7 +509,7 @@ const LoginForm = () => {
 
           {/* Forgot Password Link */}
           <div className="mt-4 sm:mt-6 md:mt-8 text-center">
-            <span className="text-gray-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight">Forgot Password? </span>
+            <span className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Forgot Password? </span>
             <Link
               to="/forget-password"
               onClick={() => {
@@ -519,7 +519,7 @@ const LoginForm = () => {
                 }
                 cleanupModals();
               }}
-              className="text-red-500 font-semibold hover:text-red-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight"
+              className="text-red-500 font-semibold hover:text-red-600 text-base leading-normal tracking-tight"
             >
               Click here to Change Password
             </Link>
@@ -527,7 +527,7 @@ const LoginForm = () => {
 
           {/* Signup Link */}
           <div className="mt-4 sm:mt-6 md:mt-8 text-center">
-            <span className="text-gray-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight">Don't have an account? </span>
+            <span className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Don't have an account? </span>
             <Link
               to="/register"
               onClick={() => {
@@ -537,7 +537,7 @@ const LoginForm = () => {
                 }
                 cleanupModals();
               }}
-              className="text-red-500 font-semibold hover:text-red-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight"
+              className="text-red-500 font-semibold hover:text-red-600 text-base leading-normal tracking-tight"
             >
               Signup Here
             </Link>

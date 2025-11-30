@@ -285,17 +285,17 @@ const handleResumeView = async () => {
 
 return (
     <div className="max-w-5xl mx-auto p-4">
-      <h5 className="text-center font-medium text-gray-500"><span role="img" aria-label="info">ℹ️</span> The resume and video you upload will be visible to the Job Providers.</h5>
+      <h5 className="text-center font-medium text-gray-500 text-lg sm:text-base leading-normal tracking-tight"><span role="img" aria-label="info">ℹ️</span> The resume and video you upload will be visible to the Job Providers.</h5>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {/* Demo Video Card */}
           <div className=" rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col">
-            <h3 className="text-lg md:text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 md:mb-6 text-center">My demo video</h3>
+            <h3 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 md:mb-6 text-center leading-tight tracking-tight">My demo video</h3>
             
             <div className="mt-auto">
               <div className="flex gap-3 relative">
                 <div className="flex-1 relative">
                   <button 
-                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-base leading-normal tracking-tight"
                     onClick={handleDemoVideoUploadClick}
                     disabled={demoVideoUploading}
                     onMouseEnter={() => setShowVideoTooltip(true)}
@@ -304,32 +304,34 @@ return (
                     {demoVideoUploading ? "Uploading..." : "Upload"}
                   </button>
                   {showVideoTooltip && !videoFileName && (
-                    <div className="absolute top-full left-0 mt-2 p-2 bg-gradient-brand text-white text-xs rounded z-10 whitespace-nowrap">
+                    <div className="absolute top-full left-0 mt-2 p-2 bg-gradient-brand text-white text-base rounded z-10 whitespace-nowrap leading-normal tracking-tight">
                       Accepted formats: .mp4, .webm, .mov (Max: 10MB)
                     </div>
                   )}
                 </div>
-                <button 
-                  className="flex-1 bg-gradient-brand hover:bg-gradient-primary-hover text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  onClick={handleDemoVideoView}
-                  disabled={!videoFileName}
-                >
-                  View
-                </button>
+                <div className="flex-1">
+                  <button 
+                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-base leading-normal tracking-tight"
+                    onClick={handleDemoVideoView}
+                    disabled={!videoFileName}
+                  >
+                    View
+                  </button>
+                </div>
               </div>
               
               {!videoFileName ? (
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-lg sm:text-base text-gray-500 mt-2 leading-normal tracking-tight">
                   Upload a video to enable viewing.
                 </p>
               ) : (
-                <p className="text-xs text-gray-600 mt-2 truncate" title={videoFileName}>
+                <p className="text-lg sm:text-base text-gray-600 mt-2 truncate leading-normal tracking-tight" title={videoFileName}>
                   {videoFileName}
                 </p>
               )}
               
               {demoVideoError && (
-                <p className="text-red-500 text-xs mt-2">{demoVideoError}</p>
+                <p className="text-red-500 text-lg sm:text-base mt-2 leading-normal tracking-tight">{demoVideoError}</p>
               )}
             </div>
             
@@ -344,13 +346,13 @@ return (
 
           {/* Resume Card */}
           <div className="rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col">
-            <h3 className="text-lg md:text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 md:mb-6 text-center">My resume/cv</h3>
+            <h3 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 md:mb-6 text-center leading-tight tracking-tight">My resume/cv</h3>
             
             <div className="mt-auto">
               <div className="flex gap-3 relative">
                 <div className="flex-1 relative">
                   <button 
-                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-base leading-normal tracking-tight"
                     onClick={handleResumeUploadClick}
                     disabled={resumeUploading}
                     onMouseEnter={() => setShowResumeTooltip(true)}
@@ -359,22 +361,24 @@ return (
                     {resumeUploading ? "Uploading..." : "Upload"}
                   </button>
                   {showResumeTooltip && !resumeFileName && (
-                    <div className="absolute top-full left-0 mt-2 p-2 bg-gradient-brand text-white text-xs rounded z-10 whitespace-nowrap">
+                    <div className="absolute top-full left-0 mt-2 p-2 bg-gradient-brand text-white text-base rounded z-10 whitespace-nowrap leading-normal tracking-tight">
                       Accepted format: .pdf
                     </div>
                   )}
                 </div>
-                <button 
-                  className="flex-1 bg-gradient-brand hover:bg-gradient-primary-hover text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  onClick={handleResumeView}
-                  disabled={!resumeFileName}
-                >
-                  View
-                </button>
+                <div className="flex-1">
+                  <button 
+                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-base leading-normal tracking-tight"
+                    onClick={handleResumeView}
+                    disabled={!resumeFileName}
+                  >
+                    View
+                  </button>
+                </div>
               </div>
               
               {!resumeFileName ? (
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-lg sm:text-base text-gray-500 mt-2 leading-normal tracking-tight">
                   Upload a resume to enable viewing.
                 </p>
               ) : (

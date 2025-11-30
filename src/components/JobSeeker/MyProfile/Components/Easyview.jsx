@@ -332,8 +332,8 @@ function EasyView({ onViewAttempt, onEditProfile }) {
     return (
       <div className="profile-container flex flex-col items-center justify-center py-12 px-4 text-center">
         <div className="max-w-md w-full bg-[#F0D8D9] border border-dashed border-gray-300 rounded-xl p-8 shadow-sm">
-          <h4 className="text-xl font-semibold text-gray-800 mb-3">No Profile Data Yet</h4>
-          <p className="text-sm text-gray-600 mb-6">
+          <h4 className="text-xl font-semibold text-gray-800 mb-3 leading-tight tracking-tight">No Profile Data Yet</h4>
+          <p className="text-lg sm:text-base text-gray-600 mb-6 leading-normal tracking-tight">
             We couldn&apos;t find any profile details to show. Please complete your profile to view it here.
           </p>
           <button
@@ -395,10 +395,10 @@ function EasyView({ onViewAttempt, onEditProfile }) {
       <div key={`${education.education_type}-${index}`} className="education-block mb-5 pb-[15px] border-b border-gray-300 last:border-b-0">
         <div className="education-title font-bold text-gray-800 mb-1">{getEducationTypeTitle(education.education_type)}</div>
         {education.yearOfPassing && (
-          <div className="education-detail text-sm mb-0.5">Year of Passing: {education.yearOfPassing}</div>
+          <div className="education-detail text-lg sm:text-base mb-0.5 leading-normal tracking-tight">Year of Passing: {education.yearOfPassing}</div>
         )}
         {education.courseName && (
-          <div className="education-detail text-sm mb-0.5">Course Name: {education.courseName}</div>
+          <div className="education-detail text-lg sm:text-base mb-0.5 leading-normal tracking-tight">Course Name: {education.courseName}</div>
         )}
       </div>
     ));
@@ -415,7 +415,7 @@ function EasyView({ onViewAttempt, onEditProfile }) {
     }
     
     return (
-      <div className="experience-summary text-sm mb-[15px] p-2.5 bg-gray-50 border-l-[3px] border-[#1967d2] text-gray-800 whitespace-pre-line">
+      <div className="experience-summary text-lg sm:text-base mb-[15px] p-2.5 bg-gray-50 border-l-[3px] border-[#1967d2] text-gray-800 whitespace-pre-line leading-normal tracking-tight">
         {total_experience_years !== undefined && total_experience_years !== null && (
           <div>Total Experience: {total_experience_years} Years {total_experience_months || 0} Months</div>
         )}
@@ -484,7 +484,7 @@ function EasyView({ onViewAttempt, onEditProfile }) {
       const location = [exp.city, exp.state, exp.country].filter(Boolean).join(', ');
       
       return (
-        <div className="experience-block mb-[25px] text-[15px] leading-[1.5]" key={index}>
+        <div className="experience-block mb-[25px] text-lg sm:text-base leading-normal tracking-tight" key={index}>
           {/* Organization and date row */}
           <div className="flex justify-between font-bold mb-1">
             <div className="text-base">{exp.organizationName}</div>
@@ -591,7 +591,7 @@ function EasyView({ onViewAttempt, onEditProfile }) {
               window.location.href = "/seeker/my-profile";
             }
           }}
-          className={`btn bg-gradient-brand hover:bg-gradient-brand-hover text-white ${isMobile ? 'btn-mobile' : ''} ${isMobile ? 'text-sm px-4 py-2' : 'text-base px-5 py-2.5'} rounded-md font-medium`}
+          className={`btn bg-gradient-brand hover:bg-gradient-brand-hover text-white ${isMobile ? 'btn-mobile' : ''} text-base px-4 py-2 sm:px-5 sm:py-2.5 rounded-md font-medium leading-normal tracking-tight`}
         >
           Edit Profile
         </button>
@@ -619,12 +619,12 @@ function EasyView({ onViewAttempt, onEditProfile }) {
           
           {/* Basic Information */}
           <div className="flex-1 min-w-0">
-            <h1 className={`candidate-name mb-1 ${isMobile ? 'text-xl' : 'text-2xl'} bg-gradient-brand bg-clip-text text-transparent break-words`}>
+            <h1 className={`candidate-name mb-1 text-2xl bg-gradient-brand bg-clip-text text-transparent break-words leading-tight tracking-tight`}>
               {profileData.fullName || 'Candidate Name'}
             </h1>
             
             {/* Personal Details */}
-            <div className={`mb-0.5 ${isMobile ? 'text-sm' : 'text-[15px]'} text-gray-600 break-words`}>
+            <div className={`mb-0.5 text-lg sm:text-base text-gray-600 break-words leading-normal tracking-tight`}>
               {profileData.gender && <span>{profileData.gender}</span>}
               {profileData.dateOfBirth && (
                 <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
@@ -636,7 +636,7 @@ function EasyView({ onViewAttempt, onEditProfile }) {
             
             {/* Email */}
             {profileData.email && (
-              <div className={`flex items-center ${isMobile ? 'text-sm' : 'text-[15px]'} min-w-0`}>
+              <div className={`flex items-center text-lg sm:text-base min-w-0 leading-normal tracking-tight`}>
                 <FaEnvelope className="mr-1.5 text-gray-400 shrink-0" />
                 <a href={`mailto:${profileData.email}`} className="no-underline text-[#1967d2] break-words overflow-wrap-anywhere">
                   {profileData.email}
@@ -647,7 +647,7 @@ function EasyView({ onViewAttempt, onEditProfile }) {
         </div>
         
         {/* Right Side: Contact Information */}
-        <div className={`font-sans ${isMobile ? 'text-[13px] w-full' : 'text-sm w-1/2'} leading-[1.4] ${isMobile ? 'mt-2' : 'pl-4'} min-w-0`}>
+        <div className={`font-sans text-lg sm:text-base w-full sm:w-1/2 leading-normal tracking-tight ${isMobile ? 'mt-2' : 'pl-4'} min-w-0`}>
           {/* Address Information */}
           <div className={`flex ${isMobile ? 'flex-row' : 'flex-col'} ${isMobile ? 'gap-[15px]' : 'gap-1.5'} ${isMobile ? 'mb-1.5 flex-wrap' : 'mb-2'}`}>
             <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'} min-w-0`}>
@@ -695,7 +695,7 @@ function EasyView({ onViewAttempt, onEditProfile }) {
       <div className="cv-body flex flex-col md:flex-row p-0 bg-white">
         <div className="cv-sidebar w-full md:w-[35%] bg-gray-100 p-2.5 md:p-5">
           <div className="cv-section education-section mt-0 mb-2.5">
-            <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-lg bg-gradient-brand bg-clip-text text-transparent">
+            <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight">
               EDUCATION
             </h2>
             {renderEducationBlocks()}
@@ -704,7 +704,7 @@ function EasyView({ onViewAttempt, onEditProfile }) {
 
         <div className="cv-main w-full md:w-[65%] md:px-2">
           <div className="cv-section experience-section mt-0 mb-2.5">
-            <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-lg bg-gradient-brand bg-clip-text text-transparent">
+            <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight">
               WORK EXPERIENCE
             </h2>
             {getExperienceText()}
@@ -750,8 +750,8 @@ function EasyView({ onViewAttempt, onEditProfile }) {
             
             return (
               <div className="cv-section job-preferences mt-0 mb-2.5">
-                <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-lg bg-gradient-brand bg-clip-text text-transparent">JOB PREFERENCES</h2>
-                <div className="job-preferences-block bg-[#f5f7fc] p-5 rounded-lg mb-[25px] text-[15px] leading-[1.5]">
+                <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight">JOB PREFERENCES</h2>
+                <div className="job-preferences-block bg-[#f5f7fc] p-5 rounded-lg mb-[25px] text-lg sm:text-base leading-normal tracking-tight">
                   {/* Two-column details grid */}
                   <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : 'grid-cols-2'} gap-x-5 gap-y-1`}>
                     {/* Basic Job Information */}

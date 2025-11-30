@@ -540,7 +540,7 @@ const AppliedJobs = ({ highlightJobId }) => {
           <div className="job-listing">
             <div className="widget-title mb-3">
               <div className="flex justify-between items-center w-full">
-                <h3 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
+                <h3 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 leading-tight tracking-tight">
                   {`${filteredJobs.length} Jobs Applied`}
                 </h3>
                 <RecordsPerPageDropdown 
@@ -587,7 +587,7 @@ const AppliedJobs = ({ highlightJobId }) => {
                     alt="No applied jobs" 
                     className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
                   />
-                  <p className="text-gray-600 text-lg font-medium">No applied jobs available.</p>
+                  <p className="text-gray-600 text-lg sm:text-base font-medium leading-normal tracking-tight">No applied jobs available.</p>
                 </div>
               </div>
             )}

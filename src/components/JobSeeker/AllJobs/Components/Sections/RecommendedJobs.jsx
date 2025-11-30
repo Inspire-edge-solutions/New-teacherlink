@@ -974,7 +974,7 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
 
       <div className="job-listing">
         <div className="flex justify-between items-center mb-3">
-          <h5 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
+          <h5 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 leading-tight tracking-tight">
             {isSearching
               ? `Found ${filteredJobs.length} job${filteredJobs.length !== 1 ? 's' : ''}`
               : `${jobs.length} Jobs Recommended`
@@ -1024,7 +1024,7 @@ const RecommendedJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
                 alt="No jobs" 
                 className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
               />
-              <p className="text-gray-600 text-lg font-medium">No jobs available at the moment.</p>
+              <p className="text-gray-600 text-lg sm:text-base font-medium leading-normal tracking-tight">No jobs available at the moment.</p>
             </div>
           </div>
         )}

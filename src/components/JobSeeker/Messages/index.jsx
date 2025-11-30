@@ -143,7 +143,7 @@ const MessagesComponent = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2 leading-tight tracking-tight">
                 <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
@@ -153,12 +153,12 @@ const MessagesComponent = () => {
             
             {/* Modal Body */}
             <div className="px-6 py-4">
-              <p className="text-gray-600 mb-3">
+              <p className="text-gray-600 mb-3 text-lg sm:text-base leading-normal tracking-tight">
                 This message will be deleted for everyone in the conversation. This action cannot be undone.
               </p>
               {deleteModal.messageText && (
                 <div className="bg-gray-50 rounded-md p-3 mb-3 border border-gray-200">
-                  <p className="text-sm text-gray-700 italic">
+                  <p className="text-lg sm:text-base text-gray-700 italic leading-normal tracking-tight">
                     "{deleteModal.messageText}"
                   </p>
                 </div>
@@ -169,13 +169,13 @@ const MessagesComponent = () => {
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
               <button
                 onClick={cancelDelete}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                className="px-4 py-2 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors leading-normal tracking-tight"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDelete}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                className="px-4 py-2 text-base font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors leading-normal tracking-tight"
               >
                 Delete
               </button>
@@ -190,7 +190,7 @@ const MessagesComponent = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2 leading-tight tracking-tight">
                 <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
@@ -214,14 +214,14 @@ const MessagesComponent = () => {
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
               <button
                 onClick={cancelEdit}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                className="px-4 py-2 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors leading-normal tracking-tight"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmEdit}
                 disabled={!editModal.messageText || editModal.messageText.trim() === ''}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-base font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed leading-normal tracking-tight"
               >
                 Save
               </button>
@@ -235,7 +235,7 @@ const MessagesComponent = () => {
         {error && (
           <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 max-w-xs">
             <div className="flex items-center justify-between">
-              <span className="text-sm">{error}</span>
+              <span className="text-base leading-normal tracking-tight">{error}</span>
               <button 
                 onClick={clearError}
                 className="ml-2 text-white hover:text-gray-200"
@@ -248,7 +248,7 @@ const MessagesComponent = () => {
 
         {/* Connection Status */}
         {!isConnected && (
-          <div className="fixed top-4 left-4 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm">
+          <div className="fixed top-4 left-4 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-base leading-normal tracking-tight">
             Connecting to chat...
           </div>
         )}
@@ -297,7 +297,7 @@ const MessagesComponent = () => {
               </svg>
             </button>
             <div className="flex-1 min-w-0">
-              <h3 className="text-base font-semibold text-gray-900 truncate">{selectedChat.name}</h3>
+              <h3 className="text-xl font-semibold text-gray-900 truncate leading-tight tracking-tight">{selectedChat.name}</h3>
             </div>
           </div>
         )}
@@ -346,17 +346,17 @@ const MessagesComponent = () => {
               </div>
 
               {/* Text */}
-              <h2 className="text-xl sm:text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-2">
+              <h2 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-2 leading-tight tracking-tight">
                 No Active Message
               </h2>
-              <p className="text-sm sm:text-base text-gray-500 mb-6 px-4">
+              <p className="text-lg sm:text-base text-gray-500 mb-6 px-4 leading-normal tracking-tight">
                 Click on the chat to see full conversation or start a new one
               </p>
 
               {/* Button */}
               <button 
                 onClick={handleStartNewChat}
-                className="bg-gradient-brand hover:bg-gradient-primary-hover text-white px-6 py-3 rounded-lg transition-colors text-sm sm:text-base"
+                className="bg-gradient-brand hover:bg-gradient-primary-hover text-white px-6 py-3 rounded-lg transition-colors text-base leading-normal tracking-tight"
               >
                 Start a new chat
               </button>

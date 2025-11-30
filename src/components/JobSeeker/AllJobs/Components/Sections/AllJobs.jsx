@@ -1273,7 +1273,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
           <div className="flex sm:flex-shrink-0">
             <button 
               onClick={() => setShowFilters(true)}
-              className={`w-full sm:w-auto px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 ${
+              className={`w-full sm:w-auto px-4 py-2 rounded-md font-medium text-base transition-all duration-200 leading-normal tracking-tight ${
                 activeFilters.size > 0
                   ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover transition-colors'
                   : 'bg-gradient-brand text-white hover:bg-gradient-primary-hover transition-colors'
@@ -1287,7 +1287,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
 
       <div className="job-listing">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-          <h3 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
+          <h3 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 leading-tight tracking-tight">
             {isSearching || activeFilters.size > 0
               ? `Found ${finalFilteredJobs.length} job${finalFilteredJobs.length !== 1 ? 's' : ''}`
               : `${jobs.length} Jobs Available`
@@ -1304,19 +1304,19 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
           <div className="p-4 mb-4 rounded bg-amber-50 border border-amber-200 text-amber-800">
             {userHasAppliedFilters && hasFiltersApplied && filteredJobsByFilters.length === 0 && (
               <div className="mb-3">
-                <p className="font-semibold mb-1">No jobs match your filters.</p>
-                <p className="mb-3 text-sm">
+                <p className="font-semibold mb-1 text-xl leading-tight tracking-tight">No jobs match your filters.</p>
+                <p className="mb-3 text-lg sm:text-base leading-normal tracking-tight">
                   We're showing all available jobs instead. Adjust your selections or reset them to refine the results.
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <button
-                    className="px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-primary-hover focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    className="px-4 py-2 bg-gradient-brand text-white rounded-md hover:bg-gradient-primary-hover focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors text-base leading-normal tracking-tight"
                     onClick={() => setShowFilters(true)}
                   >
                     Adjust Filters
                   </button>
                   <button
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors text-base leading-normal tracking-tight"
                     onClick={handleResetFilters}
                   >
                     Reset Filters
@@ -1326,8 +1326,8 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
             )}
             {isSearching && searchResults.length === 0 && (
               <div>
-                <p className="font-semibold mb-1">No jobs match your search.</p>
-                <p className="text-sm">
+                <p className="font-semibold mb-1 text-xl leading-tight tracking-tight">No jobs match your search.</p>
+                <p className="text-lg sm:text-base leading-normal tracking-tight">
                   Showing all available jobs. Try a different keyword or clear your search to explore more opportunities.
                 </p>
               </div>
@@ -1375,10 +1375,10 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
               />
               {userHasAppliedFilters && hasFiltersApplied ? (
                 <>
-                  <p className="text-gray-700 text-lg font-semibold mb-2">
+                  <p className="text-gray-700 text-xl font-semibold mb-2 leading-tight tracking-tight">
                     No jobs match your filters.
                   </p>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-600 mb-4 text-lg sm:text-base leading-normal tracking-tight">
                     Try adjusting your selections or clear them to see more opportunities.
                   </p>
                   <div className="flex flex-wrap gap-3 justify-center">
@@ -1406,7 +1406,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
                   </p>
                 </>
               ) : (
-                <p className="text-gray-600 text-lg font-medium">
+                <p className="text-gray-600 text-lg sm:text-base font-medium leading-normal tracking-tight">
                   No jobs available at the moment.
                 </p>
               )}

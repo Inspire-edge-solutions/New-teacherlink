@@ -80,7 +80,7 @@ const ChatInput = ({ onSendMessage, onTyping, disabled = false }) => {
             onKeyPress={handleKeyPress}
             placeholder={disabled ? "Connecting..." : "Type your message here"}
             disabled={disabled}
-            className={`w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-sm sm:text-base ${
+            className={`w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-base leading-normal tracking-tight ${
               disabled ? 'bg-gray-100 cursor-not-allowed' : ''
             }`}
           />
@@ -102,7 +102,7 @@ const ChatInput = ({ onSendMessage, onTyping, disabled = false }) => {
       
       {/* Connection Status */}
       {disabled && (
-        <div className="text-xs text-gray-500 mt-2 text-center">
+        <div className="text-base text-gray-500 mt-2 text-center leading-normal tracking-tight">
           Connecting to chat server...
         </div>
       )}

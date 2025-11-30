@@ -344,9 +344,9 @@ const JobSearchStatus = () => {
         className="w-full text-left cursor-pointer transition-all duration-300 ease-in-out flex justify-between items-center"
       >
         <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-          <h4 className="m-0 text-gray-800 text-sm sm:text-base font-semibold">Job Search Status</h4>
+          <h4 className="m-0 text-gray-800 text-xl font-semibold leading-tight tracking-tight">Job Search Status</h4>
           <span 
-            className="py-1 px-2 sm:px-2.5 rounded-[15px] text-xs sm:text-[13px] font-medium w-fit"
+            className="py-1 px-2 sm:px-2.5 rounded-[15px] text-base font-medium w-fit leading-normal tracking-tight"
             style={{
               backgroundColor: getStatusColor(getOverallStatus()).bg,
               color: getStatusColor(getOverallStatus()).text,
@@ -365,11 +365,11 @@ const JobSearchStatus = () => {
           <div className="grid grid-cols-1 gap-3 sm:gap-[15px]">
             {Object.entries(jobSearchStatus).map(([type, value]) => (
               <div key={type} className="flex flex-col gap-1.5">
-                <label className="block text-xs sm:text-[13px] font-medium text-gray-800">
+                <label className="block text-base font-medium text-gray-800 leading-normal tracking-tight">
                   {getTypeLabel(type)}
                 </label>
                 <select
-                  className="w-full py-1.5 px-2 sm:px-2.5 rounded-md font-medium text-xs sm:text-[13px] cursor-pointer transition-all duration-200 ease-in-out form-select"
+                  className="w-full py-1.5 px-2 sm:px-2.5 rounded-md font-medium text-base cursor-pointer transition-all duration-200 ease-in-out form-select leading-normal tracking-tight"
                   value={value}
                   onChange={(e) => handleJobSearchStatusChange(type, e.target.value)}
                   style={{

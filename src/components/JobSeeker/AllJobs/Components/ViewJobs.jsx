@@ -103,30 +103,30 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
         {unlockStatus === "success" ? (
           <div className="text-center">
             <div className="text-4xl mb-4">🪙</div>
-            <div className="text-green-600 font-semibold text-lg mb-2">Unlocked! 🔓</div>
-            <div className="text-gray-600 text-sm">Details unlocked successfully.</div>
+            <div className="text-green-600 font-semibold text-xl mb-2 leading-tight tracking-tight">Unlocked! 🔓</div>
+            <div className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Details unlocked successfully.</div>
           </div>
         ) : unlockStatus === "error" ? (
           <div className="text-center">
             <div className="text-4xl mb-4 opacity-50">🪙</div>
-            <div className="text-red-600 font-semibold text-lg">{error || "Could not unlock details."}</div>
+            <div className="text-red-600 font-semibold text-xl leading-tight tracking-tight">{error || "Could not unlock details."}</div>
           </div>
         ) : (
           <div>
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Unlock institute details?</h3>
-              <div className="text-gray-600 text-sm mb-2">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4 leading-tight tracking-tight">Unlock institute details?</h3>
+              <div className="text-gray-600 text-lg sm:text-base mb-2 leading-normal tracking-tight">
                 Available Coins: <span className="font-semibold">{coinValue === null ? "..." : coinValue}</span>
               </div>
-              <div className="text-gray-700 text-sm mb-4">
+              <div className="text-gray-700 text-lg sm:text-base mb-4 leading-normal tracking-tight">
                 Use <span className="font-semibold">50 Coins</span> to view address, contact, email, phone, and website details.
               </div>
-              <div className="text-red-600 text-sm text-center italic mb-4">
+              <div className="text-red-600 text-lg sm:text-base text-center italic mb-4 leading-normal tracking-tight">
                 Unlocked details remain visible for <span className="font-semibold">30 days.</span>
               </div>
             </div>
             <button
-              className="w-full bg-gradient-brand text-white py-3 px-4 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-brand text-white py-3 px-4 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base leading-normal tracking-tight"
               disabled={loading}
               onClick={onUnlock}
             >
@@ -905,9 +905,9 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 text-lg mb-4">No job selected</p>
+          <p className="text-gray-600 text-lg sm:text-base mb-4 leading-normal tracking-tight">No job selected</p>
           <button 
-          className="px-6 py-3 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors"
+          className="px-6 py-3 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors text-base leading-normal tracking-tight"
             onClick={onBack}
           >
             {fromNotifications ? 'Back to Notifications' : 'Back to Jobs'}
@@ -922,9 +922,9 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
       {/* Top Navigation Bar */}
       <div className="bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 py-2 pt-0">
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
-          <h1 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent">Job Details</h1>
+          <h1 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">Job Details</h1>
           <button 
-          className="w-full sm:w-auto px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors font-medium text-center"
+          className="w-full sm:w-auto px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors font-medium text-center text-base leading-normal tracking-tight"
             onClick={() => onBack('list')}
           >
             {fromNotifications ? 'Back to Notifications' : 'Back to Jobs'}
@@ -936,9 +936,9 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
         {/* Job Header Section */}
         <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-4 sm:p-6 mb-6">
           <div className="text-center mb-4">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">{job.job_title || 'Position not specified'}</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2 leading-tight tracking-tight">{job.job_title || 'Position not specified'}</h1>
             {job.institute_name && (
-              <h2 className="text-xl text-gray-600">{job.institute_name}</h2>
+              <h2 className="text-xl text-gray-600 leading-tight tracking-tight">{job.institute_name}</h2>
             )}
           </div>
           
@@ -947,44 +947,44 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
             <div className="grid grid-cols-[auto,1fr] items-center gap-3 p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-3 col-span-1">
                 <BsBriefcase className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                <span className="text-base font-medium text-gray-500">Job Type:</span>
+                <span className="text-base font-medium text-gray-500 leading-normal tracking-tight">Job Type:</span>
               </div>
-              <span className="text-base font-semibold text-gray-800 col-span-1">{(job.job_type && job.job_type.toString().trim()) || 'Not specified'}</span>
+              <span className="text-base font-semibold text-gray-800 col-span-1 leading-normal tracking-tight">{(job.job_type && job.job_type.toString().trim()) || 'Not specified'}</span>
             </div>
             <div className="grid grid-cols-[auto,1fr] items-center gap-3 p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-3 col-span-1">
                 <IoLocationOutline className="w-5 h-5 text-blue-500 flex-shrink-0" />
                 <span className="text-base font-medium text-gray-500">Location:</span>
               </div>
-              <span className="text-base font-semibold text-gray-800 col-span-1">{job.city && job.state_ut ? `${job.city}, ${job.state_ut}` : 'Not specified'}</span>
+              <span className="text-base font-semibold text-gray-800 col-span-1 leading-normal tracking-tight">{job.city && job.state_ut ? `${job.city}, ${job.state_ut}` : 'Not specified'}</span>
             </div>
             <div className="grid grid-cols-[auto,1fr] items-center gap-3 p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-3 col-span-1">
                 <BsCash className="w-5 h-5 text-blue-500 flex-shrink-0" />
                 <span className="text-base font-medium text-gray-500">Salary Range:</span>
               </div>
-              <span className="text-base font-semibold text-gray-800 col-span-1">{formatSalary(job.min_salary, job.max_salary)}</span>
+              <span className="text-base font-semibold text-gray-800 col-span-1 leading-normal tracking-tight">{formatSalary(job.min_salary, job.max_salary)}</span>
             </div>
             <div className="grid grid-cols-[auto,1fr] items-center gap-3 p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-3 col-span-1">
                 <BsClock className="w-5 h-5 text-blue-500 flex-shrink-0" />
                 <span className="text-base font-medium text-gray-500">Experience:</span>
               </div>
-              <span className="text-base font-semibold text-gray-800 col-span-1">{job.experience_required ? `${job.experience_required} years` : 'Not specified'}</span>
+              <span className="text-base font-semibold text-gray-800 col-span-1 leading-normal tracking-tight">{job.experience_required ? `${job.experience_required} years` : 'Not specified'}</span>
             </div>
             <div className="grid grid-cols-[auto,1fr] items-center gap-3 p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-3 col-span-1">
                 <FaUsers className="w-5 h-5 text-blue-500 flex-shrink-0" />
                 <span className="text-base font-medium text-gray-500">Openings:</span>
               </div>
-              <span className="text-base font-semibold text-gray-800 col-span-1">{(job.no_of_opening && job.no_of_opening.toString().trim()) || 'Not specified'}</span>
+              <span className="text-base font-semibold text-gray-800 col-span-1 leading-normal tracking-tight">{(job.no_of_opening && job.no_of_opening.toString().trim()) || 'Not specified'}</span>
             </div>
             <div className="grid grid-cols-[auto,1fr] items-center gap-3 p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-3 col-span-1">
                 <FaCalendarAlt className="w-5 h-5 text-blue-500 flex-shrink-0" />
                 <span className="text-base font-medium text-gray-500">Joining Date:</span>
               </div>
-              <span className="text-base font-semibold text-gray-800 col-span-1">{formatDate(job.joining_date)}</span>
+              <span className="text-base font-semibold text-gray-800 col-span-1 leading-normal tracking-tight">{formatDate(job.joining_date)}</span>
             </div>
           </div>
         </div>
@@ -995,7 +995,7 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
           <div className="space-y-6">
             {/* Job Requirements */}
             <div className="bg-white rounded-lg shadow-md border border-gray-200 p-2 sm:p-6">
-              <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200">JOB REQUIREMENTS</h3>
+              <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200 leading-tight tracking-tight">JOB REQUIREMENTS</h3>
               <div className="space-y-3">
                 <div className="grid grid-cols-[auto,1fr] items-start gap-3 p-2 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-3">
@@ -1038,14 +1038,14 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
             {/* Subjects Required */}
             {(coreSubjects.length > 0 || otherSubjects.length > 0) && (
               <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
-                <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200">Subject Requirements</h3>
+                <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200 leading-tight tracking-tight">Subject Requirements</h3>
                 <div className="space-y-4">
                   {coreSubjects.length > 0 && (
                     <div>
-                      <h4 className="text-base font-medium text-gray-700 mb-3">Core Subjects</h4>
+                      <h4 className="text-lg font-medium text-gray-700 mb-3 leading-tight tracking-tight">Core Subjects</h4>
                       <div className="flex flex-wrap gap-2">
                         {coreSubjects.map((subject, index) => (
-                          <span key={index} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                          <span key={index} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-base font-medium leading-normal tracking-tight">
                             <FaStar className="w-4 h-4" />
                             {subject}
                           </span>
@@ -1055,10 +1055,10 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
                   )}
                   {otherSubjects.length > 0 && (
                     <div>
-                      <h4 className="text-base font-medium text-gray-700 mb-3">Additional Subjects</h4>
+                      <h4 className="text-lg font-medium text-gray-700 mb-3 leading-tight tracking-tight">Additional Subjects</h4>
                       <div className="flex flex-wrap gap-2">
                         {otherSubjects.map((subject, index) => (
-                          <span key={index} className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                          <span key={index} className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-base font-medium leading-normal tracking-tight">
                             <FaPlus className="w-4 h-4" />
                             {subject}
                           </span>
@@ -1075,7 +1075,7 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
           <div className="space-y-6">
             {/* Institute Info Section */}
             <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
-              <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200">INSTITUTE INFORMATION</h3>
+              <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200 leading-tight tracking-tight">INSTITUTE INFORMATION</h3>
               {instituteLoading ? (
                 <div className="flex justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -1093,7 +1093,7 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
               ) : instituteData ? (
                 <div>
                   <div className="text-center mb-6">
-                    <h4 className="text-lg font-medium text-gray-800 mb-2">
+                    <h4 className="text-xl font-medium text-gray-800 mb-2 leading-tight tracking-tight">
                       <BlurWrapper isUnlocked={isUnlocked}>
                         {instituteData.name}
                       </BlurWrapper>
@@ -1194,7 +1194,7 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
                   )}
                   {instituteData.description && (
                     <div className="mt-6 pt-6 border-t border-gray-200">
-                      <h4 className="text-lg font-medium text-gray-800 mb-3">About the Institute</h4>
+                      <h4 className="text-xl font-medium text-gray-800 mb-3 leading-tight tracking-tight">About the Institute</h4>
                       <p className="text-gray-700 leading-relaxed">{instituteData.description}</p>
                     </div>
                   )}
@@ -1207,7 +1207,7 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
             {/* Job Description */}
             {job.job_description && (
               <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
-                <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200">Job Description</h3>
+                <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200 leading-tight tracking-tight">Job Description</h3>
                 <div className="prose max-w-none text-gray-700 leading-relaxed text-sm" style={{ fontSize: '14px', lineHeight: '1.4', padding: '8px 12px' }}>
                   {job.job_description}
                 </div>
@@ -1217,11 +1217,11 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
             {/* Application Deadline Card */}
             {job.application_deadline && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-red-800 mb-3 flex items-center justify-center gap-2">
+                <h3 className="text-xl font-semibold text-red-800 mb-3 flex items-center justify-center gap-2 leading-tight tracking-tight">
                   <i className="fas fa-hourglass-end"></i>
                   Application Deadline
                 </h3>
-                <p className="text-red-700 font-bold text-center text-lg">{formatDate(job.application_deadline)}</p>
+                <p className="text-red-700 font-bold text-center text-lg sm:text-base leading-normal tracking-tight">{formatDate(job.application_deadline)}</p>
               </div>
             )}
           </div>
@@ -1242,7 +1242,7 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
         {/* Apply Job Button */}
         <div className="flex justify-center mt-6 mb-4">
           <button
-            className={`px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 ${
+            className={`px-8 py-4 rounded-lg font-semibold text-base transition-all duration-300 flex items-center justify-center gap-3 leading-normal tracking-tight ${
               isApplied 
                 ? 'bg-gray-300 text-gray-700 cursor-not-allowed' 
                 : 'bg-gradient-brand text-white hover:bg-gradient-primary-hover transition-colors shadow-lg hover:shadow-xl'

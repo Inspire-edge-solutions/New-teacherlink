@@ -234,21 +234,21 @@ const ForgetPassword = () => {
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">1</span>
+                    <span className="text-white font-bold text-base leading-normal tracking-tight">1</span>
                   </div>
-                  <span className="text-gray-700 leading-normal tracking-tight">Enter your registered email address</span>
+                  <span className="text-gray-700 text-lg sm:text-base leading-normal tracking-tight">Enter your registered email address</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">2</span>
+                    <span className="text-white font-bold text-base leading-normal tracking-tight">2</span>
                   </div>
-                  <span className="text-gray-700 leading-normal tracking-tight">Verify with the OTP sent to your email</span>
+                  <span className="text-gray-700 text-lg sm:text-base leading-normal tracking-tight">Verify with the OTP sent to your email</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">3</span>
+                    <span className="text-white font-bold text-base leading-normal tracking-tight">3</span>
                   </div>
-                  <span className="text-gray-700 leading-normal tracking-tight">Create a new secure password</span>
+                  <span className="text-gray-700 text-lg sm:text-base leading-normal tracking-tight">Create a new secure password</span>
                 </div>
               </div>
             </div>
@@ -260,7 +260,7 @@ const ForgetPassword = () => {
       {/* Right Section - Forget Password Form */}
       <div className="w-full lg:w-1/2 bg-white flex items-center justify-center px-3 sm:px-6 md:px-8 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg">
         <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
-          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-black mb-4 sm:mb-6 text-center lg:text-left leading-tight tracking-tight">Reset Password</h2>
+          <h2 className="text-2xl font-bold text-black mb-4 sm:mb-6 text-center lg:text-left leading-tight tracking-tight">Reset Password</h2>
           
           {!isCompleted ? (
             <>
@@ -274,14 +274,14 @@ const ForgetPassword = () => {
                       placeholder="Email"
                       required
                       autoComplete="email"
-                      className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black"
+                      className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base placeholder-black leading-normal tracking-tight"
                     />
                   </div>
                   
                   <button 
                     type="submit" 
                     disabled={loading || !email.trim()}
-                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg md:text-xl"
+                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base leading-normal tracking-tight"
                   >
                     {loading ? "Sending..." : "Send OTP"}
                   </button>
@@ -304,7 +304,7 @@ const ForgetPassword = () => {
                   <button 
                     type="submit" 
                     disabled={loading || !otp.trim()}
-                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg md:text-xl"
+                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base leading-normal tracking-tight"
                   >
                     {loading ? "Verifying..." : "Verify OTP"}
                   </button>
@@ -313,7 +313,7 @@ const ForgetPassword = () => {
                     type="button"
                     disabled={resendTimer > 0 || loading}
                     onClick={handleResendOTP}
-                    className="w-full bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed text-gray-700 font-medium py-2 sm:py-3 md:py-4 px-4 rounded-lg transition-colors duration-200 text-base sm:text-lg md:text-xl"
+                    className="w-full bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed text-gray-700 font-medium py-2 sm:py-3 md:py-4 px-4 rounded-lg transition-colors duration-200 text-base leading-normal tracking-tight"
                   >
                     {resendTimer > 0 ? `Resend OTP (${resendTimer}s)` : 'Resend OTP'}
                   </button>
@@ -339,7 +339,7 @@ const ForgetPassword = () => {
                   
                   {showValidationErrors && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-2 sm:p-3">
-                      <ul className="text-xs sm:text-sm text-red-600 space-y-1">
+                      <ul className="text-base text-red-600 space-y-1 leading-normal tracking-tight">
                         {!passwordValidation.length && (<li className="flex items-center"><span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></span>At least 8 characters</li>)}
                         {!passwordValidation.uppercase && (<li className="flex items-center"><span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></span>One uppercase letter</li>)}
                         {!passwordValidation.lowercase && (<li className="flex items-center"><span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></span>One lowercase letter</li>)}
@@ -366,7 +366,7 @@ const ForgetPassword = () => {
                   
                   {showValidationErrors && !passwordValidation.match && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-2 sm:p-3">
-                      <p className="text-xs sm:text-sm text-red-600 flex items-center">
+                      <p className="text-base text-red-600 flex items-center leading-normal tracking-tight">
                         <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></span>
                         Passwords do not match
                       </p>
@@ -376,7 +376,7 @@ const ForgetPassword = () => {
                   <button 
                     type="submit" 
                     disabled={loading}
-                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg md:text-xl"
+                    className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base leading-normal tracking-tight"
                   >
                     {loading ? "Changing Password..." : "Change Password"}
                   </button>

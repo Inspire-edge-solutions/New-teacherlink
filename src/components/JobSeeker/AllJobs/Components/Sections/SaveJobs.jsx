@@ -688,7 +688,7 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJobId,
 
       <div className="job-listing">
         <div className="mb-3">
-          <h5 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
+          <h5 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 leading-tight tracking-tight">
             {isSearching
               ? `Found ${filteredJobs.length} saved job${filteredJobs.length !== 1 ? 's' : ''}`
               : `${filteredJobs.length} Jobs Saved`
@@ -708,16 +708,16 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJobId,
                     checked={selectAll}
                     onChange={handleSelectAll}
                   />
-                  <label htmlFor="selectAllSavedJobs" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
+                  <label htmlFor="selectAllSavedJobs" className="ml-2 text-base font-medium text-gray-700 cursor-pointer leading-normal tracking-tight">
                     Select All Jobs on This Page
                     {selectedJobs.size > 0 && (
-                      <span className="text-gray-500 ml-2">({selectedJobs.size} total selected)</span>
+                      <span className="text-gray-500 ml-2 leading-normal tracking-tight">({selectedJobs.size} total selected)</span>
                     )}
                   </label>
                 </div>
                 {selectedJobs.size > 0 && (
                   <button
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-brand rounded-lg shadow-lg hover:bg-gradient-primary-hover duration-300 transition-colors"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 text-base font-semibold text-white bg-gradient-brand rounded-lg shadow-lg hover:bg-gradient-primary-hover duration-300 transition-colors leading-normal tracking-tight"
                     onClick={handleOpenBulkMessageModal}
                   >
                     <span role="img" aria-label="message">💬</span>
@@ -765,8 +765,8 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJobId,
                 alt="No saved jobs found" 
                 className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
               />
-              <h5 className="text-gray-700 text-lg font-semibold mb-2">No Results Found</h5>
-              <p className="text-gray-600">
+              <h5 className="text-gray-700 text-xl font-semibold mb-2 leading-tight tracking-tight">No Results Found</h5>
+              <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">
                 No saved jobs match your search criteria. Try adjusting your search terms.
               </p>
             </div>
@@ -779,12 +779,12 @@ const SaveJobs = ({ onViewJob, onBackFromJobView, onNavigateTab, highlightJobId,
                 alt="No saved jobs" 
                 className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
               />
-              <h5 className="text-gray-700 text-lg font-semibold mb-2">No Saved Jobs</h5>
-              <p className="text-gray-600 mb-4">
+              <h5 className="text-gray-700 text-xl font-semibold mb-2 leading-tight tracking-tight">No Saved Jobs</h5>
+              <p className="text-gray-600 mb-4 text-lg sm:text-base leading-normal tracking-tight">
                 You haven't saved any jobs yet. Browse jobs and save the ones you're interested in.
               </p>
               <button
-                className="px-4 py-2 bg-gradient-brand text-white rounded-lg text-sm font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500"
+                className="px-4 py-2 bg-gradient-brand text-white rounded-lg text-base font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500 leading-normal tracking-tight"
                 onClick={() => {
                   if (onNavigateTab) {
                     onNavigateTab('all');

@@ -224,6 +224,9 @@ const AvailableJobsPage = () => {
             >
               Register Now to Apply
             </button>
+            <p className="text-sm p-4 sm:text-base text-white-600 leading-normal tracking-tight">
+              Use coupon code <span className="font-bold text-xl">'INAUGURAL2025'</span> to get full access at no cost.
+              </p>
           </div>
 
           {/* Search and Filter Bar */}

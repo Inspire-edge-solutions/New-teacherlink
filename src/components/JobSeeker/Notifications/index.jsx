@@ -30,33 +30,34 @@ const NotificationsComponent = () => {
           <Skeleton variant="text" width="40%" height={32} className="mb-4" />
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="p-4 rounded-lg border-2 border-gray-200 bg-white">
-                <div className="flex items-start gap-4">
+              <div key={i} className="p-3 sm:p-4 rounded-lg border-2 border-gray-200 bg-white">
+                <div className="flex items-start gap-3 sm:gap-4">
                   {/* Icon Skeleton */}
-                  <div className="p-3 rounded-lg bg-gray-100 flex-shrink-0">
-                    <Skeleton variant="circular" width={24} height={24} />
+                  <div className="p-2 sm:p-3 rounded-lg bg-gray-100 flex-shrink-0">
+                    <Skeleton variant="circular" width={24} height={24} className="sm:w-6 sm:h-6" />
                   </div>
                   
                   {/* Content Skeleton */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex-1 min-w-0">
                         {/* Title Skeleton */}
                         <div className="flex items-center gap-2 mb-1">
-                          <Skeleton variant="text" width="60%" height={24} />
+                          <Skeleton variant="text" width="60%" height={24} className="sm:h-6" />
                           <Skeleton variant="circular" width={8} height={8} />
                         </div>
                         {/* Message Skeleton */}
-                        <Skeleton variant="text" width="100%" height={20} className="mb-2" />
-                        <Skeleton variant="text" width="80%" height={20} className="mb-2" />
-                        {/* Date Skeleton */}
-                        <Skeleton variant="text" width="30%" height={16} />
+                        <Skeleton variant="text" width="100%" height={20} className="mb-2 sm:h-5" />
+                        <Skeleton variant="text" width="80%" height={20} className="sm:h-5" />
                       </div>
                       
-                      {/* Actions Skeleton */}
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <Skeleton variant="rectangular" width={140} height={36} className="rounded-lg" />
-                        <Skeleton variant="circular" width={36} height={36} />
+                      {/* Date/Time and Actions Skeleton */}
+                      <div className="flex items-center justify-between gap-2">
+                        <Skeleton variant="text" width="30%" height={16} />
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Skeleton variant="rectangular" width={100} height={32} className="rounded-lg sm:w-32" />
+                          <Skeleton variant="circular" width={32} height={32} className="sm:w-8 sm:h-8" />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -103,15 +104,3 @@ const NotificationsComponent = () => {
 };
 
 export default NotificationsComponent;
-
-// import React, { useState, useEffect } from 'react';
-
-// const NotificationsComponent = () => {
-//   return (
-//     <div>
-//       <h1>This page is under development.</h1>
-//     </div>
-//   );
-// };
-
-// export default NotificationsComponent;

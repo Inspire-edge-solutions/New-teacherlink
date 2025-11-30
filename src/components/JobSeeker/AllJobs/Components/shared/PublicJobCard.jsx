@@ -71,15 +71,15 @@ const PublicJobCard = ({ job }) => {
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between mb-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <h3 className="text-lg font-bold text-gray-800 leading-tight break-words">
+            <h3 className="text-xl font-bold text-gray-800 leading-tight tracking-tight break-words">
               {job.job_title || 'Position not specified'}
             </h3>
-            <span className="bg-pink-100 text-red-500 text-xs px-2 py-0.5 rounded-full font-medium">
+            <span className="bg-pink-100 text-red-500 text-base px-2 py-0.5 rounded-full font-medium leading-normal tracking-tight">
               {formatTimeAgo(job.created_at || job.posted_at)}
             </span>
           </div>
           {job.institute_name && (
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">
               {job.institute_name}
             </p>
           )}
@@ -93,7 +93,7 @@ const PublicJobCard = ({ job }) => {
           <div className="space-y-2 sm:col-span-2 md:col-span-3">
             <div className="flex items-center gap-2 text-gray-600 break-words">
               <BsMortarboard className="w-3.5 h-3.5 text-gray-500" />
-              <span className="text-base md:text-lg">{formatQualification(job.qualification)}</span>
+              <span className="text-lg sm:text-base leading-normal tracking-tight">{formatQualification(job.qualification)}</span>
             </div>
             <div className="flex items-center gap-2 text-gray-600 break-words">
               <IoLocationOutline className="w-3.5 h-3.5 text-gray-500" />
@@ -117,7 +117,7 @@ const PublicJobCard = ({ job }) => {
         <div className="md:ml-4 md:flex-shrink-0 flex flex-wrap gap-2">
           {job.is_closed === 1 ? (
             <button 
-              className="w-full md:w-auto px-4 py-2 bg-gray-300 text-gray-600 rounded-lg text-sm font-medium cursor-not-allowed"
+              className="w-full md:w-auto px-4 py-2 bg-gray-300 text-gray-600 rounded-lg text-base font-medium cursor-not-allowed leading-normal tracking-tight"
               disabled
             >
               Closed
@@ -125,20 +125,21 @@ const PublicJobCard = ({ job }) => {
           ) : (
             <>
               <button 
-                className="w-full md:w-auto px-4 py-2 bg-gradient-brand text-white rounded-lg text-sm font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md"
+                className="flex-1 md:flex-initial md:w-auto px-3 py-2 bg-gradient-brand-light md:bg-gradient-brand text-white rounded-lg text-base font-medium hover:bg-gradient-brand-light-hover md:hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md leading-normal tracking-tight"
                 onClick={() => handleAction('view')}
               >
                 <AiOutlineEye className="inline w-4 h-4 mr-1" />
-                View Details
+                <span className="hidden sm:inline">View Details</span>
+                <span className="sm:hidden">View</span>
               </button>
               <button 
-                className="w-full md:w-auto px-4 py-2 bg-gradient-brand text-white rounded-lg text-sm font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md"
+                className="flex-1 md:flex-initial md:w-auto px-3 py-2 bg-gradient-brand-light md:bg-gradient-brand text-white rounded-lg text-base font-medium hover:bg-gradient-brand-light-hover md:hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md leading-normal tracking-tight"
                 onClick={() => handleAction('apply')}
               >
                 Apply Now
               </button>
               <button 
-                className="w-full md:w-auto px-4 py-2 bg-gradient-brand text-white rounded-lg text-sm font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md"
+                className="flex-1 md:flex-initial md:w-auto px-3 py-2 bg-gradient-brand-light md:bg-gradient-brand text-white rounded-lg text-base font-medium hover:bg-gradient-brand-light-hover md:hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md leading-normal tracking-tight"
                 onClick={() => handleAction('message')}
               >
                 <AiOutlineMessage className="inline w-4 h-4 mr-1" />
@@ -162,4 +163,3 @@ const PublicJobCard = ({ job }) => {
 };
 
 export default PublicJobCard;
-

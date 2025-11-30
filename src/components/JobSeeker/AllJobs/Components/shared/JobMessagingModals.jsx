@@ -59,23 +59,23 @@ const JobMessagingModals = ({
               </button>
 
               <div className="mb-4 mt-0.5 text-center">
-                <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+                <h3 className="font-semibold text-xl mb-4 text-gray-800 leading-tight tracking-tight">
                   Apply To Message
                 </h3>
-                <p className="text-gray-600 text-[15px] leading-relaxed">
+                <p className="text-gray-600 text-lg sm:text-base leading-relaxed tracking-tight">
                   To message the institute about the job titled - <strong>{jobToApplyPrompt.job_title || jobToApplyPrompt.title || 'this job'}</strong>, please apply to the job first. View the job to apply and unlock messaging.
                 </p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                  className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight"
                   onClick={onApplyPromptClose}
                 >
                   Cancel
                 </button>
                 <button
-                  className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
+                  className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl leading-normal tracking-tight"
                   onClick={() => {
                     if (typeof onApplyPromptApply === 'function') {
                       onApplyPromptApply();
@@ -111,23 +111,23 @@ const JobMessagingModals = ({
               </button>
 
               <div className="mb-4 mt-0.5">
-                <h3 className="font-semibold text-[18px] mb-4 text-center text-gray-800">
+                <h3 className="font-semibold text-xl mb-4 text-center text-gray-800 leading-tight tracking-tight">
                   Message Institute
                 </h3>
-                <p className="text-gray-600 text-[15px] mb-6 text-center leading-relaxed">
+                <p className="text-gray-600 text-lg sm:text-base mb-6 text-center leading-relaxed tracking-tight">
                   To send a bulk message, select multiple jobs using the checkboxes and click <strong>Send Message</strong>. Choose <strong>Continue Single</strong> below to message just this institute.
                 </p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                  className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight"
                   onClick={onMessageModalOk}
                 >
                   Ok
                 </button>
                 <button
-                  className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
+                  className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl leading-normal tracking-tight"
                   onClick={(e) => {
                     e.stopPropagation();
                     if (onMessageModalContinue) {
@@ -162,10 +162,10 @@ const JobMessagingModals = ({
             </button>
 
             <div className="mb-4 mt-0.5 text-center">
-              <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+              <h3 className="font-semibold text-xl mb-4 text-gray-800 leading-tight tracking-tight">
                 Send Bulk Message
               </h3>
-              <div className="text-gray-600 text-[15px] leading-relaxed space-y-1">
+              <div className="text-gray-600 text-lg sm:text-base leading-relaxed space-y-1 tracking-tight">
                 <p>
                   <strong>{WHATSAPP_COST} coins</strong> per institute via WhatsApp
                 </p>
@@ -173,11 +173,11 @@ const JobMessagingModals = ({
                   <strong>{RCS_COST} coins</strong> per institute via RCS
                 </p>
                 {coinBalance !== null && (
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-lg sm:text-base text-gray-500 mt-2 leading-normal tracking-tight">
                     Current balance: <strong>{coinBalance}</strong> coins
                   </p>
                 )}
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-lg sm:text-base text-gray-600 mt-2 leading-normal tracking-tight">
                   Coins will be deducted after admin approval
                 </p>
               </div>
@@ -185,13 +185,13 @@ const JobMessagingModals = ({
 
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
               <button
-                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md ${bulkChannel === 'whatsapp' ? 'bg-[#25D366] text-white border-[#25D366]' : 'bg-white text-[#25D366] border-[#25D366]'}`}
+                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight ${bulkChannel === 'whatsapp' ? 'bg-[#25D366] text-white border-[#25D366]' : 'bg-white text-[#25D366] border-[#25D366]'}`}
                 onClick={() => onChannelSelect('whatsapp')}
               >
                 Through WhatsApp
               </button>
               <button
-                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md ${bulkChannel === 'rcs' ? 'bg-[#0a84ff] text-white border-[#0a84ff]' : 'bg-white text-[#0a84ff] border-[#0a84ff]'}`}
+                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight ${bulkChannel === 'rcs' ? 'bg-[#0a84ff] text-white border-[#0a84ff]' : 'bg-white text-[#0a84ff] border-[#0a84ff]'}`}
                 onClick={() => onChannelSelect('rcs')}
               >
                 Through RCS
@@ -206,9 +206,9 @@ const JobMessagingModals = ({
                   maxLength={500}
                   rows={5}
                   placeholder="Enter your message here..."
-                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-gradient-brand resize-none"
+                  className="w-full border border-gray-300 rounded-lg p-3 text-lg sm:text-base focus:outline-none focus:ring-2 focus:ring-gradient-brand resize-none leading-normal tracking-tight"
                 />
-                <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="flex items-center justify-between text-lg sm:text-base text-gray-500 leading-normal tracking-tight">
                   <span>{selectedCount} job{selectedCount !== 1 ? 's' : ''} selected</span>
                   <span>{bulkMessageChars}/500</span>
                 </div>
@@ -216,7 +216,7 @@ const JobMessagingModals = ({
             )}
 
             {bulkError && (
-              <div className="mt-3 text-sm text-red-500 text-left">
+              <div className="mt-3 text-lg sm:text-base text-red-500 text-left leading-normal tracking-tight">
                 {bulkError}
               </div>
             )}
@@ -261,13 +261,13 @@ const JobMessagingModals = ({
             </button>
 
             <div className="mb-4 mt-0.5 text-center space-y-2">
-              <h3 className="font-semibold text-[18px] text-gray-800">
+              <h3 className="font-semibold text-xl text-gray-800 leading-tight tracking-tight">
                 Confirm &amp; Submit for Approval
               </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
+              <p className="text-gray-600 text-lg sm:text-base leading-relaxed tracking-tight">
                 You are about to submit a <strong>{bulkSummary.channel === 'whatsapp' ? 'WhatsApp' : 'RCS'}</strong> message request to <strong>{bulkSummary.jobs.length}</strong> institute{bulkSummary.jobs.length !== 1 ? 's' : ''} for admin approval.
               </p>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
+              <p className="text-gray-600 text-lg sm:text-base leading-relaxed tracking-tight">
                 Your message will be reviewed by admin before being sent.
               </p>
             </div>
@@ -275,20 +275,20 @@ const JobMessagingModals = ({
             <div className="mb-4 space-y-2 max-h-60 overflow-y-auto">
               {bulkSummary.jobs.map(({ job, institute }) => (
                 <div key={institute?.id || job.id} className="p-3 bg-gray-50 border border-gray-100 rounded-lg">
-                  <div className="font-semibold text-sm text-gray-800">
+                  <div className="font-semibold text-base text-gray-800 leading-normal tracking-tight">
                     {institute?.name || job.institute_name || 'Institute'}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">
                     {job.job_title || job.title || 'Job role'}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">
                     {institute?.city || job.city || 'City not available'}{institute?.state || job.state_ut ? `, ${institute?.state || job.state_ut}` : ''}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="mb-4 p-3 bg-gray-50 border border-gray-100 rounded-lg text-left text-sm text-gray-700 whitespace-pre-line">
+            <div className="mb-4 p-3 bg-gray-50 border border-gray-100 rounded-lg text-left text-lg sm:text-base text-gray-700 whitespace-pre-line leading-normal tracking-tight">
               {bulkSummary.message}
             </div>
 
@@ -339,26 +339,26 @@ const JobMessagingModals = ({
               </button>
 
               <div className="mb-4 mt-0.5 text-center space-y-3">
-                <h3 className="font-semibold text-[18px] text-gray-800">
+                <h3 className="font-semibold text-xl text-gray-800 leading-tight tracking-tight">
                   Insufficient Coins
                 </h3>
-                <p className="text-gray-600 text-[15px] leading-relaxed">
+                <p className="text-gray-600 text-lg sm:text-base leading-relaxed tracking-tight">
                   You need <strong>{requiredCoins}</strong> coins to send this bulk message.
                 </p>
-                <p className="text-gray-600 text-[15px] leading-relaxed">
+                <p className="text-gray-600 text-lg sm:text-base leading-relaxed tracking-tight">
                   Current balance: <strong>{coinBalance ?? 0}</strong> coins. You are short by <strong>{Math.max(requiredCoins - (coinBalance ?? 0), 0)}</strong> coins.
                 </p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                  className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight"
                   onClick={onCloseInsufficientCoinsModal}
                 >
                   Close
                 </button>
                 <button
-                  className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
+                  className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl leading-normal tracking-tight"
                   onClick={onRechargeNavigate}
                 >
                   Recharge Now

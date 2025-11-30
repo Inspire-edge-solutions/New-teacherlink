@@ -472,8 +472,8 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
     return (
       <div className="profile-container flex flex-col items-center justify-center py-12 px-4 text-center">
         <div className="max-w-md w-full bg-[#F0D8D9] border border-dashed border-gray-300 rounded-xl p-8 shadow-sm">
-          <h4 className="text-xl font-semibold text-gray-800 mb-3">Unable to Load Profile</h4>
-          <p className="text-sm text-gray-600 mb-4">{error}</p>
+          <h4 className="text-xl font-semibold text-gray-800 mb-3 leading-tight tracking-tight">Unable to Load Profile</h4>
+          <p className="text-lg sm:text-base text-gray-600 mb-4 leading-normal tracking-tight">{error}</p>
           <button
             type="button"
             onClick={() => onViewAttempt && onViewAttempt()}
@@ -490,8 +490,8 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
     return (
       <div className="profile-container flex flex-col items-center justify-center py-12 px-4 text-center">
         <div className="max-w-md w-full bg-[#F0D8D9] border border-dashed border-gray-300 rounded-xl p-8 shadow-sm">
-          <h4 className="text-xl font-semibold text-gray-800 mb-3">No Profile Data Yet</h4>
-          <p className="text-sm text-gray-600 mb-6">
+          <h4 className="text-xl font-semibold text-gray-800 mb-3 leading-tight tracking-tight">No Profile Data Yet</h4>
+          <p className="text-lg sm:text-base text-gray-600 mb-6 leading-normal tracking-tight">
             We couldn&apos;t find any profile details to show. Please complete your profile to view it here.
           </p>
           <button
@@ -583,7 +583,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
     const teachingMonths = experienceData.mysqlData.teaching_experience_months || 0;
     
     return (
-      <div className="mb-5 text-[15px]">
+      <div className="mb-5 text-lg sm:text-base leading-normal tracking-tight">
         <div><strong>Total Teaching Experience</strong> : {teachingYears} Years & {teachingMonths} months</div>
         <div><strong>Total Experience (Teaching + Non-Teaching)</strong> : {totalYears} Years & {totalMonths} months</div>
       </div>
@@ -621,13 +621,13 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
           <div className="education-title font-bold text-gray-800 mb-1">{educationType}</div>
           <div className="education-details">
             {details.map((detail, i) => (
-              <div key={i} className="education-detail text-sm mb-0.5">{detail}</div>
+              <div key={i} className="education-detail text-lg sm:text-base mb-0.5 leading-normal tracking-tight">{detail}</div>
             ))}
-            <div className="education-meta text-[13px] text-gray-600 mt-1 italic">
+            <div className="education-meta text-lg sm:text-base text-gray-600 mt-1 italic leading-normal tracking-tight">
               {additionalInfo.join(' | ')}
             </div>
             {education.coreSubjects && (
-              <div className="core-subjects text-[13px] mt-1">
+              <div className="core-subjects text-lg sm:text-base mt-1 leading-normal tracking-tight">
                 <strong>Core Subjects:</strong> {
                   Array.isArray(education.coreSubjects) 
                     ? education.coreSubjects.join(', ') 
@@ -701,7 +701,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
       const location = [exp.city, exp.state, exp.country].filter(Boolean).join(', ');
       
       return (
-        <div className="experience-block mb-[25px] text-[15px] leading-[1.5]" key={index}>
+        <div className="experience-block mb-[25px] text-lg sm:text-base leading-normal tracking-tight" key={index}>
           {/* Organization and date row */}
           <div className="flex justify-between font-bold mb-1">
             <div className="text-base">{exp.organizationName}</div>
@@ -825,14 +825,14 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
     const isTablet = windowWidth > 768 && windowWidth <= 1024;
     return (
       <div className={`work-exposure ${isMobile ? 'mb-4' : isTablet ? 'mb-5' : 'mb-6'}`}>
-          <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>WORK EXPOSURE</h2>
+          <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>WORK EXPOSURE</h2>
           <div className="responsive-grid grid w-full" style={{ 
             gridTemplateColumns: `repeat(${getGridColumns()}, minmax(0, 1fr))`,
             gap: isMobile ? '8px' : isTablet ? '9px' : '10px'
           }}>
             {workTypes.map(type => (
               <div key={type.key} className={`bg-white rounded-lg ${isMobile ? 'p-2 px-2' : isTablet ? 'p-2.5' : 'p-3'} shadow-sm flex justify-between items-center ${isMobile ? 'min-h-[45px]' : 'min-h-[50px]'} border border-gray-200 min-w-0`}>
-                <div className={`${isMobile ? 'text-[13px]' : isTablet ? 'text-sm' : 'text-sm'} font-medium leading-snug flex-1 mr-2 min-w-0 break-words`}>
+                <div className={`text-lg sm:text-base font-medium leading-normal tracking-tight flex-1 mr-2 min-w-0 break-words`}>
                   {type.label}
                 </div>
                 <div className={`${isMobile ? 'w-5 h-5 text-xs' : isTablet ? 'w-5 h-5 text-xs' : 'w-6 h-6 text-sm'} rounded-full flex items-center justify-center font-bold shrink-0 ${isWorkTypeEnabled(type.key) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
@@ -863,10 +863,10 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
     // Enhanced language item component with larger fonts
     const LanguageItem = ({ label, languages }) => (
       <div className={`language-item flex ${isMobile ? 'mb-2 py-1' : 'mb-1.5 py-1'} flex-row items-start flex-wrap`}>
-        <span className={`font-semibold mr-2 text-gray-800 ${isMobile ? 'text-base' : 'text-[16px]'} min-w-fit`}>
+        <span className={`font-semibold mr-2 text-gray-800 text-lg sm:text-base min-w-fit leading-normal tracking-tight`}>
           {label}:
         </span>
-        <span className={`${isMobile ? 'text-base' : 'text-[16px]'} leading-[1.5] flex-1 text-gray-700 font-medium`}>
+        <span className={`text-lg sm:text-base leading-normal tracking-tight flex-1 text-gray-700 font-medium`}>
           {languages.length > 0 ? languages.join(', ') : <span className="text-gray-500 italic font-normal">None</span>}
         </span>
       </div>
@@ -874,7 +874,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
     
     return (
       <div className="language-proficiency mb-4">
-        <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-lg bg-gradient-brand bg-clip-text text-transparent">LANGUAGE PROFICIENCY</h2>
+        <h2 className="section-title text-center border-b border-black mb-[15px] pb-1 uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight">LANGUAGE PROFICIENCY</h2>
         <div className={`${isMobile ? 'bg-white rounded-lg p-3 border border-gray-200' : 'bg-gray-50 rounded-lg p-3 border border-gray-200'}`}>
           <LanguageItem label="Speak" languages={speakLanguages} />
           <LanguageItem label="Read" languages={readLanguages} />
@@ -893,10 +893,10 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
       
       return (
         <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
-          <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold ${isMobile ? 'text-[13px]' : 'text-sm'} text-gray-800 shrink-0`}>
+          <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-lg sm:text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
             {label}:
           </span>
-          <span className={`${isMobile ? 'text-[13px]' : 'text-sm'} leading-[1.4] ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600`}>
+          <span className={`text-lg sm:text-base leading-normal tracking-tight ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600`}>
             {value}
           </span>
         </div>
@@ -933,7 +933,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
     
     return (
       <div className={`additional-information mb-[30px] ${isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-[15px]'} bg-gray-50 rounded-lg border border-gray-200`}>
-        <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>
+        <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>
           ADDITIONAL INFORMATION
         </h2>
         
@@ -1058,7 +1058,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
               navigate("/seeker/my-profile?edit=true", { replace: false });
             }
           }}
-          className={`btn bg-gradient-brand hover:bg-gradient-brand-hover text-white ${isMobile ? 'btn-mobile' : ''} ${isMobile ? 'text-sm px-4 py-2' : 'text-base px-5 py-2.5'} rounded-md font-medium`}
+          className={`btn bg-gradient-brand hover:bg-gradient-brand-hover text-white ${isMobile ? 'btn-mobile' : ''} text-base px-4 py-2 sm:px-5 sm:py-2.5 rounded-md font-medium leading-normal tracking-tight`}
         >
           Edit Profile
         </button>
@@ -1086,19 +1086,19 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
           
           {/* Basic Information */}
           <div className="flex-1 min-w-0">
-            <h1 className={`candidate-name mb-1 ${isMobile ? 'text-xl' : isTablet ? 'text-2xl' : 'text-3xl'} bg-gradient-brand bg-clip-text text-transparent break-words`}>
+            <h1 className={`candidate-name mb-1 text-2xl bg-gradient-brand bg-clip-text text-transparent break-words leading-tight tracking-tight`}>
               {profileData.fullName || 'Candidate Name'}
             </h1>
             
             {/* Personal Details */}
-            <div className={`mb-0.5 ${isMobile ? 'text-sm' : isTablet ? 'text-[14px]' : 'text-[15px]'} text-gray-600 break-words`}>
+            <div className={`mb-0.5 text-lg sm:text-base text-gray-600 break-words leading-normal tracking-tight`}>
               {profileData.gender && <span>{profileData.gender}</span>}
               {profileData.dateOfBirth && (
                 <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
               )}
               {highestEducation && <span> | {highestEducation}</span>}
               </div>
-              <div className={`mb-0.5 ${isMobile ? 'text-sm' : isTablet ? 'text-[14px]' : 'text-[15px]'} text-gray-600 break-words`}>
+              <div className={`mb-0.5 text-lg sm:text-base text-gray-600 break-words leading-normal tracking-tight`}>
               {experienceData?.mysqlData?.total_experience_years > 0 && (
                 <span> | Experience: {experienceData.mysqlData.total_experience_years} Years {experienceData.mysqlData.total_experience_months || 0} Months</span>
               )}
@@ -1106,7 +1106,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
             </div>
             
             {/* Professional Info */}
-            <div className={`mb-0.5 ${isMobile ? 'text-sm' : isTablet ? 'text-[14px]' : 'text-[15px]'} text-gray-600 break-words`}>
+            <div className={`mb-0.5 text-lg sm:text-base text-gray-600 break-words leading-normal tracking-tight`}>
               {profileData.designation && <span>{profileData.designation}</span>}
               {(profileData.teachingSubjects?.length > 0 || profileData.teachingCoreExpertise?.length > 0) && (
                 <span> | {profileData.teachingSubjects?.[0] || profileData.teachingCoreExpertise?.[0]} Faculty</span>
@@ -1115,7 +1115,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
             
             {/* Email */}
             {profileData.email && (
-              <div className={`flex items-center ${isMobile ? 'text-sm' : isTablet ? 'text-[14px]' : 'text-[15px]'} min-w-0`}>
+              <div className={`flex items-center text-lg sm:text-base min-w-0 leading-normal tracking-tight`}>
                 <FaEnvelope className="mr-1.5 text-gray-400 shrink-0" />
                 <a href={`mailto:${profileData.email}`} className="no-underline text-[#1967d2] break-words overflow-wrap-anywhere">
                   {profileData.email}
@@ -1126,7 +1126,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
         </div>
         
         {/* Right Side: Contact Information */}
-        <div className={`font-sans ${isMobile ? 'text-[13px] w-full' : 'text-sm w-1/2'} leading-[1.4] ${isMobile ? 'mt-2' : 'pl-4'} min-w-0`}>
+        <div className={`font-sans text-lg sm:text-base w-full sm:w-1/2 leading-normal tracking-tight ${isMobile ? 'mt-2' : 'pl-4'} min-w-0`}>
           {/* Address Information */}
           <div className={`flex ${isMobile ? 'flex-row' : 'flex-col'} ${isMobile ? 'gap-[15px]' : 'gap-1.5'} ${isMobile ? 'mb-1.5 flex-wrap' : 'mb-2'}`}>
             <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'} min-w-0`}>
@@ -1211,7 +1211,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
       <div className={`cv-body flex flex-col ${isTablet ? 'md:flex-row' : 'md:flex-row'} p-0 bg-white`}>
         <div className={`cv-sidebar w-full ${isTablet ? 'md:w-[35%]' : 'md:w-[35%]'} bg-gray-100 ${isMobile ? 'p-2.5' : isTablet ? 'p-4' : 'md:p-5'}`}>
           <div className="cv-section education-section mt-0 mb-2.5">
-            <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>
+            <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>
               EDUCATION
             </h2>
             {renderEducationBlocks()}
@@ -1220,7 +1220,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
 
         <div className={`cv-main w-full ${isTablet ? 'md:w-[65%]' : 'md:w-[65%]'} ${isMobile ? 'md:px-2' : isTablet ? 'md:px-3' : 'md:px-2'}`}>
           <div className="cv-section experience-section mt-0 mb-2.5">
-            <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>
+            <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>
               WORK EXPERIENCE
             </h2>
             {getExperienceText()}
@@ -1272,8 +1272,8 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
             
             return (
               <div className="cv-section job-preferences mt-0 mb-2.5">
-                <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold ${isMobile ? 'text-base' : 'text-lg'} bg-gradient-brand bg-clip-text text-transparent`}>JOB PREFERENCES</h2>
-                <div className={`job-preferences-block bg-[#f5f7fc] ${isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-5'} rounded-lg mb-[25px] ${isMobile ? 'text-sm' : isTablet ? 'text-[14px]' : 'text-[15px]'} leading-[1.5]`}>
+                <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>JOB PREFERENCES</h2>
+                <div className={`job-preferences-block bg-[#f5f7fc] ${isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-5'} rounded-lg mb-[25px] text-lg sm:text-base leading-normal tracking-tight`}>
                   {/* Two-column details grid */}
                   <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1' : 'grid-cols-2'} ${isMobile ? 'gap-x-0 gap-y-1' : isTablet ? 'gap-x-3 gap-y-1' : 'gap-x-5 gap-y-1'}`}>
                     {/* Basic Job Information */}
