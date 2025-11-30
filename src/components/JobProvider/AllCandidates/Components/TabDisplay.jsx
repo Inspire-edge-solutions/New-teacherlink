@@ -114,13 +114,13 @@ const TabDisplay = () => {
   return (
     <div>
       {/* Tab Navigation - Separate Container */}
-      <div className="rounded-lg shadow-sm mb-4 border border-gray-500">
+      <div className="rounded-lg shadow-sm mb-4 mt-4 border border-gray-500">
         <div className="p-1 sm:p-2">
           <nav className="flex flex-wrap justify-center sm:justify-between gap-1.5 sm:gap-1" aria-label="Tabs">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium text-lg sm:text-base transition-all duration-200 whitespace-nowrap flex-shrink-0 leading-normal tracking-tight ${
                   activeTab === tab.id
                     ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover transition-colors'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'

@@ -289,7 +289,7 @@ const CandidateFilterPanel = ({
       <div className="rounded-lg shadow-xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto z-[10000]" style={{ backgroundColor: '#F0D8D9' }}>
         {/* Header */}
         <div className="flex justify-between items-center p-4 sm:p-6 border-b sticky top-0 bg-[#F0D8D9] z-10">
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 truncate pr-2">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 truncate pr-2 leading-tight tracking-tight">
             Filter Candidates {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </h3>
           <button

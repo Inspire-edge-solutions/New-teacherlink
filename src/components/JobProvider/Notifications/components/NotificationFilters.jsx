@@ -23,9 +23,9 @@ const NotificationFilters = ({ filter, setFilter, }) => {
           }`}
         >
           {icon}
-          <span>{label}</span>
+          <span className="leading-normal tracking-tight">{label}</span>
           {count !== undefined && count > 0 && (
-            <span className={`px-2 py-0.5 rounded-full text-xs ${
+            <span className={`px-2 py-0.5 rounded-full text-sm leading-normal tracking-tight ${
               filter === key ? 'bg-white/20' : 'bg-gradient-brand text-white'
             }`}>
               {count}

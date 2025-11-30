@@ -340,7 +340,7 @@ const Referrals = ({ user, onSuccess }) => {
       // Get coupon_value from config
       const referConfigRes = await fetch("https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/referConfigure");
       const referConfig = await referConfigRes.json();
-      const couponValue = Array.isArray(referConfig) && referConfig.length > 0 ? Number(referConfig[0]?.coupon_value || 8000) : 8000;
+      const couponValue = Array.isArray(referConfig) && referConfig.length > 0 ? Number(referConfig[0]?.coupon_value || 4000) : 4000;
 
       const redeemRes = await fetch(
         `https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem?firebase_uid=${firebase_uid}`
@@ -517,8 +517,8 @@ const Referrals = ({ user, onSuccess }) => {
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-2">Refer Organizations & Get Access to our Basic Plan</h3>
-          <p className="text-gray-600 text-sm sm:text-base">Add up to 10 Organizations contact numbers and get free access to our Basic Plan when 5 register.</p>
+          <h3 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-2 leading-tight tracking-tight">Refer Organizations & Get Access to our Basic Plan</h3>
+          <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Add up to 10 Organizations contact numbers and get free access to our Basic Plan when 5 register.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
@@ -528,8 +528,8 @@ const Referrals = ({ user, onSuccess }) => {
             <div className="space-y-3 sm:space-y-4">
               <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700">Organizations Added</label>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-800">{contacts.length}/10</span>
+                  <label className="text-lg sm:text-base font-medium text-gray-700 leading-snug tracking-tight">Organizations Added</label>
+                  <span className="text-lg sm:text-base font-semibold text-gray-800 leading-normal tracking-tight">{contacts.length}/10</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
@@ -541,8 +541,8 @@ const Referrals = ({ user, onSuccess }) => {
               
               <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700">Organizations Registered</label>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-800">{registeredContacts.length}/5</span>
+                  <label className="text-lg sm:text-base font-medium text-gray-700 leading-snug tracking-tight">Organizations Registered</label>
+                  <span className="text-lg sm:text-base font-semibold text-gray-800 leading-normal tracking-tight">{registeredContacts.length}/5</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
@@ -566,12 +566,12 @@ const Referrals = ({ user, onSuccess }) => {
                     maxLength="10"
                     minLength="10"
                     required
-                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm sm:text-base"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-lg sm:text-base leading-normal tracking-tight"
                   />
                   <button
                     type="submit"
                     disabled={contacts.length >= 10}
-                    className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed duration-200 transition-colors font-medium text-sm sm:text-base whitespace-nowrap"
+                    className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed duration-200 transition-colors font-medium text-lg sm:text-base whitespace-nowrap leading-normal tracking-tight"
                   >
                     Add Organization
                   </button>
@@ -582,12 +582,12 @@ const Referrals = ({ user, onSuccess }) => {
 
           {/* Right Side - Contacts List */}
           <div className="space-y-3 sm:space-y-4">
-            <h4 className="text-base sm:text-lg font-semibold text-gray-800">Added Organizations ({contacts.length}/10)</h4>
+            <h4 className="text-lg font-semibold text-gray-800 leading-tight tracking-tight">Added Organizations ({contacts.length}/10)</h4>
             
             {loading ? (
               <div className="text-center py-6 sm:py-8">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                <p className="text-gray-600 text-sm sm:text-base">Loading organizations...</p>
+                <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Loading organizations...</p>
               </div>
             ) : contacts.length > 0 ? (
               <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto">
@@ -602,17 +602,17 @@ const Referrals = ({ user, onSuccess }) => {
                             onChange={e => setEditValue(normalizePhoneNumber(e.target.value))}
                             maxLength="10"
                             pattern="[0-9]{10}"
-                            className="px-2 sm:px-3 py-1 border border-gray-300 rounded text-xs sm:text-sm w-24 sm:w-32"
+                            className="px-2 sm:px-3 py-1 border border-gray-300 rounded text-lg sm:text-base w-24 sm:w-32 leading-normal tracking-tight"
                           />
                           <div className="flex gap-1 sm:gap-2">
                             <button 
-                              className="px-2 sm:px-3 py-1 bg-green-600 text-white rounded text-xs sm:text-sm hover:bg-green-700 transition-colors"
+                              className="px-2 sm:px-3 py-1 bg-green-600 text-white rounded text-lg sm:text-base hover:bg-green-700 transition-colors leading-normal tracking-tight"
                               onClick={() => handleEditSave(index)}
                             >
                               Save
                             </button>
                             <button 
-                              className="px-2 sm:px-3 py-1 bg-gray-600 text-white rounded text-xs sm:text-sm hover:bg-gray-700 transition-colors"
+                              className="px-2 sm:px-3 py-1 bg-gray-600 text-white rounded text-lg sm:text-base hover:bg-gray-700 transition-colors leading-normal tracking-tight"
                               onClick={handleEditCancel}
                             >
                               Cancel
@@ -621,10 +621,10 @@ const Referrals = ({ user, onSuccess }) => {
                         </div>
                       ) : (
                         <div>
-                          <div className="font-medium text-gray-800 text-sm sm:text-base">{number}</div>
-                          <div className={`text-xs sm:text-sm ${
+                          <div className="font-medium text-gray-800 text-lg sm:text-base leading-normal tracking-tight">{number}</div>
+                          <div className={`text-lg sm:text-base leading-normal tracking-tight ${
                             registeredContacts.includes(number) 
-                              ? 'text-blue-600 font-semibold' 
+                              ? 'text-gradient-brand font-semibold' 
                               : 'text-gray-500'
                           }`}>
                             {registeredContacts.includes(number)
@@ -662,14 +662,14 @@ const Referrals = ({ user, onSuccess }) => {
             ) : (
               <div className="text-center py-6 sm:py-8 text-gray-500">
                 <div className="text-3xl sm:text-4xl mb-2">📱</div>
-                <p className="text-sm sm:text-base">No organizations added yet</p>
+                <p className="text-lg sm:text-base leading-normal tracking-tight">No organizations added yet</p>
               </div>
             )}
 
             {/* Submit Button */}
             {contacts.length > 0 && (
               <button
-                className={`w-full py-2 sm:py-3 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base ${
+                className={`w-full py-2 sm:py-3 rounded-lg font-medium transition-all duration-200 text-lg sm:text-base leading-normal tracking-tight ${
                   contacts.length >= 10 
                     ? 'bg-green-600 text-white hover:bg-green-700' 
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'

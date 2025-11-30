@@ -27,7 +27,7 @@ const InputWithTooltip = ({ label, required = false, children }) => {
         children
       )}
       {/* Tooltip with gradient-brand background - can be reused across application */}
-      <div className="absolute -top-8 left-0 bg-gradient-brand text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+      <div className="absolute -top-8 left-0 bg-gradient-brand text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 leading-normal tracking-tight">
         {label} {required && '*'}
       </div>
     </div>

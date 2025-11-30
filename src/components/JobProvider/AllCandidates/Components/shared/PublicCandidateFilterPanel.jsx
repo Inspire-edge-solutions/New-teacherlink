@@ -148,7 +148,7 @@ const PublicCandidateFilterPanel = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-2 sm:p-4">
       <div className="rounded-lg shadow-xl max-w-3xl w-full max-h-[95vh] overflow-y-auto z-[10000]" style={{ backgroundColor: '#F0D8D9' }}>
         <div className="flex justify-between items-center p-4 sm:p-6 border-b sticky top-0 bg-[#F0D8D9] z-10">
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-800">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 leading-tight tracking-tight">
             Filter Candidates {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </h3>
           <button

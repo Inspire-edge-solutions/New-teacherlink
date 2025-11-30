@@ -132,9 +132,9 @@ const ContactInfoBox = () => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                             disabled={isLoading || !user}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed leading-normal tracking-tight"
                         />
-                        <span className="absolute top-0 left-0 -translate-y-full bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 pointer-events-none transition-opacity duration-200 hover:opacity-100 whitespace-nowrap">
+                        <span className="absolute top-0 left-0 -translate-y-full bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 pointer-events-none transition-opacity duration-200 hover:opacity-100 whitespace-nowrap leading-normal tracking-tight">
                             Find on Map
                         </span>
                     </div>
@@ -149,9 +149,9 @@ const ContactInfoBox = () => {
                             placeholder="Latitude"
                             value={latitude}
                             readOnly
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-700 bg-gray-50 cursor-not-allowed"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-700 bg-gray-50 cursor-not-allowed leading-normal tracking-tight"
                         />
-                        <span className="absolute top-0 left-0 -translate-y-full bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 pointer-events-none transition-opacity duration-200 hover:opacity-100 whitespace-nowrap">
+                        <span className="absolute top-0 left-0 -translate-y-full bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 pointer-events-none transition-opacity duration-200 hover:opacity-100 whitespace-nowrap leading-normal tracking-tight">
                             Latitude
                         </span>
                     </div>
@@ -166,9 +166,9 @@ const ContactInfoBox = () => {
                             placeholder="Longitude"
                             value={longitude}
                             readOnly
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-700 bg-gray-50 cursor-not-allowed"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-700 bg-gray-50 cursor-not-allowed leading-normal tracking-tight"
                         />
-                        <span className="absolute top-0 left-0 -translate-y-full bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 pointer-events-none transition-opacity duration-200 hover:opacity-100 whitespace-nowrap">
+                        <span className="absolute top-0 left-0 -translate-y-full bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 pointer-events-none transition-opacity duration-200 hover:opacity-100 whitespace-nowrap leading-normal tracking-tight">
                             Longitude
                         </span>
                     </div>
@@ -179,7 +179,7 @@ const ContactInfoBox = () => {
                     <div className="relative">
                         <button
                             type="button"
-                            className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                            className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg leading-normal tracking-tight"
                             onClick={handleSearch}
                             disabled={isLoading || !user}
                         >
@@ -194,7 +194,7 @@ const ContactInfoBox = () => {
                 {/* Error Message */}
                 {error && (
                     <div className="lg:col-span-12">
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg leading-normal tracking-tight" role="alert">
                             {error}
                         </div>
                     </div>
@@ -218,7 +218,7 @@ const ContactInfoBox = () => {
                 <div className="lg:col-span-12">
                     <button
                         type="button"
-                        className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                        className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 transition-all duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg leading-normal tracking-tight"
                         onClick={handleSave}
                         disabled={!selectedLocation || !user || isSaving}
                     >

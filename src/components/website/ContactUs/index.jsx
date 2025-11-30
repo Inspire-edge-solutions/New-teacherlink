@@ -88,9 +88,9 @@ const ContactUs = () => {
                   <div className="flex flex-col">
                     <div className="flex items-center space-x-3 text-red-600">
                       <MdLocationOn className="w-6 h-6" />
-                      <p className="text-lg font-semibold text-gray-900 tracking-tight">Address</p>
+                      <p className="text-lg sm:text-base font-semibold text-gray-900 tracking-tight">Address</p>
                     </div>
-                    <p className="mt-3 text-lg text-gray-800 leading-normal tracking-tight">
+                    <p className="mt-3 text-lg sm:text-base text-gray-800 leading-normal tracking-tight">
                       Pulikeshi Nagar, Bengaluru, Karnataka, India 560005
                     </p>
                   </div>
@@ -99,18 +99,18 @@ const ContactUs = () => {
                   <div className="flex flex-col">
                     <div className="flex items-center space-x-3 text-red-600">
                       <MdContactSupport className="w-6 h-6" />
-                      <p className="text-lg font-semibold text-gray-900 tracking-tight">Connect with us</p>
+                      <p className="text-lg sm:text-base font-semibold text-gray-900 tracking-tight">Connect with us</p>
                     </div>
                     <div className="mt-3 space-y-4">
-                      <p className="text-lg text-gray-700 leading-normal tracking-tight">
+                      <p className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">
                         <span className="font-semibold">Timings:</span> 11:00 AM to 6:00 PM
                       </p>
                       
                       {/* General Queries */}
                       <div className="space-y-2">
-                        <p className="text-lg font-semibold text-gray-900 tracking-tight">For General Queries:</p>
+                        <p className="text-lg sm:text-base font-semibold text-gray-900 tracking-tight">For General Queries:</p>
                         <div className="space-y-1 text-gray-800 ml-4">
-                          <p className="text-lg flex items-center gap-2 leading-normal tracking-tight">
+                          <p className="text-lg sm:text-base flex items-center gap-2 leading-normal tracking-tight">
                             <a href="tel:+919980333603" className="hover:opacity-80 transition-opacity">
                               <MdPhone className="text-red-600 w-5 h-5" />
                             </a>
@@ -119,7 +119,7 @@ const ContactUs = () => {
                             </a>
                             <span className="text-gray-800">+91 9980833603</span>
                           </p>
-                          <p className="text-lg flex flex-col sm:flex-row sm:items-baseline leading-normal tracking-tight">
+                          <p className="text-lg sm:text-base flex flex-col sm:flex-row sm:items-baseline leading-normal tracking-tight">
                             <MdEmail className="text-red-600 w-5 h-5 mr-2 flex-shrink-0" />
                             <a
                               href="mailto:info@inspireedgesolutions.com"
@@ -133,9 +133,9 @@ const ContactUs = () => {
 
                       {/* Technical Queries */}
                       <div className="space-y-2">
-                        <p className="text-lg font-semibold text-gray-900 tracking-tight">For Technical Queries:</p>
+                        <p className="text-lg sm:text-base font-semibold text-gray-900 tracking-tight">For Technical Queries:</p>
                         <div className="space-y-1 text-gray-800 ml-4">
-                          <p className="text-lg flex items-center gap-2 leading-normal tracking-tight">
+                          <p className="text-lg sm:text-base flex items-center gap-2 leading-normal tracking-tight">
                             <a href="tel:+919100731810" className="hover:opacity-80 transition-opacity">
                               <MdPhone className="text-red-600 w-5 h-5" />
                             </a>
@@ -144,7 +144,7 @@ const ContactUs = () => {
                             </a>
                             <span className="text-gray-800">+91 9100731810</span>
                           </p>
-                          <p className="text-lg flex flex-col sm:flex-row sm:items-baseline leading-normal tracking-tight">
+                          <p className="text-lg sm:text-base flex flex-col sm:flex-row sm:items-baseline leading-normal tracking-tight">
                             <MdEmail className="text-red-600 w-5 h-5 mr-2 flex-shrink-0" />
                             <a
                               href="mailto:support@inspireedgesolutions.com"
@@ -167,7 +167,7 @@ const ContactUs = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Name Field */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-red-600 mb-2">
+                  <label htmlFor="name" className="block text-base font-medium text-red-600 mb-2">
                     Name
                   </label>
                   <input
@@ -184,7 +184,7 @@ const ContactUs = () => {
 
                 {/* Mobile Number Field */}
                 <div>
-                  <label htmlFor="phone_number" className="block text-sm font-medium text-red-600 mb-2">
+                  <label htmlFor="phone_number" className="block text-base font-medium text-red-600 mb-2">
                     Mobile Number
                   </label>
                   <input
@@ -201,7 +201,7 @@ const ContactUs = () => {
 
                 {/* Email Field */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-red-600 mb-2">
+                  <label htmlFor="email" className="block text-base font-medium text-red-600 mb-2">
                     Your email
                   </label>
                   <input
@@ -218,7 +218,7 @@ const ContactUs = () => {
 
                 {/* Message Field */}
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-red-600 mb-2">
+                  <label htmlFor="message" className="block text-base font-medium text-red-600 mb-2">
                     Your message
                   </label>
                   <textarea

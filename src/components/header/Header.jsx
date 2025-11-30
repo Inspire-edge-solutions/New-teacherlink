@@ -37,7 +37,7 @@ const Header = () => {
                 "px-3 py-2 transition-all duration-200 leading-normal tracking-tight",
                 isActive
                   ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
-                  : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
+                  : "text-gray-700 text-lg sm:text-base font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
               ].join(" ")}
             >
               Why TeacherLink
@@ -49,7 +49,7 @@ const Header = () => {
                 "px-3 py-2 transition-all duration-200 leading-normal tracking-tight",
                 isActive
                   ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
-                  : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
+                  : "text-gray-700 text-lg sm:text-base font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
               ].join(" ")}
             >
               Salient Features
@@ -61,7 +61,7 @@ const Header = () => {
                   "px-3 py-2 transition-all duration-200 leading-normal tracking-tight",
                   isActive
                     ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
-                    : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
+                    : "text-gray-700 text-lg sm:text-base font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
                 ].join(" ")
               }
             >
@@ -75,7 +75,7 @@ const Header = () => {
                 "px-3 py-2 transition-all duration-200 leading-normal tracking-tight",
                 isActive
                   ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
-                  : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
+                  : "text-gray-700 text-lg sm:text-base font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
               ].join(" ")}
             >
               About Us
@@ -87,7 +87,7 @@ const Header = () => {
                 "px-3 py-2 transition-all duration-200 leading-normal tracking-tight",
                 isActive
                   ? "font-medium bg-gradient-brand-text bg-clip-text text-transparent"
-                  : "text-gray-700 text-sm font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
+                  : "text-gray-700 text-lg sm:text-base font-medium hover:font-bold hover:bg-gradient-brand-text hover:bg-clip-text hover:text-transparent",
               ].join(" ")}
             >
               Contact Us
@@ -98,7 +98,7 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-4">
             <NavLink
               to="/login"
-              className="p-2 w-30 h-10 rounded text-white text-sm font-medium bg-gradient-brand hover:bg-gradient-primary-hover duration-200 transition-colors flex items-center justify-center leading-normal tracking-tight"
+              className="p-2 w-30 h-10 rounded text-white text-base font-medium bg-gradient-brand hover:bg-gradient-primary-hover duration-200 transition-colors flex items-center justify-center leading-normal tracking-tight"
             >
               Login/Register
             </NavLink>

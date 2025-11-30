@@ -234,7 +234,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
         <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
           <div>
             <h2 className="text-xl font-semibold text-gray-800 leading-tight tracking-tight">Change Password</h2>
-            <p className="text-sm text-gray-600 mt-1 leading-normal tracking-tight">Update your account password</p>
+            <p className="text-lg sm:text-base text-gray-600 mt-1 leading-normal tracking-tight">Update your account password</p>
           </div>
           <button
             onClick={onClose}
@@ -250,7 +250,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
           {/* Email */}
           {email ? (
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1 leading-snug tracking-tight">
+              <label className="block text-base font-medium text-gray-700 mb-1 leading-snug tracking-tight">
                 Account Email
               </label>
               <div className="px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 leading-normal tracking-tight">
@@ -259,14 +259,14 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
             </div>
           ) : (
             <div className="mb-4">
-              <div className="px-3 py-2 border border-amber-300 bg-amber-50 text-amber-800 rounded-lg text-sm leading-normal tracking-tight">
+              <div className="px-3 py-2 border border-amber-300 bg-amber-50 text-amber-800 rounded-lg text-lg sm:text-base leading-normal tracking-tight">
                 We couldn't detect your email automatically. Please log out and log back in to refresh your session before changing the password.
               </div>
             </div>
           )}
           {/* Old Password */}
           <div className="mb-4">
-            <label htmlFor="oldPassword" className="block text-sm font-medium text-gray-700 mb-2 leading-snug tracking-tight">
+            <label htmlFor="oldPassword" className="block text-base font-medium text-gray-700 mb-2 leading-snug tracking-tight">
               Old Password <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -292,7 +292,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 
           {/* New Password */}
           <div className="mb-4">
-            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2 leading-snug tracking-tight">
+            <label htmlFor="newPassword" className="block text-base font-medium text-gray-700 mb-2 leading-snug tracking-tight">
               New Password <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -321,7 +321,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
               </button>
             </div>
             {showValidationErrors && newPassword && !isCorePasswordStrengthValid && (
-              <div className="mt-2 text-sm text-red-600 leading-normal tracking-tight">
+              <div className="mt-2 text-lg sm:text-base text-red-600 leading-normal tracking-tight">
                 <p className="font-medium mb-1">Password must contain:</p>
                 <ul className="space-y-1 ml-4">
                   {!passwordValidation.length && <li>• At least 8 characters</li>}
@@ -333,13 +333,13 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
               </div>
             )}
             {showValidationErrors && newPassword && passwordValidation.different === false && (
-              <p className="mt-2 text-sm text-red-600 ml-4 leading-normal tracking-tight"> New password must be different from old password</p>
+              <p className="mt-2 text-lg sm:text-base text-red-600 ml-4 leading-normal tracking-tight"> New password must be different from old password</p>
             )}
           </div>
 
           {/* Confirm Password */}
           <div className="mb-6">
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2 leading-snug tracking-tight">
+            <label htmlFor="confirmPassword" className="block text-base font-medium text-gray-700 mb-2 leading-snug tracking-tight">
               Confirm Password <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -367,7 +367,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
               </button>
             </div>
             {showValidationErrors && confirmPassword && !passwordValidation.match && (
-              <p className="mt-2 text-sm text-red-600 leading-normal tracking-tight">
+              <p className="mt-2 text-lg sm:text-base text-red-600 leading-normal tracking-tight">
                 Passwords do not match
               </p>
             )}

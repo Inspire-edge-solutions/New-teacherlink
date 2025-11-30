@@ -95,18 +95,18 @@ const MyProfileComponent = () => {
         <div className="bg-white rounded-lg shadow-sm p-2">
             {/* Header with View/Edit Profile Button */}
             <div className="flex items-center justify-between gap-3 mb-2">
-                <h4 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent">Profile Details</h4>
+                <h4 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">Profile Details</h4>
 
                 {showProfile ? (
                     <button
-                        className="flex-shrink-0 px-6 py-2.5 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                        className="flex-shrink-0 px-6 py-2.5 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg leading-normal tracking-tight"
                         onClick={() => setShowProfile(false)}
                     >
                         Edit Profile
                     </button>
                 ) : (
                     <button
-                        className="flex-shrink-0 px-6 py-2.5 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                        className="flex-shrink-0 px-6 py-2.5 bg-gradient-brand text-white font-medium rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg leading-normal tracking-tight"
                         onClick={handleViewProfile}
                         disabled={loadingApproval}
                     >
@@ -117,7 +117,7 @@ const MyProfileComponent = () => {
 
             {!showProfile && (
                 <div className="mb-6 text-sm">
-                    <p className="m-0 text-gray-700 flex items-center gap-1">
+                    <p className="m-0 text-gray-700 flex items-center gap-1 leading-normal tracking-tight">
                         <span className="text-red-500 font-bold">★</span>
                         Fields highlighted are mandatory to fill
                     </p>

@@ -63,10 +63,10 @@ const LoginConsentModal = ({
                 <FaLock className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white mb-0.5">
+                <h3 className="text-xl font-bold text-white mb-0.5 leading-tight tracking-tight">
                   Login Required
                 </h3>
-                <p className="text-sm text-white/90">
+                <p className="text-lg sm:text-base text-white/90 leading-normal tracking-tight">
                   Access restricted content
                 </p>
               </div>
@@ -85,12 +85,12 @@ const LoginConsentModal = ({
         {/* Content */}
         <div className="p-6 bg-[#F0D8D9]">
           <div className="mb-6">
-            <p className="text-gray-700 mb-4 leading-relaxed text-base">
+            <p className="text-gray-700 mb-4 leading-relaxed text-lg sm:text-base tracking-tight">
               To <span className="font-semibold text-gray-900 px-2 py-1 rounded-md">{actionMessage}</span>, you need to be logged in as a <span className="font-semibold text-gray-900 px-2 py-1 rounded-md">{userTypeMessage}</span>.
             </p>
             <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100">
               <AiOutlineInfoCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <p className="text-gray-700 text-sm leading-relaxed">
+              <p className="text-gray-700 text-lg sm:text-base leading-relaxed tracking-tight">
                 Don't have an account? No worries! You can register during the login process in just a few steps.
               </p>
             </div>
@@ -100,13 +100,13 @@ const LoginConsentModal = ({
           <div className="flex gap-3 justify-end">
             <button
               onClick={onClose}
-              className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium"
+              className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium text-base leading-normal tracking-tight"
             >
               Cancel
             </button>
             <button
               onClick={onConfirm}
-              className="px-5 py-2.5 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-all duration-200 font-medium shadow-md hover:shadow-lg flex items-center gap-2"
+              className="px-5 py-2.5 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-all duration-200 font-medium shadow-md hover:shadow-lg flex items-center gap-2 text-base leading-normal tracking-tight"
             >
               <span>Continue to Login</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

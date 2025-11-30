@@ -297,7 +297,7 @@ const AvailableCandidatesPage = () => {
   }, [filteredCandidates, currentPage, totalPages]);
 
   const metadata = {
-    title: "Active Teacher Profiles | Browse Qualified Educators | TeacherLink",
+    title: "Find your best teacher | Browse Qualified Educators | TeacherLink",
     description: "Explore available teaching professionals. Register to unlock full candidate details and contact information.",
   };
 
@@ -318,13 +318,14 @@ const AvailableCandidatesPage = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header Banner */}
           <div className="bg-gradient-brand text-white text-center rounded-lg p-6 mb-6 shadow-lg">
-            <h1 className="text-3xl font-bold mb-2">Active Teacher Profiles</h1>
-            <p className="text-lg opacity-90">
-              Discover qualified teaching professionals. Register or login to unlock full profiles and contact candidates.
+            <h1 className="text-3xl font-bold mb-2 leading-tight tracking-tight">Find your best teacher</h1>
+            <p className="text-lg sm:text-base opacity-90 leading-normal tracking-tight">
+            Connect with expert teachers who match your goals, learn smarter and grow faster.  
+            Register or login to unlock full profiles and contact teachers.
             </p>
             <button
               onClick={() => navigate('/register?requiredUserType=Employer')}
-              className="mt-4 px-6 py-2 bg-white text-pink-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+              className="mt-4 px-6 py-2 bg-white text-pink-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-base leading-normal tracking-tight"
             >
               Register Now to Unlock Details
             </button>
@@ -341,7 +342,7 @@ const AvailableCandidatesPage = () => {
               </div>
               <button
                 onClick={() => setShowFilters(true)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                className={`px-4 py-2 rounded-lg font-medium text-base transition-colors flex items-center gap-2 leading-normal tracking-tight ${
                   activeFiltersCount > 0
                     ? 'bg-gradient-brand text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -355,7 +356,7 @@ const AvailableCandidatesPage = () => {
 
           {/* Candidates Count and Records Per Page */}
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent">
+            <h2 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight">
               {filteredCandidates.length} {filteredCandidates.length === 1 ? 'Profile' : 'Profiles'} Available
             </h2>
             <RecordsPerPageDropdown 
@@ -403,7 +404,7 @@ const AvailableCandidatesPage = () => {
                   alt="No candidates" 
                   className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
                 />
-                <p className="text-gray-600 text-lg font-medium">
+                <p className="text-gray-600 text-lg sm:text-base font-medium leading-normal tracking-tight">
                   {isSearching || activeFiltersCount > 0
                     ? 'No candidates found matching your search or filters.'
                     : 'No candidates available at the moment.'}

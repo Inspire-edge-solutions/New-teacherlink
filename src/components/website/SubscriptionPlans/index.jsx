@@ -36,16 +36,16 @@ const SubscriptionPlans = () => {
           <div key={index} className="flex items-center">
             <div className="w-1/4 flex items-center space-x-2">
               <span className="text-lg">{feature.icon}</span>
-              <span className="text-lg text-gray-800 font-medium tracking-tight">{feature.name}</span>
+              <span className="text-lg sm:text-base text-gray-800 font-medium tracking-tight">{feature.name}</span>
             </div>
             <div className="w-1/4 text-center">
-              <span className="text-lg text-gray-800 tracking-tight">{feature.basic}</span>
+              <span className="text-lg sm:text-base text-gray-800 tracking-tight">{feature.basic}</span>
             </div>
             <div className="w-1/4 text-center">
-              <span className="text-lg text-gray-800 tracking-tight">{feature.standard}</span>
+              <span className="text-lg sm:text-base text-gray-800 tracking-tight">{feature.standard}</span>
             </div>
             <div className="w-1/4 text-center">
-              <span className="text-lg text-gray-800 tracking-tight">{feature.premium}</span>
+              <span className="text-lg sm:text-base text-gray-800 tracking-tight">{feature.premium}</span>
             </div>
           </div>
         ))}
@@ -56,13 +56,13 @@ const SubscriptionPlans = () => {
         {/* Plan Headers - Mobile */}
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="bg-gray-200 rounded-lg p-2.5 text-center">
-            <div className="text-sm sm:text-base font-semibold text-gray-800 tracking-tight">Basic</div>
+            <div className="text-base font-semibold text-gray-800 tracking-tight">Basic</div>
           </div>
           <div className="rounded-lg p-2.5 text-center" style={{ backgroundColor: '#F0D8D9' }}>
-            <div className="text-sm sm:text-base font-semibold text-gray-800 tracking-tight">Standard</div>
+            <div className="text-base font-semibold text-gray-800 tracking-tight">Standard</div>
           </div>
           <div className="bg-gray-200 rounded-lg p-2.5 text-center">
-            <div className="text-sm sm:text-base font-semibold text-gray-800 tracking-tight">Premium</div>
+            <div className="text-base font-semibold text-gray-800 tracking-tight">Premium</div>
           </div>
         </div>
         
@@ -79,13 +79,13 @@ const SubscriptionPlans = () => {
               {/* Features Row - Just the content */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="text-center">
-                  <div className="text-sm sm:text-base text-gray-800 break-words leading-normal tracking-tight">{feature.basic}</div>
+                  <div className="text-lg sm:text-base text-gray-800 break-words leading-normal tracking-tight">{feature.basic}</div>
                 </div>
                 <div className="text-center rounded-lg p-2" style={{ backgroundColor: '#F0D8D9' }}>
-                  <div className="text-sm sm:text-base text-gray-800 break-words leading-normal tracking-tight">{feature.standard}</div>
+                  <div className="text-lg sm:text-base text-gray-800 break-words leading-normal tracking-tight">{feature.standard}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-sm sm:text-base text-gray-800 break-words leading-normal tracking-tight">{feature.premium}</div>
+                  <div className="text-lg sm:text-base text-gray-800 break-words leading-normal tracking-tight">{feature.premium}</div>
                 </div>
               </div>
             </div>
@@ -112,27 +112,27 @@ const SubscriptionPlans = () => {
         <div className="hidden lg:flex items-center">
           <div className="w-1/4 flex items-center space-x-2">
             <span className="text-yellow-500 text-lg">🪙</span>
-            <span className="text-lg text-gray-800 font-medium tracking-tight">Annual Subscription Plan</span>
+            <span className="text-lg sm:text-base text-gray-800 font-medium tracking-tight">Annual Subscription Plan</span>
           </div>
           <div className="w-1/4 text-center">
             <div className="text-gray-800 tracking-tight">
-              <p className="text-lg">Get {pricing[0].coins} coins for</p>
-              <p className="line-through text-lg">{pricing[0].original}</p>
-              <p className="text-lg font-bold">{pricing[0].discounted}</p>
+              <p className="text-lg sm:text-base">Get {pricing[0].coins} coins for</p>
+              <p className="line-through text-lg sm:text-base">{pricing[0].original}</p>
+              <p className="text-lg sm:text-base font-bold">{pricing[0].discounted}</p>
             </div>
           </div>
           <div className="w-1/4 text-center">
             <div className="text-gray-800 tracking-tight">
-              <p className="text-lg">Get {pricing[1].coins} coins for</p>
-              <p className="line-through text-lg">{pricing[1].original}</p>
-              <p className="text-lg font-bold">{pricing[1].discounted}</p>
+              <p className="text-lg sm:text-base">Get {pricing[1].coins} coins for</p>
+              <p className="line-through text-lg sm:text-base">{pricing[1].original}</p>
+              <p className="text-lg sm:text-base font-bold">{pricing[1].discounted}</p>
             </div>
           </div>
           <div className="w-1/4 text-center">
             <div className="text-gray-800 tracking-tight">
-              <p className="text-lg">Get {pricing[2].coins} coins for</p>
-              <p className="line-through text-lg">{pricing[2].original}</p>
-              <p className="text-lg font-bold">{pricing[2].discounted}</p>
+              <p className="text-lg sm:text-base">Get {pricing[2].coins} coins for</p>
+              <p className="line-through text-lg sm:text-base">{pricing[2].original}</p>
+              <p className="text-lg sm:text-base font-bold">{pricing[2].discounted}</p>
             </div>
           </div>
         </div>
@@ -151,7 +151,7 @@ const SubscriptionPlans = () => {
               return (
                 <div key={index} className={`rounded-lg p-4 sm:p-5 text-center border border-gray-200 ${isStandard ? '' : 'bg-white'}`} style={isStandard ? { backgroundColor: '#F0D8D9' } : {}}>
                   <div className={`rounded-lg p-2 sm:p-2.5 mb-3 sm:mb-4 ${isStandard ? '' : 'bg-gray-200'}`} style={isStandard ? { backgroundColor: '#F0D8D9' } : {}}>
-                    <div className="text-sm sm:text-base font-semibold text-gray-800">{planNames[index]}</div>
+                    <div className="text-base font-semibold text-gray-800">{planNames[index]}</div>
                   </div>
                   <div className="text-gray-800">
                     <p className="text-base sm:text-lg mb-1.5 font-medium">Get {price.coins} coins for</p>
@@ -230,39 +230,39 @@ const SubscriptionPlans = () => {
                   <span className="mr-2">🔔</span> SPECIAL OFFERS:
                 </div>
                 <div className="bg-white border border-gray-300 rounded-b-lg divide-y">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center p-4 sm:p-5">
-                    <div className="text-orange-500 mr-3 sm:mr-4 mb-2 sm:mb-0"><MdLock size={24} className="sm:w-[26px] sm:h-[26px]" /></div>
-                    <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row items-center justify-center p-4 sm:p-5 text-center">
+                    <div className="text-orange-500 mb-2 sm:mb-0 sm:mr-4"><MdLock size={24} className="sm:w-[26px] sm:h-[26px] mx-auto" /></div>
+                    <div>
                       <div className="text-base sm:text-lg text-gray-800 font-semibold tracking-tight mb-1.5 sm:mb-0">Unlock more with Premium</div>
                       <div className="text-sm sm:text-base text-gray-700 leading-normal tracking-tight">More coins, better support, and exclusive features!</div>
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center p-4 sm:p-5">
-                    <div className="text-blue-600 mr-3 sm:mr-4 mb-2 sm:mb-0"><MdRocketLaunch size={24} className="sm:w-[26px] sm:h-[26px]" /></div>
-                    <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row items-center justify-center p-4 sm:p-5 text-center">
+                    <div className="text-blue-600 mb-2 sm:mb-0 sm:mr-4"><MdRocketLaunch size={24} className="sm:w-[26px] sm:h-[26px] mx-auto" /></div>
+                    <div>
                       <div className="text-base sm:text-lg text-gray-800 font-semibold tracking-tight mb-1.5 sm:mb-0">Build your dream career faster</div>
                       <div className="text-sm sm:text-base text-gray-700 leading-normal tracking-tight">With Standard & Premium perks.</div>
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center p-4 sm:p-5">
-                    <div className="text-emerald-600 mr-3 sm:mr-4 mb-2 sm:mb-0"><MdHowToReg size={24} className="sm:w-[26px] sm:h-[26px]" /></div>
-                    <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row items-center justify-center p-4 sm:p-5 text-center">
+                    <div className="text-emerald-600 mb-2 sm:mb-0 sm:mr-4"><MdHowToReg size={24} className="sm:w-[26px] sm:h-[26px] mx-auto" /></div>
+                    <div>
                       <div className="text-base sm:text-lg text-gray-800 font-semibold tracking-tight mb-1.5 sm:mb-0">Join now & start applying today!</div>
                       <div className="text-sm sm:text-base text-gray-700 leading-normal tracking-tight">Get started with your subscription plan</div>
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center p-4 sm:p-5">
-                    <div className="text-pink-600 mr-3 sm:mr-4 mb-2 sm:mb-0"><MdGroupAdd size={24} className="sm:w-[26px] sm:h-[26px]" /></div>
-                    <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row items-center justify-center p-4 sm:p-5 text-center">
+                    <div className="text-pink-600 mb-2 sm:mb-0 sm:mr-4"><MdGroupAdd size={24} className="sm:w-[26px] sm:h-[26px] mx-auto" /></div>
+                    <div>
                       <div className="text-base sm:text-lg text-gray-800 font-semibold tracking-tight mb-1.5 sm:mb-0">Refer & Earn</div>
                       <div className="text-sm sm:text-base text-gray-700 leading-normal tracking-tight">
                         <span className="mr-1"><span className="font-bold">✨ </span> Refer 20 candidates </span> → <span className="inline-flex items-center font-semibold ml-1 mr-1">when 10 get placed</span> →<span className="ml-1">🪙 Earn 2000 Bonus Coins!</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center p-4 sm:p-5">
-                    <div className="text-red-600 mr-3 sm:mr-4 mb-2 sm:mb-0"><MdRedeem size={24} className="sm:w-[26px] sm:h-[26px]" /></div>
-                    <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row items-center justify-center p-4 sm:p-5 text-center">
+                    <div className="text-red-600 mb-2 sm:mb-0 sm:mr-4"><MdRedeem size={24} className="sm:w-[26px] sm:h-[26px] mx-auto" /></div>
+                    <div>
                       <div className="text-base sm:text-lg text-gray-800 font-semibold tracking-tight mb-1.5 sm:mb-0">Coupon Redemption</div>
                       <div className="text-sm sm:text-base text-gray-700 leading-normal tracking-tight"><span className="mr-1">✨</span> Got a promo code? Redeem it now for instant bonus <span className="ml-1">🪙</span></div>
                     </div>
@@ -278,18 +278,18 @@ const SubscriptionPlans = () => {
                   <span className="mr-2">🔔</span> SPECIAL OFFERS:
                 </div>
                 <div className="bg-white border border-gray-300 rounded-b-lg divide-y">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center p-4 sm:p-5">
-                    <div className="text-pink-600 mr-3 sm:mr-4 mb-2 sm:mb-0"><MdGroupAdd size={24} className="sm:w-[26px] sm:h-[26px]" /></div>
-                    <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row items-center justify-center p-4 sm:p-5 text-center">
+                    <div className="text-pink-600 mb-2 sm:mb-0 sm:mr-4"><MdGroupAdd size={24} className="sm:w-[26px] sm:h-[26px] mx-auto" /></div>
+                    <div>
                       <div className="text-base sm:text-lg text-gray-800 font-semibold mb-1.5 sm:mb-0">Refer & Earn</div>
                       <div className="text-sm sm:text-base text-gray-700 leading-normal tracking-tight">
                         <span className="mr-1">✨ Refer 10 institutions</span> → <span className="inline-flex items-center font-semibold ml-1 mr-1">When 5 register</span> → <span className="ml-1">🪙 Earn 4000 Bonus Coins!</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center p-4 sm:p-5">
-                    <div className="text-red-600 mr-3 sm:mr-4 mb-2 sm:mb-0"><MdRedeem size={24} className="sm:w-[26px] sm:h-[26px]" /></div>
-                    <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row items-center justify-center p-4 sm:p-5 text-center">
+                    <div className="text-red-600 mb-2 sm:mb-0 sm:mr-4"><MdRedeem size={24} className="sm:w-[26px] sm:h-[26px] mx-auto" /></div>
+                    <div>
                       <div className="text-base sm:text-lg text-gray-800 font-semibold mb-1.5 sm:mb-0">Redeem Offer Coupon</div>
                       <div className="text-sm sm:text-base text-gray-700 leading-normal tracking-tight"><span className="mr-1">✨</span> Got a code? Redeem now to earn extra <span className="ml-1">🪙</span> Coins!</div>
                     </div>

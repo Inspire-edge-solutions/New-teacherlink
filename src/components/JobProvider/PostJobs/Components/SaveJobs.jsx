@@ -515,7 +515,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                 <div className="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
                   ✅
                 </div>
-                <h3 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent m-0">
+                <h3 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent m-0 leading-tight tracking-tight">
                   Confirm Job Posting
                 </h3>
               </div>
@@ -536,8 +536,8 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
               <div className="flex items-start gap-3">
                 <div className="text-2xl">💼</div>
                 <div className="flex-1">
-                  <p className="text-sm text-gray-500 mb-1 font-medium">Job Title</p>
-                  <p className="text-lg font-semibold text-gray-900 m-0">
+                  <p className="text-sm text-gray-500 mb-1 font-medium leading-snug tracking-tight">Job Title</p>
+                  <p className="text-lg font-semibold text-gray-900 m-0 leading-tight tracking-tight">
                     {selectedJob?.job_title || 'Untitled Job'}
                   </p>
                 </div>
@@ -549,10 +549,10 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
               <div className="flex items-start gap-2">
                 <span className="text-blue-600 text-xl">ℹ️</span>
                 <div>
-                  <p className="text-sm font-semibold text-blue-900 m-0 mb-2">
+                  <p className="text-sm font-semibold text-blue-900 m-0 mb-2 leading-snug tracking-tight">
                     Ready to post this job?
                   </p>
-                  <p className="text-sm text-blue-800 m-0 leading-relaxed">
+                  <p className="text-sm text-blue-800 m-0 leading-normal tracking-tight">
                     This saved job will be posted and become active for 30 days. Make sure all details are correct before posting.
                   </p>
                 </div>
@@ -564,14 +564,14 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
           <div className="p-6 border-t border-gray-200 bg-white flex flex-col sm:flex-row justify-end gap-3">
             <button 
               type="button" 
-              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors min-w-[120px]"
+              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors min-w-[120px] leading-normal tracking-tight"
               onClick={handleClose}
             >
               Cancel
             </button>
             <button 
               type="button" 
-              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-brand text-white font-medium hover:bg-gradient-primary-hover transition-colors min-w-[150px] shadow-md"
+              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-brand text-white font-medium hover:bg-gradient-primary-hover transition-colors min-w-[150px] shadow-md leading-normal tracking-tight"
               onClick={confirmPostSavedJob}
             >
               ✅ Post Job
@@ -615,7 +615,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                 <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
                   🗑️
                 </div>
-                <h3 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent m-0">
+                <h3 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent m-0 leading-tight tracking-tight">
                   Delete Saved Job
                 </h3>
               </div>
@@ -636,8 +636,8 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
               <div className="flex items-start gap-3">
                 <div className="text-2xl">💼</div>
                 <div className="flex-1">
-                  <p className="text-sm text-gray-500 mb-1 font-medium">Job Title</p>
-                  <p className="text-lg font-semibold text-gray-900 m-0">
+                  <p className="text-sm text-gray-500 mb-1 font-medium leading-snug tracking-tight">Job Title</p>
+                  <p className="text-lg font-semibold text-gray-900 m-0 leading-tight tracking-tight">
                     {jobToDelete?.job_title || 'Untitled Job'}
                   </p>
                 </div>
@@ -649,10 +649,10 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
               <div className="flex items-start gap-2">
                 <span className="text-red-600 text-xl">⚠️</span>
                 <div>
-                  <p className="text-sm font-semibold text-red-900 m-0 mb-2">
+                  <p className="text-sm font-semibold text-red-900 m-0 mb-2 leading-snug tracking-tight">
                     This action cannot be undone!
                   </p>
-                  <p className="text-sm text-red-800 m-0 leading-relaxed">
+                  <p className="text-sm text-red-800 m-0 leading-normal tracking-tight">
                     Are you sure you want to permanently delete this saved job? All job details will be lost and you'll need to recreate it from scratch.
                   </p>
                 </div>
@@ -664,14 +664,14 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
           <div className="p-6 border-t border-gray-200 bg-white flex flex-col sm:flex-row justify-end gap-3">
             <button 
               type="button" 
-              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors min-w-[120px]"
+              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors min-w-[120px] leading-normal tracking-tight"
               onClick={handleClose}
             >
               Cancel
             </button>
             <button 
               type="button" 
-              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-brand text-white font-medium hover:bg-gradient-primary-hover transition-colors min-w-[150px] shadow-md"
+              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-brand text-white font-medium hover:bg-gradient-primary-hover transition-colors min-w-[150px] shadow-md leading-normal tracking-tight"
               onClick={confirmDeleteJob}
             >
               🗑️ Delete Job
@@ -715,12 +715,12 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                   alt="No saved jobs" 
                   className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
                 />
-                <h6 className="text-gray-900 text-lg font-semibold mb-2">No Saved Jobs Yet</h6>
-                <p className="text-gray-500 mb-6">
+                <h6 className="text-lg font-semibold text-gray-900 mb-2 leading-tight tracking-tight">No Saved Jobs Yet</h6>
+                <p className="text-gray-500 mb-6 leading-normal tracking-tight">
                   You haven't saved any job drafts yet. Start by creating a new job post.
                 </p>
                 <div className="mt-3">
-                  <button className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-full hover:bg-gradient-primary-hover transition-colors inline-flex items-center gap-2" onClick={onCreateNewJob}>
+                  <button className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-full hover:bg-gradient-primary-hover transition-colors inline-flex items-center gap-2 leading-normal tracking-tight" onClick={onCreateNewJob}>
                     Create New Job
                   </button>
                 </div>
@@ -730,11 +730,11 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
             // Job List
             <div className="w-full">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-5 gap-4 w-full">
-                <h6 className="text-gray-700 text-base font-semibold whitespace-nowrap">Your Saved Jobs: {filteredJobs.length}</h6>
+                <h6 className="text-gray-700 text-base font-semibold whitespace-nowrap leading-tight tracking-tight">Your Saved Jobs: {filteredJobs.length}</h6>
                 <div className="relative w-full sm:flex-1 sm:max-w-md">
                   <input
                     type="text"
-                    className="w-full p-2.5 px-4 pr-10 border border-gray-300 rounded-md text-sm transition-all duration-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    className="w-full p-2 px-4 pr-10 border border-gray-300 rounded-md text-base transition-all duration-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 leading-normal tracking-tight"
                     placeholder="Search by job title, ID, date, type, or location..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -753,16 +753,16 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                       checked={selectAll}
                       onChange={handleSelectAll}
                     />
-                    <label htmlFor="selectAllSavedJobs" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
+                    <label htmlFor="selectAllSavedJobs" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer leading-normal tracking-tight">
                       Select All Jobs on This Page
                       {selectedJobs.size > 0 && (
-                        <span className="text-gray-500 ml-2">({selectedJobs.size} total selected)</span>
+                        <span className="text-gray-500 ml-2 leading-normal tracking-tight">({selectedJobs.size} total selected)</span>
                       )}
                     </label>
                   </div>
                   {selectedJobs.size > 0 && (
                     <button
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-brand rounded-lg shadow-lg hover:bg-gradient-primary-hover transition-colors"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-brand rounded-lg shadow-lg hover:bg-gradient-primary-hover transition-colors leading-normal tracking-tight"
                       onClick={handleOpenBulkMessageModal}
                     >
                       <span role="img" aria-label="message">💬</span>
@@ -797,18 +797,18 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                           <div className="flex flex-col sm:flex-row sm:items-start gap-3 overflow-x-hidden">
                             {/* Job ID Section */}
                             <div className="flex-shrink-0 flex items-center">
-                              <div className="bg-gradient-brand text-white px-3 py-1.5 rounded-xl text-xs font-semibold text-center inline-block whitespace-nowrap shadow-md w-fit">
+                              <div className="bg-gradient-brand text-white px-2.5 py-1 rounded-xl text-base font-semibold text-center inline-block whitespace-nowrap shadow-md w-fit leading-normal tracking-tight">
                                 ID: {job.id || `${index + 1}`}
                               </div>
                             </div>
 
                             {/* Job Title Section */}
                             <div className="flex-1 min-w-0 flex flex-col items-start justify-center overflow-hidden">
-                              <h6 className="text-lg sm:text-xl font-semibold text-gray-800 leading-tight m-0 mb-1 break-words sm:truncate max-w-full" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }} title={job.job_title || 'Untitled Job'}>
+                              <h6 className="text-xl font-semibold text-gray-800 leading-tight tracking-tight m-0 mb-1 break-words sm:truncate max-w-full" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }} title={job.job_title || 'Untitled Job'}>
                                 {job.job_title || 'Untitled Job'}
                               </h6>
                               <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 mt-2">
-                                <p className="m-0 text-xs text-gray-500 font-medium uppercase tracking-wide bg-gray-100 px-2 py-0.5 rounded inline-block w-fit">
+                                <p className="m-0 text-lg sm:text-base text-gray-500 font-medium uppercase tracking-wide bg-gray-100 px-2 py-0.5 rounded inline-block w-fit leading-normal">
                                   {job.job_type ? job.job_type.replace('_', ' ').toUpperCase() : 'Not specified'}
                                 </p>
                               </div>
@@ -816,23 +816,23 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
 
                             {/* Saved Date Section - Hidden on mobile, shown on tablet+ */}
                             <div className="hidden md:flex flex-shrink-0 px-2 text-center flex-col items-center">
-                              <p className="m-0 mb-1 text-xs text-gray-500 font-medium uppercase tracking-wide">
+                              <p className="m-0 mb-1 text-lg sm:text-base text-gray-500 font-medium uppercase tracking-wide leading-snug">
                                 Saved
                               </p>
-                              <p className="m-0 text-sm text-gray-800 font-semibold bg-gray-100 px-2 py-0.5 rounded border border-gray-200 whitespace-nowrap">
+                              <p className="m-0 text-lg sm:text-base text-gray-800 font-semibold bg-gray-100 px-2 py-0.5 rounded border border-gray-200 whitespace-nowrap leading-normal tracking-tight">
                                 {formatDate(job.saved_date || job.created_at) || 'Not specified'}
                               </p>
                             </div>
                           </div>
 
                           {/* Saved Date Section - Mobile only */}
-                          <div className="md:hidden flex flex-shrink-0 text-left flex-row items-center gap-2">
-                            <p className="m-0 text-xs text-gray-500 font-medium uppercase tracking-wide">
+                          <div className="md:hidden flex flex-wrap items-center gap-1.5 mt-1">
+                            <span className="text-base text-gray-500 font-medium uppercase tracking-wide leading-snug whitespace-nowrap">
                               Saved:
-                            </p>
-                            <p className="m-0 text-sm text-gray-800 font-semibold bg-gray-100 px-2 py-0.5 rounded border border-gray-200 whitespace-nowrap">
+                            </span>
+                            <span className="text-base text-gray-800 font-semibold bg-gray-100 px-2 py-0.5 rounded border border-gray-200 whitespace-nowrap leading-normal tracking-tight">
                               {formatDate(job.saved_date || job.created_at) || 'Not specified'}
-                            </p>
+                            </span>
                           </div>
                         </div>
 
@@ -840,28 +840,28 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                         <div className="flex-shrink-0 px-2">
                           <div className="flex flex-col sm:flex-row gap-2 items-end sm:items-center lg:flex-nowrap">
                             <button
-                              className="border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md"
+                              className="border-none rounded-md py-1.5 px-2 text-base font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[36px] w-[90px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md leading-normal tracking-tight"
                               onClick={() => handleViewJob(job.id || index)}
                             >
                               {expandedJobId === (job.id || index) ? 'Hide' : 'View'}
                             </button>
 
                             <button
-                              className="border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md"
+                              className="border-none rounded-md py-1.5 px-2 text-base font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[36px] w-[90px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md leading-normal tracking-tight"
                               onClick={() => handlePostJob(job)}
                             >
                               Post
                             </button>
 
                             <button
-                              className="border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md"
+                              className="border-none rounded-md py-1.5 px-2 text-base font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[36px] w-[90px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md leading-normal tracking-tight"
                               onClick={() => handleEditAndPost(job)}
                             >
                               Edit
                             </button>
 
                             <button
-                              className="border-none rounded-md py-2 px-3 text-xs font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[38px] w-[100px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md"
+                              className="border-none rounded-md py-1.5 px-2 text-base font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[36px] w-[90px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md leading-normal tracking-tight"
                               onClick={() => handleDeleteJob(job)}
                             >
                               Delete
@@ -908,10 +908,10 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
             </button>
 
             <div className="mb-4 mt-0.5 text-center">
-              <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+              <h3 className="font-semibold text-[18px] mb-4 text-gray-800 leading-tight tracking-tight">
                 Send Bulk Message
               </h3>
-              <div className="text-gray-600 text-[15px] leading-relaxed space-y-1">
+              <div className="text-gray-600 text-[15px] leading-normal tracking-tight space-y-1">
                 <p>
                   <strong>20 coins</strong> per recipient via WhatsApp
                 </p>
@@ -919,11 +919,11 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                   <strong>10 coins</strong> per recipient via RCS
                 </p>
                 {coinBalance !== null && (
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-sm text-gray-500 mt-2 leading-normal tracking-tight">
                     Current balance: <strong>{coinBalance}</strong> coins
                   </p>
                 )}
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-xs text-gray-400 mt-2 leading-normal tracking-tight">
                   Coins will be deducted after admin approval
                 </p>
               </div>
@@ -931,13 +931,13 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
 
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
               <button
-                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md ${bulkChannel === 'whatsapp' ? 'bg-[#25D366] text-white border-[#25D366]' : 'bg-white text-[#25D366] border-[#25D366]'}`}
+                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight ${bulkChannel === 'whatsapp' ? 'bg-[#25D366] text-white border-[#25D366]' : 'bg-white text-[#25D366] border-[#25D366]'}`}
                 onClick={() => handleChannelSelect('whatsapp')}
               >
                 Through WhatsApp
               </button>
               <button
-                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md ${bulkChannel === 'rcs' ? 'bg-[#0a84ff] text-white border-[#0a84ff]' : 'bg-white text-[#0a84ff] border-[#0a84ff]'}`}
+                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight ${bulkChannel === 'rcs' ? 'bg-[#0a84ff] text-white border-[#0a84ff]' : 'bg-white text-[#0a84ff] border-[#0a84ff]'}`}
                 onClick={() => handleChannelSelect('rcs')}
               >
                 Through RCS
@@ -952,9 +952,9 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                   maxLength={500}
                   rows={5}
                   placeholder="Enter your message here..."
-                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-gradient-brand resize-none"
+                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-gradient-brand resize-none leading-normal tracking-tight"
                 />
-                <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="flex items-center justify-between text-xs text-gray-500 leading-normal tracking-tight">
                   <span>{selectedJobs.size} job{selectedJobs.size !== 1 ? 's' : ''} selected</span>
                   <span>{bulkMessageChars}/500</span>
                 </div>
@@ -962,20 +962,20 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
             )}
 
             {bulkError && (
-              <div className="mt-3 text-sm text-red-500 text-left">
+              <div className="mt-3 text-sm text-red-500 text-left leading-normal tracking-tight">
                 {bulkError}
               </div>
             )}
 
             <div className="flex flex-col sm:flex-row gap-3 mt-6">
               <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight"
                 onClick={handleCloseBulkMessageModal}
               >
                 Cancel
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight"
                 onClick={handlePrepareBulkSend}
                 disabled={!bulkChannel || bulkMessageChars === 0}
               >
@@ -1005,13 +1005,13 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
             </button>
 
             <div className="mb-4 mt-0.5 text-center space-y-2">
-              <h3 className="font-semibold text-[18px] text-gray-800">
+              <h3 className="font-semibold text-[18px] text-gray-800 leading-tight tracking-tight">
                 Confirm &amp; Submit for Approval
               </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
+              <p className="text-gray-600 text-[15px] leading-normal tracking-tight">
                 You are about to submit a <strong>{bulkSummary.channel === 'whatsapp' ? 'WhatsApp' : 'RCS'}</strong> message request for <strong>{bulkSummary.jobs.length}</strong> job{bulkSummary.jobs.length !== 1 ? 's' : ''} for admin approval.
               </p>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
+              <p className="text-gray-600 text-[15px] leading-normal tracking-tight">
                 Your message will be reviewed by admin before being sent.
               </p>
             </div>
@@ -1019,30 +1019,30 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
             <div className="mb-4 space-y-2 max-h-60 overflow-y-auto">
               {bulkSummary.jobs.map((job, idx) => (
                 <div key={job.id || idx} className="p-3 bg-gray-50 border border-gray-100 rounded-lg">
-                  <div className="font-semibold text-sm text-gray-800">
+                  <div className="font-semibold text-sm text-gray-800 leading-normal tracking-tight">
                     {job.job_title || 'Untitled Job'}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-500 leading-normal tracking-tight">
                     ID: {job.id || 'N/A'}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="mb-4 p-3 bg-gray-50 border border-gray-100 rounded-lg text-left text-sm text-gray-700 whitespace-pre-line">
+            <div className="mb-4 p-3 bg-gray-50 border border-gray-100 rounded-lg text-left text-sm text-gray-700 whitespace-pre-line leading-normal tracking-tight">
               {bulkSummary.message}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight"
                 onClick={handleCancelConfirmation}
                 disabled={isSendingBulk}
               >
                 Cancel
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight"
                 onClick={handleConfirmSend}
                 disabled={isSendingBulk}
               >
@@ -1078,26 +1078,26 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
             </button>
 
             <div className="mb-4 mt-0.5 text-center space-y-3">
-              <h3 className="font-semibold text-[18px] text-gray-800">
+              <h3 className="font-semibold text-[18px] text-gray-800 leading-tight tracking-tight">
                 Insufficient Coins
               </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
+              <p className="text-gray-600 text-[15px] leading-normal tracking-tight">
                 You need <strong>{requiredCoins}</strong> coins to send this bulk message.
               </p>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
+              <p className="text-gray-600 text-[15px] leading-normal tracking-tight">
                 Current balance: <strong>{coinBalance ?? 0}</strong> coins. You are short by <strong>{Math.max(requiredCoins - (coinBalance ?? 0), 0)}</strong> coins.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight"
                 onClick={handleCloseInsufficientCoinsModal}
               >
                 Close
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl leading-normal tracking-tight"
                 onClick={handleRechargeNavigate}
               >
                 Recharge Now

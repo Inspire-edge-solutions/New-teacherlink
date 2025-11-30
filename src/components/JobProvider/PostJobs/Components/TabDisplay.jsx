@@ -49,7 +49,7 @@ const TabDisplay = () => {
           <nav className="flex justify-between flex-wrap gap-1" aria-label="Tabs">
             <button
               onClick={() => handleTabChange("active-jobs")}
-              className={`px-4 py-2 rounded-lg font-medium text-sm duration-200 transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium text-base duration-200 transition-colors leading-normal tracking-tight ${
                 activeTab === "active-jobs"
                   ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover'
                   : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
@@ -59,7 +59,7 @@ const TabDisplay = () => {
             </button>
             <button
               onClick={() => handleTabChange("create-job")}
-              className={`px-4 py-2 rounded-lg font-medium text-sm duration-200 transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium text-base duration-200 transition-colors leading-normal tracking-tight ${
                 activeTab === "create-job"
                   ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover'
                   : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
@@ -69,7 +69,7 @@ const TabDisplay = () => {
             </button>
             <button
               onClick={() => handleTabChange("view-history")}
-              className={`px-4 py-2 rounded-lg font-medium text-sm duration-200 transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium text-base duration-200 transition-colors leading-normal tracking-tight ${
                 activeTab === "view-history"
                   ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover'
                   : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
@@ -79,7 +79,7 @@ const TabDisplay = () => {
             </button>
             <button
               onClick={() => handleTabChange("saved-jobs")}
-              className={`px-4 py-2 rounded-lg font-medium text-sm duration-200 transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium text-base duration-200 transition-colors leading-normal tracking-tight ${
                 activeTab === "saved-jobs"
                   ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover'
                   : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
@@ -97,7 +97,7 @@ const TabDisplay = () => {
           {/* Show create job info only on create-job tab */}
           {activeTab === "create-job" && (
             <div className="mb-4 p-3 border border-purple-200 rounded-lg">
-              <p className="text-sm text-gray-700">
+              <p className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">
                 <span className="text-red-500">★</span> Fields highlighted are mandatory to fill
               </p>
             </div>

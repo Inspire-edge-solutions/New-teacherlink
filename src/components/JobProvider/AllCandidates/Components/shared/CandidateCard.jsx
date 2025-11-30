@@ -87,12 +87,12 @@ const CandidateCard = ({
         <div className="flex-1 min-w-0">
           <div className="flex flex-col gap-2">
             <div className={`flex flex-col ${forceMobileLayout ? '' : 'sm:flex-row'} justify-between items-start ${forceMobileLayout ? '' : 'sm:items-start'} gap-2 ${forceMobileLayout ? '' : 'sm:gap-0'}`}>
-              <div className="flex-1 min-w-0">
-                <h3 className={`${forceMobileLayout ? 'text-base' : 'text-base sm:text-lg'} font-bold text-gray-800 leading-tight truncate`}>
+              <div className="flex-1 min-w-0 max-w-full overflow-hidden">
+                <h3 className="text-xl font-bold text-gray-800 leading-tight tracking-tight truncate max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
                   {candidate.fullName || candidate.name || 'Name not available'}
                 </h3>
                 {(candidate.job_name || candidate.designation) && (
-                  <p className={`${forceMobileLayout ? 'text-xs' : 'text-xs sm:text-sm'} text-gray-600 mt-0.5 truncate`}>
+                  <p className="text-lg sm:text-base text-gray-600 mt-0.5 truncate leading-normal tracking-tight max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
                     {candidate.job_name ? (
                       <>
                         Applied for <span className="font-semibold">{candidate.job_name}</span>
@@ -110,7 +110,7 @@ const CandidateCard = ({
                 {showStatusControl && (
                   <div className="flex items-center gap-1.5 sm:gap-2">
                     <select
-                      className="text-xs sm:text-sm border border-gray-300 rounded-md px-2 py-1.5 sm:px-3 sm:py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-[120px] sm:min-w-[140px]"
+                      className="text-lg sm:text-base border border-gray-300 rounded-md px-2 py-1.5 sm:px-3 sm:py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-[120px] sm:min-w-[140px]"
                       value={statusValue}
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => {
@@ -215,7 +215,7 @@ const CandidateCard = ({
               {showStatusControl && (
                 <div className="w-auto max-w-[200px]">
                   <select
-                    className="w-auto min-w-[140px] max-w-[200px] text-xs border border-gray-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    className="w-auto min-w-[140px] max-w-[200px] text-lg sm:text-base border border-gray-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                     value={statusValue}
                     onClick={(e) => e.stopPropagation()}
                     onChange={(e) => {
@@ -320,53 +320,53 @@ const CandidateCard = ({
           {/* Details Grid for Desktop - After name/actions */}
           <div className={`${forceMobileLayout ? 'hidden' : 'hidden lg:block'} space-y-2 mt-2`}>
             {/* First Row - 4 cols on desktop */}
-            <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-sm sm:text-base">
+            <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-lg sm:text-base leading-normal tracking-tight">
               {/* Gender */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaUser className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium">{getGenderString(candidate)}</span>
+                <span className="truncate font-medium leading-normal tracking-tight">{getGenderString(candidate)}</span>
               </div>
               {/* Experience */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaBriefcase className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium">Exp: {getExperience(candidate.total_experience_years)}</span>
+                <span className="truncate font-medium leading-normal tracking-tight">Exp: {getExperience(candidate.total_experience_years)}</span>
               </div>
               {/* Subject */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaBook className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium" title={getSubjectsString(candidate)}>
+                <span className="truncate font-medium leading-normal tracking-tight" title={getSubjectsString(candidate)}>
                   {getSubjectsString(candidate)}
                 </span>
               </div>
               {/* Core Expertise */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaStar className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium" title={typeof expertise === 'object' && expertise.hasMore ? expertise.full : expertise}>
+                <span className="truncate font-medium leading-normal tracking-tight" title={typeof expertise === 'object' && expertise.hasMore ? expertise.full : expertise}>
                   {typeof expertise === 'object' && expertise.hasMore ? expertise.display : expertise}
                 </span>
               </div>
             </div>
             {/* Second Row - 4 cols on desktop */}
-            <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-sm sm:text-base">
+            <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-lg sm:text-base leading-normal tracking-tight">
               {/* Qualification */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaGraduationCap className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium">{getQualificationString(candidate.education_details_json)}</span>
+                <span className="truncate font-medium leading-normal tracking-tight">{getQualificationString(candidate.education_details_json)}</span>
               </div>
               {/* Age */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaBirthdayCake className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium">{getAgeString(candidate)}</span>
+                <span className="truncate font-medium leading-normal tracking-tight">{getAgeString(candidate)}</span>
               </div>
               {/* Salary */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaWallet className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium">{formatSalary(candidate.expected_salary)}</span>
+                <span className="truncate font-medium leading-normal tracking-tight">{formatSalary(candidate.expected_salary)}</span>
               </div>
               {/* Location */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaMapMarkerAlt className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium">{getLocationString(candidate)}</span>
+                <span className="truncate font-medium leading-normal tracking-tight">{getLocationString(candidate)}</span>
               </div>
             </div>
           </div>
@@ -376,34 +376,34 @@ const CandidateCard = ({
       {/* Details Grid for Mobile - Starts below profile photo, aligned with photo left edge */}
       <div className={`${forceMobileLayout ? 'block' : 'lg:hidden'} space-y-2 mt-2 ${showCheckbox ? 'pl-6' : 'pl-0'}`}>
         {/* First Row - 2 cols on mobile */}
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm sm:text-base">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-lg sm:text-base leading-normal tracking-tight">
           {/* Gender */}
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaUser className="w-4 h-4 text-gray-600 flex-shrink-0" />
-            <span className="truncate font-medium">{getGenderString(candidate)}</span>
+                <span className="truncate font-medium leading-normal tracking-tight">{getGenderString(candidate)}</span>
           </div>
           {/* Experience */}
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaBriefcase className="w-4 h-4 text-gray-600 flex-shrink-0" />
-            <span className="truncate font-medium">Exp: {getExperience(candidate.total_experience_years)}</span>
+                <span className="truncate font-medium leading-normal tracking-tight">Exp: {getExperience(candidate.total_experience_years)}</span>
           </div>
           {/* Subject */}
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaBook className="w-4 h-4 text-gray-600 flex-shrink-0" />
-            <span className="truncate font-medium" title={getSubjectsString(candidate)}>
-              {getSubjectsString(candidate)}
-            </span>
+                <span className="truncate font-medium leading-normal tracking-tight" title={getSubjectsString(candidate)}>
+                  {getSubjectsString(candidate)}
+                </span>
           </div>
           {/* Core Expertise */}
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaStar className="w-4 h-4 text-gray-600 flex-shrink-0" />
-            <span className="truncate font-medium" title={typeof expertise === 'object' && expertise.hasMore ? expertise.full : expertise}>
-              {typeof expertise === 'object' && expertise.hasMore ? expertise.display : expertise}
-            </span>
+                <span className="truncate font-medium leading-normal tracking-tight" title={typeof expertise === 'object' && expertise.hasMore ? expertise.full : expertise}>
+                  {typeof expertise === 'object' && expertise.hasMore ? expertise.display : expertise}
+                </span>
           </div>
         </div>
         {/* Second Row - 2 cols on mobile */}
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm sm:text-base">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-lg sm:text-base leading-normal tracking-tight">
           {/* Qualification */}
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaGraduationCap className="w-4 h-4 text-gray-600 flex-shrink-0" />

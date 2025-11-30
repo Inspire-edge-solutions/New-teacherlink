@@ -135,7 +135,7 @@ export default function Sidebar({
                 <NavLink
                   to={item.path || "#"}
                   // keep NavLink for navigation, but compute active manually for styling
-                  className={`flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200 text-sm font-medium group ${
+                  className={`flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200 text-base font-medium group ${
                     isCollapsed ? "justify-center" : ""
                   } ${
                     active

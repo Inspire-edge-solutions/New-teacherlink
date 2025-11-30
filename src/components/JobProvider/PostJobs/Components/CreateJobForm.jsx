@@ -42,7 +42,7 @@ const ProfileRequiredModal = ({ isOpen, onClose }) => {
               <div className="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
                 👤
               </div>
-              <h3 className="text-2xl font-semibold text-gray-800 m-0">
+              <h3 className="text-xl font-semibold text-gray-800 m-0 leading-tight tracking-tight">
                 Profile Required
               </h3>
             </div>
@@ -60,10 +60,10 @@ const ProfileRequiredModal = ({ isOpen, onClose }) => {
           <div className="text-center">
             <div className="text-6xl mb-6">👤</div>
             <div className="bg-white rounded-lg p-6 mb-6 border border-gray-200 shadow-sm">
-              <h4 className="text-lg font-semibold text-gray-900 mb-3">
+              <h4 className="text-lg font-semibold text-gray-900 mb-3 leading-tight tracking-tight">
                 Create Your Profile First
               </h4>
-              <p className="text-gray-700 text-base leading-relaxed m-0">
+              <p className="text-gray-700 text-lg sm:text-base leading-normal tracking-tight m-0">
                 Please complete your organization profile to start posting jobs. Your profile information helps job seekers learn more about your organization.
               </p>
             </div>
@@ -72,7 +72,7 @@ const ProfileRequiredModal = ({ isOpen, onClose }) => {
             <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg text-left">
               <div className="flex items-start gap-2">
                 <span className="text-blue-600 text-xl">ℹ️</span>
-                <p className="text-sm text-blue-800 m-0 leading-relaxed">
+                <p className="text-lg sm:text-base text-blue-800 m-0 leading-normal tracking-tight">
                   You can access your profile from the "My Profile" section in the navigation menu.
                 </p>
               </div>
@@ -84,7 +84,7 @@ const ProfileRequiredModal = ({ isOpen, onClose }) => {
         <div className="p-6 border-t border-gray-200 bg-white flex justify-center">
           <button
             onClick={onClose}
-            className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors min-w-[120px] shadow-md"
+            className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors min-w-[120px] shadow-md text-lg sm:text-base leading-normal tracking-tight"
           >
             Got It
           </button>
@@ -115,7 +115,7 @@ const JobReviewModal = ({ isOpen, onClose, onConfirm, previewData, isPosting }) 
             <div className="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
               📋
             </div>
-            <h3 className="text-2xl font-semibold text-gray-800 m-0">
+            <h3 className="text-xl font-semibold text-gray-800 m-0 leading-tight tracking-tight">
               Job Post Review
             </h3>
           </div>
@@ -134,13 +134,13 @@ const JobReviewModal = ({ isOpen, onClose, onConfirm, previewData, isPosting }) 
         <div className="p-6 border-t border-gray-200 bg-white flex justify-between items-center gap-4 flex-wrap">
           <button
             onClick={onClose}
-            className="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors min-w-[120px] flex-1 max-w-[200px] shadow-md"
+            className="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors min-w-[120px] flex-1 max-w-[200px] shadow-md leading-normal tracking-tight"
           >
             ✏️ Edit Job
           </button>
           <button
             onClick={onConfirm}
-            className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors disabled:opacity-50 min-w-[150px] flex-1 max-w-[250px] shadow-md"
+            className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors disabled:opacity-50 min-w-[150px] flex-1 max-w-[250px] shadow-md leading-normal tracking-tight"
             disabled={isPosting}
           >
             {isPosting ? "⏳ Posting..." : "✅ Confirm & Post Job"}
@@ -1169,7 +1169,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
         <form onSubmit={handleSubmit}>
           {/* Job Details Section */}
           <div className="mb-8">
-            <h3 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-6">Job Details</h3>
+            <h3 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-6 leading-tight tracking-tight">Job Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Job Category */}
               <InputWithTooltip label="Job Category" required>
@@ -1307,7 +1307,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                     min={new Date().toISOString().split('T')[0]}
                     max={new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().split('T')[0]}
                   />
-                  <p className="text-xs text-gray-500">Today to 6 months from now</p>
+                  <p className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">Today to 6 months from now</p>
                 </div>
               </InputWithTooltip>
 
@@ -1352,7 +1352,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                     min={minSalary || "1"}
                     step="1"
                   />
-                  <p className="text-xs text-gray-500">Should be ≥ Minimum Salary</p>
+                  <p className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">Should be ≥ Minimum Salary</p>
                 </div>
               </InputWithTooltip>
             </div>
@@ -1360,11 +1360,11 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
 
           {/* Total Experience Section */}
           <div className="mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-6">Total Experience</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-6 leading-tight tracking-tight">Total Experience</h3>
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Minimum</label>
+                    <label className="block text-lg sm:text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Minimum</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Select
@@ -1394,7 +1394,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Maximum</label>
+                    <label className="block text-lg sm:text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Maximum</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Select
@@ -1422,7 +1422,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                       </div>
                     </div>
                     {totalExpError && (
-                      <p className="text-red-500 text-sm mt-2">{totalExpError}</p>
+                      <p className="text-red-500 text-lg sm:text-base mt-2 leading-normal tracking-tight">{totalExpError}</p>
                     )}
                   </div>
                 </div>
@@ -1430,10 +1430,10 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
 
               {/* Teaching Experience */}
               <div className="mb-6">
-                <h3 className="text-xl font-semibold text-gray-800 mb-6">Teaching Experience</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-6 leading-tight tracking-tight">Teaching Experience</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Minimum</label>
+                    <label className="block text-lg sm:text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Minimum</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Select
@@ -1462,7 +1462,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Maximum</label>
+                    <label className="block text-lg sm:text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Maximum</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Select
@@ -1490,7 +1490,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                       </div>
                     </div>
                     {teachingExpError && (
-                      <p className="text-red-500 text-sm mt-2">{teachingExpError}</p>
+                      <p className="text-red-500 text-lg sm:text-base mt-2 leading-normal tracking-tight">{teachingExpError}</p>
                     )}
                   </div>
                 </div>
@@ -1498,10 +1498,10 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
 
               {/* Non-Teaching Experience */}
               <div className="mb-6">
-                <h3 className="text-xl font-semibold text-gray-800 mb-6">Non-Teaching Experience</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-6 leading-tight tracking-tight">Non-Teaching Experience</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Minimum</label>
+                    <label className="block text-lg sm:text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Minimum</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Select
@@ -1530,7 +1530,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-2">Maximum</label>
+                    <label className="block text-lg sm:text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Maximum</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Select
@@ -1558,7 +1558,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                       </div>
                     </div>
                     {nonTeachingExpError && (
-                      <p className="text-red-500 text-sm mt-2">{nonTeachingExpError}</p>
+                      <p className="text-red-500 text-lg sm:text-base mt-2 leading-normal tracking-tight">{nonTeachingExpError}</p>
                     )}
                   </div>
                 </div>
@@ -1567,7 +1567,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
 
           {/* Location Section */}
           <div className="mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-6">Location</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-6 leading-tight tracking-tight">Location</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Country */}
               <InputWithTooltip label="Country" required>
@@ -1616,7 +1616,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
           </div>
           {/* Qualifications & Skills Section */}
           <div className="mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-6">Qualifications & Skills</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-6 leading-tight tracking-tight">Qualifications & Skills</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Designations */}
               <InputWithTooltip label="Designations">
@@ -1730,7 +1730,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
           </div>
           {/* Additional Preferences Section */}
           <div className="mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-6">Additional Preferences</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-6 leading-tight tracking-tight">Additional Preferences</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Gender */}
               <InputWithTooltip label="Gender">
@@ -1876,7 +1876,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
           <div className="flex justify-between items-center flex-wrap gap-4 mt-8 pt-6 border-t border-gray-200">
             <button
               type="button"
-              className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors disabled:opacity-50 shadow-md"
+              className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors disabled:opacity-50 shadow-md leading-normal tracking-tight"
               onClick={handleSave}
               disabled={isSaving || isPosting}
             >
@@ -1884,7 +1884,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
             </button>
             <button
               type="submit"
-              className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors disabled:opacity-50 shadow-md"
+              className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors disabled:opacity-50 shadow-md leading-normal tracking-tight"
               disabled={isSaving || isPosting}
             >
               {isPosting ? "⏳ Posting..." : editJobData ? "✏️ Review & Update Job" : "📋 Review & Post Job"}

@@ -58,7 +58,7 @@ const HowItWorks = () => {
     <Fade in={checked} timeout={800}>
       <Paper elevation={4} className="bg-white rounded-lg shadow-md p-6 mb-8">
         <Fade in={checked} timeout={1000} style={{ transitionDelay: '200ms' }}>
-          <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent text-center mb-4">How It Works</h2>
+          <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent text-center mb-4 leading-tight tracking-tight">How It Works</h2>
         </Fade>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {steps.map((step, index) => (
@@ -74,12 +74,12 @@ const HowItWorks = () => {
                   timeout={800} 
                   style={{ transitionDelay: `${600 + index * 150}ms` }}
                 >
-                  <div className="w-12 h-12 bg-gradient-brand hover:bg-gradient-primary-hover rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-2">
+                  <div className="w-12 h-12 bg-gradient-brand hover:bg-gradient-primary-hover rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-2 leading-tight tracking-tight">
                     {step.number}
                   </div>
                 </Zoom>
-                <h3 className="font-semibold text-gray-800 mb-1">{step.title}</h3>
-                <p className="text-sm text-gray-600">{step.description}</p>
+                <h3 className="text-xl font-semibold text-gray-800 mb-1 leading-snug tracking-tight">{step.title}</h3>
+                <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">{step.description}</p>
               </div>
             </Fade>
           ))}

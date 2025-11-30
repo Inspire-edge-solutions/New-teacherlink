@@ -522,10 +522,10 @@ const FavouriteCandidates = ({
   if (!user) {
     return (
       <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-        <p className="text-red-800 text-center mb-2">
+        <p className="text-red-800 text-center mb-2 text-lg sm:text-base leading-normal tracking-tight">
           Please log in to view candidates.
         </p>
-        <p className="text-red-600 text-center text-sm">
+        <p className="text-red-600 text-center text-lg sm:text-base leading-normal tracking-tight">
           Redirecting you back in a few seconds...
         </p>
       </div>
@@ -545,23 +545,25 @@ const FavouriteCandidates = ({
     <div className="widget-content">
       {/* Header with Search and Records per Page */}
       <div className="mb-4">
-        <div className="flex justify-between items-center gap-4 flex-wrap">
-          <div className="flex-1 max-w-md">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
+          <div className="w-full sm:flex-1 sm:max-w-md">
             <SearchBar 
               onSearch={handleSearch} 
               placeholder="Search favourite candidates..." 
             />
           </div>
-          <RecordsPerPageDropdown
-            itemsPerPage={candidatesPerPage}
-            onItemsPerPageChange={handleRecordsPerPageChange}
-          />
+          <div className="w-full sm:w-auto flex-shrink-0">
+            <RecordsPerPageDropdown
+              itemsPerPage={candidatesPerPage}
+              onItemsPerPageChange={handleRecordsPerPageChange}
+            />
+          </div>
         </div>
       </div>
 
       {/* Candidates Count */}
       <div className="mb-3">
-        <h3 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
+        <h3 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 leading-tight tracking-tight">
           {isSearching
             ? `Found ${filteredCandidates.length} favourite candidate${filteredCandidates.length !== 1 ? 's' : ''}`
             : `${favouriteCandidates.length} Favourite Candidate${favouriteCandidates.length !== 1 ? 's' : ''}`
@@ -606,7 +608,7 @@ const FavouriteCandidates = ({
               alt="No favourite candidates" 
               className="w-64 h-64 md:w-80 md:h-80 mb-2 mx-auto"
             />
-            <p className="text-gray-600 text-lg font-medium">
+            <p className="text-gray-600 text-lg sm:text-base font-medium leading-normal tracking-tight">
               {isSearching 
                 ? 'No favourite candidates found matching your search.'
                 : 'You haven\'t marked any candidates as favourite yet.'
@@ -614,7 +616,7 @@ const FavouriteCandidates = ({
             </p>
             {!isSearching && (
               <button
-                className="px-4 py-2 bg-gradient-brand text-white rounded-lg text-sm font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500"
+                className="px-4 py-2 bg-gradient-brand text-white rounded-lg text-base font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500 leading-normal tracking-tight"
                 onClick={() => {
                   if (onNavigateTab) {
                     onNavigateTab('all');
@@ -665,26 +667,26 @@ const FavouriteCandidates = ({
             </button>
 
             <div className="mb-4 mt-0.5 text-center">
-              <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+              <h3 className="font-semibold text-xl mb-4 text-gray-800 leading-tight tracking-tight">
                 Unlock Candidate
               </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed mb-4">
+              <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight mb-4">
                 To message {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, please unlock their contact details first.
               </p>
               
               {/* Coin Breakdown */}
               <div className="bg-white/80 rounded-lg p-4 mb-4">
-                <p className="text-gray-700 text-[14px] font-medium mb-2">Coin Deduction:</p>
+                <p className="text-gray-700 text-lg sm:text-base font-medium mb-2 leading-snug tracking-tight">Coin Deduction:</p>
                 <div className="space-y-1 text-left">
-                  <div className="flex justify-between text-[13px] text-gray-600">
+                  <div className="flex justify-between text-lg sm:text-base text-gray-600 leading-normal tracking-tight">
                     <span>Profile Unlock:</span>
                     <span className="font-semibold">50 coins</span>
                   </div>
-                  <div className="flex justify-between text-[13px] text-gray-600">
+                  <div className="flex justify-between text-lg sm:text-base text-gray-600 leading-normal tracking-tight">
                     <span>Messaging:</span>
                     <span className="font-semibold">10 coins</span>
                   </div>
-                  <div className="border-t border-gray-300 pt-1 mt-1 flex justify-between text-[14px] font-semibold text-gray-800">
+                  <div className="border-t border-gray-300 pt-1 mt-1 flex justify-between text-lg sm:text-base font-semibold text-gray-800 leading-snug tracking-tight">
                     <span>Total:</span>
                     <span>60 coins</span>
                   </div>
@@ -693,21 +695,21 @@ const FavouriteCandidates = ({
 
               {unlockError && (
                 <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg">
-                  <p className="text-red-700 text-[13px]">{unlockError}</p>
+                  <p className="text-red-700 text-lg sm:text-base leading-normal tracking-tight">{unlockError}</p>
                 </div>
               )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight"
                 onClick={handleUnlockPromptClose}
                 disabled={unlockLoading}
               >
                 Cancel
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight"
                 onClick={handleUnlockForMessaging}
                 disabled={unlockLoading}
               >
@@ -738,23 +740,23 @@ const FavouriteCandidates = ({
             </button>
             
             <div className="mb-4 mt-0.5">
-              <h3 className="font-semibold text-[18px] mb-4 text-center text-gray-800">
+              <h3 className="font-semibold text-xl mb-4 text-center text-gray-800 leading-tight tracking-tight">
                 Message Candidate
               </h3>
-              <p className="text-gray-600 text-[15px] mb-6 text-center leading-relaxed">
+              <p className="text-gray-600 text-lg sm:text-base mb-6 text-center leading-normal tracking-tight">
                 If you want to send bulk message, save the candidate.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button 
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight"
                 onClick={handleMessageModalOk}
               >
                 Ok
               </button>
               <button 
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl leading-normal tracking-tight"
                 onClick={handleMessageModalContinue}
               >
                 Continue Single

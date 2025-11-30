@@ -77,10 +77,10 @@ const ContactSection = () => {
         className="text-center"
       >
         <Zoom in={checked} timeout={1000} style={{ transitionDelay: '200ms' }}>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 bg-gradient-brand-text bg-clip-text text-transparent">Ready to Get Started?</h2>
+          <h2 className="text-2xl font-bold mb-3 sm:mb-4 bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">Ready to Get Started?</h2>
         </Zoom>
         <Fade in={checked} timeout={1000} style={{ transitionDelay: '400ms' }}>
-          <p className="text-sm sm:text-base md:text-lg mb-3 sm:mb-4 opacity-90 px-2">
+          <p className="text-lg sm:text-base mb-3 sm:mb-4 opacity-90 px-2 leading-normal tracking-tight">
             Contact our advertising team to discuss custom packages and special offers
           </p>
         </Fade>
@@ -90,7 +90,7 @@ const ContactSection = () => {
               <Box
                 component="a"
                 href="mailto:info@inspireedgesolutions.com"
-                className="px-4 py-2.5 sm:px-5 sm:py-3 md:px-6 md:py-3 rounded-lg font-semibold text-sm sm:text-base flex items-center justify-center gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 transition-colors shadow-sm hover:shadow-md break-all sm:break-normal"
+                className="px-4 py-2.5 sm:px-5 sm:py-3 md:px-6 md:py-3 rounded-lg font-semibold text-base flex items-center justify-center gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 transition-colors shadow-sm hover:shadow-md break-all sm:break-normal leading-normal tracking-tight"
               >
                 <FaEnvelope style={{ flexShrink: 0 }} />
                 <Box component="span" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>
@@ -106,7 +106,7 @@ const ContactSection = () => {
               <Box
                 component="a"
                 href="tel:+919980333603"
-                className="px-4 py-2.5 sm:px-5 sm:py-3 md:px-6 md:py-3 font-semibold text-sm sm:text-base transition-colors flex items-center justify-center gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 rounded-lg shadow-sm hover:shadow-md"
+                className="px-4 py-2.5 sm:px-5 sm:py-3 md:px-6 md:py-3 font-semibold text-base transition-colors flex items-center justify-center gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 rounded-lg shadow-sm hover:shadow-md leading-normal tracking-tight"
               >
                 <FaInfoCircle style={{ flexShrink: 0 }} />
                 <Box component="span" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>

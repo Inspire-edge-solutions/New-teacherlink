@@ -901,10 +901,10 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
                 onClick={(e) => e.stopPropagation()}
               >
         <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
-          <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 leading-tight">Book Advertising Service</h3>
+          <h3 className="text-xl font-bold text-gray-800 leading-tight tracking-tight">Book Advertising Service</h3>
           <button
             onClick={handleClose}
-            className="text-gray-500 hover:text-gray-700 text-xl sm:text-2xl w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-gray-100 flex-shrink-0 transition-colors"
+            className="text-gray-500 hover:text-gray-700 text-base w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-gray-100 flex-shrink-0 transition-colors"
             aria-label="Close modal"
           >
             ×
@@ -912,11 +912,11 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
         </div>
         
         <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
-          <p className="text-xs sm:text-sm text-gray-800 mb-1 sm:mb-2">
+          <p className="text-lg sm:text-base text-gray-800 mb-1 sm:mb-2 leading-normal tracking-tight">
             Selected Package: 
-            <span className="font-semibold text-gray-800 text-sm sm:text-base md:text-lg ml-1"> {selectedPackage.name} </span>
+            <span className="font-semibold text-gray-800 text-lg sm:text-base ml-1 leading-snug tracking-tight"> {selectedPackage.name} </span>
           </p>
-          <p className="text-base sm:text-lg md:text-xl font-bold text-pink-600 mt-1 sm:mt-2">₹{selectedPackage.price} / {selectedPackage.duration}</p>
+          <p className="text-lg sm:text-base font-bold text-pink-600 mt-1 sm:mt-2 leading-tight tracking-tight">₹{selectedPackage.price} / {selectedPackage.duration}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
@@ -930,7 +930,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
                 value={formData.name}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2 sm:px-4 sm:py-2.5 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none leading-normal tracking-tight"
                 placeholder="Enter your name"
               />
             </InputWithTooltip>
@@ -942,7 +942,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
                 value={formData.schoolName}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2 sm:px-4 sm:py-2.5 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none leading-normal tracking-tight"
                 placeholder="Enter Institution name"
               />
             </InputWithTooltip>
@@ -957,7 +957,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
               onChange={handleInputChange}
               required
               rows={4}
-              className="w-full px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none resize-none"
+              className="w-full px-3 py-2 sm:px-4 sm:py-2.5 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none resize-none leading-normal tracking-tight"
               placeholder="Write your message"
             />
           </InputWithTooltip>
@@ -1016,7 +1016,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
                         />
                       }
                       label={
-                        <span className="text-sm text-gray-800 font-medium">
+                        <span className="text-base text-gray-800 font-medium leading-normal tracking-tight">
                           Image
                         </span>
                       }
@@ -1037,7 +1037,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
                         />
                       }
                       label={
-                        <span className="text-sm text-gray-800 font-medium">
+                        <span className="text-base text-gray-800 font-medium leading-normal tracking-tight">
                           Video
                         </span>
                       }
@@ -1067,7 +1067,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
                           <div className="w-7 h-7 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
                             <FaPlus className="text-white text-xs" />
                           </div>
-                          <span className="text-gray-700 text-xs sm:text-sm truncate">
+                          <span className="text-gray-700 text-base truncate leading-normal tracking-tight">
                             {imagePreview ? 'Image selected' : 'Choose image'}
                           </span>
                         </label>
@@ -1112,7 +1112,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
                           <div className="w-7 h-7 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
                             <FaPlus className="text-white text-xs" />
                           </div>
-                          <span className="text-gray-700 text-xs sm:text-sm truncate">
+                          <span className="text-gray-700 text-base truncate leading-normal tracking-tight">
                             {videoPreview ? 'Video selected' : 'Choose video'}
                           </span>
                         </label>
@@ -1140,7 +1140,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
 
                 {!formData.mediaType && (
                   <div className="w-full flex items-center justify-center min-h-[40px]">
-                    <p className="text-xs text-gray-500 text-center">
+                    <p className="text-sm text-gray-500 text-center">
                       Select a media type
                     </p>
                   </div>
@@ -1176,7 +1176,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
                 />
               }
               label={
-                <span className="text-sm sm:text-base text-gray-800 font-medium">
+                <span className="text-base text-gray-800 font-medium leading-normal tracking-tight">
                   I would like TeacherLink to prepare video/images for my advertisement
                 </span>
               }
@@ -1190,7 +1190,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
             {formData.prepareContent && (
               <Fade in={formData.prepareContent} timeout={300}>
                 <Box sx={{ mt: 1.5, ml: 4.5, pr: 1 }}>
-                  <p className="text-xs sm:text-sm text-gray-600 italic">
+                  <p className="text-sm text-gray-600 italic leading-normal tracking-tight">
                     Our creative team will work with you to design professional video and image content for your advertisement.
                   </p>
                 </Box>
@@ -1203,14 +1203,14 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
             <button
               type="button"
               onClick={handleClose}
-              className="w-full sm:flex-1 py-2.5 sm:py-3 text-sm sm:text-base bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 active:bg-gray-400 transition-colors"
+              className="w-full sm:flex-1 py-2.5 sm:py-3 text-base bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 active:bg-gray-400 transition-colors leading-normal tracking-tight"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isProcessing}
-              className="w-full sm:flex-1 py-2.5 sm:py-3 text-sm sm:text-base bg-gradient-brand text-white rounded-lg font-semibold hover:bg-gradient-primary-hover active:opacity-90 transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full sm:flex-1 py-2.5 sm:py-3 text-base bg-gradient-brand text-white rounded-lg font-semibold hover:bg-gradient-primary-hover active:opacity-90 transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 leading-normal tracking-tight"
             >
               {isProcessing ? (
                 <>
@@ -1252,12 +1252,14 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
       >
         <DialogTitle 
           id="success-dialog-title"
-          className="bg-gradient-brand-text bg-clip-text text-transparent"
+          className="bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight"
           sx={{
             fontSize: { xs: '1.25rem', sm: '1.5rem' },
             fontWeight: 'bold',
             textAlign: 'center',
-            pb: 1
+            pb: 1,
+            lineHeight: '1.2',
+            letterSpacing: '-0.025em'
           }}
         >
           Thank You!
@@ -1269,7 +1271,8 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
               fontSize: { xs: '0.875rem', sm: '1rem' },
               color: '#333',
               textAlign: 'center',
-              lineHeight: 1.6
+              lineHeight: 1.5,
+              letterSpacing: '-0.025em'
             }}
           >
             Thank you for your interest! Our creative team will connect with you shortly to discuss customization options for your advertisement.
@@ -1279,14 +1282,16 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
           <Button
             onClick={handleSuccessDialogClose}
             variant="contained"
-            className="bg-gradient-brand text-white font-semibold px-8 py-2 rounded-lg hover:bg-gradient-primary-hover transition-all shadow-md"
+            className="bg-gradient-brand text-white font-semibold px-8 py-2 rounded-lg hover:bg-gradient-primary-hover transition-all shadow-md leading-normal tracking-tight"
             sx={{
               textTransform: 'none',
               fontSize: { xs: '0.875rem', sm: '1rem' },
               background: 'linear-gradient(135deg, #F34B58 0%, #A1025D 100%)',
               '&:hover': {
                 background: 'linear-gradient(135deg, #A1025D 0%, #F34B58 100%)',
-              }
+              },
+              lineHeight: 1.5,
+              letterSpacing: '-0.025em'
             }}
           >
             OK

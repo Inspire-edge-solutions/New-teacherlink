@@ -442,6 +442,24 @@ const FormInfoBox = () => {
     setViewMode(null);
   };
 
+  const handleEditProfile = () => {
+    setViewMode("full");
+    setShowProfile(false);
+    setCurrentStep(1);
+    setIsPreviewMode(false);
+    // Scroll to top to show the form steps
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleEditProfileEasy = () => {
+    setViewMode("easy");
+    setShowProfile(false);
+    setCurrentStep(1);
+    setIsPreviewMode(false);
+    // Scroll to top to show the form steps
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Inform users when they are in preview mode
   useEffect(() => {
     if (isPreviewMode) {
@@ -841,7 +859,7 @@ const FormInfoBox = () => {
                 Short Profile
               </h3>
               <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">
-                Quick and simple profile with essential information
+                Quick and simple profile with basic information
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
@@ -1067,9 +1085,9 @@ const FormInfoBox = () => {
           </div>
         </div>
       ) : viewMode === "easy" ? (
-        <Easyview onViewAttempt={handleViewAttempt} formData={formData} />
+        <Easyview onViewAttempt={handleViewAttempt} onEditProfile={handleEditProfileEasy} formData={formData} />
       ) : (
-        <Fullview onViewAttempt={handleViewAttempt} formData={formData} />
+        <Fullview onViewAttempt={handleViewAttempt} onEditProfile={handleEditProfile} formData={formData} />
       )}
     </div>
   );

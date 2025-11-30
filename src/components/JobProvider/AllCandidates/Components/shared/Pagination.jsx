@@ -63,7 +63,7 @@ const Pagination = ({
     <div className="mt-6 border-t pt-4">
       {/* Pagination Info */}
       <div className="flex justify-between items-center mb-3">
-        <p className="text-sm text-gray-600">
+        <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">
           Showing {currentPageStart} to {currentPageEnd} of {totalItems} candidates
         </p>
       </div>
@@ -76,7 +76,7 @@ const Pagination = ({
             <button
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-2 rounded-md text-base font-medium transition-colors leading-normal tracking-tight ${
                 currentPage === 1
                   ? 'text-gray-400 cursor-not-allowed'
                   : 'text-gray-700 hover:bg-gray-100'
@@ -90,11 +90,11 @@ const Pagination = ({
           {pageNumbers.map((number, index) => (
             <li key={index}>
               {number === '...' ? (
-                <span className="px-3 py-2 text-gray-500">...</span>
+                <span className="px-3 py-2 text-gray-500 text-base leading-normal tracking-tight">...</span>
               ) : (
                 <button
                   onClick={() => onPageChange(number)}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-md text-base font-medium transition-colors leading-normal tracking-tight ${
                     currentPage === number
                       ? 'bg-gradient-brand text-white shadow-sm'
                       : 'text-gray-700 hover:bg-gray-100'
@@ -111,7 +111,7 @@ const Pagination = ({
             <button
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-2 rounded-md text-base font-medium transition-colors leading-normal tracking-tight ${
                 currentPage === totalPages
                   ? 'text-gray-400 cursor-not-allowed'
                   : 'text-gray-700 hover:bg-gray-100'

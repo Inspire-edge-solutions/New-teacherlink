@@ -504,23 +504,23 @@ const RecommendedCandidatesModal = ({
           </button>
 
           <div className="mb-4 mt-0.5 text-center">
-            <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800 leading-tight tracking-tight">
               Unlock Candidate
             </h3>
-            <p className="text-gray-600 text-[15px] leading-relaxed">
+            <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">
               To view {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}'s profile, please unlock their contact details first. View the profile to unlock and access full information.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
             <button
-              className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+              className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-lg sm:text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight"
               onClick={handleUnlockPromptClose}
             >
               Cancel
             </button>
             <button
-              className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
+              className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-lg sm:text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl leading-normal tracking-tight"
               onClick={handleUnlockPromptViewProfile}
             >
               View Profile
@@ -550,10 +550,10 @@ const RecommendedCandidatesModal = ({
         <div className="p-6 border-b border-gray-200 bg-white flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-1">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-1 leading-tight tracking-tight">
                 Recommended Candidates for "{jobTitle}"
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">
                 {matchCount} candidate{matchCount !== 1 ? 's' : ''} found
               </p>
             </div>
@@ -575,7 +575,7 @@ const RecommendedCandidatesModal = ({
             />
           ) : filteredCandidates.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-600 text-lg">No matching candidates found.</p>
+              <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">No matching candidates found.</p>
             </div>
           ) : (
             <>

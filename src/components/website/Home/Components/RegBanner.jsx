@@ -23,7 +23,7 @@ const RegBanner = () => {
             {/* Content */}
             <div className="p-6">
               <h3 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 leading-tight tracking-tight">Job Seekers</h3>
-              <p className="text-lg text-gray-700 mb-6 leading-normal tracking-tight">
+              <p className="text-lg sm:text-base text-gray-700 mb-6 leading-normal tracking-tight">
               Welcome to TeacherLink - India's trusted job portal for teachers.
               Register today to explore opportunities that match your skills, passion, and career goals.
               </p>
@@ -50,7 +50,7 @@ const RegBanner = () => {
             {/* Content */}
             <div className="p-6">
               <h3 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 leading-tight tracking-tight">Job Providers</h3>
-              <p className="text-lg text-gray-700 mb-6 leading-normal tracking-tight">
+              <p className="text-lg sm:text-base text-gray-700 mb-6 leading-normal tracking-tight">
               Welcome to TeacherLink - a platform for institutions/parents to find right teaching professionals. Register now to post jobs & connect with top educators.
               </p>
               <button 

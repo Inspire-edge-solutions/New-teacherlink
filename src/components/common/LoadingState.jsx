@@ -101,11 +101,11 @@ const LoadingState = ({
         )}
 
         <div className={`${layout === 'inline' ? 'space-y-0' : 'space-y-3'} text-slate-700`}> 
-          <h2 className={`font-semibold tracking-tight text-[#3A3A3A] ${layout === 'inline' ? 'text-lg' : 'text-2xl'}`}>
+          <h2 className={`font-semibold text-[#3A3A3A] leading-tight tracking-tight ${layout === 'inline' ? 'text-lg' : 'text-2xl'}`}>
             {title}
           </h2>
           {subtitle && (
-            <p className={`text-sm ${layout === 'inline' ? 'text-slate-600' : 'text-slate-600/90'} max-w-md`}>{subtitle}</p>
+            <p className={`text-lg sm:text-base ${layout === 'inline' ? 'text-slate-600' : 'text-slate-600/90'} max-w-md leading-normal tracking-tight`}>{subtitle}</p>
           )}
         </div>
 

@@ -18,15 +18,15 @@ const RecordsPerPageDropdown = ({
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <label htmlFor="records-per-page" className="text-sm text-gray-600 whitespace-nowrap">
+    <div className="flex items-center gap-2 w-full sm:w-auto">
+      <label htmlFor="records-per-page" className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight whitespace-nowrap flex-shrink-0">
         Records per page:
       </label>
       <select
         id="records-per-page"
         value={itemsPerPage}
         onChange={handleChange}
-        className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+        className="flex-1 sm:flex-initial sm:w-auto px-3 py-1.5 border border-gray-300 rounded-md text-lg sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white leading-normal tracking-tight min-w-0"
       >
         {options.map((option) => (
           <option key={option} value={option}>

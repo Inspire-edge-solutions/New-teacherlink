@@ -29,7 +29,7 @@ const AboutUs = () => {
               India's First Dedicated Job Portal for{' '}
               <span className="bg-gradient-brand-text bg-clip-text text-transparent">Teachers</span>
             </h1>
-            <p className="text-lg text-gray-600 leading-normal tracking-tight">
+            <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">
               Designed exclusively to connect educators with institutions directly and efficiently.
             </p>
           </div>
@@ -68,7 +68,7 @@ const AboutUs = () => {
                 <h3 className="text-xl font-bold text-gray-800 mb-4 leading-tight tracking-tight">
                   {feature.title}
                 </h3>
-                <p className="text-lg text-gray-600 leading-normal tracking-tight">
+                <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">
                   {feature.description}
                 </p>
               </div>

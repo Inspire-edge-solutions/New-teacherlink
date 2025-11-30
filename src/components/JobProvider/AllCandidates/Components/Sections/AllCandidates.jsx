@@ -1,3 +1,6 @@
+//AllCandidates.jsx
+
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +23,15 @@ import CandidateActionConfirmationModal from '../shared/CandidateActionConfirmat
 import ModalPortal from '../../../../common/ModalPortal';
 
 const REDEEM_API = 'https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem';
+const CANDIDATES_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/change';
+// NOTE: Update this URL with your actual profile_approved API Gateway URL
+// Check AWS Console > API Gateway > offer service > profile_approved endpoint
+const APPROVED_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved';
+
+// TEMPORARY DEBUG: Set to true to bypass CandidateApiService and call API directly
+const USE_DIRECT_API_CALL = true;
+// TEMPORARY DEBUG: Set to true to bypass approval filtering and show all candidates
+const BYPASS_APPROVAL_FILTER = false;
 
 const normalizeString = (value) =>
   (value ?? '')
@@ -427,16 +439,143 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
   const fetchCandidates = useCallback(async () => {
     try {
       setLoading(true);
-      const [allCandidates, approvedUids] = await Promise.all([
-        CandidateApiService.fetchCandidates(),
-        CandidateApiService.fetchApprovedCandidates()
-      ]);
       
-      // Filter only approved candidates
-      const approvedCandidates = CandidateApiService.filterApprovedCandidates(
-        allCandidates,
-        approvedUids
-      );
+      let allCandidates, approvedUids;
+      
+      if (USE_DIRECT_API_CALL) {
+        // DIRECT API CALL - bypass CandidateApiService to test
+        console.log('🧪 DIRECT API MODE: Calling APIs directly');
+        
+        try {
+          const [candidatesRes, approvedRes] = await Promise.all([
+            axios.get(CANDIDATES_API),
+            axios.get(APPROVED_API)
+          ]);
+          
+          console.log('🔴 DIRECT API: candidatesRes.status:', candidatesRes.status);
+          console.log('🔴 DIRECT API: candidatesRes.data type:', typeof candidatesRes.data);
+          console.log('🔴 DIRECT API: candidatesRes.data length:', Array.isArray(candidatesRes.data) ? candidatesRes.data.length : 'not array');
+          console.log('🔴 DIRECT API: candidatesRes.data sample:', Array.isArray(candidatesRes.data) ? candidatesRes.data.slice(0, 2) : candidatesRes.data);
+          
+          // Handle API Gateway response format
+          let candidatesData = candidatesRes.data;
+          if (candidatesData && typeof candidatesData === 'object' && 'body' in candidatesData) {
+            try {
+              candidatesData = JSON.parse(candidatesData.body);
+              console.log('🔴 DIRECT API: Parsed body, length:', Array.isArray(candidatesData) ? candidatesData.length : 'not array');
+            } catch (e) {
+              console.error('🔴 DIRECT API: Error parsing body:', e);
+            }
+          }
+          
+          allCandidates = Array.isArray(candidatesData) ? candidatesData : [];
+          
+          console.log('🔴 DIRECT API: approvedRes.status:', approvedRes.status);
+          console.log('🔴 DIRECT API: approvedRes.data type:', typeof approvedRes.data);
+          console.log('🔴 DIRECT API: approvedRes.data length:', Array.isArray(approvedRes.data) ? approvedRes.data.length : 'not array');
+          console.log('🔴 DIRECT API: approvedRes.data sample:', Array.isArray(approvedRes.data) ? approvedRes.data.slice(0, 5) : approvedRes.data);
+          
+          // Handle API Gateway response format
+          let approvedData = approvedRes.data;
+          if (approvedData && typeof approvedData === 'object' && 'body' in approvedData) {
+            try {
+              approvedData = JSON.parse(approvedData.body);
+              console.log('🔴 DIRECT API: Parsed approved body, length:', Array.isArray(approvedData) ? approvedData.length : 'not array');
+            } catch (e) {
+              console.error('🔴 DIRECT API: Error parsing approved body:', e);
+            }
+          }
+          
+          approvedUids = Array.isArray(approvedData) ? approvedData : [];
+          
+        } catch (apiError) {
+          console.error('❌ DIRECT API ERROR:', apiError);
+          console.error('❌ Error response:', apiError.response?.data);
+          console.error('❌ Error status:', apiError.response?.status);
+          throw apiError;
+        }
+      } else {
+        // Use CandidateApiService (original method)
+        [allCandidates, approvedUids] = await Promise.all([
+          CandidateApiService.fetchCandidates(),
+          CandidateApiService.fetchApprovedCandidates()
+        ]);
+      }
+      
+      // DEBUG: Log raw responses
+      console.log('🔴 RAW DEBUG: allCandidates type:', typeof allCandidates, Array.isArray(allCandidates) ? 'array' : 'not array');
+      console.log('🔴 RAW DEBUG: allCandidates length:', allCandidates?.length || 0);
+      console.log('🔴 RAW DEBUG: allCandidates sample:', allCandidates?.slice?.(0, 2) || allCandidates);
+      console.log('🔴 RAW DEBUG: approvedUids type:', typeof approvedUids, Array.isArray(approvedUids) ? 'array' : 'not array');
+      console.log('🔴 RAW DEBUG: approvedUids length:', approvedUids?.length || 0);
+      console.log('🔴 RAW DEBUG: approvedUids sample:', approvedUids?.slice?.(0, 5) || approvedUids);
+      
+      // Check if allCandidates is empty - this is the main issue
+      if (!allCandidates || allCandidates.length === 0) {
+        console.error('❌ CRITICAL: allCandidates is empty! Check CandidateApiService.fetchCandidates()');
+        console.error('❌ This means the API call failed or returned empty data');
+        console.error('❌ Check Network tab for the candidates API request');
+        setCandidates([]);
+        setSearchResults([]);
+        toast.error('No candidates found. Please check the API connection.');
+        return;
+      }
+      
+      // Normalize approvedUids to array of strings (handle both formats)
+      let normalizedApprovedUids = [];
+      if (Array.isArray(approvedUids)) {
+        if (approvedUids.length > 0) {
+          // Check if it's array of objects or array of strings
+          if (typeof approvedUids[0] === 'object' && approvedUids[0] !== null) {
+            // Array of objects: extract firebase_uid
+            normalizedApprovedUids = approvedUids
+              .map(uid => String(uid?.firebase_uid || uid))
+              .filter(Boolean);
+            console.log('🔍 DEBUG: Converted from objects to strings, count:', normalizedApprovedUids.length);
+          } else {
+            // Array of strings/numbers: convert to strings
+            normalizedApprovedUids = approvedUids.map(uid => String(uid)).filter(Boolean);
+            console.log('🔍 DEBUG: Already strings, normalized count:', normalizedApprovedUids.length);
+          }
+        }
+      } else if (approvedUids) {
+        // Single value, convert to array
+        normalizedApprovedUids = [String(approvedUids)].filter(Boolean);
+        console.log('🔍 DEBUG: Single value converted to array');
+      }
+      
+      console.log('🔍 DEBUG: Normalized approved UIDs count:', normalizedApprovedUids.length);
+      console.log('🔍 DEBUG: Normalized approved UIDs sample:', normalizedApprovedUids.slice(0, 5));
+      
+      // IMPORTANT: Fallback logic - if no approved UIDs, show all candidates
+      let approvedCandidates;
+      
+      // TEMPORARY BYPASS: Set BYPASS_APPROVAL_FILTER = true to test without filtering
+      if (BYPASS_APPROVAL_FILTER) {
+        console.log('🧪 BYPASS MODE: Showing all candidates without approval filtering');
+        approvedCandidates = allCandidates;
+      } else if (normalizedApprovedUids.length > 0) {
+        // We have approved UIDs, filter the candidates
+        approvedCandidates = CandidateApiService.filterApprovedCandidates(
+          allCandidates,
+          normalizedApprovedUids
+        );
+        console.log('🔍 DEBUG: Filtered to approved candidates, count:', approvedCandidates?.length || 0);
+      } else {
+        // No approved UIDs found - fallback to showing all candidates
+        console.warn('⚠️ WARNING: No approved UIDs found – using all candidates as fallback');
+        console.warn('⚠️ This might mean the approval API is not working or returning empty');
+        approvedCandidates = allCandidates;
+      }
+      
+      // Safety check: if filtering resulted in 0 but we have candidates, log warning
+      if (approvedCandidates.length === 0 && allCandidates.length > 0) {
+        console.warn('⚠️ WARNING: Filtering resulted in 0 candidates but backend returned', allCandidates.length);
+        console.warn('⚠️ Sample candidate firebase_uid:', allCandidates[0]?.firebase_uid);
+        console.warn('⚠️ Sample approved UID:', normalizedApprovedUids[0]);
+        console.warn('⚠️ Type match check:', typeof allCandidates[0]?.firebase_uid, 'vs', typeof normalizedApprovedUids[0]);
+        console.warn('⚠️ Check CandidateApiService.filterApprovedCandidates() implementation');
+      }
       
       setCandidates(approvedCandidates);
       setSearchResults([]);
@@ -445,7 +584,8 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
       const photos = await CandidateApiService.fetchCandidatePhotos(approvedCandidates);
       setCandidatePhotos(photos);
     } catch (err) {
-      console.error('Error fetching candidates:', err);
+      console.error('❌ Error fetching candidates:', err);
+      console.error('❌ Error stack:', err.stack);
       toast.error('Failed to load candidates. Please try again later.');
       setCandidates([]);
       setSearchResults([]);
@@ -1398,10 +1538,10 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
   if (!user) {
     return (
       <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-        <p className="text-red-800 text-center mb-2">
+        <p className="text-red-800 text-center mb-2 text-lg sm:text-base leading-normal tracking-tight">
           Please log in to view candidates.
         </p>
-        <p className="text-red-600 text-center text-sm">
+        <p className="text-red-600 text-center text-lg sm:text-base leading-normal tracking-tight">
           Redirecting you back in a few seconds...
         </p>
       </div>
@@ -1426,12 +1566,12 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
       <div className="widget-title mb-4">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="flex flex-col gap-1">
-            <h3 className="text-lg sm:text-xl md:text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
+            <h3 className="text-lg sm:text-xl md:text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 leading-tight tracking-tight">
               {isSearching
                 ? `Found ${visibleCandidates.toLocaleString()} candidate${visibleCandidates === 1 ? '' : 's'}`
                 : `${totalCandidates.toLocaleString()} Candidate${totalCandidates === 1 ? '' : 's'} Available`}
             </h3>
-            <div className="text-sm text-gray-600 flex flex-wrap items-center gap-x-2 gap-y-1">
+            <div className="text-lg sm:text-base text-gray-600 flex flex-wrap items-center gap-x-2 gap-y-1 leading-normal tracking-tight">
               <span>
                 Showing {visibleCandidates.toLocaleString()} of {totalCandidates.toLocaleString()} candidates
               </span>
@@ -1458,7 +1598,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
             </div>
             <button
               onClick={() => setShowFilters(true)}
-              className={`w-full sm:w-auto px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 ${
+              className={`w-full sm:w-auto px-4 py-2 rounded-md font-medium text-base transition-all duration-200 leading-normal tracking-tight ${
                 activeFilters.size > 0
                   ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover transition-colors'
                   : 'bg-gradient-brand text-white hover:bg-gradient-primary-hover transition-colors'
@@ -1472,7 +1612,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
 
       {/* Records per Page */}
       <div className="candidate-listing">
-        <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-3 sm:gap-0 mb-3">
+        <div className="flex flex-col sm:flex-row sm:justify-end items-start sm:items-center gap-3 mb-3">
           <RecordsPerPageDropdown
             itemsPerPage={candidatesPerPage}
             onItemsPerPageChange={handleRecordsPerPageChange}
@@ -1517,7 +1657,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
               alt="No candidates" 
               className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
             />
-            <p className="text-gray-600 text-lg font-medium">
+            <p className="text-gray-600 text-lg sm:text-base font-medium leading-normal tracking-tight">
               {userHasAppliedFilters && activeFilters.size > 0 && filteredCandidatesByFilters.length === 0
                 ? 'No candidates match your filters. Try adjusting your selections or reset them to see more candidates.'
                 : isSearching 
@@ -1573,30 +1713,30 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
             </button>
 
             <div className="mb-6 mt-0.5 text-center">
-              <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+              <h3 className="font-semibold text-xl mb-4 text-gray-800 leading-tight tracking-tight">
                 Unlock Candidate Contact Details
               </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed mb-4">
+              <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight mb-4">
                 To start messaging {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, you'll need to unlock their contact information first. <span className="font-semibold">Unlocking costs 50 coins</span> (one-time payment) and gives you full access to their profile. After unlocking, <span className="font-semibold">each message you sent costs 10 coins</span>.
               </p>
 
               {unlockError && (
                 <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg text-left">
-                  <p className="text-red-700 text-[13px]">{unlockError}</p>
+                  <p className="text-red-700 text-lg sm:text-base leading-normal tracking-tight">{unlockError}</p>
                 </div>
               )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button 
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight"
                 onClick={handleUnlockPromptClose}
                 disabled={unlockLoading}
               >
                 Cancel
               </button>
               <button 
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight"
                 onClick={handleUnlockForMessaging}
                 disabled={unlockLoading}
               >
@@ -1627,23 +1767,23 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
             </button>
             
             <div className="mb-4 mt-0.5">
-              <h3 className="font-semibold text-[18px] mb-4 text-center text-gray-800">
+              <h3 className="font-semibold text-xl mb-4 text-center text-gray-800 leading-tight tracking-tight">
                 Message Candidate
               </h3>
-              <p className="text-gray-600 text-[15px] mb-6 text-center leading-relaxed">
+              <p className="text-gray-600 text-lg sm:text-base mb-6 text-center leading-normal tracking-tight">
                 If you want to send bulk message, save the candidate.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button 
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight"
                 onClick={handleMessageModalOk}
               >
                 Ok
               </button>
               <button 
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl leading-normal tracking-tight"
                 onClick={handleMessageModalContinue}
               >
                 Continue Single

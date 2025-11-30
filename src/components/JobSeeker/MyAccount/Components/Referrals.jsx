@@ -341,7 +341,7 @@ const Referrals = ({ user, onSuccess }) => {
       // Get coupon_value from config
       const referConfigRes = await fetch("https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/referConfigure");
       const referConfig = await referConfigRes.json();
-      const couponValue = Array.isArray(referConfig) && referConfig.length > 0 ? Number(referConfig[0]?.coupon_value || 8000) : 8000;
+      const couponValue = Array.isArray(referConfig) && referConfig.length > 0 ? Number(referConfig[0]?.coupon_value || 2000) : 2000;
 
       const redeemRes = await fetch(
         `https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem?firebase_uid=${firebase_uid}`
@@ -509,7 +509,7 @@ const Referrals = ({ user, onSuccess }) => {
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
           <h3 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-2">Refer candidates and get free access to our Basic Plan</h3>
-          <p className="text-gray-600 text-sm sm:text-base">Add up to 20 candidate contact numbers and get free access to our Basic Plan when 10 register</p>
+          <p className="text-gray-600 text-sm sm:text-base">Add up to 20 candidates contact numbers and get free access to our Basic Plan when 10 register</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
@@ -610,7 +610,7 @@ const Referrals = ({ user, onSuccess }) => {
                           <div className="font-medium text-gray-800 text-sm sm:text-base">{number}</div>
                           <div className={`text-xs sm:text-sm ${
                             registeredContacts.includes(number) 
-                              ? 'text-blue-600 font-semibold' 
+                              ? 'text-gradient-brand font-semibold' 
                               : 'text-gray-500'
                           }`}>
                             {registeredContacts.includes(number)

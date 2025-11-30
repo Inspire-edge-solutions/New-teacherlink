@@ -174,9 +174,13 @@ const fetchProfileViewNotificationsCount = async (userId) => {
       const viewRes = await axios.get(`${PROFILE_VIEW_API}?viewed_user_id=${userId}`);
       profileViews = Array.isArray(viewRes.data) ? viewRes.data : [];
     } catch (axiosError) {
-      // Handle 400/403 errors gracefully - just return 0 count
+      // Handle 400/403 errors gracefully - just return 0 count (403 is expected for users without access)
       if (axiosError?.response?.status === 400 || axiosError?.response?.status === 403) {
-        console.warn('Profile views API returned error status, skipping profile view notifications:', axiosError.response.status);
+        // Silently handle 403 errors - they're expected for users without profile view access
+        // Only log 400 errors as they might indicate a real issue
+        if (axiosError?.response?.status === 400) {
+          console.warn('Profile views API returned 400 error, skipping profile view notifications');
+        }
         return 0;
       }
       // Re-throw other errors to be caught by outer catch
@@ -272,9 +276,12 @@ export const useNotificationCount = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  // Get stable user ID to prevent unnecessary re-runs
+  const userId = user?.firebase_uid || user?.uid || null;
+
   useEffect(() => {
     const fetchCount = async () => {
-      if (!user) {
+      if (!userId) {
         setUnreadCount(0);
         setLoading(false);
         return;
@@ -282,7 +289,6 @@ export const useNotificationCount = () => {
 
       try {
         setLoading(true);
-        const userId = user.firebase_uid || user.uid;
         
         // Get user type to determine which notifications to fetch
         const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -349,7 +355,7 @@ export const useNotificationCount = () => {
     
     // Handle visibility change - refresh immediately when tab becomes visible
     const handleVisibilityChange = () => {
-      if (!document.hidden && user) {
+      if (!document.hidden && userId) {
         // Tab became visible - refresh immediately to catch missed notifications
         fetchCount();
       }
@@ -359,7 +365,7 @@ export const useNotificationCount = () => {
     
     // Handle window focus - refresh when user clicks back into the window
     const handleWindowFocus = () => {
-      if (user) {
+      if (userId) {
         // Window gained focus - refresh to catch any new notifications
         fetchCount();
       }
@@ -381,7 +387,7 @@ export const useNotificationCount = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleWindowFocus);
     };
-  }, [user]);
+  }, [userId]); // Only depend on userId, not the entire user object
 
   return { unreadCount, loading };
 };

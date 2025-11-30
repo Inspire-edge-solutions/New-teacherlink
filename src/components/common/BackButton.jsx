@@ -18,28 +18,7 @@ const BackButton = () => {
   return (
     <button 
       onClick={handleBack}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '10px 16px',
-        background: '#f8fafc',
-        border: '1px solid #e2e8f0',
-        borderRadius: '6px',
-        color: '#475569',
-        fontSize: '14px',
-        cursor: 'pointer',
-        marginBottom: '5px',
-        transition: 'all 0.3s ease'
-      }}
-      onMouseEnter={(e) => {
-        e.target.style.background = '#e2e8f0';
-        e.target.style.color = '#1d4ed8';
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.background = '#f8fafc';
-        e.target.style.color = '#475569';
-      }}
+      className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-md text-slate-600 cursor-pointer mb-1 transition-all duration-300 text-base leading-normal tracking-tight hover:bg-slate-200 hover:text-blue-700"
     >
       <FaArrowLeft size={12} />
       Back

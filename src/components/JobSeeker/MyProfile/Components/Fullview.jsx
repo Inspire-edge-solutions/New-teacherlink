@@ -57,9 +57,7 @@ const Section = ({ title, children }) => (
 const Field = ({ label, value }) => {
   if (!value) return null;
   
-  const displayValue = Array.isArray(value) ? value.join(', ') : 
-                      typeof value === 'string' ? value.split(',').join(', ') : 
-                      value;
+  const displayValue = Array.isArray(value) ? value.join(', ') : typeof value === 'string' ? value.split(',').join(', ') : value;
 
   return (
     <div className="form-group col-lg-4 col-md-12 mb-2">
@@ -108,7 +106,7 @@ const hasValidContent = (value1, value2) => {
   return checkArray(value1) || checkArray(value2) || checkString(value1) || checkString(value2);
 };
 
-function Fullview({ onViewAttempt, formData }) {
+function Fullview({ onViewAttempt, onEditProfile, formData }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
@@ -1054,7 +1052,11 @@ function Fullview({ onViewAttempt, formData }) {
       <div className="flex justify-end mb-[15px]">
         <button
           onClick={() => {
-            navigate("/seeker/my-profile?edit=true", { replace: false });
+            if (onEditProfile) {
+              onEditProfile();
+            } else {
+              navigate("/seeker/my-profile?edit=true", { replace: false });
+            }
           }}
           className={`btn bg-gradient-brand hover:bg-gradient-brand-hover text-white ${isMobile ? 'btn-mobile' : ''} ${isMobile ? 'text-sm px-4 py-2' : 'text-base px-5 py-2.5'} rounded-md font-medium`}
         >

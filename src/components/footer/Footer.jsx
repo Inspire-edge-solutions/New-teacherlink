@@ -117,7 +117,7 @@ const Footer = () => {
       {/* Copyright Bar */}
       <div className="bg-gradient-brand py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-white text-sm leading-normal tracking-tight">
+          <div className="text-center text-white text-lg sm:text-base leading-normal tracking-tight">
             <span>© 2025 TeacherLink by Inspire Edge Innovation. All Rights Reserved.</span>
             <span className="mx-2">|</span>
             <Link

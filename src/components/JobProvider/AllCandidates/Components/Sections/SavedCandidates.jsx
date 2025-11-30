@@ -777,10 +777,10 @@ const SavedCandidates = ({
   if (!user) {
     return (
       <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-        <p className="text-red-800 text-center mb-2">
+        <p className="text-red-800 text-center mb-2 text-lg sm:text-base leading-normal tracking-tight">
           Please log in to view candidates.
         </p>
-        <p className="text-red-600 text-center text-sm">
+        <p className="text-red-600 text-center text-lg sm:text-base leading-normal tracking-tight">
           Redirecting you back in a few seconds...
         </p>
       </div>
@@ -799,19 +799,21 @@ const SavedCandidates = ({
   return (
     <div className="widget-content">
       <div className="mb-4">
-        <div className="flex justify-between items-center gap-4 flex-wrap">
-          <div className="flex-1 max-w-md">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
+          <div className="w-full sm:flex-1 sm:max-w-md">
             <SearchBar onSearch={handleSearch} placeholder="Search saved candidates..." />
           </div>
-          <RecordsPerPageDropdown
-            itemsPerPage={candidatesPerPage}
-            onItemsPerPageChange={(v) => { setCandidatesPerPage(v); setCurrentPage(1); }}
-          />
+          <div className="w-full sm:w-auto flex-shrink-0">
+            <RecordsPerPageDropdown
+              itemsPerPage={candidatesPerPage}
+              onItemsPerPageChange={(v) => { setCandidatesPerPage(v); setCurrentPage(1); }}
+            />
+          </div>
         </div>
       </div>
 
       <div className="mb-3">
-        <h3 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0">
+        <h3 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 leading-tight tracking-tight">
           {isSearching
             ? `Found ${filteredCandidates.length} saved candidate${filteredCandidates.length !== 1 ? 's' : ''}`
             : `${savedCandidates.length} Saved Candidate${savedCandidates.length !== 1 ? 's' : ''}`
@@ -831,7 +833,7 @@ const SavedCandidates = ({
                   checked={selectAll}
                   onChange={handleSelectAll}
                 />
-                <label htmlFor="selectAllSavedCandidates" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
+                <label htmlFor="selectAllSavedCandidates" className="ml-2 text-lg sm:text-base font-medium text-gray-700 cursor-pointer leading-normal tracking-tight">
                   Select All Candidates on This Page
                   {selectedCandidates.size > 0 && (
                     <span className="text-gray-500 ml-2">({selectedCandidates.size} total selected)</span>
@@ -840,7 +842,7 @@ const SavedCandidates = ({
               </div>
               {selectedCandidates.size > 0 && (
                 <button
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-brand rounded-lg shadow-lg hover:bg-gradient-primary-hover duration-300 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-base font-semibold text-white bg-gradient-brand rounded-lg shadow-lg hover:bg-gradient-primary-hover duration-300 transition-colors leading-normal tracking-tight"
                   onClick={handleOpenBulkMessageModal}
                 >
                   <span role="img" aria-label="message">💬</span>
@@ -882,7 +884,7 @@ const SavedCandidates = ({
               alt="No saved candidates" 
               className="w-64 h-64 md:w-80 md:h-80 mb-2 mx-auto"
             />
-            <p className="text-gray-600 text-lg font-medium">
+            <p className="text-gray-600 text-lg sm:text-base font-medium leading-normal tracking-tight">
               {isSearching 
                 ? 'No saved candidates found matching your search.'
                 : 'You haven\'t saved any candidates yet.'
@@ -890,7 +892,7 @@ const SavedCandidates = ({
             </p>
             {!isSearching && (
               <button
-                className="px-4 py-2 bg-gradient-brand text-white rounded-lg text-sm font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500"
+                className="px-4 py-2 bg-gradient-brand text-white rounded-lg text-base font-medium hover:bg-gradient-primary-hover transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500 leading-normal tracking-tight"
                 onClick={() => {
                   if (onNavigateTab) {
                     onNavigateTab('all');
@@ -940,26 +942,26 @@ const SavedCandidates = ({
             </button>
 
             <div className="mb-4 mt-0.5 text-center">
-              <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+              <h3 className="font-semibold text-xl mb-4 text-gray-800 leading-tight tracking-tight">
                 Unlock Candidate
               </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed mb-4">
+              <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight mb-4">
                 To message {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, please unlock their contact details first.
               </p>
               
               {/* Coin Breakdown */}
               <div className="bg-white/80 rounded-lg p-4 mb-4">
-                <p className="text-gray-700 text-[14px] font-medium mb-2">Coin Deduction:</p>
+                <p className="text-gray-700 text-lg sm:text-base font-medium mb-2 leading-snug tracking-tight">Coin Deduction:</p>
                 <div className="space-y-1 text-left">
-                  <div className="flex justify-between text-[13px] text-gray-600">
+                  <div className="flex justify-between text-lg sm:text-base text-gray-600 leading-normal tracking-tight">
                     <span>Profile Unlock:</span>
                     <span className="font-semibold">50 coins</span>
                   </div>
-                  <div className="flex justify-between text-[13px] text-gray-600">
+                  <div className="flex justify-between text-lg sm:text-base text-gray-600 leading-normal tracking-tight">
                     <span>Messaging:</span>
                     <span className="font-semibold">10 coins</span>
                   </div>
-                  <div className="border-t border-gray-300 pt-1 mt-1 flex justify-between text-[14px] font-semibold text-gray-800">
+                  <div className="border-t border-gray-300 pt-1 mt-1 flex justify-between text-lg sm:text-base font-semibold text-gray-800 leading-snug tracking-tight">
                     <span>Total:</span>
                     <span>60 coins</span>
                   </div>
@@ -968,21 +970,21 @@ const SavedCandidates = ({
 
               {unlockError && (
                 <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg">
-                  <p className="text-red-700 text-[13px]">{unlockError}</p>
+                  <p className="text-red-700 text-lg sm:text-base leading-normal tracking-tight">{unlockError}</p>
                 </div>
               )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight"
                 onClick={handleUnlockPromptClose}
                 disabled={unlockLoading}
               >
                 Cancel
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight"
                 onClick={handleUnlockForMessaging}
                 disabled={unlockLoading}
               >
@@ -1013,10 +1015,10 @@ const SavedCandidates = ({
             </button>
             
             <div className="mb-4 mt-0.5">
-              <h3 className="font-semibold text-[18px] mb-4 text-center text-gray-800">
+              <h3 className="font-semibold text-xl mb-4 text-center text-gray-800 leading-tight tracking-tight">
                 Message Candidate
               </h3>
-              <p className="text-gray-600 text-[15px] mb-6 text-center leading-relaxed">
+              <p className="text-gray-600 text-lg sm:text-base mb-6 text-center leading-normal tracking-tight">
                 To send a bulk message, select multiple candidates using the checkboxes and click <strong>Send Message</strong>. Choose <strong>Continue Single</strong> below to message just this candidate.
               </p>
             </div>
@@ -1059,10 +1061,10 @@ const SavedCandidates = ({
             </button>
 
             <div className="mb-4 mt-0.5 text-center">
-              <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+              <h3 className="font-semibold text-xl mb-4 text-gray-800 leading-tight tracking-tight">
                 Send Bulk Message
               </h3>
-              <div className="text-gray-600 text-[15px] leading-relaxed space-y-1">
+              <div className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight space-y-1">
                 <p>
                   <strong>20 coins</strong> per candidate via WhatsApp
                 </p>
@@ -1070,11 +1072,11 @@ const SavedCandidates = ({
                   <strong>10 coins</strong> per candidate via RCS
                 </p>
                 {coinBalance !== null && (
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-lg sm:text-base text-gray-500 mt-2 leading-normal tracking-tight">
                     Current balance: <strong>{coinBalance}</strong> coins
                   </p>
                 )}
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-lg sm:text-base text-gray-400 mt-2 leading-normal tracking-tight">
                   Coins will be deducted after admin approval
                 </p>
               </div>
@@ -1082,13 +1084,13 @@ const SavedCandidates = ({
 
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
               <button
-                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md ${bulkChannel === 'whatsapp' ? 'bg-[#25D366] text-white border-[#25D366]' : 'bg-white text-[#25D366] border-[#25D366]'}`}
+                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-lg sm:text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight ${bulkChannel === 'whatsapp' ? 'bg-[#25D366] text-white border-[#25D366]' : 'bg-white text-[#25D366] border-[#25D366]'}`}
                 onClick={() => handleChannelSelect('whatsapp')}
               >
                 Through WhatsApp
               </button>
               <button
-                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md ${bulkChannel === 'rcs' ? 'bg-[#0a84ff] text-white border-[#0a84ff]' : 'bg-white text-[#0a84ff] border-[#0a84ff]'}`}
+                className={`flex-1 px-6 py-3 border rounded-lg font-semibold text-lg sm:text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight ${bulkChannel === 'rcs' ? 'bg-[#0a84ff] text-white border-[#0a84ff]' : 'bg-white text-[#0a84ff] border-[#0a84ff]'}`}
                 onClick={() => handleChannelSelect('rcs')}
               >
                 Through RCS
@@ -1103,9 +1105,9 @@ const SavedCandidates = ({
                   maxLength={500}
                   rows={5}
                   placeholder="Enter your message here..."
-                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-gradient-brand resize-none"
+                  className="w-full border border-gray-300 rounded-lg p-3 text-lg sm:text-base focus:outline-none focus:ring-2 focus:ring-gradient-brand resize-none leading-normal tracking-tight"
                 />
-                <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="flex items-center justify-between text-lg sm:text-base text-gray-500 leading-normal tracking-tight">
                   <span>{selectedCandidates.size} candidate{selectedCandidates.size !== 1 ? 's' : ''} selected</span>
                   <span>{bulkMessageChars}/500</span>
                 </div>
@@ -1113,7 +1115,7 @@ const SavedCandidates = ({
             )}
 
             {bulkError && (
-              <div className="mt-3 text-sm text-red-500 text-left">
+              <div className="mt-3 text-lg sm:text-base text-red-500 text-left leading-normal tracking-tight">
                 {bulkError}
               </div>
             )}
@@ -1126,7 +1128,7 @@ const SavedCandidates = ({
                 Cancel
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight"
                 onClick={handlePrepareBulkSend}
                 disabled={!bulkChannel || bulkMessageChars === 0}
               >
@@ -1157,13 +1159,13 @@ const SavedCandidates = ({
             </button>
 
             <div className="mb-4 mt-0.5 text-center space-y-2">
-              <h3 className="font-semibold text-[18px] text-gray-800">
+              <h3 className="font-semibold text-xl text-gray-800 leading-tight tracking-tight">
                 Confirm &amp; Submit for Approval
               </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
+              <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">
                 You are about to submit a <strong>{bulkSummary.channel === 'whatsapp' ? 'WhatsApp' : 'RCS'}</strong> message request to <strong>{bulkSummary.candidates.length}</strong> candidate{bulkSummary.candidates.length !== 1 ? 's' : ''} for admin approval.
               </p>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
+              <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">
                 Your message will be reviewed by admin before being sent.
               </p>
             </div>
@@ -1171,17 +1173,17 @@ const SavedCandidates = ({
             <div className="mb-4 space-y-2 max-h-60 overflow-y-auto">
               {bulkSummary.candidates.map(candidate => (
                 <div key={candidate.firebase_uid} className="p-3 bg-gray-50 border border-gray-100 rounded-lg">
-                  <div className="font-semibold text-sm text-gray-800">
+                  <div className="font-semibold text-lg sm:text-base text-gray-800 leading-snug tracking-tight">
                     {candidate.fullName || candidate.name || 'Candidate'}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">
                     {candidate.present_city_name || candidate.city || candidate.permanent_city_name || 'City not available'}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="mb-4 p-3 bg-gray-50 border border-gray-100 rounded-lg text-left text-sm text-gray-700 whitespace-pre-line">
+            <div className="mb-4 p-3 bg-gray-50 border border-gray-100 rounded-lg text-left text-lg sm:text-base text-gray-700 whitespace-pre-line leading-normal tracking-tight">
               {bulkSummary.message}
             </div>
 
@@ -1194,7 +1196,7 @@ const SavedCandidates = ({
                 Cancel
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight"
                 onClick={handleConfirmSend}
                 disabled={isSendingBulk}
               >
@@ -1232,13 +1234,13 @@ const SavedCandidates = ({
             </button>
 
             <div className="mb-4 mt-0.5 text-center space-y-3">
-              <h3 className="font-semibold text-[18px] text-gray-800">
+              <h3 className="font-semibold text-xl text-gray-800 leading-tight tracking-tight">
                 Insufficient Coins
               </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
+              <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">
                 You need <strong>{requiredCoins}</strong> coins to send this bulk message.
               </p>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
+              <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">
                 Current balance: <strong>{coinBalance ?? 0}</strong> coins. You are short by <strong>{Math.max(requiredCoins - (coinBalance ?? 0), 0)}</strong> coins.
               </p>
             </div>

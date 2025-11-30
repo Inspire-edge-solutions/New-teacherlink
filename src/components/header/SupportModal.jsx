@@ -164,7 +164,7 @@ const SupportModal = ({ isOpen, onClose }) => {
         <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
           <div>
             <h2 className="text-xl font-semibold text-gray-800 leading-tight tracking-tight">Report Issues</h2>
-            <p className="text-sm text-gray-600 mt-1 leading-normal tracking-tight">Report any issues or bugs you encounter</p>
+            <p className="text-lg sm:text-base text-gray-600 mt-1 leading-normal tracking-tight">Report any issues or bugs you encounter</p>
           </div>
           <button
             onClick={onClose}
@@ -179,7 +179,7 @@ const SupportModal = ({ isOpen, onClose }) => {
         <form onSubmit={handleSubmit} className="p-6">
           {/* Issue Category */}
           <div className="mb-4">
-            <label htmlFor="reportType" className="block text-sm font-medium text-gray-700 mb-2 leading-snug tracking-tight">
+            <label htmlFor="reportType" className="block text-base font-medium text-gray-700 mb-2 leading-snug tracking-tight">
               Select Issue Category <span className="text-red-500">*</span>
             </label>
             <select 
@@ -198,7 +198,7 @@ const SupportModal = ({ isOpen, onClose }) => {
           
           {/* Title */}
           <div className="mb-4">
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2 leading-snug tracking-tight">
+            <label htmlFor="title" className="block text-base font-medium text-gray-700 mb-2 leading-snug tracking-tight">
               Title <span className="text-red-500">*</span>
             </label>
             <input
@@ -212,12 +212,12 @@ const SupportModal = ({ isOpen, onClose }) => {
               placeholder="Example: Unable to upload the resume."
               required
             />
-            <p className="text-xs text-gray-500 mt-1 leading-normal tracking-tight">3-6 words OR 15-25 characters</p>
+            <p className="text-lg sm:text-base text-gray-500 mt-1 leading-normal tracking-tight">3-6 words OR 15-25 characters</p>
           </div>
           
           {/* Description */}
           <div className="mb-6">
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2 leading-snug tracking-tight">
+            <label htmlFor="description" className="block text-base font-medium text-gray-700 mb-2 leading-snug tracking-tight">
               Description <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -231,7 +231,7 @@ const SupportModal = ({ isOpen, onClose }) => {
               placeholder="Describe the issue in detail and any error messages or impact."
               required
             ></textarea>
-            <p className="text-xs text-gray-500 mt-1 leading-normal tracking-tight">2-3 sentences OR 50-100 characters</p>
+            <p className="text-lg sm:text-base text-gray-500 mt-1 leading-normal tracking-tight">2-3 sentences OR 50-100 characters</p>
           </div>
 
           {/* Footer Buttons */}

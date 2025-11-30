@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   Box,
@@ -19,16 +19,27 @@ import { MdReport, MdLock, MdLogout } from "react-icons/md";
 import SupportModal from "./SupportModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 
+// Module-level cache to persist across component remounts
+const profileDataCache = {
+  fetchedUserId: null,
+  isFetching: false,
+  photoUrl: null,
+  personalData: null,
+  organizationData: null,
+  userGender: null,
+  error: false
+};
+
 const Profile = () => {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   const [anchorEl2, setAnchorEl2] = useState(null);
-  const [photoUrl, setPhotoUrl] = useState(null);
-  const [userGender, setUserGender] = useState(null);
-  const [personalData, setPersonalData] = useState(null);
-  const [organizationData, setOrganizationData] = useState(null);
-  const [error, setError] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState(profileDataCache.photoUrl);
+  const [userGender, setUserGender] = useState(profileDataCache.userGender);
+  const [personalData, setPersonalData] = useState(profileDataCache.personalData);
+  const [organizationData, setOrganizationData] = useState(profileDataCache.organizationData);
+  const [error, setError] = useState(profileDataCache.error);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
@@ -36,86 +47,143 @@ const Profile = () => {
   const PERSONAL_DETAILS_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal";
   const ORGANIZATION_API = "https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation";
 
-  // Get user type from localStorage
-  const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-  const userType = storedUser?.user_type;
-  const isEmployer = userType === "Employer";
+  // Stabilize user ID to prevent unnecessary effect runs
+  const currentUserId = useMemo(() => {
+    const uid = user?.uid;
+    return (uid && typeof uid === 'string' && uid.trim() !== '') ? uid : null;
+  }, [user?.uid]);
 
+  // Get user type from localStorage (only for display, not for triggering fetches)
+  const getIsEmployer = () => {
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      return storedUser?.user_type === "Employer" || user?.user_type === "Employer";
+    } catch {
+      return user?.user_type === "Employer";
+    }
+  };
+
+  // Fetch profile data only once when user.uid is available
   useEffect(() => {
-    if (user?.uid) {
-      fetchUserDetails();
-      fetchProfilePhoto();
-      if (isEmployer) {
-        fetchOrganizationDetails();
-      }
-    }
-  }, [user, isEmployer]);
-
-  const fetchUserDetails = async () => {
-    try {
-      const authHeaders = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      };
-
-      const response = await axios.get(PERSONAL_DETAILS_API, {
-        params: { firebase_uid: user.uid },
-        ...authHeaders,
-      });
-
-      if (response.data && response.data.length > 0) {
-        const userData = response.data[0];
-        setPersonalData(userData);
-        setUserGender(userData.gender);
-      }
-    } catch (error) {
-      console.error("Error fetching user details:", error);
-    }
-  };
-
-  const fetchOrganizationDetails = async () => {
-    try {
-      if (!user?.uid) return;
-
-      const authHeaders = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      };
-
-      const response = await axios.get(ORGANIZATION_API, {
-        params: { firebase_uid: user.uid },
-        ...authHeaders,
-      });
-      
-      if (response.data) {
-        const orgData = Array.isArray(response.data) ? response.data[0] : response.data;
-        setOrganizationData(orgData);
-      }
-    } catch (error) {
-      console.error("Error fetching organization details:", error);
-    }
-  };
-
-  const fetchProfilePhoto = async () => {
-    try {
-      if (!user?.uid) return;
-
-      const params = { firebase_uid: user.uid, action: "view" };
-      const { data } = await axios.get(IMAGE_API_URL, { params });
-
-      if (data?.url) {
-        setPhotoUrl(data.url);
+    // Early return if no user ID
+    if (!currentUserId) {
+      // Reset if user logs out (only if we had a user before)
+      if (profileDataCache.fetchedUserId !== null) {
+        profileDataCache.fetchedUserId = null;
+        profileDataCache.photoUrl = null;
+        profileDataCache.personalData = null;
+        profileDataCache.organizationData = null;
+        profileDataCache.userGender = null;
+        profileDataCache.error = false;
+        setPhotoUrl(null);
+        setPersonalData(null);
+        setOrganizationData(null);
+        setUserGender(null);
         setError(false);
       }
-    } catch (error) {
-      console.error("Error fetching profile photo:", error);
-      setError(true);
+      return;
     }
-  };
+
+    // Skip if this is the same user ID we've already processed
+    if (profileDataCache.fetchedUserId === currentUserId) {
+      // Restore cached data if component was remounted
+      if (photoUrl !== profileDataCache.photoUrl) setPhotoUrl(profileDataCache.photoUrl);
+      if (personalData !== profileDataCache.personalData) setPersonalData(profileDataCache.personalData);
+      if (organizationData !== profileDataCache.organizationData) setOrganizationData(profileDataCache.organizationData);
+      if (userGender !== profileDataCache.userGender) setUserGender(profileDataCache.userGender);
+      if (error !== profileDataCache.error) setError(profileDataCache.error);
+      return;
+    }
+
+    // Skip if already fetching
+    if (profileDataCache.isFetching) {
+      return;
+    }
+
+    // Mark as fetching to prevent concurrent calls
+    profileDataCache.isFetching = true;
+    // Update the cache immediately to prevent duplicate calls
+    profileDataCache.fetchedUserId = currentUserId;
+    const isEmployer = getIsEmployer();
+
+    const fetchUserDetails = async () => {
+      try {
+        const authHeaders = {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        };
+
+        const response = await axios.get(PERSONAL_DETAILS_API, {
+          params: { firebase_uid: currentUserId },
+          ...authHeaders,
+        });
+
+        if (response.data && response.data.length > 0) {
+          const userData = response.data[0];
+          profileDataCache.personalData = userData;
+          profileDataCache.userGender = userData.gender;
+          setPersonalData(userData);
+          setUserGender(userData.gender);
+        }
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+      }
+    };
+
+    const fetchOrganizationDetails = async () => {
+      try {
+        const authHeaders = {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        };
+
+        const response = await axios.get(ORGANIZATION_API, {
+          params: { firebase_uid: currentUserId },
+          ...authHeaders,
+        });
+        
+        if (response.data) {
+          const orgData = Array.isArray(response.data) ? response.data[0] : response.data;
+          profileDataCache.organizationData = orgData;
+          setOrganizationData(orgData);
+        }
+      } catch (error) {
+        console.error("Error fetching organization details:", error);
+      }
+    };
+
+    const fetchProfilePhoto = async () => {
+      try {
+        const params = { firebase_uid: currentUserId, action: "view" };
+        const { data } = await axios.get(IMAGE_API_URL, { params });
+
+        if (data?.url) {
+          profileDataCache.photoUrl = data.url;
+          profileDataCache.error = false;
+          setPhotoUrl(data.url);
+          setError(false);
+        }
+      } catch (error) {
+        console.error("Error fetching profile photo:", error);
+        profileDataCache.error = true;
+        setError(true);
+      }
+    };
+
+    // Fetch all data once
+    Promise.all([
+      fetchUserDetails(),
+      fetchProfilePhoto(),
+      isEmployer ? fetchOrganizationDetails() : Promise.resolve()
+    ]).finally(() => {
+      // Reset fetching flag
+      profileDataCache.isFetching = false;
+    });
+  }, [currentUserId]); // Depend on memoized currentUserId only
 
   const handleImageLoadError = (e) => {
     setError(true);
@@ -130,6 +198,7 @@ const Profile = () => {
   };
 
   const getUserName = () => {
+    const isEmployer = getIsEmployer();
     if (isEmployer) {
       return organizationData?.contact_person_name || user?.displayName || user?.email?.split('@')[0] || 'User Name';
     }
@@ -137,6 +206,7 @@ const Profile = () => {
   };
 
   const getUserDesignation = () => {
+    const isEmployer = getIsEmployer();
     if (isEmployer) {
       return organizationData?.type || 'Organization';
     }
@@ -144,6 +214,7 @@ const Profile = () => {
   };
 
   const getUserEmail = () => {
+    const isEmployer = getIsEmployer();
     if (isEmployer) {
       return organizationData?.contact_person_email || personalData?.email || user?.email || 'email@example.com';
     }
@@ -327,4 +398,5 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+// Memoize component to prevent unnecessary re-renders
+export default React.memo(Profile);

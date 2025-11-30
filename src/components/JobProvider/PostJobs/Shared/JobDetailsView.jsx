@@ -86,7 +86,7 @@ const JobDetailsView = ({
   // Use same layout for both modal and expanded view
   const sectionClassName = 'mb-8';
   // Uniform heading style with brand color
-  const headingClassName = 'text-lg font-semibold text-[#A1025D] mb-4 pb-2 border-b-2 border-[#A1025D]';
+  const headingClassName = 'text-lg font-semibold text-[#A1025D] mb-4 pb-2 border-b-2 border-[#A1025D] leading-tight tracking-tight';
   const contentClassName = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
 
   // Get location string (handle both API format and form format)
@@ -111,18 +111,18 @@ const JobDetailsView = ({
           📝 Basic Information
         </h4>
         <div className={contentClassName}>
-          <div><strong>Job Title:</strong> {jobData.job_title || "Not specified"}</div>
-          <div><strong>Job Type:</strong> {jobData.job_type?.replace('_', ' ').toUpperCase() || "Not specified"}</div>
-          <div><strong>Number of Openings:</strong> {jobData.no_of_opening || "Not specified"}</div>
-          <div><strong>Joining Date:</strong> {formatDateFunc(jobData.joining_date) || "Not specified"}</div>
-          <div><strong>Salary Range:</strong> {formatSalary(jobData.min_salary, jobData.max_salary)}</div>
-          <div><strong>Notice Period:</strong> {jobData.notice_period || "Not specified"}</div>
+          <div className="leading-normal tracking-tight"><strong>Job Title:</strong> {jobData.job_title || "Not specified"}</div>
+          <div className="leading-normal tracking-tight"><strong>Job Type:</strong> {jobData.job_type?.replace('_', ' ').toUpperCase() || "Not specified"}</div>
+          <div className="leading-normal tracking-tight"><strong>Number of Openings:</strong> {jobData.no_of_opening || "Not specified"}</div>
+          <div className="leading-normal tracking-tight"><strong>Joining Date:</strong> {formatDateFunc(jobData.joining_date) || "Not specified"}</div>
+          <div className="leading-normal tracking-tight"><strong>Salary Range:</strong> {formatSalary(jobData.min_salary, jobData.max_salary)}</div>
+          <div className="leading-normal tracking-tight"><strong>Notice Period:</strong> {jobData.notice_period || "Not specified"}</div>
           {getDaysRemaining && typeof getDaysRemaining === 'function' && (
-            <div><strong>Days Remaining:</strong> {getDaysRemaining(jobData)} days</div>
+            <div className="leading-normal tracking-tight"><strong>Days Remaining:</strong> {getDaysRemaining(jobData)} days</div>
           )}
         </div>
         {jobData.job_description && (
-          <div className="mt-4">
+          <div className="mt-4 leading-normal tracking-tight">
             <strong>Job Description: {jobData.job_description}</strong>
           </div>
         )}
@@ -134,13 +134,13 @@ const JobDetailsView = ({
           📍 Location
         </h4>
         <div className={contentClassName}>
-          <div><strong>Country:</strong> {jobData.country || "Not specified"}</div>
-          <div><strong>State:</strong> {jobData.state_ut || "Not specified"}</div>
-          <div><strong>City:</strong> {jobData.city || "Not specified"}</div>
+          <div className="leading-normal tracking-tight"><strong>Country:</strong> {jobData.country || "Not specified"}</div>
+          <div className="leading-normal tracking-tight"><strong>State:</strong> {jobData.state_ut || "Not specified"}</div>
+          <div className="leading-normal tracking-tight"><strong>City:</strong> {jobData.city || "Not specified"}</div>
           {jobData.address && (
-            <div className="col-span-full">
+            <div className="col-span-full leading-normal tracking-tight">
               <strong>Address:</strong>
-              <div className="bg-white p-3 rounded-lg mt-1 border border-gray-200">
+              <div className="bg-white p-3 rounded-lg mt-1 border border-gray-200 leading-normal tracking-tight">
                 {jobData.address}
               </div>
             </div>
@@ -154,9 +154,9 @@ const JobDetailsView = ({
           💼 Experience Requirements
         </h4>
         <div className={contentClassName}>
-          <div><strong>Total Experience:</strong> {formatExperience(jobData.total_experience_min_years, jobData.total_experience_min_months)} - {formatExperience(jobData.total_experience_max_years, jobData.total_experience_max_months)}</div>
-          <div><strong>Teaching Experience:</strong> {formatExperience(jobData.teaching_experience_min_years, jobData.teaching_experience_min_months)} - {formatExperience(jobData.teaching_experience_max_years, jobData.teaching_experience_max_months)}</div>
-          <div><strong>Non-Teaching Experience:</strong> {formatExperience(jobData.non_teaching_experience_min_years, jobData.non_teaching_experience_min_months)} - {formatExperience(jobData.non_teaching_experience_max_years, jobData.non_teaching_experience_max_months)}</div>
+          <div className="leading-normal tracking-tight"><strong>Total Experience:</strong> {formatExperience(jobData.total_experience_min_years, jobData.total_experience_min_months)} - {formatExperience(jobData.total_experience_max_years, jobData.total_experience_max_months)}</div>
+          <div className="leading-normal tracking-tight"><strong>Teaching Experience:</strong> {formatExperience(jobData.teaching_experience_min_years, jobData.teaching_experience_min_months)} - {formatExperience(jobData.teaching_experience_max_years, jobData.teaching_experience_max_months)}</div>
+          <div className="leading-normal tracking-tight"><strong>Non-Teaching Experience:</strong> {formatExperience(jobData.non_teaching_experience_min_years, jobData.non_teaching_experience_min_months)} - {formatExperience(jobData.non_teaching_experience_max_years, jobData.non_teaching_experience_max_months)}</div>
         </div>
       </div>
 
@@ -166,14 +166,14 @@ const JobDetailsView = ({
           🎓 Qualifications & Skills
         </h4>
         <div className={contentClassName}>
-          <div><strong>Required Qualifications:</strong> {formatArrayData(jobData.qualification)}</div>
-          <div><strong>Core Subjects:</strong> {formatArrayData(jobData.core_subjects)}</div>
-          <div><strong>Optional Subjects:</strong> {formatArrayData(jobData.optional_subject)}</div>
-          <div><strong>Designations:</strong> {formatArrayData(jobData.designations)}</div>
-          <div><strong>Grades:</strong> {formatArrayData(jobData.designated_grades)}</div>
-          <div><strong>Curriculum:</strong> {formatArrayData(jobData.curriculum)}</div>
-          <div><strong>Core Expertise:</strong> {formatArrayData(jobData.core_expertise)}</div>
-          <div><strong>Computer Skills:</strong> {formatArrayData(jobData.computer_skills)}</div>
+          <div className="leading-normal tracking-tight"><strong>Required Qualifications:</strong> {formatArrayData(jobData.qualification)}</div>
+          <div className="leading-normal tracking-tight"><strong>Core Subjects:</strong> {formatArrayData(jobData.core_subjects)}</div>
+          <div className="leading-normal tracking-tight"><strong>Optional Subjects:</strong> {formatArrayData(jobData.optional_subject)}</div>
+          <div className="leading-normal tracking-tight"><strong>Designations:</strong> {formatArrayData(jobData.designations)}</div>
+          <div className="leading-normal tracking-tight"><strong>Grades:</strong> {formatArrayData(jobData.designated_grades)}</div>
+          <div className="leading-normal tracking-tight"><strong>Curriculum:</strong> {formatArrayData(jobData.curriculum)}</div>
+          <div className="leading-normal tracking-tight"><strong>Core Expertise:</strong> {formatArrayData(jobData.core_expertise)}</div>
+          <div className="leading-normal tracking-tight"><strong>Computer Skills:</strong> {formatArrayData(jobData.computer_skills)}</div>
         </div>
       </div>
 
@@ -183,9 +183,9 @@ const JobDetailsView = ({
           🗣️ Language Requirements
         </h4>
         <div className={contentClassName}>
-          <div><strong>Speak:</strong> {formatArrayData(jobData.language_speak)}</div>
-          <div><strong>Read:</strong> {formatArrayData(jobData.language_read)}</div>
-          <div><strong>Write:</strong> {formatArrayData(jobData.language_write)}</div>
+          <div className="leading-normal tracking-tight"><strong>Speak:</strong> {formatArrayData(jobData.language_speak)}</div>
+          <div className="leading-normal tracking-tight"><strong>Read:</strong> {formatArrayData(jobData.language_read)}</div>
+          <div className="leading-normal tracking-tight"><strong>Write:</strong> {formatArrayData(jobData.language_write)}</div>
         </div>
       </div>
 
@@ -195,15 +195,15 @@ const JobDetailsView = ({
           ⚙️ Additional Preferences
         </h4>
         <div className={contentClassName}>
-          <div><strong>Gender:</strong> {jobData.gender || "Not specified"}</div>
-          <div><strong>Age Range:</strong> {jobData.minimum_age && jobData.maximum_age ? `${jobData.minimum_age} - ${jobData.maximum_age} years` : "Not specified"}</div>
-          <div><strong>Job Search Status:</strong> {jobData.job_search_status || "Not specified"}</div>
-          <div><strong>Knowledge of ACC Process:</strong> {jobData.knowledge_of_acc_process || "Not specified"}</div>
-          <div><strong>Job Shifts:</strong> {formatArrayData(jobData.job_shifts)}</div>
-          <div><strong>Job Process:</strong> {formatArrayData(jobData.job_process)}</div>
-          <div><strong>Selection Process:</strong> {formatArrayData(jobData.selection_process)}</div>
+          <div className="leading-normal tracking-tight"><strong>Gender:</strong> {jobData.gender || "Not specified"}</div>
+          <div className="leading-normal tracking-tight"><strong>Age Range:</strong> {jobData.minimum_age && jobData.maximum_age ? `${jobData.minimum_age} - ${jobData.maximum_age} years` : "Not specified"}</div>
+          <div className="leading-normal tracking-tight"><strong>Job Search Status:</strong> {jobData.job_search_status || "Not specified"}</div>
+          <div className="leading-normal tracking-tight"><strong>Knowledge of ACC Process:</strong> {jobData.knowledge_of_acc_process || "Not specified"}</div>
+          <div className="leading-normal tracking-tight"><strong>Job Shifts:</strong> {formatArrayData(jobData.job_shifts)}</div>
+          <div className="leading-normal tracking-tight"><strong>Job Process:</strong> {formatArrayData(jobData.job_process)}</div>
+          <div className="leading-normal tracking-tight"><strong>Selection Process:</strong> {formatArrayData(jobData.selection_process)}</div>
           {jobData.tution_types && jobData.tution_types.length > 0 && (
-            <div><strong>Tution Types:</strong> {formatArrayData(jobData.tution_types)}</div>
+            <div className="leading-normal tracking-tight"><strong>Tution Types:</strong> {formatArrayData(jobData.tution_types)}</div>
           )}
         </div>
       </div>

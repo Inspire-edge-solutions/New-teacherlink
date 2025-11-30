@@ -788,10 +788,10 @@ const AppliedCandidates = ({
   if (!user) {
     return (
       <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-        <p className="text-red-800 text-center mb-2">
+        <p className="text-red-800 text-center mb-2 text-lg sm:text-base leading-normal tracking-tight">
           Please log in to view candidates.
         </p>
-        <p className="text-red-600 text-center text-sm">
+        <p className="text-red-600 text-center text-lg sm:text-base leading-normal tracking-tight">
           Redirecting you back in a few seconds...
         </p>
       </div>
@@ -816,20 +816,22 @@ const AppliedCandidates = ({
   return (
     <div className="widget-content">
       <div className="mb-4">
-        <div className="flex justify-between items-center gap-4 flex-wrap">
-          <div className="flex-1 max-w-md">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
+          <div className="w-full sm:flex-1 sm:max-w-md">
             <SearchBar onSearch={handleSearch} placeholder="Search applied candidates..." />
-        </div>
-          <RecordsPerPageDropdown
-            itemsPerPage={candidatesPerPage}
-            onItemsPerPageChange={(v) => { setCandidatesPerPage(v); setCurrentPage(1); }}
-          />
+          </div>
+          <div className="w-full sm:w-auto flex-shrink-0">
+            <RecordsPerPageDropdown
+              itemsPerPage={candidatesPerPage}
+              onItemsPerPageChange={(v) => { setCandidatesPerPage(v); setCurrentPage(1); }}
+            />
+          </div>
         </div>
       </div>
 
       <div className="mb-3">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-2 mb-2 sm:mb-0">
-          <h3 className="text-lg sm:text-xl md:text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 shrink-0">
+          <h3 className="text-lg sm:text-xl md:text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 shrink-0 leading-tight tracking-tight">
             {isSearching
               ? `Found ${filteredCandidates.length} applied candidate${filteredCandidates.length !== 1 ? 's' : ''}`
               : `${appliedCandidates.length} Candidate${appliedCandidates.length !== 1 ? 's' : ''} Applied`
@@ -851,7 +853,7 @@ const AppliedCandidates = ({
                 checked={selectAll}
                 onChange={handleSelectAll}
               />
-              <label htmlFor="selectAllAppliedCandidates" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
+              <label htmlFor="selectAllAppliedCandidates" className="ml-2 text-lg sm:text-base font-medium text-gray-700 cursor-pointer leading-normal tracking-tight">
                 Select All Candidates on This Page
                 {selectedCandidates.size > 0 && (
                   <span className="text-gray-500 ml-2">({selectedCandidates.size} total selected)</span>
@@ -899,7 +901,7 @@ const AppliedCandidates = ({
               alt="No applied candidates" 
               className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
             />
-            <p className="text-gray-600 text-lg font-medium">
+            <p className="text-gray-600 text-lg sm:text-base font-medium leading-normal tracking-tight">
               No candidates have applied to your jobs yet.
             </p>
           </div>
@@ -921,10 +923,10 @@ const AppliedCandidates = ({
       {/* Recommended Candidates Section */}
       {recommendedCandidates.length > 0 && (
         <div className="mb-6 mt-6 p-4 bg-[#F0D8D9] rounded-lg">
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3 leading-tight tracking-tight">
             💡 Recommended Candidates ({recommendedCandidates.length})
           </h3>
-          <p className="text-sm text-gray-700 mb-4">
+          <p className="text-lg sm:text-base text-gray-700 mb-4 leading-normal tracking-tight">
             These candidates match your posted jobs but haven't applied yet. Consider reaching out to them!
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -951,7 +953,7 @@ const AppliedCandidates = ({
             })}
           </div>
           {recommendedCandidates.length > 6 && (
-            <p className="text-sm text-gray-600 mt-3 text-center">
+            <p className="text-lg sm:text-base text-gray-600 mt-3 text-center leading-normal tracking-tight">
               Showing 6 of {recommendedCandidates.length} recommended candidates
             </p>
           )}
@@ -986,23 +988,23 @@ const AppliedCandidates = ({
             </button>
 
             <div className="mb-4 mt-0.5 text-center">
-              <h3 className="font-semibold text-[18px] mb-4 text-gray-800">
+              <h3 className="font-semibold text-xl mb-4 text-gray-800 leading-tight tracking-tight">
                 Unlock Candidate
               </h3>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
+              <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">
                 To message {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, please unlock their contact details first. View the profile to unlock and access messaging.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight"
                 onClick={handleUnlockPromptClose}
               >
                 Cancel
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl leading-normal tracking-tight"
                 onClick={handleUnlockPromptViewProfile}
               >
                 View Profile
@@ -1032,23 +1034,23 @@ const AppliedCandidates = ({
             </button>
 
             <div className="mb-4 mt-0.5">
-              <h3 className="font-semibold text-[18px] mb-4 text-center text-gray-800">
+              <h3 className="font-semibold text-xl mb-4 text-center text-gray-800 leading-tight tracking-tight">
                 Message Candidate
               </h3>
-              <p className="text-gray-600 text-[15px] mb-6 text-center leading-relaxed">
+              <p className="text-gray-600 text-lg sm:text-base mb-6 text-center leading-normal tracking-tight">
                 If you want to send bulk message, add candidate to favourite
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md"
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight"
                 onClick={handleMessageModalOk}
               >
                 Ok
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl"
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl leading-normal tracking-tight"
                 onClick={handleMessageModalContinue}
               >
                 Continue Single

@@ -36,7 +36,7 @@ const HeroSection = () => {
               </div>
               
               {/* Tagline */}
-              <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl text-gray-600 font-normal mt-1 lg:mt-2 leading-normal tracking-tight">
+              <div className="text-lg sm:text-base text-gray-600 font-normal mt-1 lg:mt-2 leading-normal tracking-tight">
                 You are at the right place !
               </div>
             </div>
@@ -45,7 +45,7 @@ const HeroSection = () => {
             <div className="pt-0 lg:pt-1">
               <button
               onClick={() => navigate('/register')}
-                className="text-white font-semibold px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-lg text-lg sm:text-xl duration-300 transition-colors transform hover:scale-105 shadow-lg w-full sm:w-auto bg-gradient-brand hover:bg-gradient-primary-hover"
+                className="text-white font-semibold px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-lg text-base duration-300 transition-colors transform hover:scale-105 shadow-lg w-full sm:w-auto bg-gradient-brand hover:bg-gradient-primary-hover"
               >
                 Register
               </button>

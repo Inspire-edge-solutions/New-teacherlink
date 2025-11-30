@@ -42,7 +42,7 @@ const EXPERIENCE_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/
 const JOB_PREFERENCE_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference';
 const IMAGE_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image";
 
-function EasyView({ onViewAttempt }) {
+function EasyView({ onViewAttempt, onEditProfile }) {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -584,7 +584,13 @@ function EasyView({ onViewAttempt }) {
       {/* Edit Profile Button - Top Level */}
       <div className="flex justify-end mb-[15px]">
         <button
-          onClick={() => window.location.href = "/seeker/my-profile"}
+          onClick={() => {
+            if (onEditProfile) {
+              onEditProfile();
+            } else {
+              window.location.href = "/seeker/my-profile";
+            }
+          }}
           className={`btn bg-gradient-brand hover:bg-gradient-brand-hover text-white ${isMobile ? 'btn-mobile' : ''} ${isMobile ? 'text-sm px-4 py-2' : 'text-base px-5 py-2.5'} rounded-md font-medium`}
         >
           Edit Profile
