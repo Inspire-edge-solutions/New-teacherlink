@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -838,6 +838,22 @@ function CandidateDetail({
       }
     }
   }, [candidate?.firebase_uid, fetchProfileData, fetchEducationData, fetchExperienceData, fetchJobPreferenceData, fetchAdditionalInfo, fetchProfilePhoto, fetchSocialLinks]);
+
+  // Determine if education content is sparse (few entries)
+  // If education has 2 or fewer entries, we'll move Language Proficiency to left column
+  // If education has 1 or fewer entries, we'll also move Work Exposure to left column
+  const isEducationSparse = useMemo(() => {
+    if (!educationData || educationData.length === 0) return true;
+    // Consider education sparse if it has 2 or fewer entries
+    return educationData.length <= 2;
+  }, [educationData]);
+
+  const isEducationVerySparse = useMemo(() => {
+    if (!educationData || educationData.length === 0) return true;
+    // Consider education very sparse if it has 1 or fewer entries
+    return educationData.length <= 1;
+  }, [educationData]);
+
   if (!candidate?.firebase_uid) {
     return (
       <div className="alert alert-warning text-center">
@@ -851,7 +867,7 @@ function CandidateDetail({
       <div className="py-12">
         <LoadingState
           title="Preparing full candidate profile…"
-          subtitle="We’re stitching together every section so you can review the complete profile."
+          subtitle="We're stitching together every section so you can review the complete profile."
         />
       </div>
     );
@@ -981,7 +997,7 @@ function CandidateDetail({
       totalYears = teachingYears + nonTeachingYears + extraYears;
     }
     return (
-      <div className="mb-4 p-2.5 border-b border-gray-200">
+      <div className="mb-2 p-2.5 border-b border-gray-200">
         <div className="mb-2 text-lg sm:text-base leading-normal tracking-tight"><strong>Total Teaching Experience</strong>: {teachingYears} Years & {teachingMonths} months</div>
         <div className="text-lg sm:text-base leading-normal tracking-tight"><strong>Total Experience (Teaching + Non-Teaching)</strong>: {totalYears} Years & {totalMonths} months</div>
       </div>
@@ -991,13 +1007,13 @@ function CandidateDetail({
   const renderExperienceBlocks = () => {
     const hasExperience = experienceData?.dynamoData?.experienceEntries && 
                          experienceData.dynamoData.experienceEntries.length > 0;
-    if (!hasExperience) {
-      return (
-        <div className="p-4 text-center text-gray-600 bg-gray-50 rounded-lg mb-5 text-lg sm:text-base leading-normal tracking-tight">
-          No work experience information available
-        </div>
-      );
-    }
+    // if (!hasExperience) {
+    //   return (
+    //     <div className="p-4 text-center text-gray-600 bg-gray-50 rounded-lg mb-5 text-lg sm:text-base leading-normal tracking-tight">
+    //       No work experience information available
+    //     </div>
+    //   );
+    // }
     return experienceData.dynamoData.experienceEntries.map((exp, index) => {
       if (!exp || !exp.organizationName) return null;
       const designation = exp.jobType === 'teaching' ? exp.teachingDesignation :
@@ -1122,29 +1138,32 @@ function CandidateDetail({
       { key: 'private_tuitions', label: 'Private tutoring' },
       { key: 'home_tuitions', label: 'Home Tuitions' }
     ];
-    const columns = getResponsiveColumnCount(3, 2, 1);
-    const columnWidth = `calc(${100 / columns}% - ${columns > 1 ? '10px' : '0px'})`;
+    
+    // Helper function to check if work type is enabled
     const isWorkTypeEnabled = (key) => {
       if (!experienceData?.mysqlData) return false;
       const value = experienceData.mysqlData[key];
       return value === 1 || value === '1' || value === true || value === 'true' || value === 'yes' || value === 'Yes';
     };
+    
     const isMobile = windowWidth <= 768;
     const isTablet = windowWidth > 768 && windowWidth <= 1024;
     return (
-      <div className={`${isMobile ? 'mb-6 p-3' : isTablet ? 'mb-7 p-3.5' : 'mb-8 p-4'} bg-gray-50 rounded-lg`}>
-        <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>WORK EXPOSURE</h2>
-        <div className={`flex flex-wrap ${isMobile ? 'gap-2' : isTablet ? 'gap-2.5' : 'gap-2.5'}`}>
-          {workTypes.map(type => (
-            <div key={type.key} style={{ flex: `0 0 ${columnWidth}` }} className={`bg-white rounded-md ${isMobile ? 'p-2' : isTablet ? 'p-2.5' : 'p-2.5'} shadow-sm flex justify-between items-center`}>
-              <div className={`text-lg sm:text-base font-medium leading-normal tracking-tight`}>{type.label}</div>
-              <div className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} rounded-full flex items-center justify-center ${isWorkTypeEnabled(type.key) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'} text-base leading-normal tracking-tight`}>
-                {isWorkTypeEnabled(type.key) ? '✓' : '×'}
+      <div className={`work-exposure ${isMobile ? 'mb-4' : isTablet ? 'mb-5' : 'mb-6'}`}>
+          <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>WORK EXPOSURE</h2>
+          <div className={`grid w-full ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-0`}>
+            {workTypes.map(type => (
+              <div key={type.key} className={`flex justify-between items-center py-0.5 min-w-0`}>
+                <div className={`text-lg sm:text-base font-medium leading-normal tracking-tight flex-1 mr-2 min-w-0 break-words`}>
+                  {type.label}
+                </div>
+                <div className={`${isMobile ? 'w-8 h-8 text-base' : isTablet ? 'w-8 h-8 text-base' : 'w-9 h-9 text-lg'} rounded-full flex items-center justify-center font-bold shrink-0 ${isWorkTypeEnabled(type.key) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                  {isWorkTypeEnabled(type.key) ? '✓' : '×'}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
     );
   };
 
@@ -1167,7 +1186,7 @@ function CandidateDetail({
     const LanguageItem = ({ label, languages }) => {
       const isMobile = windowWidth <= 768;
       return (
-        <div className={`language-item flex ${isMobile ? 'mb-2 py-1' : 'mb-1.5 py-1'} flex-row items-start flex-wrap`}>
+        <div className={`language-item flex py-0.5 flex-row items-start flex-wrap`}>
           <span className={`font-semibold mr-2 text-gray-800 text-lg sm:text-base min-w-fit leading-normal tracking-tight`}>
             {label}:
           </span>
@@ -1249,9 +1268,6 @@ function CandidateDetail({
           {additionalInfo1?.marital_status && (
             <InfoItem label="Marital Status" value={additionalInfo1.marital_status} />
           )}
-          {additionalInfo1?.computer_skills && (
-            <InfoItem label="Computer skills" value={formatComputerSkills()} />
-          )}
           {additionalInfo1?.accounting_knowledge !== undefined && (
             <InfoItem 
               label="Accounting Knowledge" 
@@ -1264,16 +1280,19 @@ function CandidateDetail({
           {additionalInfo1?.differently_abled && (
             <InfoItem label="Differently abled" value={additionalInfo1.differently_abled} />
           )}
+        </div>
+        
+        {/* Full width items for longer content */}
+        <div className={`${isMobile ? 'mt-2' : 'mt-[5px]'} w-full`}>
+          {additionalInfo1?.computer_skills && (
+            <InfoItem label="Computer skills" value={formatComputerSkills()} />
+          )}
           {additionalInfo1?.certifications && (
             <InfoItem label="Certifications" value={additionalInfo1.certifications} />
           )}
           {additionalInfo1?.accomplishments && (
             <InfoItem label="Accomplishments" value={additionalInfo1.accomplishments} />
           )}
-        </div>
-        
-        {/* Full width items for longer content */}
-        <div className={`${isMobile ? 'mt-2' : 'mt-[5px]'} w-full`}>
           {additionalInfo1?.projects && (
             <InfoItem label="Projects" value={additionalInfo1.projects} />
           )}
@@ -1606,8 +1625,19 @@ function CandidateDetail({
 
       {/* Body Section - Two column layout */}
       <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-[300px,1fr]'} ${isMobile ? 'gap-4' : isTablet ? 'gap-6' : 'gap-8'} mt-0`}>
-        {/* Left Sidebar */}
-        <div className={`bg-gray-100 ${isMobile ? 'px-2 py-3' : isTablet ? 'p-4' : 'p-5'} lg:w-auto`}>
+        {/* Work Experience - First in mobile, hidden on desktop (shown in right column) */}
+        <div className={`${isMobile ? 'order-1 px-2 py-3' : 'hidden'}`}>
+          <div className={`${isMobile ? 'mb-6' : 'mb-8'} mt-0 pt-0`}>
+            <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>WORK EXPERIENCE</h2>
+            <div>
+              {getExperienceText()}
+              {renderExperienceBlocks()}
+            </div>
+          </div>
+        </div>
+
+        {/* Left Sidebar - Education */}
+        <div className={`bg-gray-100 ${isMobile ? 'px-2 py-3 order-2' : isTablet ? 'p-4' : 'p-5'} lg:w-auto lg:order-none`}>
           {/* Education Section */}
           {educationData && educationData.length > 0 && (
             <div className={`${isMobile ? 'mb-6' : 'mb-8'}`}>
@@ -1617,12 +1647,25 @@ function CandidateDetail({
               </div>
             </div>
           )}
+          
+          {/* Conditionally move Language Proficiency to left column if education is sparse (0-2 entries) */}
+          {isEducationSparse && languages && languages.length > 0 && (
+            <div className={`${isMobile ? 'mb-3' : 'mb-4'}`}>
+              <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>LANGUAGE PROFICIENCY</h2>
+              <div className={`${isMobile ? 'bg-white rounded-lg p-3 border border-gray-200' : 'bg-gray-50 rounded-lg p-3 border border-gray-200'}`}>
+                {renderLanguageProficiency()}
+              </div>
+            </div>
+          )}
+          
+          {/* Conditionally move Work Exposure to left column if education is very sparse (0-1 entries) */}
+          {isEducationVerySparse && renderWorkExposureMatrix()}
         </div>
 
-        {/* Right Main Content */}
-        <div className={`${isMobile ? 'px-2 py-3' : isTablet ? 'p-4' : 'p-5'}`}>
-          {/* Experience Section */}
-          <div className={`${isMobile ? 'mb-6' : 'mb-8'} mt-0 pt-0`}>
+        {/* Right Main Content - Third in mobile */}
+        <div className={`${isMobile ? 'px-2 py-3 order-3' : isTablet ? 'p-4' : 'p-5'} lg:order-none`}>
+          {/* Experience Section - shown on desktop only */}
+          <div className={`${isMobile ? 'hidden' : 'mb-8'} mt-0 pt-0`}>
             <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>WORK EXPERIENCE</h2>
             <div>
               {getExperienceText()}
@@ -1630,8 +1673,8 @@ function CandidateDetail({
             </div>
           </div>
 
-          {/* Work Exposure Matrix */}
-          {renderWorkExposureMatrix()}
+          {/* Only show Work Exposure in right column if education is NOT very sparse */}
+          {!isEducationVerySparse && renderWorkExposureMatrix()}
 
           {/* Job Preferences Section */}
           {hasJobPreferencesData() && (
@@ -1753,10 +1796,10 @@ function CandidateDetail({
             </div>
           )}
 
-          {/* Language Proficiency */}
-          {languages && languages.length > 0 && (
+          {/* Only show Language Proficiency in right column if education is NOT sparse */}
+          {!isEducationSparse && languages && languages.length > 0 && (
             <div className={`${isMobile ? 'mb-3' : 'mb-4'}`}>
-              <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>LANGUAGE PROFICIENCY</h2>
+              <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>LANGUAGE PROFICIENCY</h2>
               <div className={`${isMobile ? 'bg-white rounded-lg p-3 border border-gray-200' : 'bg-gray-50 rounded-lg p-3 border border-gray-200'}`}>
                 {renderLanguageProficiency()}
               </div>

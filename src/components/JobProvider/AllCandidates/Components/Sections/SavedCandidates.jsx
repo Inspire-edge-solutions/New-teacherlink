@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -26,7 +27,8 @@ const SavedCandidates = ({
   viewType,
   viewMode,
   onBackToList,
-  onNavigateTab
+  onNavigateTab,
+  activeTab
 }) => {
   const { user, loading: userLoading } = useAuth();
   const navigate = useNavigate();
@@ -69,13 +71,16 @@ const SavedCandidates = ({
   const [bulkMessageChars, setBulkMessageChars] = useState(0);
   const [bulkError, setBulkError] = useState('');
   const [coinBalance, setCoinBalance] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [instituteInfo, setInstituteInfo] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [bulkSummary, setBulkSummary] = useState(null);
   const [isSendingBulk, setIsSendingBulk] = useState(false);
   const [showInsufficientCoinsModal, setShowInsufficientCoinsModal] = useState(false);
   const [requiredCoins, setRequiredCoins] = useState(0);
+  // eslint-disable-next-line no-unused-vars
   const candidateLoginCacheRef = useRef({});
+  const prevActiveTabRef = useRef(null);
 
   const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
     if (!user) return [];
@@ -110,6 +115,9 @@ const SavedCandidates = ({
   }, [user]);
 
   const fetchSavedCandidates = useCallback(async () => {
+    if (!user) return;
+    
+    console.log('🔄 SavedCandidates: Starting fetch...');
     try {
       setLoading(true);
       const [fullCandidates, prefs] = await Promise.all([
@@ -117,9 +125,15 @@ const SavedCandidates = ({
         CandidateApiService.fetchUserCandidatePreferences(user)
       ]);
       
+      console.log('📊 SavedCandidates: Full candidates count:', fullCandidates.length);
+      console.log('📊 SavedCandidates: Saved IDs from prefs:', prefs.savedCandidates);
+      
+      // Filter only saved candidates (normalize IDs to strings for comparison)
       const onlySaved = fullCandidates.filter(c => 
-        prefs.savedCandidates.includes(c.firebase_uid)
+        prefs.savedCandidates.includes(String(c.firebase_uid || ''))
       );
+      
+      console.log('✅ SavedCandidates: Filtered saved count:', onlySaved.length);
       
       setSavedCandidates(onlySaved);
       setFilteredCandidates(onlySaved);
@@ -134,7 +148,7 @@ const SavedCandidates = ({
       const photos = await CandidateApiService.fetchCandidatePhotos(onlySaved);
       setCandidatePhotos(photos);
     } catch (error) {
-      console.error('Error fetching saved candidates:', error);
+      console.error('❌ Error fetching saved candidates:', error);
       setSavedCandidates([]);
       setFilteredCandidates([]);
       setUnlockedCandidateIds(getUnlockedCandidatesFromLocalStorage().map(String));
@@ -151,6 +165,22 @@ const SavedCandidates = ({
     }
     if (user) fetchSavedCandidates();
   }, [user, userLoading, fetchSavedCandidates]);
+
+  // Refresh when tab becomes active (only when switching TO this tab)
+  useEffect(() => {
+    const prevTab = prevActiveTabRef.current;
+    prevActiveTabRef.current = activeTab;
+    
+    // Only fetch if:
+    // 1. Tab just became 'saved' (wasn't before)
+    // 2. User is logged in
+    // 3. Not already loading
+    if (activeTab === 'saved' && prevTab !== 'saved' && user && !userLoading && !loading) {
+      console.log('🔄 SavedCandidates: Tab became active, refreshing data...');
+      fetchSavedCandidates();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, user, userLoading, loading]); // fetchSavedCandidates is stable via useCallback
 
   const handleSearch = useCallback((searchTerm) => {
     const normalizedTerm = (searchTerm ?? '').trim();
@@ -217,7 +247,7 @@ const SavedCandidates = ({
       return;
     }
     
-    const { candidate, isFavourite } = candidateToFavourite;
+    const { candidate } = candidateToFavourite;
     
     try {
       await CandidateApiService.toggleFavouriteCandidate(candidate, user, true);
@@ -898,7 +928,7 @@ const SavedCandidates = ({
                     onNavigateTab('all');
                     return;
                   }
-                  const allTab = document.querySelector('[data-tab=\"all\"]');
+                  const allTab = document.querySelector('[data-tab="all"]');
                   if (allTab) allTab.click();
                 }}
               >

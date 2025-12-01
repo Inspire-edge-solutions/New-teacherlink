@@ -449,6 +449,21 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
     }
   }, [isLoading, error, profileData]);
 
+  // Determine if education content is sparse (few entries)
+  // If education has 2 or fewer entries, we'll move Language Proficiency to left column
+  // If education has 1 or fewer entries, we'll also move Work Exposure to left column
+  const isEducationSparse = useMemo(() => {
+    if (!educationData || educationData.length === 0) return true;
+    // Consider education sparse if it has 2 or fewer entries
+    return educationData.length <= 2;
+  }, [educationData]);
+
+  const isEducationVerySparse = useMemo(() => {
+    if (!educationData || educationData.length === 0) return true;
+    // Consider education very sparse if it has 1 or fewer entries
+    return educationData.length <= 1;
+  }, [educationData]);
+
   if (!user) {
     return (
       <div className="alert alert-warning text-center">
@@ -805,14 +820,6 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
       { key: 'home_tuitions', label: 'Home Tuitions' }
     ];
     
-    // Enhanced responsive grid
-    const getGridColumns = () => {
-      if (isSmallMobile) return 1;
-      if (isMobile) return 2;
-      if (isTablet) return 2;
-      return 3;
-    };
-    
     // Helper function to check if work type is enabled
     const isWorkTypeEnabled = (key) => {
       if (!experienceData?.mysqlData) return false;
@@ -826,16 +833,13 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
     return (
       <div className={`work-exposure ${isMobile ? 'mb-4' : isTablet ? 'mb-5' : 'mb-6'}`}>
           <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>WORK EXPOSURE</h2>
-          <div className="responsive-grid grid w-full" style={{ 
-            gridTemplateColumns: `repeat(${getGridColumns()}, minmax(0, 1fr))`,
-            gap: isMobile ? '8px' : isTablet ? '9px' : '10px'
-          }}>
+          <div className={`grid w-full ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-0`}>
             {workTypes.map(type => (
-              <div key={type.key} className={`bg-white rounded-lg ${isMobile ? 'p-2 px-2' : isTablet ? 'p-2.5' : 'p-3'} shadow-sm flex justify-between items-center ${isMobile ? 'min-h-[45px]' : 'min-h-[50px]'} border border-gray-200 min-w-0`}>
+              <div key={type.key} className={`flex justify-between items-center py-0.5 min-w-0`}>
                 <div className={`text-lg sm:text-base font-medium leading-normal tracking-tight flex-1 mr-2 min-w-0 break-words`}>
                   {type.label}
                 </div>
-                <div className={`${isMobile ? 'w-5 h-5 text-xs' : isTablet ? 'w-5 h-5 text-xs' : 'w-6 h-6 text-sm'} rounded-full flex items-center justify-center font-bold shrink-0 ${isWorkTypeEnabled(type.key) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                <div className={`${isMobile ? 'w-8 h-8 text-base' : isTablet ? 'w-8 h-8 text-base' : 'w-9 h-9 text-lg'} rounded-full flex items-center justify-center font-bold shrink-0 ${isWorkTypeEnabled(type.key) ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
                   {isWorkTypeEnabled(type.key) ? '✓' : '×'}
                 </div>
               </div>
@@ -862,7 +866,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
 
     // Enhanced language item component with larger fonts
     const LanguageItem = ({ label, languages }) => (
-      <div className={`language-item flex ${isMobile ? 'mb-2 py-1' : 'mb-1.5 py-1'} flex-row items-start flex-wrap`}>
+      <div className={`language-item flex py-0.5 flex-row items-start flex-wrap`}>
         <span className={`font-semibold mr-2 text-gray-800 text-lg sm:text-base min-w-fit leading-normal tracking-tight`}>
           {label}:
         </span>
@@ -945,9 +949,6 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
           {additionalInfo?.marital_status && (
             <InfoItem label="Marital Status" value={additionalInfo.marital_status} />
           )}
-          {additionalInfo?.computer_skills && (
-            <InfoItem label="Computer skills" value={formatComputerSkills()} />
-          )}
           {additionalInfo?.accounting_knowledge !== undefined && (
             <InfoItem 
               label="Accounting Knowledge" 
@@ -963,16 +964,19 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
               value={additionalInfo.differently_abled} 
             />
           )}
+        </div>
+        
+        {/* Full width items for longer content */}
+        <div className={`${isMobile ? 'mt-2' : 'mt-[5px]'} w-full`}>
+          {additionalInfo?.computer_skills && (
+            <InfoItem label="Computer skills" value={formatComputerSkills()} />
+          )}
           {additionalInfo?.certifications && (
             <InfoItem label="Certifications" value={additionalInfo.certifications} />
           )}
           {additionalInfo?.accomplishments && (
             <InfoItem label="Accomplishments" value={additionalInfo.accomplishments} />
           )}
-        </div>
-        
-        {/* Full width items for longer content */}
-        <div className={`${isMobile ? 'mt-2' : 'mt-[5px]'} w-full`}>
           {additionalInfo?.projects && (
             <InfoItem label="Projects" value={additionalInfo.projects} />
           )}
@@ -1209,16 +1213,8 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
       </div>
       
       <div className={`cv-body flex flex-col ${isTablet ? 'md:flex-row' : 'md:flex-row'} p-0 bg-white`}>
-        <div className={`cv-sidebar w-full ${isTablet ? 'md:w-[35%]' : 'md:w-[35%]'} bg-gray-100 ${isMobile ? 'p-2.5' : isTablet ? 'p-4' : 'md:p-5'}`}>
-          <div className="cv-section education-section mt-0 mb-2.5">
-            <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>
-              EDUCATION
-            </h2>
-            {renderEducationBlocks()}
-          </div>
-        </div>
-
-        <div className={`cv-main w-full ${isTablet ? 'md:w-[65%]' : 'md:w-[65%]'} ${isMobile ? 'md:px-2' : isTablet ? 'md:px-3' : 'md:px-2'}`}>
+        {/* Work Experience - First in mobile, part of right column on desktop */}
+        <div className={`${isMobile ? 'order-1' : ''} ${isMobile ? 'w-full px-2' : 'hidden'}`}>
           <div className="cv-section experience-section mt-0 mb-2.5">
             <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>
               WORK EXPERIENCE
@@ -1226,10 +1222,40 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
             {getExperienceText()}
             {renderExperienceBlocks()}
           </div>
+        </div>
 
-          {renderWorkExposureMatrix()}
+        {/* Education - Second in mobile */}
+        <div className={`cv-sidebar w-full ${isTablet ? 'md:w-[35%]' : 'md:w-[35%]'} bg-gray-100 ${isMobile ? 'p-2.5 order-2' : isTablet ? 'p-4' : 'md:p-5'}`}>
+          <div className="cv-section education-section mt-0 mb-2.5">
+            <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>
+              EDUCATION
+            </h2>
+            {renderEducationBlocks()}
+          </div>
+          
+           {/* Conditionally move Language Proficiency to left column if education is sparse (0-2 entries) */}
+           {isEducationSparse && renderLanguageProficiency()}
+          {/* Conditionally move Work Exposure to left column if education is very sparse (0-1 entries) */}
+          {isEducationVerySparse && renderWorkExposureMatrix()}
+          
+        </div>
 
-          {renderLanguageProficiency()}
+        {/* Right column - contains Work Experience on desktop, other sections on both */}
+        <div className={`cv-main w-full ${isTablet ? 'md:w-[65%]' : 'md:w-[65%]'} ${isMobile ? 'md:px-2 order-3' : isTablet ? 'md:px-3' : 'md:px-2'}`}>
+          {/* Work Experience - shown on desktop only */}
+          <div className={`cv-section experience-section mt-0 mb-2.5 ${isMobile ? 'hidden' : ''}`}>
+            <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>
+              WORK EXPERIENCE
+            </h2>
+            {getExperienceText()}
+            {renderExperienceBlocks()}
+          </div>
+
+           {/* Only show Language Proficiency in right column if education is NOT sparse */}
+           {!isEducationSparse && renderLanguageProficiency()}
+
+          {/* Only show Work Exposure in right column if education is NOT very sparse */}
+          {!isEducationVerySparse && renderWorkExposureMatrix()}
 
           {renderAdditionalInfo()}
           

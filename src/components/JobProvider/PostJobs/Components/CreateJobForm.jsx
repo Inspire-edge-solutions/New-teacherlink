@@ -1024,9 +1024,14 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
   };
 
   const handleConfirmPost = async () => {
-    if (!previewData) return;
+    // Guard against double submission
+    if (!previewData || isPosting) {
+      console.warn('⚠️ handleConfirmPost: Already posting or no preview data, ignoring duplicate call');
+      return;
+    }
 
     setIsPosting(true);
+    let jobPostedSuccessfully = false;
 
     try {
       // Add admin approval fields to the job data
@@ -1053,17 +1058,22 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
       console.log("Full payload:", JSON.stringify(payload, null, 2));
       console.log("=== END DEBUG ===");
       
+      // CRITICAL OPERATION: Post the job
       const postJobRes = await axios.post(
         "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes",
         payload,
         { headers: { "Content-Type": "application/json" } }
       );
       
+      // Mark that job was posted successfully
+      jobPostedSuccessfully = true;
+      
       // Debug: Check what was returned from the API
       console.log("=== API RESPONSE DEBUG ===");
       console.log("API Response:", postJobRes.data);
       console.log("=== END RESPONSE DEBUG ===");
       
+      // NON-CRITICAL: Get recent job ID (for WhatsApp recommendations)
       let recentJobId = null;
       try {
         const jobsRes = await axios.get(
@@ -1072,61 +1082,59 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
         const jobList = Array.isArray(jobsRes.data) ? jobsRes.data : [];
         jobList.sort((a, b) => Number(b.id) - Number(a.id));
         recentJobId = jobList[0]?.id || null;
-      } catch (e) {}
+      } catch (e) {
+        console.warn('⚠️ Failed to fetch recent job ID (non-critical):', e);
+      }
 
-      // const mapPayload = {
-      //   firebase_uid: user.uid,
-      //   location: address,
-      //   latitude: parseFloat(latitude),
-      //   langitude: parseFloat(longitude),
-      // };
-      // await axios.post(
-      //   "https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/postmap",
-      //   mapPayload,
-      //   { headers: { "Content-Type": "application/json" } }
-      // );
-
-      // PROFILE_APPROVED logic for job posting
-      let exists = false;
-      let existingRow = null;
+      // NON-CRITICAL: PROFILE_APPROVED logic for job posting
+      // Wrap in try-catch so it doesn't fail the entire operation
       try {
-        const checkRes = await axios.get(`https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved?firebase_uid=${user.uid}`);
-        if (Array.isArray(checkRes.data) && checkRes.data.length > 0) {
-          existingRow = checkRes.data.find(obj => obj.firebase_uid === user.uid);
-        } else if (typeof checkRes.data === "object" && checkRes.data !== null && checkRes.data.firebase_uid === user.uid) {
-          existingRow = checkRes.data;
+        let exists = false;
+        let existingRow = null;
+        try {
+          const checkRes = await axios.get(`https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved?firebase_uid=${user.uid}`);
+          if (Array.isArray(checkRes.data) && checkRes.data.length > 0) {
+            existingRow = checkRes.data.find(obj => obj.firebase_uid === user.uid);
+          } else if (typeof checkRes.data === "object" && checkRes.data !== null && checkRes.data.firebase_uid === user.uid) {
+            existingRow = checkRes.data;
+          }
+          if (existingRow) exists = true;
+        } catch (err) {
+          console.warn('⚠️ Failed to check profile_approved (non-critical):', err);
         }
-        if (existingRow) exists = true;
-      } catch (err) {}
 
-      if (exists) {
-        await axios.put("https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved", {
-          firebase_uid: user.uid,
-          isApproved: 0,
-          isRejected: 0,
-          response: 0,
-          profile_updated: 1,
-          approved_by: "",
-          approved_email: "",
-          education_updated: "",
-          additionalDetails_updated: "",
-          profile_image_updated: "",
-          job_updated: 1  // Mark that job was updated
-        });
-      } else {
-        await axios.post("https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved", {
-          firebase_uid: user.uid,
-          isApproved: 0,
-          isRejected: 0,
-          response: 0,
-          profile_updated: 0,
-          approved_by: "",
-          approved_email: "",
-          education_updated: "",
-          additionalDetails_updated: "",
-          profile_image_updated: "",
-          job_updated: 1  // Mark that job was created
-        });
+        if (exists) {
+          await axios.put("https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved", {
+            firebase_uid: user.uid,
+            isApproved: 0,
+            isRejected: 0,
+            response: 0,
+            profile_updated: 1,
+            approved_by: "",
+            approved_email: "",
+            education_updated: "",
+            additionalDetails_updated: "",
+            profile_image_updated: "",
+            job_updated: 1  // Mark that job was updated
+          });
+        } else {
+          await axios.post("https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved", {
+            firebase_uid: user.uid,
+            isApproved: 0,
+            isRejected: 0,
+            response: 0,
+            profile_updated: 0,
+            approved_by: "",
+            approved_email: "",
+            education_updated: "",
+            additionalDetails_updated: "",
+            profile_image_updated: "",
+            job_updated: 1  // Mark that job was created
+          });
+        }
+      } catch (profileError) {
+        // Non-critical: Log but don't fail the entire operation
+        console.warn('⚠️ Failed to update profile_approved (non-critical, job was posted successfully):', profileError);
       }
 
       const successMessage = editJobData
@@ -1134,12 +1142,22 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
         : "Job posted successfully!";
       toast.info("Thank you for posting the job. Your job is now under review by Admin! You will be notified soon");
       
-      // Send WhatsApp verification if checkbox was checked
+      // NON-CRITICAL: Send WhatsApp verification if checkbox was checked
       if (jobDataWithApproval.verification_sent === 1) {
-        await sendWhatsAppVerification(jobDataWithApproval);
+        try {
+          await sendWhatsAppVerification(jobDataWithApproval);
+        } catch (whatsappError) {
+          console.warn('⚠️ Failed to send WhatsApp verification (non-critical):', whatsappError);
+        }
       }
       
-      await sendWhatsAppRecommendation(jobDataWithApproval, recentJobId);
+      // NON-CRITICAL: Send WhatsApp recommendations
+      try {
+        await sendWhatsAppRecommendation(jobDataWithApproval, recentJobId);
+      } catch (recommendationError) {
+        console.warn('⚠️ Failed to send WhatsApp recommendations (non-critical):', recommendationError);
+      }
+      
       toast.success(successMessage);
 
       setIsPosting(false);
@@ -1149,7 +1167,22 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
       if (editJobData && onEditSuccess) setTimeout(onEditSuccess, 800);
     } catch (error) {
       setIsPosting(false);
-      toast.error("Failed to post the job. Please try again.");
+      
+      // If job was posted successfully but other operations failed, show different message
+      if (jobPostedSuccessfully) {
+        console.error('❌ Job was posted but some operations failed:', error);
+        toast.warning("Job was posted successfully, but some additional operations failed. Please check your job list.");
+        // Still close modal and reset state since job was posted
+        setShowReviewModal(false);
+        setPreviewData(null);
+        if (editJobData && onClearEditData) onClearEditData();
+        if (editJobData && onEditSuccess) setTimeout(onEditSuccess, 800);
+      } else {
+        // Job posting itself failed
+        console.error('❌ Failed to post job:', error);
+        console.error('❌ Error details:', error.response?.data || error.message);
+        toast.error("Failed to post the job. Please try again.");
+      }
     }
   };
 

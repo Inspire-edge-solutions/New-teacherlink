@@ -150,10 +150,10 @@ const TabDisplay = () => {
   console.log('TabDisplay rendered - activeTab:', activeTab); // Debug log
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Tab Navigation - Separate Container */}
       <div className="rounded-lg shadow-sm border border-gray-500">
-        <div className="p-4 md:p-6">
+        <div className="p-2 md:p-6">
           <nav
             className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4 w-full"
             aria-label="Tabs"
@@ -177,7 +177,7 @@ const TabDisplay = () => {
 
       {/* Tab Content - Separate Container */}
       <div className="rounded-lg shadow-sm border">
-        <div className="p-4 md:p-6">
+        <div className="p-2 md:p-6">
           {viewMode === 'detail' && selectedJob ? (
             <ViewJobs job={selectedJob} onBack={handleBackToList} fromNotifications={fromNotifications} />
           ) : (

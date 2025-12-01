@@ -101,9 +101,41 @@ class CandidateApiService {
         this.fetchSupplementalCandidateMap()
       ]);
 
-      const candidateList = Array.isArray(data) ? data[0] : [];
+      console.log('🔍 fetchCandidates: Raw API response type:', typeof data);
+      console.log('🔍 fetchCandidates: Is array?', Array.isArray(data));
+      console.log('🔍 fetchCandidates: Data sample:', Array.isArray(data) ? data.slice(0, 2) : data);
 
-      if (!Array.isArray(candidateList)) {
+      // Handle different API response formats
+      let candidateList = [];
+      
+      if (Array.isArray(data)) {
+        // If data is directly an array of candidates
+        candidateList = data;
+      } else if (data && typeof data === 'object') {
+        // If data is an object, check for common patterns
+        if (Array.isArray(data.body)) {
+          // API Gateway format with body
+          candidateList = data.body;
+        } else if (Array.isArray(data.data)) {
+          // Nested data property
+          candidateList = data.data;
+        } else if (Array.isArray(data.candidates)) {
+          // Candidates property
+          candidateList = data.candidates;
+        } else if (data[0] && Array.isArray(data[0])) {
+          // First element is an array
+          candidateList = data[0];
+        } else {
+          // Try to parse as single candidate wrapped in array
+          candidateList = [data];
+        }
+      }
+
+      console.log('🔍 fetchCandidates: Parsed candidateList length:', candidateList.length);
+      console.log('🔍 fetchCandidates: First candidate sample:', candidateList[0]);
+
+      if (!Array.isArray(candidateList) || candidateList.length === 0) {
+        console.warn('⚠️ fetchCandidates: No candidates found in response');
         return [];
       }
 
@@ -118,6 +150,8 @@ class CandidateApiService {
         };
       });
 
+      console.log('✅ fetchCandidates: Merged candidates count:', merged.length);
+
       const uniqueEducationTypes = new Set();
       merged.slice(0, 200).forEach((candidate) => {
         const { types } = parseEducation(candidate.education_details_json);
@@ -131,7 +165,8 @@ class CandidateApiService {
 
       return merged;
     } catch (error) {
-      console.error('Error fetching candidates:', error);
+      console.error('❌ Error fetching candidates:', error);
+      console.error('❌ Error details:', error.response?.data || error.message);
       toast.error("Could not load candidate list. Please refresh.");
       return [];
     }
@@ -196,23 +231,56 @@ class CandidateApiService {
 
     try {
       const userId = getUserId(user);
+      console.log('🔑 fetchUserCandidatePreferences: Current user ID:', userId);
+      console.log('🔑 fetchUserCandidatePreferences: User object:', { firebase_uid: user?.firebase_uid, uid: user?.uid, id: user?.id });
+      
       const { data } = await axios.get(API_ENDPOINTS.FAV_API);
       
+      console.log('📥 fetchUserCandidatePreferences: Total rows from API:', data?.length || 0);
+      console.log('📥 fetchUserCandidatePreferences: Sample API rows (first 5):', Array.isArray(data) ? data.slice(0, 5).map(r => ({
+        firebase_uid: r.firebase_uid,
+        added_by: r.added_by,
+        favroute_candidate: r.favroute_candidate,
+        saved_candidate: r.saved_candidate
+      })) : 'Not an array');
+      
       const userRows = Array.isArray(data)
-        ? data.filter(row => String(row.added_by) === String(userId))
+        ? data.filter(row => {
+            const rowAddedBy = String(row.added_by || '');
+            const currentUserId = String(userId || '');
+            const matches = rowAddedBy === currentUserId;
+            return matches;
+          })
         : [];
+
+      console.log('📥 fetchUserCandidatePreferences: User rows count:', userRows.length);
+      console.log('📥 fetchUserCandidatePreferences: Sample user rows:', userRows.slice(0, 5).map(r => ({
+        firebase_uid: r.firebase_uid,
+        added_by: r.added_by,
+        favroute_candidate: r.favroute_candidate,
+        saved_candidate: r.saved_candidate
+      })));
 
       const savedCandidates = userRows
         .filter(c => c.saved_candidate === 1 || c.saved_candidate === true)
-        .map(c => c.firebase_uid);
+        .map(c => String(c.firebase_uid || ''))
+        .filter(Boolean);
 
       const favouriteCandidates = userRows
-        .filter(c => c.favroute_candidate === 1 || c.favroute_candidate === true)
-        .map(c => c.firebase_uid);
+        .filter(c => {
+          const isFav = c.favroute_candidate === 1 || c.favroute_candidate === true;
+          return isFav;
+        })
+        .map(c => String(c.firebase_uid || ''))
+        .filter(Boolean);
+      
+      console.log('📥 fetchUserCandidatePreferences: Favourite candidates count:', favouriteCandidates.length);
+      console.log('📥 fetchUserCandidatePreferences: Favourite candidates IDs:', favouriteCandidates);
 
       const downloadedCandidates = userRows
         .filter(c => c.dowloaded_candidate === 1 || c.dowloaded_candidate === true)
-        .map(c => c.firebase_uid);
+        .map(c => String(c.firebase_uid || ''))
+        .filter(Boolean);
 
       const unlockedCandidates = userRows
         .filter(c => 
@@ -221,7 +289,8 @@ class CandidateApiService {
           c.unblocked_candidate === 1 ||
           c.unblocked_candidate === true
         )
-        .map(c => c.firebase_uid);
+        .map(c => String(c.firebase_uid || ''))
+        .filter(Boolean);
 
       return { 
         savedCandidates, 
@@ -397,8 +466,18 @@ class CandidateApiService {
       // Check if preference exists for this (candidate, user) pair
       const { data: allFeatures } = await axios.get(API_ENDPOINTS.FAV_API);
       const existing = Array.isArray(allFeatures)
-        ? allFeatures.find(row => row.firebase_uid === candidateId && row.added_by === userId)
+        ? allFeatures.find(row => 
+            String(row.firebase_uid || '') === String(candidateId || '') && 
+            String(row.added_by || '') === String(userId || '')
+          )
         : null;
+      
+      console.log('💾 upsertCandidateAction: Saving favourite', {
+        candidateId: String(candidateId || ''),
+        userId: String(userId || ''),
+        isFavourite: updatePayload.favroute_candidate === 1,
+        existing: !!existing
+      });
 
       const payload = {
         firebase_uid: candidateId,

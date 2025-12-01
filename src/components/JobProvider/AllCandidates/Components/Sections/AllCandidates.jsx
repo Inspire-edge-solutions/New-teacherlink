@@ -1,5 +1,3 @@
-//AllCandidates.jsx
-
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
@@ -1209,7 +1207,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
       return;
     }
     
-    const { candidate, isFavourite } = candidateToFavourite;
+    const { candidate } = candidateToFavourite;
     
     try {
       await CandidateApiService.toggleFavouriteCandidate(candidate, user, true);
@@ -1630,7 +1628,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
         <div className="candidates-results">
           <div className="candidates-list">
             {currentCandidates.map((candidate) => {
-              const candidateId = candidate.firebase_uid;
+              const candidateId = String(candidate.firebase_uid || candidate.uid || '');
               const isSaved = savedCandidates.includes(candidateId);
               const isFavourite = favouriteCandidates.includes(candidateId);
               const isDownloaded = downloadedCandidates.includes(candidateId);

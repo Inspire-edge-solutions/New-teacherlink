@@ -30,7 +30,8 @@ const FavouriteCandidates = ({
   viewType,
   viewMode,
   onBackToList,
-  onNavigateTab
+  onNavigateTab,
+  activeTab
 }) => {
   const { user, loading: userLoading } = useAuth();
   const navigate = useNavigate();
@@ -59,6 +60,7 @@ const FavouriteCandidates = ({
   const [unlockedCandidateIds, setUnlockedCandidateIds] = useState([]);
   const [pendingScrollCandidate, setPendingScrollCandidate] = useState(null);
   const skipPageResetRef = useRef(false);
+  const prevActiveTabRef = useRef(null);
 
   // Message modal state
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -107,17 +109,75 @@ const FavouriteCandidates = ({
 
   // Fetch favourite candidates
   const fetchFavouriteCandidates = useCallback(async () => {
+    if (!user) return;
+    
+    console.log('🔄 FavouriteCandidates: Starting fetch...');
+    console.log('🔑 FavouriteCandidates: Current user:', {
+      firebase_uid: user?.firebase_uid,
+      uid: user?.uid,
+      id: user?.id
+    });
+    
     try {
       setLoading(true);
+      
+      // Fetch both in parallel
       const [fullCandidates, prefs] = await Promise.all([
         CandidateApiService.fetchCandidates(),
         CandidateApiService.fetchUserCandidatePreferences(user)
       ]);
       
-      // Filter only favourite candidates
-      const onlyFavourites = fullCandidates.filter(c => 
-        prefs.favouriteCandidates.includes(c.firebase_uid)
-      );
+      console.log('📊 FavouriteCandidates: Full candidates count:', fullCandidates.length);
+      console.log('📊 FavouriteCandidates: Favourite IDs from prefs:', prefs.favouriteCandidates);
+      console.log('📊 FavouriteCandidates: Favourite IDs count:', prefs.favouriteCandidates.length);
+      
+      // Log sample candidate IDs from full list
+      console.log('📊 FavouriteCandidates: Sample candidate IDs from full list:', fullCandidates.slice(0, 5).map(c => ({
+        name: c.fullName || c.name,
+        firebase_uid: c.firebase_uid,
+        uid: c.uid,
+        id: c.id,
+        type: typeof c.firebase_uid
+      })));
+      
+      // Filter only favourite candidates (normalize IDs to strings for comparison)
+      const onlyFavourites = fullCandidates.filter(c => {
+        // Try multiple ID fields
+        const candidateId = String(c.firebase_uid || c.uid || c.id || '');
+        const isFavourite = prefs.favouriteCandidates.includes(candidateId);
+        
+        // Log matches for debugging
+        if (prefs.favouriteCandidates.includes(candidateId)) {
+          console.log(`✅ MATCH FOUND: Candidate "${c.fullName || c.name}" (ID: ${candidateId}) is in favourites!`);
+        }
+        
+        return isFavourite;
+      });
+      
+      console.log('✅ FavouriteCandidates: Filtered favourites count:', onlyFavourites.length);
+      
+      if (onlyFavourites.length > 0) {
+        console.log('✅ FavouriteCandidates: Favourite candidates found:', onlyFavourites.map(c => ({
+          name: c.fullName || c.name,
+          firebase_uid: c.firebase_uid
+        })));
+      } else {
+        console.warn('⚠️ FavouriteCandidates: NO FAVOURITES FOUND!');
+        if (prefs.favouriteCandidates.length > 0) {
+          console.warn('⚠️ But we have', prefs.favouriteCandidates.length, 'favourite IDs from API:', prefs.favouriteCandidates);
+          console.warn('⚠️ Sample candidate IDs from full list:', fullCandidates.slice(0, 10).map(c => String(c.firebase_uid || c.uid || c.id || '')));
+          console.warn('⚠️ Checking if any IDs match...');
+          
+          // Check if any IDs match (case-insensitive, trimmed)
+          const favouriteIdsLower = prefs.favouriteCandidates.map(id => String(id).toLowerCase().trim());
+          const candidateIdsLower = fullCandidates.slice(0, 10).map(c => String(c.firebase_uid || c.uid || c.id || '').toLowerCase().trim());
+          
+          const matches = favouriteIdsLower.filter(favId => candidateIdsLower.includes(favId));
+          console.warn('⚠️ Lowercase matches found:', matches.length, matches);
+        } else {
+          console.warn('⚠️ No favourite IDs found in preferences at all!');
+        }
+      }
       
       setFavouriteCandidates(onlyFavourites);
       setFilteredCandidates(onlyFavourites);
@@ -133,7 +193,7 @@ const FavouriteCandidates = ({
       const photos = await CandidateApiService.fetchCandidatePhotos(onlyFavourites);
       setCandidatePhotos(photos);
     } catch (error) {
-      console.error('Error fetching favourite candidates:', error);
+      console.error('❌ Error fetching favourite candidates:', error);
       setFavouriteCandidates([]);
       setFilteredCandidates([]);
       setUnlockedCandidateIds(getUnlockedCandidatesFromLocalStorage().map(String));
@@ -154,6 +214,22 @@ const FavouriteCandidates = ({
       fetchFavouriteCandidates();
     }
   }, [user, userLoading, fetchFavouriteCandidates]);
+
+  // Refresh when tab becomes active (only when switching TO this tab)
+  useEffect(() => {
+    const prevTab = prevActiveTabRef.current;
+    prevActiveTabRef.current = activeTab;
+    
+    // Only fetch if:
+    // 1. Tab just became 'favourite' (wasn't before)
+    // 2. User is logged in
+    // 3. Not already loading
+    if (activeTab === 'favourite' && prevTab !== 'favourite' && user && !userLoading && !loading) {
+      console.log('🔄 FavouriteCandidates: Tab became active, refreshing data...');
+      fetchFavouriteCandidates();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, user, userLoading, loading]); // fetchFavouriteCandidates is stable via useCallback
 
   // Handle search
   const handleSearch = useCallback((searchTerm) => {
@@ -622,7 +698,7 @@ const FavouriteCandidates = ({
                     onNavigateTab('all');
                     return;
                   }
-                  const allTab = document.querySelector('[data-tab=\"all\"]');
+                  const allTab = document.querySelector('[data-tab="all"]');
                   if (allTab) allTab.click();
                 }}
               >

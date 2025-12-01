@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import AllCandidates from './Sections/AllCandidates';
 import FavouriteCandidates from './Sections/FavouriteCandidates';
@@ -152,6 +153,7 @@ const TabDisplay = () => {
             viewMode={viewMode}
             onBackToList={handleBackToList}
             onNavigateTab={handleNavigateToTab}
+            activeTab={activeTab}
           />
         </div>
       </div>
