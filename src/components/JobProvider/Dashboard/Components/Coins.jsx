@@ -348,8 +348,8 @@ const Content = () => {
           ) : (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <h5 className="text-lg font-semibold text-gray-700 mb-2 leading-tight tracking-tight">No Coupon Applied</h5>
-                <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">Apply a coupon code to see details here.</p>
+                <h5 className="text-lg font-semibold text-gray-700 mb-2 leading-tight tracking-tight">You don't have coins yet</h5>
+                <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">Apply a coupon code or make payment or refer friends to get coins!</p>
               </div>
             </div>
           )}
@@ -381,13 +381,13 @@ const Content = () => {
               </button>
             </div>
           ) : (
-            <div className="text-center py-6 sm:py-8 flex flex-col justify-center h-full">
+            <div className="text-center py-2 sm:py-8 flex flex-col justify-center h-full">
               <div className="flex justify-center mb-3 sm:mb-4">
                 <img src={noCoinsIllustration} alt="No Coins" className="w-48 sm:w-64 h-auto" />
               </div>
               <h5 className="text-lg font-semibold text-gray-700 mb-2 leading-tight tracking-tight">No Coins Available</h5>
               <p className="text-lg sm:text-base text-gray-600 mb-3 sm:mb-4 px-2 leading-normal tracking-tight">
-                Apply coupon code or make payment to get coins!
+                Apply coupon code or make payment or refer friends to get coins!
               </p>
               <button 
                 className="px-4 sm:px-5 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white text-lg sm:text-base rounded-lg transition-colors font-medium mx-auto leading-normal tracking-tight" 

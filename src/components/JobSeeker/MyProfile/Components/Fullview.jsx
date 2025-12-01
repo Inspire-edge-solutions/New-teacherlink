@@ -808,7 +808,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
     });
   };
 
-  const renderWorkExposureMatrix = () => {
+  const renderWorkExposureMatrix = (isLeftColumn = false) => {
     if (!jobPreferenceData) return null;
     
     const workTypes = [
@@ -830,10 +830,13 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
     };
     
     const isTablet = windowWidth > 768 && windowWidth <= 1024;
+    // In left column: 1 item per row, in right column: 2 items per row (on desktop)
+    const gridCols = isMobile ? 'grid-cols-1' : (isLeftColumn ? 'grid-cols-1' : 'grid-cols-2');
+    
     return (
       <div className={`work-exposure ${isMobile ? 'mb-4' : isTablet ? 'mb-5' : 'mb-6'}`}>
           <h2 className={`section-title text-center border-b border-black ${isMobile ? 'mb-3 pb-1' : 'mb-[15px] pb-1'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>WORK EXPOSURE</h2>
-          <div className={`grid w-full ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-0`}>
+          <div className={`grid w-full ${gridCols} gap-0`}>
             {workTypes.map(type => (
               <div key={type.key} className={`flex justify-between items-center py-0.5 min-w-0`}>
                 <div className={`text-lg sm:text-base font-medium leading-normal tracking-tight flex-1 mr-2 min-w-0 break-words`}>
@@ -1236,7 +1239,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
            {/* Conditionally move Language Proficiency to left column if education is sparse (0-2 entries) */}
            {isEducationSparse && renderLanguageProficiency()}
           {/* Conditionally move Work Exposure to left column if education is very sparse (0-1 entries) */}
-          {isEducationVerySparse && renderWorkExposureMatrix()}
+          {isEducationVerySparse && renderWorkExposureMatrix(true)}
           
         </div>
 
@@ -1255,7 +1258,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
            {!isEducationSparse && renderLanguageProficiency()}
 
           {/* Only show Work Exposure in right column if education is NOT very sparse */}
-          {!isEducationVerySparse && renderWorkExposureMatrix()}
+          {!isEducationVerySparse && renderWorkExposureMatrix(false)}
 
           {renderAdditionalInfo()}
           

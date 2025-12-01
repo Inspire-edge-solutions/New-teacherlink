@@ -602,7 +602,8 @@ const ViewShort = ({
 
   const renderExperienceBlocks = () => {
     if (!experienceData?.dynamoData?.experienceEntries || 
-        experienceData.dynamoData.experienceEntries?.length === 0) {
+        !Array.isArray(experienceData.dynamoData.experienceEntries) ||
+        experienceData.dynamoData.experienceEntries.length === 0) {
       return null;
     }
     return experienceData.dynamoData.experienceEntries.map((exp, index) => {

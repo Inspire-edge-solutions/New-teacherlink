@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Skeleton } from "@mui/material";
+import { FiEdit2 } from "react-icons/fi";
+import { FaTrash } from "react-icons/fa";
 
 const normalizePhoneNumber = (value = "") =>
   value.replace(/[^0-9]/g, "").slice(0, 10);
@@ -303,6 +305,70 @@ const Referrals = ({ user, onSuccess }) => {
     }
   };
 
+  // Helper: add to coin_history (similar to Coupons.jsx)
+  const addCoinHistoryEntry = async (coinValue) => {
+    try {
+      // VALIDATION: Ensure coin value is positive before adding to history
+      if (!coinValue || coinValue <= 0) {
+        console.error("Invalid coin value for history:", coinValue);
+        return;
+      }
+
+      // Get candidate_id from personal API (for JobSeeker)
+      let candidate_id = null;
+      try {
+        let loginRes = await fetch('https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login');
+        let loginData = await loginRes.json();
+        let userLogin = loginData.find(u => u.firebase_uid === firebase_uid);
+        
+        if (userLogin?.user_type === "Candidate") {
+          let personalRes = await fetch('https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal');
+          let personalData = await personalRes.json();
+          let foundPersonal = personalData.find(p => p.firebase_uid === firebase_uid);
+          candidate_id = foundPersonal?.id || null;
+        } else if (userLogin?.user_type === "Employer") {
+          let orgRes = await fetch('https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation');
+          let orgData = await orgRes.json();
+          let foundOrg = orgData.find(o => o.firebase_uid === firebase_uid);
+          candidate_id = foundOrg?.id || null;
+        }
+      } catch (err) {
+        console.error("Error fetching candidate_id for coin history:", err);
+        // Continue without candidate_id if lookup fails
+      }
+
+      // Prepare payload
+      const payload = {
+        firebase_uid: firebase_uid,
+        candidate_id: candidate_id,
+        job_id: null,
+        coin_value: coinValue,
+        reduction: null,
+        reason: "10 members registered from refer"
+      };
+      
+      const response = await fetch(
+        "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error adding coin history:", errorData);
+        // Don't throw error here as it's not critical for referral processing
+      } else {
+        console.log('Coin history recorded successfully for referral');
+      }
+    } catch (err) {
+      console.error("Error adding coin history:", err);
+      // Don't throw error here as it's not critical for referral processing
+    }
+  };
+
   const checkRewardEligibility = async (reg, contactArr) => {
     if (isRewardGiven) return;
     // Check in redeemGeneral
@@ -338,32 +404,29 @@ const Referrals = ({ user, onSuccess }) => {
 
   const handleReward = async () => {
     try {
-      // Get coupon_value from config
-      const referConfigRes = await fetch("https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/referConfigure");
-      const referConfig = await referConfigRes.json();
-      const couponValue = Array.isArray(referConfig) && referConfig.length > 0 ? Number(referConfig[0]?.coupon_value || 2000) : 2000;
+      // Use default 2000 coins (don't fetch from backend)
+      const couponValue = 2000;
 
       const redeemRes = await fetch(
         `https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem?firebase_uid=${firebase_uid}`
       );
       let coinValue = couponValue;
-      let oldValidTo = null, oldRec = {};
+      let oldRec = {};
       let method = "POST";
       if (redeemRes.ok) {
         const redeemRows = await redeemRes.json();
         if (Array.isArray(redeemRows) && redeemRows.length > 0) {
           oldRec = redeemRows[0];
           if (oldRec.coin_value) coinValue += Number(oldRec.coin_value || 0);
-          if (oldRec.valid_to) oldValidTo = new Date(oldRec.valid_to.replace(" ", "T"));
           method = "PUT";
         }
       }
       const now = new Date();
       const valid_from = now.toISOString().slice(0, 19).replace("T", " ");
-      const newValidTo = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
-      let valid_to = newValidTo;
-      if (oldValidTo && oldValidTo > newValidTo) valid_to = oldValidTo;
+      // For referral coins, always set valid_to to 1 year from now (default)
+      const valid_to = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
       const redeem_at = valid_from;
+      const redeem_valid = valid_to.toISOString().slice(0, 19).replace("T", " ");
       // always keep flags as 1 if they were present
       let payload = {
         firebase_uid,
@@ -372,52 +435,45 @@ const Referrals = ({ user, onSuccess }) => {
         valid_from,
         valid_to: valid_to.toISOString().slice(0, 19).replace("T", " "),
         redeem_at,
+        redeem_valid,
         is_refer: 1,
       };
       if ("is_razor_pay" in oldRec) payload.is_razor_pay = oldRec.is_razor_pay;
       if ("is_coupon" in oldRec) payload.is_coupon = oldRec.is_coupon;
 
-      await fetch("https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem", {
+      const coinRedeemResponse = await fetch("https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem", {
         method: method,
         headers: getAuthHeaders(),
         body: JSON.stringify(payload)
       });
 
-      // Update /coin_history
-      let loginRes = await fetch('https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login');
-      let loginData = await loginRes.json();
-      let userLogin = loginData.find(u => u.firebase_uid === firebase_uid);
-      let candidate_id = null;
-      let foundPersonal = null;
-      if (userLogin?.user_type === "Candidate") {
-        let personalRes = await fetch('https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal');
-        let personalData = await personalRes.json();
-        foundPersonal = personalData.find(p => p.firebase_uid === firebase_uid);
-        candidate_id = foundPersonal?.id;
-      } else if (userLogin?.user_type === "Employer") {
-        let orgRes = await fetch('https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation');
-        let orgData = await orgRes.json();
-        let foundOrg = orgData.find(o => o.firebase_uid === firebase_uid);
-        candidate_id = foundOrg?.id;
+      // CRITICAL: Check if the coin redemption was successful
+      if (!coinRedeemResponse.ok) {
+        const errorText = await coinRedeemResponse.text();
+        console.error('Failed to redeem coins:', coinRedeemResponse.status, errorText);
+        toast.error(`Failed to redeem coins: ${coinRedeemResponse.status}. Please contact support.`);
+        return;
       }
-      let coinHistoryPayload = {
-        firebase_uid: firebase_uid,
-        candidate_id: candidate_id,
-        job_id: null,
-        coin_value: couponValue,
-        reduction: null,
-        reason: "10 members registered from refer"
-      };
-      await fetch("https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(coinHistoryPayload)
-      });
 
-      toast.success("Congratulations! You have received your referral coins.");
+      // Update /coin_history using the helper function (similar to Coupons.jsx)
+      await addCoinHistoryEntry(couponValue);
+
+      toast.success(`Congratulations! You have received ${couponValue} coins for your referral!`);
       
       // Send WhatsApp notification about the reward
       try {
+        // Get user phone number for WhatsApp notification
+        let loginRes = await fetch('https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login');
+        let loginData = await loginRes.json();
+        let userLogin = loginData.find(u => u.firebase_uid === firebase_uid);
+        let foundPersonal = null;
+        
+        if (userLogin?.user_type === "Candidate") {
+          let personalRes = await fetch('https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal');
+          let personalData = await personalRes.json();
+          foundPersonal = personalData.find(p => p.firebase_uid === firebase_uid);
+        }
+        
         const userPhone = foundPersonal?.phone_number || foundPersonal?.callingNumber || userLogin?.phone_number;
         if (userPhone) {
           const formattedPhone = userPhone.replace(/[^0-9]/g, "").slice(-10);
@@ -432,7 +488,8 @@ const Referrals = ({ user, onSuccess }) => {
       
       if (onSuccess) onSuccess();
       navigate("/seeker/dashboard");
-    } catch {
+    } catch (error) {
+      console.error('Error in handleReward:', error);
       toast.error("Failed to redeem referral coins or update coin history. Please contact support.");
     }
   };
@@ -610,7 +667,7 @@ const Referrals = ({ user, onSuccess }) => {
                           <div className="font-medium text-gray-800 text-lg sm:text-base leading-normal tracking-tight">{number}</div>
                           <div className={`text-lg sm:text-base leading-normal tracking-tight ${
                             registeredContacts.includes(number) 
-                              ? 'text-gradient-brand font-semibold' 
+                              ? 'bg-gradient-brand-text bg-clip-text text-transparent font-semibold' 
                               : 'text-gray-500'
                           }`}>
                             {registeredContacts.includes(number)
@@ -629,16 +686,14 @@ const Referrals = ({ user, onSuccess }) => {
                           className="p-1 sm:p-2 text-gray-500 hover:text-gray-700 transition-colors"
                           title="Edit"
                         >
-                          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M14.7 3.29a1 1 0 0 1 1.41 0l.6.6a1 1 0 0 1 0 1.41l-9.09 9.09a1 1 0 0 1-.45.26l-3.12.78a.5.5 0 0 1-.61-.61l.78-3.12a1 1 0 0 1 .26-.45l9.09-9.09zm2.12-2.12a3 3 0 0 0-4.24 0l-9.09 9.09a3 3 0 0 0-.77 1.34l-.78 3.12a2.5 2.5 0 0 0 3.06 3.06l3.12-.78a3 3 0 0 0 1.34-.77l9.09-9.09a3 3 0 0 0 0-4.24l-.6-.6zm-2.83 6.48l-1.42-1.42 2.83-2.83 1.42 1.42-2.83 2.83z"/>
-                          </svg>
+                          <FiEdit2 size={16} />
                         </button>
                         <button
                           onClick={() => handleRemoveContact(number)}
                           className="p-1 sm:p-2 text-red-500 hover:text-red-700 transition-colors"
                           title="Remove"
                         >
-                          ×
+                          <FaTrash size={16} />
                         </button>
                       </div>
                     )}

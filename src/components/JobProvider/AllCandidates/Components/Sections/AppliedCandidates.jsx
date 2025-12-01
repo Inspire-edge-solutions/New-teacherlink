@@ -883,6 +883,7 @@ const AppliedCandidates = ({
                 showCheckbox={true}
                 isChecked={selectedCandidates.has(candidateSelectionId)}
                 onCheckboxChange={handleCheckboxChange}
+                candidateSelectionId={candidateSelectionId}
                 onMessage={handleMessage}
                 showStatusControl
                 statusValue={getCandidateStatus(candidate)}

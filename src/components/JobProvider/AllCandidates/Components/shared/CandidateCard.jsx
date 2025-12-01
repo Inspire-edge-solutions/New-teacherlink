@@ -37,9 +37,12 @@ const CandidateCard = ({
   statusValue = '',
   statusOptions = [],
   onStatusChange,
-  forceMobileLayout = false
+  forceMobileLayout = false,
+  candidateSelectionId = null // Optional: ID to use for checkbox selection (defaults to firebase_uid)
 }) => {
   const candidateId = candidate.firebase_uid;
+  // Use candidateSelectionId if provided, otherwise fallback to firebase_uid
+  const selectionId = candidateSelectionId !== null ? candidateSelectionId : candidateId;
 
   const expertise = parseCoreExpertise(candidate);
 
@@ -59,7 +62,7 @@ const CandidateCard = ({
               checked={isChecked}
               onChange={(e) => {
                 e.stopPropagation();
-                onCheckboxChange && onCheckboxChange(candidateId);
+                onCheckboxChange && onCheckboxChange(selectionId);
               }}
               onClick={(e) => e.stopPropagation()}
             />
