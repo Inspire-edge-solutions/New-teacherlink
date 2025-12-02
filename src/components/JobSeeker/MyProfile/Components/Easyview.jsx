@@ -767,7 +767,49 @@ function EasyView({ onViewAttempt, onEditProfile }) {
                     )}
                     
                     {jobPreferenceData.expected_salary && (
-                      <div><strong>Expected Salary:</strong> {jobPreferenceData.expected_salary}</div>
+                      <div><strong>Expected Salary:</strong> {(() => {
+                        // Format expected salary to LPA
+                        const formatExpectedSalaryToLPA = (expectedSalary) => {
+                          if (!expectedSalary) return 'Not specified';
+                          
+                          const normalized = String(expectedSalary).toLowerCase().trim();
+                          
+                          const rangeMappings = {
+                            'less_than_40k': 'Less than 4.8 LPA',
+                            '40k_60k': '4.8 LPA to 7.2 LPA',
+                            '60k_80k': '7.2 LPA to 9.6 LPA',
+                            '80k_100k': '9.6 LPA to 12 LPA',
+                            '100k_120k': '12 LPA to 14.4 LPA',
+                            '120k_140k': '14.4 LPA to 16.8 LPA',
+                            '140k_160k': '16.8 LPA to 19.2 LPA',
+                            '160k_180k': '19.2 LPA to 21.6 LPA',
+                            '180k_200k': '21.6 LPA to 24 LPA',
+                            'more_than_200k': 'More than 24 LPA'
+                          };
+                          
+                          if (rangeMappings[normalized]) {
+                            return rangeMappings[normalized];
+                          }
+                          
+                          const numeric = parseFloat(expectedSalary);
+                          if (!Number.isNaN(numeric) && numeric >= 1000) {
+                            let valueStr = String(expectedSalary).trim();
+                            const hasK = /k$/i.test(valueStr);
+                            if (hasK) valueStr = valueStr.replace(/k$/i, '');
+                            const numericValue = parseFloat(valueStr);
+                            if (!Number.isNaN(numericValue)) {
+                              const actualValue = hasK ? numericValue * 1000 : numericValue;
+                              const annualSalary = actualValue < 100000 ? actualValue * 12 : actualValue;
+                              const lpa = annualSalary / 100000;
+                              const formattedLPA = parseFloat(lpa.toFixed(1));
+                              return `₹${formattedLPA} LPA`;
+                            }
+                          }
+                          
+                          return expectedSalary;
+                        };
+                        return formatExpectedSalaryToLPA(jobPreferenceData.expected_salary);
+                      })()}</div>
                     )}
                     
                     {jobPreferenceData.notice_period && (

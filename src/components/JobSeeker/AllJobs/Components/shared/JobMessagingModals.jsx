@@ -62,9 +62,21 @@ const JobMessagingModals = ({
                 <h3 className="font-semibold text-xl mb-4 text-gray-800 leading-tight tracking-tight">
                   Apply To Message
                 </h3>
-                <p className="text-gray-600 text-lg sm:text-base leading-relaxed tracking-tight">
-                  To message the institute about the job titled - <strong>{jobToApplyPrompt.job_title || jobToApplyPrompt.title || 'this job'}</strong>, please apply to the job first. View the job to apply and unlock messaging.
+                <p className="text-gray-600 text-lg sm:text-base leading-relaxed tracking-tight mb-3">
+                  To message the institute about the job titled - <strong>{jobToApplyPrompt.job_title || jobToApplyPrompt.title || 'this job'}</strong>, please apply to the job first to unlock messaging.
                 </p>
+                <div className="bg-white/60 rounded-lg p-3 mb-3 border border-gray-200">
+                  <p className="text-gray-700 text-sm font-medium leading-relaxed">
+                    <span className="inline-flex items-center gap-1">
+                      <span role="img" aria-label="coin" className="text-base">🪙</span>
+                      <strong className="text-base">110 Coins</strong> will be deducted
+                    </span>
+                    <br />
+                    <span className="text-xs text-gray-600 mt-1 block">
+                      (100 coins for job application + 10 coins for messaging unlock)
+                    </span>
+                  </p>
+                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
@@ -75,7 +87,7 @@ const JobMessagingModals = ({
                   Cancel
                 </button>
                 <button
-                  className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl leading-normal tracking-tight"
+                  className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl leading-normal tracking-tight flex items-center justify-center gap-1.5"
                   onClick={() => {
                     if (typeof onApplyPromptApply === 'function') {
                       onApplyPromptApply();
@@ -84,7 +96,7 @@ const JobMessagingModals = ({
                     }
                   }}
                 >
-                  Apply Job
+                  Apply Job <span className="text-sm">🪙 110</span>
                 </button>
               </div>
             </div>

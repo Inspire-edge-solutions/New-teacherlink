@@ -7,7 +7,8 @@ import {
   getExperience, 
   parseEducationDetails, 
   parseCoreExpertise, 
-  getLocationString
+  getLocationString,
+  formatSalary
 } from '../utils/candidateUtils.js';
 import LoginConsentModal from '../../../../../components/common/LoginConsentModal';
 
@@ -134,7 +135,7 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
               </div>
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaWallet className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium">₹{candidate.expected_salary?.toLocaleString() || 'Not specified'}</span>
+                <span className="truncate font-medium">{formatSalary(candidate.expected_salary)}</span>
               </div>
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaMapMarkerAlt className="w-4 h-4 text-gray-600 flex-shrink-0" />
@@ -164,7 +165,7 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
           </div>
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaWallet className="w-4 h-4 text-gray-600 flex-shrink-0" />
-            <span className="truncate font-medium">₹{candidate.expected_salary?.toLocaleString() || 'Not specified'}</span>
+            <span className="truncate font-medium">{formatSalary(candidate.expected_salary)}</span>
           </div>
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaMapMarkerAlt className="w-4 h-4 text-gray-600 flex-shrink-0" />
@@ -196,4 +197,3 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
 };
 
 export default PublicCandidateCard;
-

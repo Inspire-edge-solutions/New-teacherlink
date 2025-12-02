@@ -12,7 +12,6 @@ const useJobMessaging = ({
   currentJobs,
   getJobId,
   isJobApplied,
-  onViewJob,
   onApplyJob
 }) => {
   const navigate = useNavigate();
@@ -321,17 +320,142 @@ const useJobMessaging = ({
     setJobToApplyPrompt(null);
   }, []);
 
-  const handleApplyPromptApplyJob = useCallback(() => {
-    if (jobToApplyPrompt) {
-      if (typeof onApplyJob === 'function') {
-        onApplyJob(jobToApplyPrompt);
-      } else if (typeof onViewJob === 'function') {
-        onViewJob(jobToApplyPrompt);
-      }
+  const handleApplyPromptApplyJob = useCallback(async () => {
+    if (!jobToApplyPrompt || !user) {
+      setShowApplyPrompt(false);
+      setJobToApplyPrompt(null);
+      return;
     }
-    setShowApplyPrompt(false);
-    setJobToApplyPrompt(null);
-  }, [jobToApplyPrompt, onApplyJob, onViewJob]);
+
+    try {
+      // Apply directly with messaging unlock (110 coins: 100 for apply + 10 for messaging)
+      const result = await JobApiService.applyForJob(jobToApplyPrompt, user, 100, true);
+      
+      if (result.status === "success") {
+        toast.success("Successfully applied and unlocked messaging!");
+        
+        // Send WhatsApp notification
+        try {
+          await JobApiService.sendWhatsAppToInstitution(jobToApplyPrompt, user);
+        } catch (whatsappError) {
+          console.error('Failed to send WhatsApp notification:', whatsappError);
+        }
+        
+        // Refresh applied jobs list if callback exists (to update button state)
+        if (typeof onApplyJob === 'function') {
+          onApplyJob(jobToApplyPrompt);
+        }
+        
+        // Build institute data for messaging navigation
+        const institute = buildInstituteData(jobToApplyPrompt);
+        let instituteFirebaseUid = institute?.firebase_uid || jobToApplyPrompt?.firebase_uid;
+        
+        if (!instituteFirebaseUid) {
+          toast.error('Unable to open chat. Please try again later.');
+          setShowApplyPrompt(false);
+          setJobToApplyPrompt(null);
+          return;
+        }
+        
+        // Fetch organisation details and navigate to messages
+        try {
+          let instituteName = 'Institute';
+          let instituteCity = null;
+          let instituteState = null;
+          
+          const organisationDetails = await JobApiService.fetchOrganisationDetails(instituteFirebaseUid);
+          
+          if (organisationDetails) {
+            instituteName = organisationDetails.organisation_name ||
+                           organisationDetails.organization_name ||
+                           organisationDetails.school_name ||
+                           organisationDetails.name ||
+                           organisationDetails.institute_name ||
+                           institute?.name ||
+                           jobToApplyPrompt?.institute_name ||
+                           jobToApplyPrompt?.school_name ||
+                           jobToApplyPrompt?.organization_name ||
+                           jobToApplyPrompt?.organisation_name ||
+                           'Institute';
+            
+            instituteCity = organisationDetails.city ||
+                           organisationDetails.city_name ||
+                           organisationDetails.present_city_name ||
+                           institute?.city ||
+                           jobToApplyPrompt?.city ||
+                           jobToApplyPrompt?.city_name ||
+                           jobToApplyPrompt?.location ||
+                           null;
+            
+            instituteState = organisationDetails.state ||
+                            organisationDetails.state_ut ||
+                            organisationDetails.present_state_name ||
+                            institute?.state ||
+                            jobToApplyPrompt?.state_ut ||
+                            jobToApplyPrompt?.state ||
+                            jobToApplyPrompt?.state_name ||
+                            null;
+          } else {
+            // Fallback to job object
+            instituteName = institute?.name ||
+                           jobToApplyPrompt?.institute_name ||
+                           jobToApplyPrompt?.school_name ||
+                           jobToApplyPrompt?.organization_name ||
+                           jobToApplyPrompt?.organisation_name ||
+                           'Institute';
+            instituteCity = institute?.city ||
+                           jobToApplyPrompt?.city ||
+                           jobToApplyPrompt?.city_name ||
+                           jobToApplyPrompt?.location ||
+                           null;
+            instituteState = institute?.state ||
+                            jobToApplyPrompt?.state_ut ||
+                            jobToApplyPrompt?.state ||
+                            jobToApplyPrompt?.state_name ||
+                            null;
+          }
+          
+          const selectedInstitute = {
+            firebase_uid: instituteFirebaseUid,
+            name: instituteName,
+            city: instituteCity,
+            state: instituteState,
+          };
+          
+          // Close modal first
+          setShowApplyPrompt(false);
+          setJobToApplyPrompt(null);
+          
+          // Navigate to messages section
+          navigate('/seeker/messages', {
+            state: {
+              selectedInstitute: selectedInstitute,
+              startConversation: true,
+            },
+            replace: false,
+          });
+        } catch (navError) {
+          console.error('Error navigating to messages:', navError);
+          toast.error('Applied successfully! You can now message the institute.');
+          setShowApplyPrompt(false);
+          setJobToApplyPrompt(null);
+        }
+      } else if (result.status === "already") {
+        toast.info("You have already applied for this job.");
+        setShowApplyPrompt(false);
+        setJobToApplyPrompt(null);
+      } else {
+        toast.error(result.message || "Failed to apply for the job.");
+        setShowApplyPrompt(false);
+        setJobToApplyPrompt(null);
+      }
+    } catch (error) {
+      console.error('Error applying for job with messaging unlock:', error);
+      toast.error(error.message || "Failed to apply for the job.");
+      setShowApplyPrompt(false);
+      setJobToApplyPrompt(null);
+    }
+  }, [jobToApplyPrompt, user, onApplyJob, buildInstituteData, navigate]);
 
   const getSelectedRecords = useCallback(() => {
     if (!Array.isArray(filteredJobs) || filteredJobs.length === 0) {

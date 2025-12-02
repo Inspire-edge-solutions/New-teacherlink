@@ -8,7 +8,7 @@ import ViewShort from '../shared/ViewShort';
 import SearchBar from '../shared/SearchBar';
 import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
-import CandidateApiService from '../shared/CandidateApiService';
+import CandidateApiService, { cleanAllExpiredUnlocks, checkAndCleanExpiredUnlock } from '../shared/CandidateApiService';
 import { useAuth } from "../../../../../Context/AuthContext";
 import useBulkCandidateActions from '../hooks/useBulkCandidateActions';
 import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
@@ -16,6 +16,11 @@ import '../styles/candidate-highlight.css';
 import LoadingState from '../../../../common/LoadingState';
 import CandidateActionConfirmationModal from '../shared/CandidateActionConfirmationModal';
 import ModalPortal from '../../../../common/ModalPortal';
+
+const REDEEM_API = 'https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem';
+const COIN_HISTORY_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history';
+const ORGANISATION_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation';
+const PERSONAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal';
 
 const AppliedCandidates = ({ 
   onViewCandidate, 
@@ -60,6 +65,8 @@ const AppliedCandidates = ({
   const [candidateToMessage, setCandidateToMessage] = useState(null);
   const [showUnlockPrompt, setShowUnlockPrompt] = useState(false);
   const [candidateToUnlock, setCandidateToUnlock] = useState(null);
+  const [unlockLoading, setUnlockLoading] = useState(false);
+  const [unlockError, setUnlockError] = useState('');
   const [showFavouriteConfirmModal, setShowFavouriteConfirmModal] = useState(false);
   const [candidateToFavourite, setCandidateToFavourite] = useState(null);
 
@@ -67,6 +74,9 @@ const AppliedCandidates = ({
     if (!user) return [];
     const userId = user.firebase_uid || user.uid;
     if (!userId) return [];
+
+    // Clean all expired unlocks first
+    cleanAllExpiredUnlocks(userId);
 
     const unlockedIds = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -85,10 +95,15 @@ const AppliedCandidates = ({
               if (candidateId) {
                 unlockedIds.push(candidateId);
               }
+            } else {
+              // Expired - remove from localStorage
+              localStorage.removeItem(key);
             }
           }
         } catch (error) {
           console.error('AppliedCandidates: Error parsing localStorage entry', key, error);
+          // Remove invalid entries
+          localStorage.removeItem(key);
         }
       }
     }
@@ -529,7 +544,9 @@ const AppliedCandidates = ({
   const handleMessage = (candidate) => {
     if (!candidate) return;
     const candidateId = String(candidate.firebase_uid || '');
-    const isUnlocked = candidateId && unlockedCandidateIds.includes(candidateId);
+    const userId = user?.firebase_uid || user?.uid;
+    // Check if unlocked and not expired (30 days)
+    const isUnlocked = candidateId && userId && checkAndCleanExpiredUnlock(userId, candidateId) && unlockedCandidateIds.includes(candidateId);
 
     if (!isUnlocked) {
       console.log('AppliedCandidates: Candidate not unlocked, prompting unlock:', candidateId);
@@ -547,6 +564,8 @@ const AppliedCandidates = ({
   const handleUnlockPromptClose = () => {
     setShowUnlockPrompt(false);
     setCandidateToUnlock(null);
+    setUnlockError('');
+    setUnlockLoading(false);
   };
 
   const handleUnlockPromptViewProfile = () => {
@@ -555,6 +574,149 @@ const AppliedCandidates = ({
     }
     setShowUnlockPrompt(false);
     setCandidateToUnlock(null);
+  };
+
+  const handleUnlockForMessaging = async () => {
+    if (!candidateToUnlock || !user) return;
+
+    setUnlockLoading(true);
+    setUnlockError('');
+
+    try {
+      const userId = user.firebase_uid || user.uid;
+      if (!userId) {
+        throw new Error('User not found');
+      }
+
+      const candidateId = String(candidateToUnlock.firebase_uid || '');
+      if (!candidateId) {
+        throw new Error('Candidate not found');
+      }
+
+      // Check if already unlocked
+      if (unlockedCandidateIds.includes(candidateId)) {
+        // Already unlocked, redirect to messages
+        const messagingCandidate = buildMessagingCandidate(candidateToUnlock);
+        setShowUnlockPrompt(false);
+        setCandidateToUnlock(null);
+        navigate('/provider/messages', {
+          state: {
+            selectedCandidate: messagingCandidate,
+            startConversation: true
+          },
+          replace: false
+        });
+        setUnlockLoading(false);
+        return;
+      }
+
+      // Get current coins
+      const { data: redeemData } = await axios.get(`${REDEEM_API}?firebase_uid=${userId}`);
+      const userCoinRecord = Array.isArray(redeemData) && redeemData.length > 0
+        ? redeemData[0]
+        : redeemData;
+      
+      if (!userCoinRecord) {
+        throw new Error("Don't have enough coins in your account");
+      }
+
+      const coins = userCoinRecord.coin_value || 0;
+      const UNLOCK_COST = 60; // 50 for profile + 10 for messaging
+
+      if (coins < UNLOCK_COST) {
+        throw new Error(`You do not have enough coins. Required: ${UNLOCK_COST}, Available: ${coins}`);
+      }
+
+      // Deduct 60 coins
+      await axios.put(REDEEM_API, {
+        firebase_uid: userId,
+        coin_value: coins - UNLOCK_COST
+      });
+
+      // Mark candidate as unlocked
+      await CandidateApiService.upsertCandidateAction(candidateToUnlock, user, {
+        unlocked_candidate: 1,
+        unblocked_candidate: 1
+      });
+
+      // Record coin history for messaging unlock
+      try {
+        // Get organization ID for the current user (institution)
+        let orgId = null;
+        try {
+          const orgResponse = await axios.get(`${ORGANISATION_API}?firebase_uid=${encodeURIComponent(userId)}`);
+          if (orgResponse.status === 200 && Array.isArray(orgResponse.data) && orgResponse.data.length > 0) {
+            orgId = orgResponse.data[0].id;
+          }
+        } catch (orgError) {
+          console.error("Error fetching organization data for coin history:", orgError);
+        }
+
+        // Get candidate's personal ID and name for coin history
+        let unblocked_candidate_id = null;
+        let unblocked_candidate_name = null;
+        try {
+          const personalRes = await axios.get(PERSONAL_API, { params: { firebase_uid: candidateId } });
+          if (personalRes.status === 200 && Array.isArray(personalRes.data) && personalRes.data.length > 0) {
+            unblocked_candidate_id = personalRes.data[0].id;
+            unblocked_candidate_name = personalRes.data[0].fullName;
+          }
+        } catch (personalError) {
+          console.warn('Could not fetch personal details for coin history:', personalError);
+        }
+
+        // Record coin history
+        const coinHistoryPayload = {
+          firebase_uid: userId,
+          candidate_id: orgId,
+          job_id: null,
+          coin_value: coins - UNLOCK_COST,
+          reduction: UNLOCK_COST,
+          reason: "Unlocked candidate for messaging",
+          unblocked_candidate_id,
+          unblocked_candidate_name
+        };
+
+        await axios.post(COIN_HISTORY_API, coinHistoryPayload);
+        console.log('Coin history recorded successfully for messaging unlock');
+      } catch (historyError) {
+        console.error('Error recording coin history for messaging unlock:', historyError);
+        // Don't fail the unlock if history recording fails
+      }
+
+      // Update local state
+      const candidateIdStr = String(candidateId);
+      setUnlockedCandidateIds(prev => [...prev, candidateIdStr]);
+      
+      // Store in localStorage
+      const userIdStr = String(userId);
+      const unlockKey = `unlocked_${userIdStr}_${candidateIdStr}`;
+      localStorage.setItem(unlockKey, JSON.stringify({
+        unlocked: true,
+        timestamp: new Date().toISOString()
+      }));
+
+      // Show success message
+      toast.success('Candidate unlocked successfully!');
+
+      // Redirect to messages section
+      const messagingCandidate = buildMessagingCandidate(candidateToUnlock);
+      setShowUnlockPrompt(false);
+      setCandidateToUnlock(null);
+      setUnlockLoading(false);
+      
+      navigate('/provider/messages', {
+        state: {
+          selectedCandidate: messagingCandidate,
+          startConversation: true
+        },
+        replace: false
+      });
+    } catch (error) {
+      console.error('Error unlocking candidate:', error);
+      setUnlockError(error.message || 'Failed to unlock candidate. Please try again.');
+      setUnlockLoading(false);
+    }
   };
 
   // Handle "Ok" button - close modal, stay on page
@@ -990,25 +1152,33 @@ const AppliedCandidates = ({
 
             <div className="mb-4 mt-0.5 text-center">
               <h3 className="font-semibold text-xl mb-4 text-gray-800 leading-tight tracking-tight">
-                Unlock Candidate
+                Unlock Candidate Contact Details
               </h3>
-              <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">
-                To message {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, please unlock their contact details first. View the profile to unlock and access messaging.
+              <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight mb-4">
+                To start messaging {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, you'll need to unlock their contact information first. <span className="font-semibold">Unlocking costs 60 coins</span> (one-time payment) and gives you full access to their profile. After unlocking, <span className="font-semibold">each message you sent costs 10 coins</span>.
               </p>
+
+              {unlockError && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg text-left">
+                  <p className="text-red-700 text-lg sm:text-base leading-normal tracking-tight">{unlockError}</p>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <button
-                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md leading-normal tracking-tight"
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 border-none rounded-lg font-semibold text-base cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight"
                 onClick={handleUnlockPromptClose}
+                disabled={unlockLoading}
               >
                 Cancel
               </button>
               <button
-                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl leading-normal tracking-tight"
-                onClick={handleUnlockPromptViewProfile}
+                className="flex-1 px-6 py-3 bg-gradient-brand text-white border-none rounded-lg font-semibold text-base cursor-pointer duration-300 transition-colors shadow-lg hover:bg-gradient-primary-hover hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed leading-normal tracking-tight"
+                onClick={handleUnlockForMessaging}
+                disabled={unlockLoading}
               >
-                View Profile
+                {unlockLoading ? 'Unlocking...' : 'Confirm'}
               </button>
             </div>
           </div>

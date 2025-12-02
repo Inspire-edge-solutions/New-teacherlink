@@ -315,58 +315,100 @@ export const getCandidateId = (candidate) => {
 };
 
 /**
- * Format salary to readable string
- * Maps actual stored values from JobPreferences.jsx salaryRanges dropdown
+ * Convert salary value to LPA (Lakhs Per Annum) format
+ * Handles monthly salaries (20000, 20k) and annual salaries (240000)
+ * @param {string|number} salaryValue - Salary value to convert
+ * @returns {string|null} Formatted LPA string (e.g., "2.4 LPA") or null
+ */
+const convertSalaryToLPA = (salaryValue) => {
+  if (!salaryValue && salaryValue !== 0) return null;
+  
+  // Convert to string and normalize
+  let valueStr = String(salaryValue).trim();
+  if (!valueStr) return null;
+  
+  // Handle "k" notation (e.g., "20k" = 20000)
+  const hasK = /k$/i.test(valueStr);
+  if (hasK) {
+    valueStr = valueStr.replace(/k$/i, '');
+  }
+  
+  // Extract numeric value
+  const numericValue = parseFloat(valueStr);
+  if (Number.isNaN(numericValue)) return null;
+  
+  // Convert "k" notation to actual number
+  const actualValue = hasK ? numericValue * 1000 : numericValue;
+  
+  // Determine if it's monthly or annual
+  // If value < 100000, assume it's monthly salary
+  // If value >= 100000, assume it's already annual
+  const annualSalary = actualValue < 100000 ? actualValue * 12 : actualValue;
+  
+  // Convert to LPA (divide by 100000)
+  const lpa = annualSalary / 100000;
+  
+  // Format to 1 decimal place, remove trailing zeros
+  const formattedLPA = parseFloat(lpa.toFixed(1));
+  
+  return `₹${formattedLPA} LPA`;
+};
+
+/**
+ * Format salary to readable string in LPA format
+ * Maps actual stored values from JobPreferences.jsx salaryRanges dropdown to LPA
  * @param {string|number} salary - Salary value from database
- * @returns {string} Formatted salary string
+ * @returns {string} Formatted salary string in LPA
  */
 export const formatSalary = (salary) => {
   if (!salary && salary !== 0) return 'Not specified';
   
-  // If it's a string (stored range value), map it to display label
+  // If it's a string (stored range value), convert to LPA
   if (typeof salary === 'string') {
     const normalized = salary.toLowerCase().trim();
     
-    // Map actual stored values from JobPreferences.jsx salaryRanges
-    const mappings = {
-      'less_than_40k': 'Less than 40k',
-      '40k_60k': '40k-60k',
-      '60k_80k': '60k-80k',
-      '80k_100k': '80k-1 lakh',
-      '100k_120k': '1 lakh-1.2 lakh',
-      '120k_140k': '1.2 lakh-1.4 lakh',
-      '140k_160k': '1.4 lakh-1.6 lakh',
-      '160k_180k': '1.6 lakh-1.8 lakh',
-      '180k_200k': '1.8 lakh-2 lakh',
-      'more_than_200k': 'More than 2 lakh'
+    // Map actual stored values from JobPreferences.jsx salaryRanges (these are monthly)
+    // Convert monthly ranges to LPA ranges
+    const rangeMappings = {
+      'less_than_40k': 'Less than 4.8 LPA',      // 40k * 12 / 100000 = 4.8
+      '40k_60k': '4.8 LPA to 7.2 LPA',          // 40k-60k monthly = 4.8-7.2 LPA
+      '60k_80k': '7.2 LPA to 9.6 LPA',          // 60k-80k monthly = 7.2-9.6 LPA
+      '80k_100k': '9.6 LPA to 12 LPA',          // 80k-100k monthly = 9.6-12 LPA
+      '100k_120k': '12 LPA to 14.4 LPA',        // 100k-120k monthly = 12-14.4 LPA
+      '120k_140k': '14.4 LPA to 16.8 LPA',      // 120k-140k monthly = 14.4-16.8 LPA
+      '140k_160k': '16.8 LPA to 19.2 LPA',      // 140k-160k monthly = 16.8-19.2 LPA
+      '160k_180k': '19.2 LPA to 21.6 LPA',      // 160k-180k monthly = 19.2-21.6 LPA
+      '180k_200k': '21.6 LPA to 24 LPA',        // 180k-200k monthly = 21.6-24 LPA
+      'more_than_200k': 'More than 24 LPA'      // >200k monthly = >24 LPA
     };
     
-    if (mappings[normalized]) {
-      return mappings[normalized];
+    if (rangeMappings[normalized]) {
+      return rangeMappings[normalized];
     }
     
-    // If it's a numeric string, try to parse it
+    // If it's a numeric string, try to parse and convert to LPA
     const numeric = parseFloat(salary);
     if (!Number.isNaN(numeric)) {
       // Validate: numbers less than 1000 are likely invalid salary values
       if (numeric < 1000) {
         return 'Not specified';
       }
-      return `₹${parseInt(numeric).toLocaleString()}`;
+      const lpaFormatted = convertSalaryToLPA(numeric);
+      return lpaFormatted || 'Not specified';
     }
     
     // Return as-is if it's a string but not in mappings
     return salary;
   }
   
-  // If it's a number, validate and format it with currency
+  // If it's a number, validate and convert to LPA
   if (typeof salary === 'number') {
     // Validate: numbers less than 1000 are likely invalid salary values
-    // (minimum valid salary range starts at 40k, so anything < 1000 is invalid)
     if (salary < 1000) {
       return 'Not specified';
     }
-    return `₹${parseInt(salary).toLocaleString()}`;
+    const lpaFormatted = convertSalaryToLPA(salary);
+    return lpaFormatted || 'Not specified';
   }
   
   return 'Not specified';
@@ -740,4 +782,3 @@ export const getQualificationString = (eduJson) => {
     return 'Not specified';
   }
 };
-

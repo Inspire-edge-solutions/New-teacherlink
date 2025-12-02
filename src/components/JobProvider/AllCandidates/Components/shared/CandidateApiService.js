@@ -26,6 +26,77 @@ const getCandidateId = (candidate) => {
   return candidate?.firebase_uid || candidate?.uid;
 };
 
+// Utility function to check if unlock is valid (within 30 days) and clean up expired entries
+export const checkAndCleanExpiredUnlock = (userId, candidateId) => {
+  if (!userId || !candidateId) return false;
+  
+  const unlockKey = `unlocked_${userId}_${candidateId}`;
+  const stored = localStorage.getItem(unlockKey);
+  
+  if (!stored) return false;
+  
+  try {
+    const parsed = JSON.parse(stored);
+    if (parsed.unlocked && parsed.timestamp) {
+      const unlockTime = new Date(parsed.timestamp);
+      const now = new Date();
+      const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
+      
+      // If expired (more than 30 days), remove from localStorage
+      if (daysDiff > 30) {
+        localStorage.removeItem(unlockKey);
+        return false;
+      }
+      
+      // Still valid (within 30 days)
+      return true;
+    }
+  } catch (e) {
+    // Invalid format, remove it
+    localStorage.removeItem(unlockKey);
+  }
+  
+  return false;
+};
+
+// Utility function to clean all expired unlocks for a user
+export const cleanAllExpiredUnlocks = (userId) => {
+  if (!userId) return;
+  
+  const expiredKeys = [];
+  
+  // Check all localStorage keys for this user
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith(`unlocked_${userId}_`)) {
+      try {
+        const stored = localStorage.getItem(key);
+        if (!stored) continue;
+        
+        const parsed = JSON.parse(stored);
+        if (parsed.unlocked && parsed.timestamp) {
+          const unlockTime = new Date(parsed.timestamp);
+          const now = new Date();
+          const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
+          
+          // If expired (more than 30 days), mark for removal
+          if (daysDiff > 30) {
+            expiredKeys.push(key);
+          }
+        }
+      } catch (error) {
+        // Invalid format, mark for removal
+        expiredKeys.push(key);
+      }
+    }
+  }
+  
+  // Remove all expired entries
+  expiredKeys.forEach(key => localStorage.removeItem(key));
+  
+  return expiredKeys.length;
+};
+
 const buildSupplementalRecord = (candidate) => {
   if (!candidate || typeof candidate !== 'object') return null;
   const uid = getCandidateId(candidate);

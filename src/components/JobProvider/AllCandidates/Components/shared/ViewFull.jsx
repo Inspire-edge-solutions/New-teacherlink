@@ -8,7 +8,7 @@ import { FaMapMarkerAlt, FaPhone, FaWhatsapp, FaFacebook, FaLinkedin, FaEnvelope
 import { AvatarImage } from '../utils/avatarUtils.jsx';
 import { useAuth } from "../../../../../Context/AuthContext";
 import { decodeCandidateData } from '../../../../../utils/dataDecoder';
-import CandidateApiService from './CandidateApiService';
+import CandidateApiService, { checkAndCleanExpiredUnlock } from './CandidateApiService';
 import { getPrintPageStyle } from '../utils/printStyles';
 import LoadingState from '../../../../common/LoadingState';
 
@@ -156,19 +156,7 @@ function CandidateDetail({
   const candidateId = candidate?.firebase_uid;
   const unlockKey = `unlocked_${userId}_${candidateId}`;
   const [isUnlocked, setIsUnlocked] = useState(() => {
-    const stored = localStorage.getItem(unlockKey);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (parsed.unlocked && parsed.timestamp) {
-          const unlockTime = new Date(parsed.timestamp);
-          const now = new Date();
-          const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
-          return daysDiff <= 30;
-        }
-      } catch (e) {}
-    }
-    return false;
+    return checkAndCleanExpiredUnlock(userId, candidateId);
   });
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [coinValue, setCoinValue] = useState(null);
@@ -190,21 +178,18 @@ function CandidateDetail({
       return;
     }
 
-    const stored = localStorage.getItem(unlockKey);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (parsed.unlocked && parsed.timestamp) {
-          const unlockTime = new Date(parsed.timestamp);
-          const now = new Date();
-          const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
-          setIsUnlocked(daysDiff <= 30);
-          return;
-        }
-      } catch (e) {}
+    // Check and clean expired unlock, update state
+    const isValid = checkAndCleanExpiredUnlock(userId, candidateId);
+    setIsUnlocked(isValid);
+    
+    // If expired, also update database to remove unlock
+    if (!isValid) {
+      CandidateApiService.upsertCandidateAction(candidate, user, {
+        unlocked_candidate: 0,
+        unblocked_candidate: 0
+      }).catch(err => console.error('Error removing expired unlock from database:', err));
     }
-    setIsUnlocked(false);
-  }, [userId, candidateId, unlockKey]);
+  }, [userId, candidateId, unlockKey, candidate, user]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1703,7 +1688,49 @@ function CandidateDetail({
                   )}
                   
                   {jobPreferenceData.expected_salary && (
-                    <div><strong>Expected Salary:</strong> {jobPreferenceData.expected_salary}</div>
+                    <div><strong>Expected Salary:</strong> {(() => {
+                      // Import formatSalary logic inline or use a helper
+                      const formatExpectedSalaryToLPA = (expectedSalary) => {
+                        if (!expectedSalary) return 'Not specified';
+                        
+                        const normalized = String(expectedSalary).toLowerCase().trim();
+                        
+                        const rangeMappings = {
+                          'less_than_40k': 'Less than 4.8 LPA',
+                          '40k_60k': '4.8 LPA to 7.2 LPA',
+                          '60k_80k': '7.2 LPA to 9.6 LPA',
+                          '80k_100k': '9.6 LPA to 12 LPA',
+                          '100k_120k': '12 LPA to 14.4 LPA',
+                          '120k_140k': '14.4 LPA to 16.8 LPA',
+                          '140k_160k': '16.8 LPA to 19.2 LPA',
+                          '160k_180k': '19.2 LPA to 21.6 LPA',
+                          '180k_200k': '21.6 LPA to 24 LPA',
+                          'more_than_200k': 'More than 24 LPA'
+                        };
+                        
+                        if (rangeMappings[normalized]) {
+                          return rangeMappings[normalized];
+                        }
+                        
+                        const numeric = parseFloat(expectedSalary);
+                        if (!Number.isNaN(numeric) && numeric >= 1000) {
+                          let valueStr = String(expectedSalary).trim();
+                          const hasK = /k$/i.test(valueStr);
+                          if (hasK) valueStr = valueStr.replace(/k$/i, '');
+                          const numericValue = parseFloat(valueStr);
+                          if (!Number.isNaN(numericValue)) {
+                            const actualValue = hasK ? numericValue * 1000 : numericValue;
+                            const annualSalary = actualValue < 100000 ? actualValue * 12 : actualValue;
+                            const lpa = annualSalary / 100000;
+                            const formattedLPA = parseFloat(lpa.toFixed(1));
+                            return `₹${formattedLPA} LPA`;
+                          }
+                        }
+                        
+                        return expectedSalary;
+                      };
+                      return formatExpectedSalaryToLPA(jobPreferenceData.expected_salary);
+                    })()}</div>
                   )}
                   
                   {jobPreferenceData.notice_period && (

@@ -380,11 +380,11 @@ const ProfileCompletion = () => {
       {/* Two Column Grid for Short and Complete Profile */}
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <div className="flex flex-col">
-          <h6 className="text-center text-xl font-semibold mb-1 text-gray-700 leading-tight tracking-tight">Short Profile</h6>
+          <h6 className="text-center text-lg font-semibold mb-1 text-gray-700 leading-tight tracking-tight">Short Profile</h6>
           {renderEasyModeContent()}
         </div>
         <div className="flex flex-col">
-          <h6 className="text-center text-xl font-semibold mb-1 text-gray-700 leading-tight tracking-tight">Complete Profile</h6>
+          <h6 className="text-center text-lg font-semibold mb-1 text-gray-700 leading-tight tracking-tight">Complete Profile</h6>
           {renderFullModeContent()}
         </div>
       </div>

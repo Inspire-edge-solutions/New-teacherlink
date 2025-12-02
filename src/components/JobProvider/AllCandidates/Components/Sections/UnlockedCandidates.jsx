@@ -7,7 +7,7 @@ import ViewShort from '../shared/ViewShort';
 import SearchBar from '../shared/SearchBar';
 import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
-import CandidateApiService from '../shared/CandidateApiService';
+import CandidateApiService, { checkAndCleanExpiredUnlock, cleanAllExpiredUnlocks } from '../shared/CandidateApiService';
 import { useAuth } from "../../../../../Context/AuthContext";
 import useBulkCandidateActions from '../hooks/useBulkCandidateActions';
 import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
@@ -58,12 +58,15 @@ const UnlockedCandidates = ({
   const skipPageResetRef = useRef(false);
 
   // Get unlocked candidates from localStorage (backward compatibility)
-  // This matches the old implementation's logic
+  // Get unlocked candidates from localStorage and clean expired entries
   const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
     if (!user) return [];
     
     const userId = user.firebase_uid || user.uid;
     if (!userId) return [];
+    
+    // Clean all expired unlocks first
+    cleanAllExpiredUnlocks(userId);
     
     const unlockedCandidateIds = [];
     
@@ -82,17 +85,21 @@ const UnlockedCandidates = ({
             const now = new Date();
             const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
             
-            // Only include if unlocked within 30 days (matching old implementation)
+            // Only include if unlocked within 30 days
             if (daysDiff <= 30) {
               const candidateId = key.replace(`unlocked_${userId}_`, '');
               if (candidateId) {
                 unlockedCandidateIds.push(candidateId);
               }
+            } else {
+              // Expired - remove from localStorage
+              localStorage.removeItem(key);
             }
           }
         } catch (error) {
           console.error('Error parsing localStorage item:', key, error);
-          // Continue to next item if parsing fails
+          // Remove invalid entries
+          localStorage.removeItem(key);
         }
       }
     }
@@ -131,13 +138,46 @@ const UnlockedCandidates = ({
       // Get unlocked candidate IDs from database
       const databaseUnlockedIds = prefs.unlockedCandidates || [];
       
+      // Filter database unlocks: only keep those that are still valid (within 30 days)
+      // Check localStorage timestamp for each database unlock
+      const userId = user.firebase_uid || user.uid;
+      const validDatabaseUnlocks = [];
+      const expiredDatabaseUnlocks = [];
+      
+      databaseUnlockedIds.forEach(candidateId => {
+        // Check if there's a valid localStorage entry with timestamp
+        const isValid = checkAndCleanExpiredUnlock(userId, candidateId);
+        if (isValid) {
+          validDatabaseUnlocks.push(candidateId);
+        } else {
+          expiredDatabaseUnlocks.push(candidateId);
+        }
+      });
+      
+      // Update database to remove expired unlocks
+      if (expiredDatabaseUnlocks.length > 0) {
+        try {
+          await Promise.all(expiredDatabaseUnlocks.map(async (candidateId) => {
+            const candidate = fullCandidates.find(c => c.firebase_uid === candidateId);
+            if (candidate) {
+              await CandidateApiService.upsertCandidateAction(candidate, user, {
+                unlocked_candidate: 0,
+                unblocked_candidate: 0
+              });
+            }
+          }));
+        } catch (error) {
+          console.error('Error removing expired unlocks from database:', error);
+        }
+      }
+      
       // Merge both sources (remove duplicates using Set)
       const allUnlockedIds = new Set([
         ...localStorageUnlockedIds,
-        ...databaseUnlockedIds
+        ...validDatabaseUnlocks
       ]);
       
-      // Filter candidates that are in either localStorage OR database unlocked list
+      // Filter candidates that are in either localStorage OR valid database unlocked list
       const onlyUnlocked = fullCandidates.filter(c => {
         const candidateId = c.firebase_uid;
         return candidateId && allUnlockedIds.has(candidateId);

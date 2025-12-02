@@ -1,8 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaHeart, FaBookmark } from 'react-icons/fa';
 
-const RecruiterActionItem = ({ action, isFirst }) => {
-  const { organisation, action: actionLabel, context, isUnread } = action;
+const RecruiterActionItem = ({ action }) => {
+  const navigate = useNavigate();
+  const { organisation, action: actionLabel, context, isUnread, favoritedJobIds } = action;
 
   const getIcon = () => {
     if (actionLabel === 'favorited') {
@@ -21,6 +23,21 @@ const RecruiterActionItem = ({ action, isFirst }) => {
     );
   };
 
+  const handleInstitutionClick = () => {
+    // Allow click for favorited or saved actions with favorited job IDs
+    if ((actionLabel === 'favorited' || actionLabel === 'saved') && favoritedJobIds && favoritedJobIds.length > 0) {
+      // Navigate to all-jobs page with the first favorited job ID
+      navigate('/seeker/all-jobs', {
+        state: {
+          openJobId: favoritedJobIds[0],
+          fromRecruiterActions: true,
+        },
+      });
+    }
+  };
+
+  const isInstitutionClickable = (actionLabel === 'favorited' || actionLabel === 'saved') && favoritedJobIds && favoritedJobIds.length > 0;
+
   return (
     <div
       className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 sm:px-6 py-4 transition-colors duration-200 bg-white hover:bg-[#F0D8D9]/60 focus-within:bg-[#F0D8D9]/60 ${
@@ -30,7 +47,19 @@ const RecruiterActionItem = ({ action, isFirst }) => {
       <div className="flex items-start gap-3">
         {getIcon()}
         <p className="m-0 text-sm sm:text-base text-gray-700 leading-relaxed">
-          <span className="font-semibold text-gray-900">{organisation}</span> has{' '}
+          {isInstitutionClickable ? (
+            <>
+              <span 
+                className="font-semibold text-gray-900 cursor-pointer hover:text-blue-600 hover:underline transition-colors"
+                onClick={handleInstitutionClick}
+              >
+                {organisation}
+              </span>
+            </>
+          ) : (
+            <span className="font-semibold text-gray-900">{organisation}</span>
+          )}{' '}
+          has{' '}
           <span className="font-semibold text-gray-900">{actionLabel}</span>{' '}
           {context}
         </p>
@@ -40,4 +69,3 @@ const RecruiterActionItem = ({ action, isFirst }) => {
 };
 
 export default RecruiterActionItem;
-

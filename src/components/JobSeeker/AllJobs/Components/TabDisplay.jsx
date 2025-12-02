@@ -23,6 +23,7 @@ const TabDisplay = () => {
   const [appliedJobsBackHandler, setAppliedJobsBackHandler] = useState(null);
   const [lastSelectedJobId, setLastSelectedJobId] = useState(null);
   const [fromNotifications, setFromNotifications] = useState(false);
+  const [fromRecruiterActions, setFromRecruiterActions] = useState(false);
   const [saveJobsRefreshTrigger, setSaveJobsRefreshTrigger] = useState(0);
 
   // Handle job view
@@ -31,6 +32,9 @@ const TabDisplay = () => {
     setLastSelectedJobId(job.id);
     setSelectedJob(job);
     setViewMode('detail');
+    // Reset navigation flags when viewing job normally (not from navigation state)
+    setFromNotifications(false);
+    setFromRecruiterActions(false);
     window.scrollTo({ top: 0, behavior: 'auto' });
   };
 
@@ -43,15 +47,26 @@ const TabDisplay = () => {
       return;
     }
     
+    // If we came from recruiter actions, navigate back to recruiter actions
+    if (fromRecruiterActions) {
+      navigate('/seeker/recruiter-actions');
+      return;
+    }
+    
     setSelectedJob(null);
     setViewMode('list');
   };
 
-  // Check for navigation state from notifications
+  // Check for navigation state from notifications or recruiter actions
   useEffect(() => {
     const state = location.state;
-    if (state?.openJobId && state?.fromNotifications) {
-      setFromNotifications(true);
+    if (state?.openJobId && (state?.fromNotifications || state?.fromRecruiterActions)) {
+      if (state?.fromNotifications) {
+        setFromNotifications(true);
+      }
+      if (state?.fromRecruiterActions) {
+        setFromRecruiterActions(true);
+      }
       
       // Fetch and open the job
       const fetchAndOpenJob = async () => {
@@ -75,7 +90,7 @@ const TabDisplay = () => {
             navigate(location.pathname, { replace: true, state: {} });
           }
         } catch (error) {
-          console.error('Error fetching job from notification:', error);
+          console.error('Error fetching job:', error);
         }
       };
       
@@ -179,7 +194,12 @@ const TabDisplay = () => {
       <div className="rounded-lg shadow-sm border">
         <div className="p-2 md:p-6">
           {viewMode === 'detail' && selectedJob ? (
-            <ViewJobs job={selectedJob} onBack={handleBackToList} fromNotifications={fromNotifications} />
+            <ViewJobs 
+              job={selectedJob} 
+              onBack={handleBackToList} 
+              fromNotifications={fromNotifications}
+              fromRecruiterActions={fromRecruiterActions}
+            />
           ) : (
                   <ActiveComponent 
                     onViewJob={handleViewJob} 

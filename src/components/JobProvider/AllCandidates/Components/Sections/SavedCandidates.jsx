@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +8,7 @@ import ViewShort from '../shared/ViewShort';
 import SearchBar from '../shared/SearchBar';
 import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
-import CandidateApiService from '../shared/CandidateApiService';
+import CandidateApiService, { cleanAllExpiredUnlocks, checkAndCleanExpiredUnlock } from '../shared/CandidateApiService';
 import { useAuth } from "../../../../../Context/AuthContext";
 import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
 import '../styles/candidate-highlight.css';
@@ -19,6 +18,9 @@ import CandidateActionConfirmationModal from '../shared/CandidateActionConfirmat
 import ModalPortal from '../../../../common/ModalPortal';
 
 const REDEEM_API = 'https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem';
+const COIN_HISTORY_API = 'https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history';
+const ORGANISATION_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation';
+const PERSONAL_API = 'https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal';
 
 const SavedCandidates = ({ 
   onViewCandidate, 
@@ -87,6 +89,9 @@ const SavedCandidates = ({
     const userId = user.firebase_uid || user.uid;
     if (!userId) return [];
 
+    // Clean all expired unlocks first
+    cleanAllExpiredUnlocks(userId);
+
     const unlockedIds = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -104,10 +109,15 @@ const SavedCandidates = ({
               if (candidateId) {
                 unlockedIds.push(candidateId);
               }
+            } else {
+              // Expired - remove from localStorage
+              localStorage.removeItem(key);
             }
           }
         } catch (error) {
           console.error('SavedCandidates: Error parsing localStorage entry', key, error);
+          // Remove invalid entries
+          localStorage.removeItem(key);
         }
       }
     }
@@ -297,7 +307,9 @@ const SavedCandidates = ({
   const handleMessage = (candidate) => {
     if (!candidate) return;
     const candidateId = String(candidate.firebase_uid || '');
-    const isUnlocked = candidateId && unlockedCandidateIds.includes(candidateId);
+    const userId = user?.firebase_uid || user?.uid;
+    // Check if unlocked and not expired (30 days)
+    const isUnlocked = candidateId && userId && checkAndCleanExpiredUnlock(userId, candidateId) && unlockedCandidateIds.includes(candidateId);
 
     if (!isUnlocked) {
       console.log('SavedCandidates: Candidate not unlocked, prompting unlock:', candidateId);
@@ -382,6 +394,51 @@ const SavedCandidates = ({
         unlocked_candidate: 1,
         unblocked_candidate: 1
       });
+
+      // Record coin history for messaging unlock
+      try {
+        // Get organization ID for the current user (institution)
+        let orgId = null;
+        try {
+          const orgResponse = await axios.get(`${ORGANISATION_API}?firebase_uid=${encodeURIComponent(userId)}`);
+          if (orgResponse.status === 200 && Array.isArray(orgResponse.data) && orgResponse.data.length > 0) {
+            orgId = orgResponse.data[0].id;
+          }
+        } catch (orgError) {
+          console.error("Error fetching organization data for coin history:", orgError);
+        }
+
+        // Get candidate's personal ID and name for coin history
+        let unblocked_candidate_id = null;
+        let unblocked_candidate_name = null;
+        try {
+          const personalRes = await axios.get(PERSONAL_API, { params: { firebase_uid: candidateId } });
+          if (personalRes.status === 200 && Array.isArray(personalRes.data) && personalRes.data.length > 0) {
+            unblocked_candidate_id = personalRes.data[0].id;
+            unblocked_candidate_name = personalRes.data[0].fullName;
+          }
+        } catch (personalError) {
+          console.warn('Could not fetch personal details for coin history:', personalError);
+        }
+
+        // Record coin history
+        const coinHistoryPayload = {
+          firebase_uid: userId,
+          candidate_id: orgId,
+          job_id: null,
+          coin_value: coins - UNLOCK_COST,
+          reduction: UNLOCK_COST,
+          reason: "Unlocked candidate for messaging",
+          unblocked_candidate_id,
+          unblocked_candidate_name
+        };
+
+        await axios.post(COIN_HISTORY_API, coinHistoryPayload);
+        console.log('Coin history recorded successfully for messaging unlock');
+      } catch (historyError) {
+        console.error('Error recording coin history for messaging unlock:', historyError);
+        // Don't fail the unlock if history recording fails
+      }
 
       // Update local state
       const candidateIdStr = String(candidateId);

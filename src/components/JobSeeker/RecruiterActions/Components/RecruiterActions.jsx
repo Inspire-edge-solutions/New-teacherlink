@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../../Context/AuthContext';
-import RecruiterActionItem from './RecruiterActionItem';
+import RecruiterActionItem from '../components/RecruiterActionItem';
 import LoadingState from '../../../../components/common/LoadingState';
 
 const PERSONAL_API =
@@ -151,6 +151,18 @@ const RecruiterActions = () => {
           return favoritedProviderIds.has(providerUid);
         };
 
+        // Helper function to get favorited job IDs from a specific provider/institution
+        const getFavoritedJobIdsFromProvider = (providerUid) => {
+          const jobIds = [];
+          userFavoriteJobIds.forEach(jobId => {
+            const jobProviderUid = jobProviderMap.get(jobId);
+            if (jobProviderUid === providerUid) {
+              jobIds.push(jobId);
+            }
+          });
+          return jobIds;
+        };
+
         // Filter requirement actions
         const filteredRequirements = requirementList.filter((item) => {
           if (!item) return false;
@@ -204,7 +216,7 @@ const RecruiterActions = () => {
                 org?.institute_name ||
                 'An Institution';
               orgNamesMap.set(orgId, orgName);
-            } catch (error) {
+            } catch {
               orgNamesMap.set(orgId, 'An Institution');
             }
           })
@@ -240,6 +252,8 @@ const RecruiterActions = () => {
             const timestamp = item?.created_at || item?.updated_at;
             // Use stable identifier: added_by + firebase_uid + created_at (not Date.now())
             const stableId = item?.id ?? `${item.added_by}-${item.firebase_uid}-${timestamp || 'unknown'}`;
+            // Get favorited job IDs from this institution/provider
+            const favoritedJobIds = getFavoritedJobIdsFromProvider(item?.added_by);
             return {
               id: `fav-${stableId}`,
               organisation:
@@ -250,6 +264,7 @@ const RecruiterActions = () => {
               rawTimestamp: timestamp,
               isUnread: false,
               recruiterUid: item?.added_by, // Store for mutual favorite check
+              favoritedJobIds: favoritedJobIds, // Store job IDs that candidate favorited from this institution
             };
           });
 
@@ -264,6 +279,8 @@ const RecruiterActions = () => {
             const timestamp = item?.created_at || item?.updated_at;
             // Use stable identifier: added_by + firebase_uid + created_at (not Date.now())
             const stableId = item?.id ?? `${item.added_by}-${item.firebase_uid}-${timestamp || 'unknown'}`;
+            // Get favorited job IDs from this institution/provider
+            const favoritedJobIds = getFavoritedJobIdsFromProvider(item?.added_by);
             return {
               id: `save-${stableId}`,
               organisation:
@@ -274,6 +291,7 @@ const RecruiterActions = () => {
               rawTimestamp: timestamp,
               isUnread: false,
               recruiterUid: item?.added_by, // Store for mutual favorite check
+              favoritedJobIds: favoritedJobIds, // Store job IDs that candidate favorited from this institution
             };
           });
 

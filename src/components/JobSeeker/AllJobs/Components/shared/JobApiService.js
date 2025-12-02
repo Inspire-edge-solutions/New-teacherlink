@@ -1,3 +1,4 @@
+
 import { toast } from "react-toastify";
 import axios from "axios";
 
@@ -186,17 +187,20 @@ class JobApiService {
   }
 
   // Apply for a job
-  static async applyForJob(job, user, coinCost = 100) {
+  static async applyForJob(job, user, coinCost = 100, includeMessagingUnlock = false) {
     const userId = getUserId(user);
     if (!userId) {
       throw new Error("User not authenticated");
     }
 
     try {
+      // If messaging unlock is included, total cost is 110 (100 for apply + 10 for messaging)
+      const totalCost = includeMessagingUnlock ? 110 : coinCost;
+
       // 1. Check coins
       const coins = await this.getUserCoins(user);
-      if (coins < coinCost) {
-        throw new Error(`You do not have enough coins to apply for this job. Required: ${coinCost}, Available: ${coins}`);
+      if (coins < totalCost) {
+        throw new Error(`You do not have enough coins to apply for this job. Required: ${totalCost}, Available: ${coins}`);
       }
 
       // 2. Check if already applied
@@ -215,7 +219,7 @@ class JobApiService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           firebase_uid: userId,
-          coin_value: coins - coinCost
+          coin_value: coins - totalCost
         })
       });
 
@@ -233,6 +237,25 @@ class JobApiService {
           is_applied: 1
         })
       });
+
+      // 6. Record coin history if messaging unlock is included
+      if (includeMessagingUnlock) {
+        try {
+          const candidateId = personalDetails?.id || null;
+          const remainingCoins = coins - totalCost; // Calculate remaining balance directly
+          console.log('💰 Recording coin history: Applying + messaging unlock (110 coins)', {
+            jobId: job.id,
+            jobTitle: job.job_title,
+            reduction: 110,
+            remainingCoins,
+            reason: "Applied for the job and unlocked messaging"
+          });
+          await this.recordCoinHistory(job, user, 110, candidateId, "Applied for the job and unlocked messaging", remainingCoins);
+          console.log('✅ Coin history recorded successfully for apply+message');
+        } catch (historyError) {
+          console.error('❌ Failed to record coin history for apply+message:', historyError);
+        }
+      }
 
       return { status: "success", message: "Successfully applied for the job!" };
     } catch (error) {
@@ -357,7 +380,7 @@ class JobApiService {
   }
 
   // Record coin history
-  static async recordCoinHistory(job, user, coinCost, candidateId) {
+  static async recordCoinHistory(job, user, coinCost, candidateId, reason = "Applied for the job", remainingCoinsOverride = null) {
     try {
       const userId = getUserId(user);
       if (!userId) {
@@ -365,9 +388,10 @@ class JobApiService {
         return;
       }
 
-      // Get current coin balance after deduction
-      const coins = await this.getUserCoins(user);
-      const remainingCoins = coins; // This is already the balance after deduction from applyForJob
+      // Get current coin balance after deduction (or use provided override to avoid race conditions)
+      const remainingCoins = remainingCoinsOverride !== null 
+        ? remainingCoinsOverride 
+        : await this.getUserCoins(user);
 
       // Get organization details if available
       let unblocked_candidate_id = null;
@@ -395,7 +419,7 @@ class JobApiService {
           job_id: job.id,
           coin_value: remainingCoins, // Remaining balance after deduction
           reduction: coinCost, // Amount deducted
-          reason: "Applied for the job",
+          reason: reason,
           unblocked_candidate_id,
           unblocked_candidate_name
         })

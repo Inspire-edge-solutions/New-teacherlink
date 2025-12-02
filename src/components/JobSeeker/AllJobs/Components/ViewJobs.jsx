@@ -183,7 +183,7 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
   return ReactDOM.createPortal(modalContent, document.body);
 }
 
-const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
+const ViewJobs = ({ job, onBack, fromNotifications = false, fromRecruiterActions = false }) => {
   const { user } = useAuth();
   const userId = user?.firebase_uid || user?.uid;
   const instituteUid = job?.firebase_uid;
@@ -952,7 +952,7 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
           className="px-6 py-3 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors text-base leading-normal tracking-tight"
             onClick={onBack}
           >
-            {fromNotifications ? 'Back to Notifications' : 'Back to Jobs'}
+            {fromRecruiterActions ? 'Back to Recruiter Actions' : fromNotifications ? 'Back to Notifications' : 'Back to Jobs'}
           </button>
         </div>
       </div>
@@ -969,7 +969,7 @@ const ViewJobs = ({ job, onBack, fromNotifications = false }) => {
           className="w-full sm:w-auto px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors font-medium text-center text-base leading-normal tracking-tight"
             onClick={() => onBack('list')}
           >
-            {fromNotifications ? 'Back to Notifications' : 'Back to Jobs'}
+            {fromRecruiterActions ? 'Back to Recruiter Actions' : fromNotifications ? 'Back to Notifications' : 'Back to Jobs'}
           </button>
         </div>
       </div>
