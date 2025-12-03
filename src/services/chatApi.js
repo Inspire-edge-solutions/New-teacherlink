@@ -553,70 +553,22 @@ class ChatApiService {
     }
   }
 
-  // Helper function to get unlocked candidate IDs from localStorage
-  getUnlockedCandidatesFromLocalStorage(currentUserId) {
-    if (!currentUserId) return [];
-    
-    const unlockedCandidateIds = [];
-    
-    // Check all localStorage keys for unlocked candidates
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith(`unlocked_${currentUserId}_`)) {
-        try {
-          const stored = localStorage.getItem(key);
-          if (!stored) continue;
-          
-          const parsed = JSON.parse(stored);
-          
-          if (parsed.unlocked && parsed.timestamp) {
-            const unlockTime = new Date(parsed.timestamp);
-            const now = new Date();
-            const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
-            
-            // Only include if unlocked within 30 days (matching UnlockedCandidates component)
-            if (daysDiff <= 30) {
-              const candidateId = key.replace(`unlocked_${currentUserId}_`, '');
-              if (candidateId) {
-                unlockedCandidateIds.push(candidateId);
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error parsing localStorage item:', key, error);
-          // Continue to next item if parsing fails
-        }
-      }
-    }
-    
-    return unlockedCandidateIds;
-  }
-
   async getCandidatesForJobProvider(currentUserId) {
     try {
       // Removed excessive logging - uncomment for debugging if needed
       // console.log('Fetching candidates for job provider:', currentUserId);
       
-      // Get unlocked candidate IDs from localStorage (backward compatibility)
-      const localStorageUnlockedIds = this.getUnlockedCandidatesFromLocalStorage(currentUserId);
-      
-      // Get unlocked candidate IDs from database (favrouteUsers table)
+      // Get unlocked candidate IDs from database only (favrouteUsers table)
       const favrouteUsersData = await this.getFavrouteUsers();
-      const databaseUnlockedIds = favrouteUsersData
+      const unlockedIds = favrouteUsersData
         .filter(user => 
           String(user.added_by) === String(currentUserId) && 
           (user.unlocked_candidate === 1 || user.unblocked_candidate === 1)
         )
-        .map(user => user.firebase_uid)
+        .map(user => String(user.firebase_uid))
         .filter(Boolean);
       
-      // Merge both sources (remove duplicates using Set)
-      const allUnlockedIds = new Set([
-        ...localStorageUnlockedIds.map(String),
-        ...databaseUnlockedIds.map(String)
-      ]);
-      
-      if (allUnlockedIds.size === 0) {
+      if (unlockedIds.length === 0) {
         return [];
       }
       
@@ -624,8 +576,9 @@ class ChatApiService {
       const allUsers = await this.getPersonalUsers();
       
       // Filter users by firebase_uid and return with fullName
+      const unlockedIdsSet = new Set(unlockedIds);
       const filteredCandidates = allUsers
-        .filter(user => allUnlockedIds.has(String(user.firebase_uid)))
+        .filter(user => unlockedIdsSet.has(String(user.firebase_uid)))
         .map(user => ({
           firebase_uid: user.firebase_uid,
           fullName: user.fullName,

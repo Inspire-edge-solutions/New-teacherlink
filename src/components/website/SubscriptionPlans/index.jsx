@@ -315,7 +315,7 @@ const SubscriptionPlans = () => {
               <p className="text-sm sm:text-base lg:text-lg text-gray-800">
                 <span className="text-red-600 font-bold mr-1">*</span>
                 <Link 
-                  to="/login" 
+                  to={activeTab === "job-seekers" ? "/register?role=job-seeker" : "/register?role=job-provider"}
                   className="text-red-600 hover:text-red-700 font-semibold"
                 >
                   Register/Login

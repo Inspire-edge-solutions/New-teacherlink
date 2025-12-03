@@ -7,8 +7,7 @@ import {
   getExperience, 
   parseEducationDetails, 
   parseCoreExpertise, 
-  getLocationString,
-  formatSalary
+  getLocationString
 } from '../utils/candidateUtils.js';
 import LoginConsentModal from '../../../../../components/common/LoginConsentModal';
 
@@ -69,12 +68,12 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
         {/* Name and Actions Section */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-start gap-2 sm:gap-0">
-            <div className="flex-1 min-w-0 max-w-full overflow-hidden">
-              <h3 className="text-xl font-bold text-gray-800 leading-tight truncate max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-lg font-bold text-gray-800 leading-tight truncate">
                 {candidate.fullName || candidate.name || 'Name not available'}
               </h3>
               {(candidate.job_name || candidate.designation) && (
-                <p className="text-lg sm:text-base text-gray-600 mt-0.5 truncate leading-normal tracking-tight max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                <p className="text-xs sm:text-sm text-gray-600 mt-0.5 truncate">
                   {candidate.job_name ? (
                     <>
                       Applied for <span className="font-semibold">{candidate.job_name}</span>
@@ -128,14 +127,14 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
 
           {/* Details Grid for Desktop */}
           <div className="hidden lg:block space-y-2 mt-2">
-            <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-lg sm:text-base leading-normal tracking-tight">
+            <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-sm sm:text-base">
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaBriefcase className="w-4 h-4 text-gray-600 flex-shrink-0" />
                 <span className="truncate font-medium">Exp: {getExperience(candidate.total_experience_years)}</span>
               </div>
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaWallet className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium">{formatSalary(candidate.expected_salary)}</span>
+                <span className="truncate font-medium">₹{candidate.expected_salary?.toLocaleString() || 'Not specified'}</span>
               </div>
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaMapMarkerAlt className="w-4 h-4 text-gray-600 flex-shrink-0" />
@@ -146,7 +145,7 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
                 <span className="truncate font-medium">{parseEducationDetails(candidate.education_details_json)}</span>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-gray-700 text-lg sm:text-base leading-normal tracking-tight">
+            <div className="flex items-center gap-2 text-gray-700 text-sm sm:text-base">
               <FaStar className="w-4 h-4 text-gray-600 flex-shrink-0" />
               <span className="truncate font-medium" title={typeof expertise === 'object' && expertise.hasMore ? expertise.full : expertise}>
                 {typeof expertise === 'object' && expertise.hasMore ? expertise.display : expertise}
@@ -158,14 +157,14 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
 
       {/* Details Grid for Mobile */}
       <div className="lg:hidden space-y-2 mt-2">
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-lg sm:text-base leading-normal tracking-tight">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm sm:text-base">
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaBriefcase className="w-4 h-4 text-gray-600 flex-shrink-0" />
             <span className="truncate font-medium">Exp: {getExperience(candidate.total_experience_years)}</span>
           </div>
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaWallet className="w-4 h-4 text-gray-600 flex-shrink-0" />
-            <span className="truncate font-medium">{formatSalary(candidate.expected_salary)}</span>
+            <span className="truncate font-medium">₹{candidate.expected_salary?.toLocaleString() || 'Not specified'}</span>
           </div>
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaMapMarkerAlt className="w-4 h-4 text-gray-600 flex-shrink-0" />
@@ -176,7 +175,7 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
             <span className="truncate font-medium">{parseEducationDetails(candidate.education_details_json)}</span>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-gray-700 text-lg sm:text-base leading-normal tracking-tight">
+        <div className="flex items-center gap-2 text-gray-700 text-sm sm:text-base">
           <FaStar className="w-4 h-4 text-gray-600 flex-shrink-0" />
           <span className="truncate font-medium" title={typeof expertise === 'object' && expertise.hasMore ? expertise.full : expertise}>
             {typeof expertise === 'object' && expertise.hasMore ? expertise.display : expertise}
@@ -197,3 +196,4 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
 };
 
 export default PublicCandidateCard;
+

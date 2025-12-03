@@ -18,6 +18,8 @@ const Content = () => {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
   const [filteredHistory, setFilteredHistory] = useState([]);
+  const [freezeColumns, setFreezeColumns] = useState(0); // 0 = no freeze, 1-3 = number of columns to freeze
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
 
   const COINS_API_URL = "https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem";
   const COIN_HISTORY_API_URL = "https://fgitrjv9mc.execute-api.ap-south-1.amazonaws.com/dev/coin_history";
@@ -38,6 +40,26 @@ const Content = () => {
   useEffect(() => {
     filterHistory();
   }, [selectedMonth, selectedYear, coinHistory]);
+
+  useEffect(() => {
+    // Detect mobile/tablet and set default freeze
+    const checkScreenSize = () => {
+      const isMobileOrTab = window.innerWidth < 1024; // Less than 1024px (tablet and mobile)
+      setIsMobileOrTablet(isMobileOrTab);
+      if (isMobileOrTab) {
+        setFreezeColumns(1); // Default to 1 frozen column on mobile/tablet
+      } else {
+        setFreezeColumns(0); // No freeze on desktop
+      }
+    };
+
+    // Check on mount
+    checkScreenSize();
+
+    // Check on resize
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   const fetchUserCoins = async () => {
     try {
@@ -164,6 +186,22 @@ const Content = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const formatDateAndTime = (dateString) => {
+    if (!dateString) return { date: 'N/A', time: '' };
+    const date = new Date(dateString);
+    return {
+      date: date.toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      }),
+      time: date.toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    };
   };
 
   const getStatusClass = (validTo) => {
@@ -485,13 +523,97 @@ const Content = () => {
                   ))}
                 </div>
               ) : filteredHistory.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                <div className="overflow-x-auto" style={{ position: 'relative' }}>
+                  <style>{`
+                    /* Mobile/Tablet: Narrower first column for better space utilization */
+                    .freeze-col-1 { 
+                      min-width: 110px; 
+                      max-width: 110px; 
+                    }
+                    .freeze-col-2 { 
+                      min-width: 120px; 
+                    }
+                    .freeze-col-3 { 
+                      min-width: 110px; 
+                    }
+                    .freeze-sticky-1 { 
+                      left: 0; 
+                    }
+                    .freeze-sticky-2 { 
+                      left: 110px; 
+                    }
+                    .freeze-sticky-3 { 
+                      left: 230px; 
+                    }
+                    
+                    /* Mobile/Tablet: Compact padding and styling for frozen column */
+                    @media (max-width: 1023px) {
+                      th.freeze-col-1,
+                      td.freeze-col-1 {
+                        padding-left: 0.375rem !important;
+                        padding-right: 0.375rem !important;
+                        font-size: 0.8125rem !important;
+                        white-space: normal !important;
+                        overflow: visible !important;
+                        line-height: 1.3 !important;
+                      }
+                      th.freeze-col-2,
+                      td.freeze-col-2 {
+                        padding-left: 0.5rem !important;
+                        padding-right: 0.5rem !important;
+                        font-size: 0.875rem !important;
+                      }
+                      th.freeze-col-3,
+                      td.freeze-col-3 {
+                        padding-left: 0.5rem !important;
+                        padding-right: 0.5rem !important;
+                        font-size: 0.875rem !important;
+                      }
+                    }
+                    
+                    /* Desktop: Wider columns, disable freeze (sticky positioning) */
+                    @media (min-width: 1024px) {
+                      .freeze-col-1 { 
+                        min-width: 200px; 
+                        max-width: none;
+                      }
+                      .freeze-col-2 { 
+                        min-width: 180px; 
+                      }
+                      .freeze-col-3 { 
+                        min-width: 150px; 
+                      }
+                      .freeze-sticky-1,
+                      .freeze-sticky-2,
+                      .freeze-sticky-3 {
+                        position: static !important;
+                        left: auto !important;
+                        box-shadow: none !important;
+                      }
+                    }
+                  `}</style>
+                  <table className="min-w-full divide-y divide-gray-200" style={{ borderCollapse: 'separate', borderSpacing: 0, minWidth: freezeColumns > 0 ? '550px' : '100%' }}>
                     <thead className="bg-gradient-brand text-white">
                       <tr>
-                        <th className="px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal">Date & Time</th>
-                        <th className="px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal">Reason</th>
-                        <th className="px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal">Coin Value</th>
+                        <th 
+                          className={`px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal freeze-col-1 ${freezeColumns >= 1 ? 'sticky freeze-sticky-1 z-20 bg-gradient-brand' : ''}`}
+                          style={freezeColumns >= 1 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
+                        >
+                          <span className="hidden md:inline">Date & Time</span>
+                          <span className="md:hidden">Date</span>
+                        </th>
+                        <th 
+                          className={`px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal freeze-col-2 ${freezeColumns >= 2 ? 'sticky freeze-sticky-2 z-20 bg-gradient-brand' : ''}`}
+                          style={freezeColumns >= 2 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
+                        >
+                          Reason
+                        </th>
+                        <th 
+                          className={`px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal freeze-col-3 ${freezeColumns >= 3 ? 'sticky freeze-sticky-3 z-20 bg-gradient-brand' : ''}`}
+                          style={freezeColumns >= 3 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
+                        >
+                          Coin Value
+                        </th>
                         <th className="px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal">Reduction</th>
                         <th className="px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal">Candidate ID</th>
                         <th className="px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal">Job ID</th>
@@ -501,15 +623,43 @@ const Content = () => {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {filteredHistory.map((transaction, index) => (
-                        <tr key={transaction.id || index} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 whitespace-nowrap text-lg sm:text-base leading-normal tracking-tight">{formatDateTime(transaction.created_at)}</td>
-                          <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight">{transaction.reason || 'N/A'}</td>
-                          <td className="px-4 py-3 text-lg sm:text-base font-bold leading-normal tracking-tight">🪙 {transaction.coin_value?.toLocaleString() || 0}</td>
-                          <td className="px-4 py-3 text-lg sm:text-base text-red-600 leading-normal tracking-tight">{transaction.reduction ? `-${transaction.reduction}` : 'N/A'}</td>
-                          <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight">{transaction.candidate_id || 'N/A'}</td>
-                          <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight">{transaction.job_id || 'N/A'}</td>
-                          <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight">{transaction.payment_id || 'N/A'}</td>
-                          <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight">
+                        <tr key={transaction.id || index} className="group">
+                          <td 
+                            className={`px-4 py-3 text-lg sm:text-base leading-normal tracking-tight freeze-col-1 ${freezeColumns >= 1 ? 'sticky freeze-sticky-1 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
+                            style={freezeColumns >= 1 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
+                          >
+                            <div className="hidden md:block whitespace-nowrap">
+                              {formatDateTime(transaction.created_at)}
+                            </div>
+                            <div className="md:hidden flex flex-col">
+                              {(() => {
+                                const { date, time } = formatDateAndTime(transaction.created_at);
+                                return (
+                                  <>
+                                    <span className="font-medium">{date}</span>
+                                    <span className="text-xs text-gray-600">{time}</span>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          </td>
+                          <td 
+                            className={`px-4 py-3 text-lg sm:text-base leading-normal tracking-tight freeze-col-2 ${freezeColumns >= 2 ? 'sticky freeze-sticky-2 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
+                            style={freezeColumns >= 2 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
+                          >
+                            {transaction.reason || 'N/A'}
+                          </td>
+                          <td 
+                            className={`px-4 py-3 text-lg sm:text-base font-bold leading-normal tracking-tight freeze-col-3 ${freezeColumns >= 3 ? 'sticky freeze-sticky-3 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
+                            style={freezeColumns >= 3 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
+                          >
+                            🪙 {transaction.coin_value?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 text-lg sm:text-base text-red-600 leading-normal tracking-tight group-hover:bg-gray-50">{transaction.reduction ? `-${transaction.reduction}` : 'N/A'}</td>
+                          <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.candidate_id || 'N/A'}</td>
+                          <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.job_id || 'N/A'}</td>
+                          <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.payment_id || 'N/A'}</td>
+                          <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight group-hover:bg-gray-50">
                             {transaction.unblocked_candidate_name ? (
                               <div>
                                 <div className="font-bold leading-normal tracking-tight">{transaction.unblocked_candidate_name}</div>

@@ -141,6 +141,8 @@ const Subscription = () => {
   const [showHistoryPopup, setShowHistoryPopup] = useState(false);
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [freezeColumns, setFreezeColumns] = useState(0);
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
 
   // Modal state
   const [modal, setModal] = useState({ open: false, type: "", message: "" });
@@ -193,6 +195,26 @@ const Subscription = () => {
       fetchSubscription();
     }
   }, [user]);
+
+  useEffect(() => {
+    // Detect mobile/tablet and set default freeze
+    const checkScreenSize = () => {
+      const isMobileOrTab = window.innerWidth < 1024; // Less than 1024px (tablet and mobile)
+      setIsMobileOrTablet(isMobileOrTab);
+      if (isMobileOrTab) {
+        setFreezeColumns(1); // Default to 1 frozen column on mobile/tablet
+      } else {
+        setFreezeColumns(0); // No freeze on desktop
+      }
+    };
+
+    // Check on mount
+    checkScreenSize();
+
+    // Check on resize
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   const handleSubscriptionSuccess = () => {
     fetchSubscription();
@@ -485,11 +507,49 @@ const Subscription = () => {
               ) : (
                 <div className="flex-1 overflow-y-auto flex flex-col">
                   <div className="flex-1 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-sm">
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse text-base bg-white min-w-[600px] leading-normal tracking-tight">
+                    <div className="overflow-x-auto" style={{ position: 'relative' }}>
+                      <style>{`
+                        /* Mobile/Tablet: Narrower first column for better space utilization */
+                        .freeze-col-1 { 
+                          min-width: 90px; 
+                          max-width: 90px; 
+                        }
+                        .freeze-sticky-1 { 
+                          left: 0; 
+                        }
+                        
+                        /* Mobile/Tablet: Compact padding and styling for frozen column */
+                        @media (max-width: 1023px) {
+                          th.freeze-col-1,
+                          td.freeze-col-1 {
+                            padding-left: 0.375rem !important;
+                            padding-right: 0.375rem !important;
+                            font-size: 0.8125rem !important;
+                            white-space: normal !important;
+                            overflow: visible !important;
+                            line-height: 1.3 !important;
+                          }
+                        }
+                        
+                        /* Desktop: Wider columns, disable freeze (sticky positioning) */
+                        @media (min-width: 1024px) {
+                          .freeze-col-1 { 
+                            min-width: auto; 
+                            max-width: none;
+                          }
+                          .freeze-sticky-1 {
+                            position: static !important;
+                            left: auto !important;
+                            box-shadow: none !important;
+                          }
+                        }
+                      `}</style>
+                      <table className="w-full border-collapse text-base bg-white leading-normal tracking-tight" style={{ borderCollapse: 'separate', borderSpacing: 0, minWidth: freezeColumns > 0 ? '500px' : '600px' }}>
                       <thead className="sticky top-0 z-10">
                         <tr className="bg-gray-50 border-b-2 border-gray-200">
-                          <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-base leading-normal tracking-tight">
+                          <th className={`px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-base leading-normal tracking-tight freeze-col-1 ${freezeColumns >= 1 ? 'sticky freeze-sticky-1 z-20 bg-gray-50' : ''}`}
+                            style={freezeColumns >= 1 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
+                          >
                             Amount
                           </th>
                           <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-base leading-normal tracking-tight">
@@ -512,12 +572,14 @@ const Subscription = () => {
                         return (
                           <tr
                             key={payment.id || index}
-                            className="border-b border-gray-200 transition-all duration-200 cursor-pointer hover:bg-gray-50"
+                            className="group border-b border-gray-200 transition-all duration-200 cursor-pointer"
                           >
-                            <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 font-semibold text-gray-800 text-base leading-normal tracking-tight">
+                            <td className={`px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 font-semibold text-gray-800 text-base leading-normal tracking-tight freeze-col-1 ${freezeColumns >= 1 ? 'sticky freeze-sticky-1 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
+                              style={freezeColumns >= 1 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
+                            >
                               ₹{payment.amount}
                             </td>
-                            <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200">
+                            <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 group-hover:bg-gray-50">
                               <span 
                                 className="inline-block px-1 sm:px-2 py-1 rounded-full text-base font-semibold leading-normal tracking-tight"
                                 style={{
@@ -529,10 +591,10 @@ const Subscription = () => {
                                 {statusInfo.text}
                               </span>
                             </td>
-                            <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 font-mono text-base text-gray-600 break-all max-w-[120px] sm:max-w-[150px] leading-normal tracking-tight">
+                            <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 font-mono text-base text-gray-600 break-all max-w-[120px] sm:max-w-[150px] leading-normal tracking-tight group-hover:bg-gray-50">
                               {payment.user_transaction_id}
                             </td>
-                            <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 text-gray-600 min-w-[80px] sm:min-w-[100px]">
+                            <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 text-gray-600 min-w-[80px] sm:min-w-[100px] group-hover:bg-gray-50">
                               <div className="text-base leading-normal tracking-tight">
                                 {formatDate(payment.created_at)}
                                 <br />
@@ -541,7 +603,7 @@ const Subscription = () => {
                                 </span>
                               </div>
                             </td>
-                            <td className="px-1 sm:px-2 py-2 sm:py-3 text-gray-600 text-base max-w-[100px] sm:max-w-[120px] break-all leading-normal tracking-tight">
+                            <td className="px-1 sm:px-2 py-2 sm:py-3 text-gray-600 text-base max-w-[100px] sm:max-w-[120px] break-all leading-normal tracking-tight group-hover:bg-gray-50">
                               {payment.receipt}
                             </td>
                           </tr>

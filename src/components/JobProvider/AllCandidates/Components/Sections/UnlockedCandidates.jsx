@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +8,7 @@ import ViewShort from '../shared/ViewShort';
 import SearchBar from '../shared/SearchBar';
 import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
-import CandidateApiService, { checkAndCleanExpiredUnlock, cleanAllExpiredUnlocks } from '../shared/CandidateApiService';
+import CandidateApiService from '../shared/CandidateApiService';
 import { useAuth } from "../../../../../Context/AuthContext";
 import useBulkCandidateActions from '../hooks/useBulkCandidateActions';
 import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
@@ -57,55 +58,6 @@ const UnlockedCandidates = ({
   const [pendingScrollCandidate, setPendingScrollCandidate] = useState(null);
   const skipPageResetRef = useRef(false);
 
-  // Get unlocked candidates from localStorage (backward compatibility)
-  // Get unlocked candidates from localStorage and clean expired entries
-  const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
-    if (!user) return [];
-    
-    const userId = user.firebase_uid || user.uid;
-    if (!userId) return [];
-    
-    // Clean all expired unlocks first
-    cleanAllExpiredUnlocks(userId);
-    
-    const unlockedCandidateIds = [];
-    
-    // Check all localStorage keys for unlocked candidates
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith(`unlocked_${userId}_`)) {
-        try {
-          const stored = localStorage.getItem(key);
-          if (!stored) continue;
-          
-          const parsed = JSON.parse(stored);
-          
-          if (parsed.unlocked && parsed.timestamp) {
-            const unlockTime = new Date(parsed.timestamp);
-            const now = new Date();
-            const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
-            
-            // Only include if unlocked within 30 days
-            if (daysDiff <= 30) {
-              const candidateId = key.replace(`unlocked_${userId}_`, '');
-              if (candidateId) {
-                unlockedCandidateIds.push(candidateId);
-              }
-            } else {
-              // Expired - remove from localStorage
-              localStorage.removeItem(key);
-            }
-          }
-        } catch (error) {
-          console.error('Error parsing localStorage item:', key, error);
-          // Remove invalid entries
-          localStorage.removeItem(key);
-        }
-      }
-    }
-    
-    return unlockedCandidateIds;
-  }, [user]);
 
   const buildMessagingCandidate = useCallback((candidate) => {
     if (!candidate) return null;
@@ -132,56 +84,24 @@ const UnlockedCandidates = ({
         CandidateApiService.fetchUserCandidatePreferences(user)
       ]);
       
-      // Get unlocked candidate IDs from localStorage (backward compatibility)
-      const localStorageUnlockedIds = getUnlockedCandidatesFromLocalStorage();
-      
-      // Get unlocked candidate IDs from database
+      // Get unlocked candidate IDs from database only (no localStorage dependency)
       const databaseUnlockedIds = prefs.unlockedCandidates || [];
       
-      // Filter database unlocks: only keep those that are still valid (within 30 days)
-      // Check localStorage timestamp for each database unlock
-      const userId = user.firebase_uid || user.uid;
-      const validDatabaseUnlocks = [];
-      const expiredDatabaseUnlocks = [];
+      console.log('🔓 UnlockedCandidates: databaseUnlockedIds from backend:', databaseUnlockedIds);
+      console.log('🔓 UnlockedCandidates: databaseUnlockedIds count:', databaseUnlockedIds.length);
+      console.log('🔓 UnlockedCandidates: fullCandidates count:', fullCandidates.length);
       
-      databaseUnlockedIds.forEach(candidateId => {
-        // Check if there's a valid localStorage entry with timestamp
-        const isValid = checkAndCleanExpiredUnlock(userId, candidateId);
-        if (isValid) {
-          validDatabaseUnlocks.push(candidateId);
-        } else {
-          expiredDatabaseUnlocks.push(candidateId);
-        }
-      });
-      
-      // Update database to remove expired unlocks
-      if (expiredDatabaseUnlocks.length > 0) {
-        try {
-          await Promise.all(expiredDatabaseUnlocks.map(async (candidateId) => {
-            const candidate = fullCandidates.find(c => c.firebase_uid === candidateId);
-            if (candidate) {
-              await CandidateApiService.upsertCandidateAction(candidate, user, {
-                unlocked_candidate: 0,
-                unblocked_candidate: 0
-              });
-            }
-          }));
-        } catch (error) {
-          console.error('Error removing expired unlocks from database:', error);
-        }
-      }
-      
-      // Merge both sources (remove duplicates using Set)
-      const allUnlockedIds = new Set([
-        ...localStorageUnlockedIds,
-        ...validDatabaseUnlocks
-      ]);
-      
-      // Filter candidates that are in either localStorage OR valid database unlocked list
+      // Filter candidates that are in the database unlocked list
       const onlyUnlocked = fullCandidates.filter(c => {
         const candidateId = c.firebase_uid;
-        return candidateId && allUnlockedIds.has(candidateId);
+        const isInList = candidateId && databaseUnlockedIds.includes(String(candidateId));
+        if (isInList) {
+          console.log('🔓 UnlockedCandidates: Found unlocked candidate:', candidateId);
+        }
+        return isInList;
       });
+      
+      console.log('🔓 UnlockedCandidates: Filtered unlocked candidates count:', onlyUnlocked.length);
       
       setUnlockedCandidates(onlyUnlocked);
       setFilteredCandidates(onlyUnlocked);
@@ -194,29 +114,12 @@ const UnlockedCandidates = ({
       
     } catch (error) {
       console.error('Error fetching unlocked candidates:', error);
-      // On error, try to fallback to localStorage only
-      try {
-        const localStorageUnlockedIds = getUnlockedCandidatesFromLocalStorage();
-        if (localStorageUnlockedIds.length > 0) {
-          const fullCandidates = await CandidateApiService.fetchCandidates();
-          const fallbackUnlocked = fullCandidates.filter(c => 
-            localStorageUnlockedIds.includes(c.firebase_uid)
-          );
-          setUnlockedCandidates(fallbackUnlocked);
-          setFilteredCandidates(fallbackUnlocked);
-        } else {
-          setUnlockedCandidates([]);
-          setFilteredCandidates([]);
-        }
-      } catch (fallbackError) {
-        console.error('Error in fallback fetch:', fallbackError);
-        setUnlockedCandidates([]);
-        setFilteredCandidates([]);
-      }
+      setUnlockedCandidates([]);
+      setFilteredCandidates([]);
     } finally {
       setLoading(false);
     }
-  }, [user, getUnlockedCandidatesFromLocalStorage]);
+  }, [user]);
 
   useEffect(() => {
     if (!user && !userLoading) {

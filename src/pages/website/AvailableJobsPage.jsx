@@ -214,7 +214,7 @@ const AvailableJobsPage = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header Banner */}
           <div className="bg-gradient-brand text-white text-center rounded-lg p-6 mb-6 shadow-lg">
-            <h1 className="text-3xl font-bold mb-2 leading-tight tracking-tight">Find your dream job</h1>
+            <h1 className="text-3xl font-bold mb-2 leading-tight tracking-tight">Find Your Dream Job</h1>
             <p className="text-lg sm:text-base opacity-90 leading-normal tracking-tight">
             Your dream career starts here. Explore opportunities and apply smarter. Register or login to apply and unlock full details.
             </p>
@@ -225,7 +225,7 @@ const AvailableJobsPage = () => {
               Register Now to Apply
             </button>
             <p className="text-sm p-4 sm:text-base text-white-600 leading-normal tracking-tight">
-              Use coupon code <span className="font-bold text-xl">'INAUGURAL2025'</span> to get full access at no cost.
+              Use coupon code <span className="font-bold text-xl">'TEACH25'</span> to get full access at no cost.
               </p>
           </div>
 
@@ -322,4 +322,3 @@ const AvailableJobsPage = () => {
 };
 
 export default AvailableJobsPage;
-

@@ -8,7 +8,7 @@ import ViewShort from '../shared/ViewShort';
 import SearchBar from '../shared/SearchBar';
 import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
-import CandidateApiService, { cleanAllExpiredUnlocks, checkAndCleanExpiredUnlock } from '../shared/CandidateApiService';
+import CandidateApiService from '../shared/CandidateApiService';
 import { useAuth } from "../../../../../Context/AuthContext";
 import useBulkCandidateActions from '../hooks/useBulkCandidateActions';
 import noCandidateIllustration from '../../../../../assets/Illustrations/No candidate.png';
@@ -70,45 +70,6 @@ const AppliedCandidates = ({
   const [showFavouriteConfirmModal, setShowFavouriteConfirmModal] = useState(false);
   const [candidateToFavourite, setCandidateToFavourite] = useState(null);
 
-  const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
-    if (!user) return [];
-    const userId = user.firebase_uid || user.uid;
-    if (!userId) return [];
-
-    // Clean all expired unlocks first
-    cleanAllExpiredUnlocks(userId);
-
-    const unlockedIds = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith(`unlocked_${userId}_`)) {
-        try {
-          const stored = localStorage.getItem(key);
-          if (!stored) continue;
-          const parsed = JSON.parse(stored);
-          if (parsed?.unlocked && parsed?.timestamp) {
-            const unlockTime = new Date(parsed.timestamp);
-            const now = new Date();
-            const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
-            if (daysDiff <= 30) {
-              const candidateId = key.replace(`unlocked_${userId}_`, '');
-              if (candidateId) {
-                unlockedIds.push(candidateId);
-              }
-            } else {
-              // Expired - remove from localStorage
-              localStorage.removeItem(key);
-            }
-          }
-        } catch (error) {
-          console.error('AppliedCandidates: Error parsing localStorage entry', key, error);
-          // Remove invalid entries
-          localStorage.removeItem(key);
-        }
-      }
-    }
-    return unlockedIds;
-  }, [user]);
 
   // Fetch recommended candidates based on posted jobs
   const fetchRecommendedCandidates = useCallback(async () => {
@@ -365,11 +326,9 @@ const AppliedCandidates = ({
       setFilteredCandidates(appliedData);
       setSavedCandidates(prefs.savedCandidates);
       setFavouriteCandidates(prefs.favouriteCandidates);
-      const combinedUnlocked = new Set([
-        ...getUnlockedCandidatesFromLocalStorage().map(String),
-        ...(prefs.unlockedCandidates || []).map(String)
-      ]);
-      setUnlockedCandidateIds(Array.from(combinedUnlocked));
+      // Get unlocked candidates from backend database only (no localStorage)
+      const backendUnlocked = (prefs.unlockedCandidates || []).map(String);
+      setUnlockedCandidateIds(backendUnlocked);
       
       // Fetch photos for applied candidates using user_id (the candidate who applied)
       if (appliedData.length > 0) {
@@ -401,11 +360,11 @@ const AppliedCandidates = ({
       console.error('Error fetching applied candidates:', error);
       setAppliedCandidates([]);
       setFilteredCandidates([]);
-      setUnlockedCandidateIds(getUnlockedCandidatesFromLocalStorage().map(String));
+      setUnlockedCandidateIds([]);
     } finally {
       setLoading(false);
     }
-  }, [user, getUnlockedCandidatesFromLocalStorage]);
+  }, [user]);
 
   // Fetch recommended candidates after applied candidates are loaded
   useEffect(() => {
@@ -546,7 +505,8 @@ const AppliedCandidates = ({
     const candidateId = String(candidate.firebase_uid || '');
     const userId = user?.firebase_uid || user?.uid;
     // Check if unlocked and not expired (30 days)
-    const isUnlocked = candidateId && userId && checkAndCleanExpiredUnlock(userId, candidateId) && unlockedCandidateIds.includes(candidateId);
+    // Check if unlocked from backend database only (no localStorage)
+    const isUnlocked = candidateId && unlockedCandidateIds.includes(candidateId);
 
     if (!isUnlocked) {
       console.log('AppliedCandidates: Candidate not unlocked, prompting unlock:', candidateId);
@@ -688,13 +648,7 @@ const AppliedCandidates = ({
       const candidateIdStr = String(candidateId);
       setUnlockedCandidateIds(prev => [...prev, candidateIdStr]);
       
-      // Store in localStorage
-      const userIdStr = String(userId);
-      const unlockKey = `unlocked_${userIdStr}_${candidateIdStr}`;
-      localStorage.setItem(unlockKey, JSON.stringify({
-        unlocked: true,
-        timestamp: new Date().toISOString()
-      }));
+      // Note: Unlock status is stored in backend database only (no localStorage)
 
       // Show success message
       toast.success('Candidate unlocked successfully!');

@@ -49,7 +49,16 @@ const LoginWithSocial = () => {
   const [googlePayload, setGooglePayload] = useState(null);
   const [number, setNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
-  const [selectedRole, setSelectedRole] = useState('Candidate');
+  // Initialize selectedRole based on requiredUserType from URL
+  const getInitialRole = () => {
+    if (requiredUserType === 'Employer') {
+      return 'Employer';
+    } else if (requiredUserType === 'Candidate') {
+      return 'Candidate';
+    }
+    return 'Candidate'; // Default
+  };
+  const [selectedRole, setSelectedRole] = useState(() => getInitialRole());
   const [roleError, setRoleError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -158,15 +167,28 @@ const LoginWithSocial = () => {
       console.log("Backend response:", data);
 
       if (res.ok && data.success) {
-        // Get redirect URL from query params if available
-        const redirectUrl = searchParams.get('redirect');
+        // Get redirect URL from query params, fallback to sessionStorage
+        let redirectUrl = searchParams.get('redirect');
+        let requiredUserTypeFromUrl = searchParams.get('requiredUserType') || requiredUserType;
+        
+        // If not in URL, check sessionStorage
+        if (!redirectUrl) {
+          // Try to infer from sessionStorage keys
+          if (sessionStorage.getItem('pendingCandidateAction') || sessionStorage.getItem('pendingCandidateId')) {
+            redirectUrl = '/available-candidates';
+            if (!requiredUserTypeFromUrl) requiredUserTypeFromUrl = 'Employer';
+          } else if (sessionStorage.getItem('pendingJobAction') || sessionStorage.getItem('pendingJobId')) {
+            redirectUrl = '/available-jobs';
+            if (!requiredUserTypeFromUrl) requiredUserTypeFromUrl = 'Candidate';
+          }
+        }
         
         // Validate user type if requiredUserType is specified
-        if (requiredUserType) {
+        if (requiredUserTypeFromUrl) {
           const userType = data.user.user_type;
           const isValidUserType = 
-            (requiredUserType === 'Candidate' && (userType === 'Candidate' || userType === 'Teacher')) ||
-            (requiredUserType === 'Employer' && userType === 'Employer');
+            (requiredUserTypeFromUrl === 'Candidate' && (userType === 'Candidate' || userType === 'Teacher')) ||
+            (requiredUserTypeFromUrl === 'Employer' && userType === 'Employer');
           
           if (!isValidUserType) {
             // Wrong user type - sign out and show error
@@ -175,8 +197,8 @@ const LoginWithSocial = () => {
             localStorage.removeItem("user");
             localStorage.removeItem("token");
             
-            const pageName = requiredUserType === 'Candidate' ? 'available jobs' : 'available candidates';
-            const correctUserType = requiredUserType === 'Candidate' ? 'Candidate/Teacher' : 'Employer';
+            const pageName = requiredUserTypeFromUrl === 'Candidate' ? 'available jobs' : 'available candidates';
+            const correctUserType = requiredUserTypeFromUrl === 'Candidate' ? 'Candidate/Teacher' : 'Employer';
             
             toast.error(`This page is only for ${correctUserType} accounts. Please login with the correct account type to access ${pageName}.`);
             
@@ -196,16 +218,88 @@ const LoginWithSocial = () => {
         // Store user data in localStorage for consistency
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("token", await user.getIdToken());
+        console.log("User stored in localStorage:", data.user);
+        
+        // Get action and id from query params, fallback to sessionStorage
+        let action = searchParams.get('action');
+        let candidateId = searchParams.get('id');
+        
+        // If not in URL, check sessionStorage
+        if (!action || !candidateId) {
+          if (redirectUrl === '/available-candidates') {
+            action = action || sessionStorage.getItem('pendingCandidateAction') || sessionStorage.getItem('pendingAction');
+            candidateId = candidateId || sessionStorage.getItem('pendingCandidateId') || sessionStorage.getItem('pendingId');
+          } else if (redirectUrl === '/available-jobs') {
+            action = action || sessionStorage.getItem('pendingJobAction') || sessionStorage.getItem('pendingAction');
+            candidateId = candidateId || sessionStorage.getItem('pendingJobId') || sessionStorage.getItem('pendingId');
+          } else {
+            // Generic fallback
+            action = action || sessionStorage.getItem('pendingAction');
+            candidateId = candidateId || sessionStorage.getItem('pendingId');
+          }
+        }
+        
+        console.log("Preserving query params - action:", action, "candidateId:", candidateId, "redirectUrl:", redirectUrl);
+        
+        // Store candidate/job info in sessionStorage as backup (survives page reloads)
+        if (action && candidateId) {
+          // Use generic names that work for both candidates and jobs
+          sessionStorage.setItem('pendingAction', action);
+          sessionStorage.setItem('pendingId', candidateId);
+          // Also store type-specific for backward compatibility
+          if (redirectUrl === '/available-candidates') {
+            sessionStorage.setItem('pendingCandidateAction', action);
+            sessionStorage.setItem('pendingCandidateId', candidateId);
+          } else if (redirectUrl === '/available-jobs') {
+            sessionStorage.setItem('pendingJobAction', action);
+            sessionStorage.setItem('pendingJobId', candidateId);
+          }
+          console.log("Stored tracking info in sessionStorage:", { action, id: candidateId, redirectUrl });
+        }
         
         // Determine redirect path
         let redirectPath;
-        if (redirectUrl && requiredUserType) {
+        
+        if (redirectUrl && (requiredUserTypeFromUrl || action)) {
           // If we came from a public page and validation passed, redirect to authenticated version
           const userType = data.user.user_type;
+          
+          // Check if we have tracking info (action and id) - this takes priority
+          const hasTrackingInfo = action && candidateId;
+          
           if (redirectUrl === '/available-jobs' && (userType === 'Candidate' || userType === 'Teacher')) {
-            redirectPath = '/seeker/all-jobs';
-          } else if (redirectUrl === '/available-candidates' && userType === 'Employer') {
-            redirectPath = '/provider/all-candidates';
+            // Preserve action and id query parameters for job tracking
+            const queryParams = new URLSearchParams();
+            if (action) queryParams.set('action', action);
+            if (candidateId) queryParams.set('id', candidateId); // candidateId is actually jobId in this context
+            const queryString = queryParams.toString();
+            redirectPath = '/seeker/all-jobs' + (queryString ? `?${queryString}` : '');
+            console.log("Redirecting to all-jobs with query params:", redirectPath);
+          } else if ((redirectUrl === '/available-candidates' || redirectUrl?.startsWith('/candidate-profile/')) && userType === 'Employer' && hasTrackingInfo) {
+            // Preserve action and id query parameters for candidate tracking
+            // Also handle candidate-profile page redirects
+            const queryParams = new URLSearchParams();
+            if (action) queryParams.set('action', action);
+            if (candidateId) queryParams.set('id', candidateId);
+            const queryString = queryParams.toString();
+            redirectPath = '/provider/all-candidates' + (queryString ? `?${queryString}` : '');
+            console.log("Redirecting to all-candidates with query params:", redirectPath);
+          } else if (hasTrackingInfo && userType === 'Employer' && requiredUserTypeFromUrl === 'Employer') {
+            // If we have tracking info for a candidate but redirectUrl doesn't match, still redirect to all-candidates
+            const queryParams = new URLSearchParams();
+            if (action) queryParams.set('action', action);
+            if (candidateId) queryParams.set('id', candidateId);
+            const queryString = queryParams.toString();
+            redirectPath = '/provider/all-candidates' + (queryString ? `?${queryString}` : '');
+            console.log("Redirecting to all-candidates with tracking info (fallback):", redirectPath);
+          } else if (hasTrackingInfo && (userType === 'Candidate' || userType === 'Teacher') && requiredUserTypeFromUrl === 'Candidate') {
+            // If we have tracking info for a job but redirectUrl doesn't match, still redirect to all-jobs
+            const queryParams = new URLSearchParams();
+            if (action) queryParams.set('action', action);
+            if (candidateId) queryParams.set('id', candidateId);
+            const queryString = queryParams.toString();
+            redirectPath = '/seeker/all-jobs' + (queryString ? `?${queryString}` : '');
+            console.log("Redirecting to all-jobs with tracking info (fallback):", redirectPath);
           } else {
             // Fallback to dashboard
             redirectPath = userType === "Employer"
@@ -228,16 +322,33 @@ const LoginWithSocial = () => {
         // Close any open login modal/backdrop before navigating
         await closeBootstrapModalIfAny();
         
-        // Add small delay for mobile devices to ensure cleanup is complete
-        if (isMobile()) {
-          await new Promise(resolve => setTimeout(resolve, 200));
-        }
-        
-        navigate(redirectPath);
+        // Use window.location.href for immediate redirect to prevent LoginPage from intercepting
+        // This ensures the redirect happens before AuthContext updates and LoginPage redirects to dashboard
+        console.log("Navigating to:", redirectPath);
+        window.location.href = redirectPath;
         
       } else if (data.need_profile) {
         // User exists but profile incomplete - show role selection
         console.log("Profile incomplete, showing role selection");
+        
+        // Store tracking info in sessionStorage before showing role selection
+        const redirectUrl = searchParams.get('redirect');
+        const action = searchParams.get('action');
+        const id = searchParams.get('id');
+        
+        if (action && id) {
+          sessionStorage.setItem('pendingAction', action);
+          sessionStorage.setItem('pendingId', id);
+          if (redirectUrl === '/available-candidates') {
+            sessionStorage.setItem('pendingCandidateAction', action);
+            sessionStorage.setItem('pendingCandidateId', id);
+          } else if (redirectUrl === '/available-jobs') {
+            sessionStorage.setItem('pendingJobAction', action);
+            sessionStorage.setItem('pendingJobId', id);
+          }
+          console.log("Stored tracking info in sessionStorage before role selection:", { action, id, redirectUrl });
+        }
+        
         // Close any open login modal/backdrop before opening our inline modal
         await closeBootstrapModalIfAny();
         
@@ -344,6 +455,24 @@ const LoginWithSocial = () => {
         const token = await auth.currentUser.getIdToken();
         localStorage.setItem("token", token);
         
+        // Ensure tracking info is stored in sessionStorage (in case it wasn't stored earlier)
+        const redirectUrl = searchParams.get('redirect');
+        const action = searchParams.get('action');
+        const id = searchParams.get('id');
+        
+        if (action && id) {
+          sessionStorage.setItem('pendingAction', action);
+          sessionStorage.setItem('pendingId', id);
+          if (redirectUrl === '/available-candidates') {
+            sessionStorage.setItem('pendingCandidateAction', action);
+            sessionStorage.setItem('pendingCandidateId', id);
+          } else if (redirectUrl === '/available-jobs') {
+            sessionStorage.setItem('pendingJobAction', action);
+            sessionStorage.setItem('pendingJobId', id);
+          }
+          console.log("Stored tracking info in sessionStorage after Google registration:", { action, id, redirectUrl });
+        }
+        
         // Show success modal
         setShowLoginPrompt(true);
         
@@ -391,7 +520,7 @@ const LoginWithSocial = () => {
         </div>
         <div className="p-6 border-t bg-gray-50">
           <button
-            className="w-full py-3 px-6 text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base leading-normal tracking-tight"
+            className="w-full py-3 px-6 text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: 'linear-gradient(90deg, #FA5357 0%, #A2035D 100%)' }}
             onClick={() => {
               setShowTermsModal(false);
@@ -411,7 +540,7 @@ const LoginWithSocial = () => {
       <div className="w-full">
         {loading ? (
           <button
-            className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-300 text-gray-500 font-medium rounded-lg transition-all duration-200 disabled:opacity-80 disabled:cursor-not-allowed text-base leading-normal tracking-tight"
+            className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-300 text-gray-500 font-medium rounded-lg transition-all duration-200 disabled:opacity-80 disabled:cursor-not-allowed"
             type="button"
             disabled
             aria-live="polite"
@@ -421,7 +550,7 @@ const LoginWithSocial = () => {
           </button>
         ) : (
           <button
-            className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base leading-normal tracking-tight"
+            className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleGoogleSignIn}
             disabled={loading}
             type="button"
@@ -460,7 +589,7 @@ const LoginWithSocial = () => {
             <button
               type="button"
               onClick={() => setSelectedRole("Candidate")}
-              className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-base leading-normal tracking-tight ${
+              className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-sm sm:text-base ${
                 selectedRole === "Candidate" 
                   ? 'bg-red-200 text-red-600' 
                   : 'bg-transparent text-gray-500'
@@ -471,7 +600,7 @@ const LoginWithSocial = () => {
             <button
               type="button"
               onClick={() => setSelectedRole("Employer")}
-              className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-base leading-normal tracking-tight ${
+              className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-sm sm:text-base ${
                 selectedRole === "Employer" 
                   ? 'bg-red-200 text-red-600' 
                   : 'bg-transparent text-gray-500'
@@ -481,11 +610,11 @@ const LoginWithSocial = () => {
             </button>
           </div>
 
-              {roleError && <div className="text-red-500 text-base mb-4 leading-normal tracking-tight">{roleError}</div>}
+              {roleError && <div className="text-red-500 text-sm mb-4">{roleError}</div>}
               
               {/* Phone Number Input */}
               <div className="mb-6">
-                <label className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Phone Number</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal tracking-tight">Phone Number</label>
                 <div className="relative">
                   <input
                     type="tel"
@@ -504,7 +633,7 @@ const LoginWithSocial = () => {
                     </svg>
                   </div>
                 </div>
-                {phoneError && <div className="text-red-500 text-base mt-1 leading-normal tracking-tight">{phoneError}</div>}
+                {phoneError && <div className="text-red-500 text-sm mt-1">{phoneError}</div>}
               </div>
               
               {/* Terms and Conditions */}
@@ -525,7 +654,7 @@ const LoginWithSocial = () => {
                     className="mt-1 h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
                     required
                   />
-                  <label htmlFor="terms-checkbox-google" className="ml-2 text-base text-gray-600 leading-normal tracking-tight">
+                  <label htmlFor="terms-checkbox-google" className="ml-2 text-sm text-gray-600 leading-normal tracking-tight">
                     I have read and agree to the{" "}
                     <span 
                       className="text-pink-600 cursor-pointer hover:underline" 
@@ -569,22 +698,60 @@ const LoginWithSocial = () => {
                 Welcome to TeacherLink! 
                 <span className="ml-2">🌟</span>
               </h3>
-              <p className="text-gray-600 mb-6 text-lg sm:text-base leading-normal tracking-tight">
+              <p className="text-gray-600 mb-6 leading-normal tracking-tight">
                 <span className="mr-1">🎉</span>
                 Your account is ready! <br/> You can now {selectedRole === 'Employer' ? 'start hiring!' : 'explore all teaching & non-teaching opportunities'}.
                 <br/>
                 <span className="mr-1">🚀</span> Your dashboard awaits - let&apos;s get started!
               </p>
               <button 
-                className="w-full py-3 px-6 text-white font-medium rounded-lg transition-all duration-200 text-base leading-normal tracking-tight" 
+                className="w-full py-3 px-6 text-white font-medium rounded-lg transition-all duration-200" 
                 style={{ background: 'linear-gradient(90deg, #FA5357 0%, #A2035D 100%)' }}
                 onClick={async () => {
+                  // Get tracking info from URL params or sessionStorage
+                  const redirectUrl = searchParams.get('redirect');
+                  const action = searchParams.get('action');
+                  const id = searchParams.get('id');
+                  
+                  // Check sessionStorage as backup
+                  let trackingAction = action || sessionStorage.getItem('pendingAction') || 
+                    (redirectUrl === '/available-candidates' ? sessionStorage.getItem('pendingCandidateAction') : null) ||
+                    (redirectUrl === '/available-jobs' ? sessionStorage.getItem('pendingJobAction') : null);
+                  let trackingId = id || sessionStorage.getItem('pendingId') || 
+                    (redirectUrl === '/available-candidates' ? sessionStorage.getItem('pendingCandidateId') : null) ||
+                    (redirectUrl === '/available-jobs' ? sessionStorage.getItem('pendingJobId') : null);
+                  
                   const userType = selectedRole;
-                  const redirectPath = userType === "Employer"
-                    ? "/employers-dashboard/dashboard"
-                    : userType === "Candidate"
-                      ? "/candidates-dashboard/dashboard"
-                      : "/";
+                  let redirectPath;
+                  
+                  // If we have tracking info, redirect to the appropriate page with params
+                  if (redirectUrl && trackingAction && trackingId) {
+                    if (redirectUrl === '/available-jobs' && (userType === 'Candidate' || userType === 'Teacher')) {
+                      const queryParams = new URLSearchParams();
+                      queryParams.set('action', trackingAction);
+                      queryParams.set('id', trackingId);
+                      redirectPath = '/seeker/all-jobs?' + queryParams.toString();
+                    } else if (redirectUrl === '/available-candidates' && userType === 'Employer') {
+                      const queryParams = new URLSearchParams();
+                      queryParams.set('action', trackingAction);
+                      queryParams.set('id', trackingId);
+                      redirectPath = '/provider/all-candidates?' + queryParams.toString();
+                    } else {
+                      // Fallback to dashboard
+                      redirectPath = userType === "Employer"
+                        ? "/provider/dashboard"
+                        : userType === "Candidate"
+                          ? "/seeker/dashboard"
+                          : "/";
+                    }
+                  } else {
+                    // No tracking info, go to dashboard
+                    redirectPath = userType === "Employer"
+                      ? "/provider/dashboard"
+                      : userType === "Candidate"
+                        ? "/seeker/dashboard"
+                        : "/";
+                  }
                   
                   // Reset state before navigation
                   resetComponentState();
@@ -594,7 +761,8 @@ const LoginWithSocial = () => {
                     await new Promise(resolve => setTimeout(resolve, 100));
                   }
                   
-                  navigate(redirectPath);
+                  // Use window.location.href for immediate redirect
+                  window.location.href = redirectPath;
                 }}
               >
                 Go to Dashboard <span className="ml-2">🚀</span>

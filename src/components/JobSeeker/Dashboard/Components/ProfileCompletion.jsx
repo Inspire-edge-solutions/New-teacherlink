@@ -392,4 +392,4 @@ const ProfileCompletion = () => {
   );
 };
 
-export default ProfileCompletion; 
+export default ProfileCompletion;

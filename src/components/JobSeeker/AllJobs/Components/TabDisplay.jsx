@@ -1,5 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import axios from 'axios';
 import AllJobs from './Sections/AllJobs';
 import SaveJobs from './Sections/SaveJobs';
@@ -13,6 +14,7 @@ const JOBS_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jo
 const TabDisplay = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('all');
   const [selectedJob, setSelectedJob] = useState(null);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'detail'
@@ -25,6 +27,7 @@ const TabDisplay = () => {
   const [fromNotifications, setFromNotifications] = useState(false);
   const [fromRecruiterActions, setFromRecruiterActions] = useState(false);
   const [saveJobsRefreshTrigger, setSaveJobsRefreshTrigger] = useState(0);
+  const [isOpeningJob, setIsOpeningJob] = useState(false);
 
   // Handle job view
   const handleViewJob = (job) => {
@@ -97,6 +100,90 @@ const TabDisplay = () => {
       fetchAndOpenJob();
     }
   }, [location.state, navigate, location.pathname]);
+
+  // Check URL parameters on mount and open job details if present (from login redirect)
+  useEffect(() => {
+    // First check URL params, then check sessionStorage as backup
+    let action = searchParams.get('action');
+    let jobId = searchParams.get('id');
+    
+    // If not in URL, check sessionStorage (for cases where query params might be lost)
+    if (!action || !jobId) {
+      const storedAction = sessionStorage.getItem('pendingJobAction') || sessionStorage.getItem('pendingAction');
+      const storedId = sessionStorage.getItem('pendingJobId') || sessionStorage.getItem('pendingId');
+      if (storedAction && storedId) {
+        action = storedAction;
+        jobId = storedId;
+        console.log('TabDisplay (AllJobs): Found job info in sessionStorage:', { action, jobId });
+        // Update URL to reflect the params
+        const queryParams = new URLSearchParams();
+        queryParams.set('action', action);
+        queryParams.set('id', jobId);
+        setSearchParams(queryParams, { replace: true });
+      }
+    }
+    
+    // Only process if we have both action and id, and haven't already processed
+    if (action && jobId && !isOpeningJob && viewMode === 'list') {
+      console.log('TabDisplay (AllJobs): Found URL params - action:', action, 'jobId:', jobId);
+      setIsOpeningJob(true);
+      
+      // Fetch and open the job
+      const fetchAndOpenJob = async () => {
+        try {
+          console.log('TabDisplay (AllJobs): Fetching job with ID:', jobId);
+          const response = await axios.get(`${JOBS_API}?id=${jobId}`);
+          let jobData = null;
+          
+          if (Array.isArray(response.data) && response.data.length > 0) {
+            jobData = response.data.find(job => Number(job.id) === Number(jobId));
+          } else if (response.data && response.data.id) {
+            jobData = response.data;
+          }
+          
+          if (jobData) {
+            console.log('TabDisplay (AllJobs): Found job, opening view');
+            // Ensure we're on the 'all' tab to see the job
+            setActiveTab('all');
+            setSelectedJob(jobData);
+            setViewMode('detail');
+            setLastSelectedJobId(jobData.id);
+            window.scrollTo({ top: 0, behavior: 'auto' });
+            
+            // Clear URL parameters and sessionStorage to prevent re-opening on refresh
+            setSearchParams({}, { replace: true });
+            sessionStorage.removeItem('pendingJobAction');
+            sessionStorage.removeItem('pendingJobId');
+            sessionStorage.removeItem('pendingAction');
+            sessionStorage.removeItem('pendingId');
+            setIsOpeningJob(false);
+          } else {
+            console.warn('TabDisplay (AllJobs): Job not found with ID:', jobId);
+            toast.error('Job not found. It may have been removed or is no longer available.');
+            // Clear URL parameters and sessionStorage
+            setSearchParams({}, { replace: true });
+            sessionStorage.removeItem('pendingJobAction');
+            sessionStorage.removeItem('pendingJobId');
+            sessionStorage.removeItem('pendingAction');
+            sessionStorage.removeItem('pendingId');
+            setIsOpeningJob(false);
+          }
+        } catch (error) {
+          console.error('TabDisplay (AllJobs): Error fetching job:', error);
+          toast.error('Failed to load job details. Please try again.');
+          // Clear URL parameters and sessionStorage
+          setSearchParams({}, { replace: true });
+          sessionStorage.removeItem('pendingJobAction');
+          sessionStorage.removeItem('pendingJobId');
+          sessionStorage.removeItem('pendingAction');
+          sessionStorage.removeItem('pendingId');
+          setIsOpeningJob(false);
+        }
+      };
+      
+      fetchAndOpenJob();
+    }
+  }, [searchParams, isOpeningJob, viewMode, setSearchParams]);
 
   // Store the back handlers from job components
   const handleAllJobsBackHandler = useCallback((handler) => {

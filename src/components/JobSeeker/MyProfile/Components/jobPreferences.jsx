@@ -1584,10 +1584,10 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       <div className="w-full space-y-6">
         {/* Job Shift & Job Category Section */}
         <div>
-          <h3 className='text-black font-semibold mb-3'>Select your preferred teaching mode :</h3>
+          <h3 className='text-black font-semibold mb-3 text-xl leading-tight tracking-tight'>Select your preferred teaching mode :</h3>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             <div className='w-full'>
-              <label htmlFor="teachingMode_online" className="block text-sm font-medium text-gray-700 mb-2">Online</label>
+              <label htmlFor="teachingMode_online" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Online</label>
               <div className="relative">
                 <select
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
@@ -1604,7 +1604,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
               </div>
             </div>
             <div className='w-full'>
-              <label htmlFor="teachingMode_offline" className="block text-sm font-medium text-gray-700 mb-2">Offline</label>
+              <label htmlFor="teachingMode_offline" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Offline</label>
               <div className="relative">
                 <select
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
@@ -1623,10 +1623,10 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
           </div>
         </div>
         <div>
-          <h3 className="text-black font-semibold mb-3">Job Shift Preferences :</h3>
+          <h3 className="text-black font-semibold mb-3 text-xl leading-tight tracking-tight">Job Shift Preferences :</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="w-full">
-              <label htmlFor="Full_time" className="block text-sm font-medium text-gray-700 mb-2">Full Time <span className="text-purple-500">*</span></label>
+              <label htmlFor="Full_time" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Full Time <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
@@ -1642,7 +1642,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="Part_time_weekdays" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Weekdays)</label>
+              <label htmlFor="Part_time_weekdays" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Part Time (Weekdays)</label>
               <select
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                 style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
@@ -1657,7 +1657,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="Part_time_weekends" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Weekends)</label>
+              <label htmlFor="Part_time_weekends" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Part Time (Weekends)</label>
               <select
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                 style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
@@ -1672,7 +1672,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="Part_time_vacations" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Vacations)</label>
+              <label htmlFor="Part_time_vacations" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Part Time (Vacations)</label>
               <select
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                 style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
@@ -1690,10 +1690,10 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
 
         {/* Organization Type Section */}
         <div>
-          <h3 className="text-black font-semibold mb-3">Organization Type Preferences :</h3>
+          <h3 className="text-black font-semibold mb-3 text-xl leading-tight tracking-tight">Organization Type Preferences :</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="w-full">
-              <label htmlFor="school_college_university" className="block text-sm font-medium text-gray-700 mb-2">School / College / University</label>
+              <label htmlFor="school_college_university" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">School / College / University</label>
               <select
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                 style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
@@ -1708,7 +1708,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="coaching_institute" className="block text-sm font-medium text-gray-700 mb-2">Coaching Centers / Institutes</label>
+              <label htmlFor="coaching_institute" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Coaching Centers / Institutes</label>
               <select
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                 style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
@@ -1723,7 +1723,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="Ed_TechCompanies" className="block text-sm font-medium text-gray-700 mb-2">EdTech Companies</label>
+              <label htmlFor="Ed_TechCompanies" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">EdTech Companies</label>
               <select
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
                 style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
@@ -1742,10 +1742,10 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
 
         {/* Parent / Guardian Section */}
         <div>
-          <h3 className="text-black font-semibold mb-3">Tuition Preferences :</h3>
+          <h3 className="text-black font-semibold mb-3 text-xl leading-tight tracking-tight">Tuition Preferences :</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="w-full">
-              <label htmlFor="Home_Tutor" className="block text-sm font-medium text-gray-700 mb-2">Home Tutor (One-to-One at Students Home) <span className="text-purple-500">*</span></label>
+              <label htmlFor="Home_Tutor" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Home Tutor (One-to-One at Students Home) <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
@@ -1761,7 +1761,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="Private_Tutor" className="block text-sm font-medium text-gray-700 mb-2">Private Tutor (One-to-One at Tutors Place) <span className="text-purple-500">*</span></label>
+              <label htmlFor="Private_Tutor" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Private Tutor (One-to-One at Tutors Place) <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
@@ -1777,7 +1777,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="Group_Tutor_offline" className="block text-sm font-medium text-gray-700 mb-2">Group Tuitions (at teachers home) <span className="text-purple-500">*</span></label>
+              <label htmlFor="Group_Tutor_offline" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Group Tuitions (at teachers home) <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
@@ -1793,7 +1793,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="Private_Tutions_online" className="block text-sm font-medium text-gray-700 mb-2">Private Tuitions (One-One) <span className="text-purple-500">*</span></label>
+              <label htmlFor="Private_Tutions_online" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Private Tuitions (One-One) <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
@@ -1809,7 +1809,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="Group_Tutor_online" className="block text-sm font-medium text-gray-700 mb-2">Group Tuitions (from teacher as tutor) <span className="text-purple-500">*</span></label>
+              <label htmlFor="Group_Tutor_online" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Group Tuitions (from teacher as tutor) <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
@@ -1831,10 +1831,10 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
 
         {/* Job Search Status Section */}
         <div>
-          <h3 className="text-black font-semibold mb-3">Job Search Status</h3>
+          <h3 className="text-black font-semibold mb-3 text-xl leading-tight tracking-tight">Job Search Status</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="w-full">
-              <label htmlFor="Full_time_status" className="block text-sm font-medium text-gray-700 mb-2">Full Time <span className="text-purple-500">*</span></label>
+              <label htmlFor="Full_time_status" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Full Time <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
@@ -1851,7 +1851,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="part_time_weekdays_status" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Weekdays) <span className="text-purple-500">*</span></label>
+              <label htmlFor="part_time_weekdays_status" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Part Time (Weekdays) <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
@@ -1868,7 +1868,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
           </div>
 
             <div className="w-full">
-              <label htmlFor="part_time_weekends_status" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Weekends) <span className="text-purple-500">*</span></label>
+              <label htmlFor="part_time_weekends_status" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Part Time (Weekends) <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
@@ -1885,7 +1885,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="part_time_vacations_status" className="block text-sm font-medium text-gray-700 mb-2">Part Time (Vacations) <span className="text-purple-500">*</span></label>
+              <label htmlFor="part_time_vacations_status" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Part Time (Vacations) <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
@@ -1902,7 +1902,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             </div>
 
             <div className="w-full">
-              <label htmlFor="tuitions_status" className="block text-sm font-medium text-gray-700 mb-2">Tuitions <span className="text-purple-500">*</span></label>
+              <label htmlFor="tuitions_status" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Tuitions <span className="text-purple-500">*</span></label>
               <select
                 required
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"

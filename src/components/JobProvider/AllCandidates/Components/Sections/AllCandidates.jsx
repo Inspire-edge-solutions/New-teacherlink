@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +10,7 @@ import SearchBar from '../shared/SearchBar';
 import Pagination from '../shared/Pagination';
 import RecordsPerPageDropdown from '../shared/RecordsPerPageDropdown';
 import CandidateFilterPanel from '../shared/CandidateFilterPanel';
-import CandidateApiService, { cleanAllExpiredUnlocks, checkAndCleanExpiredUnlock } from '../shared/CandidateApiService';
+import CandidateApiService from '../shared/CandidateApiService';
 import useCandidateFilterOptions from '../shared/useCandidateFilterOptions';
 import { parseEducation, parseLanguages } from '../utils/candidateUtils';
 import { useAuth } from "../../../../../Context/AuthContext";
@@ -366,49 +367,6 @@ const AllCandidates = ({
   const [candidatePhotos, setCandidatePhotos] = useState({});
   const [pendingScrollCandidate, setPendingScrollCandidate] = useState(null);
 
-  const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
-    if (!user) return [];
-
-    const userId = user.firebase_uid || user.uid;
-    if (!userId) return [];
-
-    // Clean all expired unlocks first
-    cleanAllExpiredUnlocks(userId);
-
-    const unlockedIds = [];
-    for (let i = 0; i < localStorage.length; i += 1) {
-      const key = localStorage.key(i);
-      if (!key || !key.startsWith(`unlocked_${userId}_`)) continue;
-
-      try {
-        const stored = localStorage.getItem(key);
-        if (!stored) continue;
-
-        const parsed = JSON.parse(stored);
-        if (!parsed?.unlocked || !parsed?.timestamp) continue;
-
-        const unlockTime = new Date(parsed.timestamp);
-        const now = new Date();
-        const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
-
-        if (Number.isFinite(daysDiff) && daysDiff <= 30) {
-          const candidateId = key.replace(`unlocked_${userId}_`, '');
-          if (candidateId) {
-            unlockedIds.push(String(candidateId));
-          }
-        } else {
-          // Expired - remove from localStorage
-          localStorage.removeItem(key);
-        }
-      } catch (error) {
-        console.error('AllCandidates: Error parsing localStorage entry', key, error);
-        // Remove invalid entries
-        localStorage.removeItem(key);
-      }
-    }
-
-    return unlockedIds;
-  }, [user]);
 
   // Message modal state
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -742,20 +700,18 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
       setSavedCandidates(prefs.savedCandidates);
       setFavouriteCandidates(prefs.favouriteCandidates);
       setDownloadedCandidates(prefs.downloadedCandidates);
-      const combinedUnlocked = new Set([
-        ...getUnlockedCandidatesFromLocalStorage(),
-        ...(prefs.unlockedCandidates || []).map((id) => String(id))
-      ]);
-      setUnlockedCandidateIds(Array.from(combinedUnlocked));
+      // Get unlocked candidates from backend database only (no localStorage)
+      const backendUnlocked = (prefs.unlockedCandidates || []).map((id) => String(id));
+      setUnlockedCandidateIds(backendUnlocked);
     } catch (error) {
       console.error('Error fetching user preferences:', error);
       toast.warning('Could not load your saved preferences. You can still browse candidates.');
       setSavedCandidates([]);
       setFavouriteCandidates([]);
       setDownloadedCandidates([]);
-      setUnlockedCandidateIds(getUnlockedCandidatesFromLocalStorage());
+      setUnlockedCandidateIds([]);
     }
-  }, [user, getUnlockedCandidatesFromLocalStorage]);
+  }, [user]);
 
   // Initial data fetch
   useEffect(() => {
@@ -1295,9 +1251,8 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
     if (!candidate) return;
 
     const candidateId = String(candidate.firebase_uid || '');
-    const userId = user?.firebase_uid || user?.uid;
-    // Check if unlocked and not expired (30 days)
-    const isUnlocked = candidateId && userId && checkAndCleanExpiredUnlock(userId, candidateId) && unlockedCandidateIds.includes(candidateId);
+    // Check if unlocked from backend database only (no localStorage)
+    const isUnlocked = candidateId && unlockedCandidateIds.includes(candidateId);
 
     if (!isUnlocked) {
       console.log('AllCandidates: Candidate not unlocked, prompting unlock:', candidateId);
@@ -1455,13 +1410,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
       const candidateIdStr = String(candidateId);
       setUnlockedCandidateIds(prev => [...prev, candidateIdStr]);
       
-      // Store in localStorage
-      const userIdStr = String(userId);
-      const unlockKey = `unlocked_${userIdStr}_${candidateIdStr}`;
-      localStorage.setItem(unlockKey, JSON.stringify({
-        unlocked: true,
-        timestamp: new Date().toISOString()
-      }));
+      // Note: Unlock status is stored in backend database only (no localStorage)
 
       // Show success message
       toast.success('Candidate unlocked successfully!');

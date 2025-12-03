@@ -62,9 +62,9 @@ const CandidateProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Navigation function to go back to AllJobs
+  // Navigation function to go back to Job Seeker's All Jobs page
   const handleBackToList = () => {
-    navigate('/candidates-dashboard/all-jobs');
+    navigate('/seeker/all-jobs');
   };
 
   // Handle login confirmation - redirect to login with return path

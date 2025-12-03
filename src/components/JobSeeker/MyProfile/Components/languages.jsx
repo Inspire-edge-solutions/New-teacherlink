@@ -225,7 +225,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
   };
 
   if (isLoading) {
-    return <div className="text-sm text-gray-600">Loading languages...</div>;
+    return <div className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">Loading languages...</div>;
   }
 
   const getLanguageOptions = (currentIndex) =>
@@ -246,11 +246,11 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
               <table className="w-full min-w-[600px] md:min-w-0">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left px-2 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Languages Known</th>
-                    <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Speak</th>
-                    <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Read</th>
-                    <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Write</th>
-                    <th className="text-center px-1 py-2 md:px-4 md:py-3 text-xs md:text-sm font-semibold text-black">Action</th>
+                    <th className="text-left px-2 py-2 md:px-4 md:py-3 text-base font-semibold text-black leading-normal tracking-tight">Languages Known</th>
+                    <th className="text-center px-1 py-2 md:px-4 md:py-3 text-base font-semibold text-black leading-normal tracking-tight">Speak</th>
+                    <th className="text-center px-1 py-2 md:px-4 md:py-3 text-base font-semibold text-black leading-normal tracking-tight">Read</th>
+                    <th className="text-center px-1 py-2 md:px-4 md:py-3 text-base font-semibold text-black leading-normal tracking-tight">Write</th>
+                    <th className="text-center px-1 py-2 md:px-4 md:py-3 text-base font-semibold text-black leading-normal tracking-tight">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -260,7 +260,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
                         <InputWithTooltip label="Language" required>
                           <div className="relative">
                             <select
-                              className="w-full px-2 py-2 md:px-4 md:py-3 text-xs md:text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-8 md:pr-10"
+                              className="w-full px-2 py-2 md:px-4 md:py-3 text-lg sm:text-base rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-8 md:pr-10 leading-normal tracking-tight"
                               style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                               id={`language-${index}`}
                               name={`language-${index}`}
@@ -313,7 +313,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
                       <td className="px-1 py-2 md:px-4 md:py-3 text-center">
                         <button
                           type="button"
-                          className="px-2 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed text-xs md:text-sm font-medium shadow-sm transition-colors whitespace-nowrap"
+                          className="px-2 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed text-base font-medium shadow-sm transition-colors whitespace-nowrap leading-normal tracking-tight"
                           onClick={() => removeLanguage(index)}
                           disabled={languages.length === 1}
                           title="Remove language"
@@ -338,7 +338,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
                     <InputWithTooltip label="Language" required>
                       <div className="relative">
                         <select
-                          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10"
+                          className="w-full px-3 py-2 text-lg sm:text-base rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10 leading-normal tracking-tight"
                           style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                           id={`mobile-language-${index}`}
                           name={`mobile-language-${index}`}
@@ -361,7 +361,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
 
                   <button
                     type="button"
-                    className="shrink-0 px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium shadow-sm transition-colors self-start"
+                    className="shrink-0 px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed text-base font-medium shadow-sm transition-colors self-start leading-normal tracking-tight"
                     onClick={() => removeLanguage(index)}
                     disabled={languages.length === 1}
                     title="Remove language"
@@ -371,9 +371,9 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
                 </div>
 
                 <div className="mt-3">
-                  <span className="text-xs font-medium text-gray-700">Proficiency</span>
+                  <span className="text-base font-medium text-gray-700 leading-normal tracking-tight">Proficiency</span>
                   <div className="mt-2 grid grid-cols-3 gap-2">
-                    <label className="flex items-center gap-1 text-xs text-gray-700">
+                    <label className="flex items-center gap-1 text-lg sm:text-base text-gray-700 leading-normal tracking-tight">
                       <input
                         type="checkbox"
                         checked={lang.speak}
@@ -384,7 +384,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
                       />
                       <span>Speak</span>
                     </label>
-                    <label className="flex items-center gap-1 text-xs text-gray-700">
+                    <label className="flex items-center gap-1 text-lg sm:text-base text-gray-700 leading-normal tracking-tight">
                       <input
                         type="checkbox"
                         checked={lang.read}
@@ -395,7 +395,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
                       />
                       <span>Read</span>
                     </label>
-                    <label className="flex items-center gap-1 text-xs text-gray-700">
+                    <label className="flex items-center gap-1 text-lg sm:text-base text-gray-700 leading-normal tracking-tight">
                       <input
                         type="checkbox"
                         checked={lang.write}
@@ -416,7 +416,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
           <div className="mt-4">
             <button
               type="button"
-              className="w-full sm:w-auto px-4 py-2 md:px-6 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-sm font-medium shadow-sm transition-colors"
+              className="w-full sm:w-auto px-4 py-2 md:px-6 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors leading-normal tracking-tight"
               onClick={addLanguage}
             >
               Add Language +

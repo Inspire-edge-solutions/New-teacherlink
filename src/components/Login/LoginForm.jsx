@@ -239,16 +239,30 @@ const LoginForm = () => {
 
       console.log("User details fetched successfully:", data);
       
-      // Get redirect URL from query params if available
-      const redirectUrl = searchParams.get('redirect');
-      console.log("Login redirect params:", { redirectUrl, requiredUserType });
+      // Get redirect URL from query params, fallback to sessionStorage
+      let redirectUrl = searchParams.get('redirect');
+      let requiredUserTypeFromUrl = searchParams.get('requiredUserType') || requiredUserType;
+      
+      // If not in URL, check sessionStorage
+      if (!redirectUrl) {
+        // Try to infer from sessionStorage keys
+        if (sessionStorage.getItem('pendingCandidateAction') || sessionStorage.getItem('pendingCandidateId')) {
+          redirectUrl = '/available-candidates';
+          if (!requiredUserTypeFromUrl) requiredUserTypeFromUrl = 'Employer';
+        } else if (sessionStorage.getItem('pendingJobAction') || sessionStorage.getItem('pendingJobId')) {
+          redirectUrl = '/available-jobs';
+          if (!requiredUserTypeFromUrl) requiredUserTypeFromUrl = 'Candidate';
+        }
+      }
+      
+      console.log("Login redirect params:", { redirectUrl, requiredUserType: requiredUserTypeFromUrl });
       
       // Validate user type if requiredUserType is specified
-      if (requiredUserType) {
+      if (requiredUserTypeFromUrl) {
         const userType = data.user_type;
         const isValidUserType = 
-          (requiredUserType === 'Candidate' && (userType === 'Candidate' || userType === 'Teacher')) ||
-          (requiredUserType === 'Employer' && userType === 'Employer');
+          (requiredUserTypeFromUrl === 'Candidate' && (userType === 'Candidate' || userType === 'Teacher')) ||
+          (requiredUserTypeFromUrl === 'Employer' && userType === 'Employer');
         
         if (!isValidUserType) {
           // Wrong user type - sign out and show error
@@ -258,8 +272,8 @@ const LoginForm = () => {
           localStorage.removeItem("user");
           localStorage.removeItem("token");
           
-          const pageName = requiredUserType === 'Candidate' ? 'available jobs' : 'available candidates';
-          const correctUserType = requiredUserType === 'Candidate' ? 'Candidate/Teacher' : 'Employer';
+          const pageName = requiredUserTypeFromUrl === 'Candidate' ? 'available jobs' : 'available candidates';
+          const correctUserType = requiredUserTypeFromUrl === 'Candidate' ? 'Candidate/Teacher' : 'Employer';
           
           toast.error(`This page is only for ${correctUserType} accounts. Please login with the correct account type to access ${pageName}.`);
           setLoading(false);
@@ -276,16 +290,88 @@ const LoginForm = () => {
       
       // Store user data
       localStorage.setItem("user", JSON.stringify(data));
+      console.log("User stored in localStorage:", data);
+
+      // Get action and id from query params, fallback to sessionStorage
+      let action = searchParams.get('action');
+      let candidateId = searchParams.get('id');
+      
+      // If not in URL, check sessionStorage
+      if (!action || !candidateId) {
+        if (redirectUrl === '/available-candidates') {
+          action = action || sessionStorage.getItem('pendingCandidateAction') || sessionStorage.getItem('pendingAction');
+          candidateId = candidateId || sessionStorage.getItem('pendingCandidateId') || sessionStorage.getItem('pendingId');
+        } else if (redirectUrl === '/available-jobs') {
+          action = action || sessionStorage.getItem('pendingJobAction') || sessionStorage.getItem('pendingAction');
+          candidateId = candidateId || sessionStorage.getItem('pendingJobId') || sessionStorage.getItem('pendingId');
+        } else {
+          // Generic fallback
+          action = action || sessionStorage.getItem('pendingAction');
+          candidateId = candidateId || sessionStorage.getItem('pendingId');
+        }
+      }
+      
+      console.log("Preserving query params - action:", action, "candidateId:", candidateId, "redirectUrl:", redirectUrl);
+      
+      // Store candidate/job info in sessionStorage as backup (survives page reloads)
+      if (action && candidateId) {
+        // Use generic names that work for both candidates and jobs
+        sessionStorage.setItem('pendingAction', action);
+        sessionStorage.setItem('pendingId', candidateId);
+        // Also store type-specific for backward compatibility
+        if (redirectUrl === '/available-candidates') {
+          sessionStorage.setItem('pendingCandidateAction', action);
+          sessionStorage.setItem('pendingCandidateId', candidateId);
+        } else if (redirectUrl === '/available-jobs') {
+          sessionStorage.setItem('pendingJobAction', action);
+          sessionStorage.setItem('pendingJobId', candidateId);
+        }
+        console.log("Stored tracking info in sessionStorage:", { action, id: candidateId, redirectUrl });
+      }
 
       // Determine redirect path
       let redirectPath;
-      if (redirectUrl && requiredUserType) {
+      
+      if (redirectUrl && (requiredUserTypeFromUrl || action)) {
         // If we came from a public page and validation passed, redirect to authenticated version
         const userType = data.user_type;
+        
+        // Check if we have tracking info (action and id) - this takes priority
+        const hasTrackingInfo = action && candidateId;
+        
         if (redirectUrl === '/available-jobs' && (userType === 'Candidate' || userType === 'Teacher')) {
-          redirectPath = '/seeker/all-jobs';
-        } else if (redirectUrl === '/available-candidates' && userType === 'Employer') {
-          redirectPath = '/provider/all-candidates';
+          // Preserve action and id query parameters for job tracking
+          const queryParams = new URLSearchParams();
+          if (action) queryParams.set('action', action);
+          if (candidateId) queryParams.set('id', candidateId); // candidateId is actually jobId in this context
+          const queryString = queryParams.toString();
+          redirectPath = '/seeker/all-jobs' + (queryString ? `?${queryString}` : '');
+          console.log("Redirecting to all-jobs with query params:", redirectPath);
+        } else if ((redirectUrl === '/available-candidates' || redirectUrl?.startsWith('/candidate-profile/')) && userType === 'Employer' && hasTrackingInfo) {
+          // Preserve action and id query parameters for candidate tracking
+          // Also handle candidate-profile page redirects
+          const queryParams = new URLSearchParams();
+          if (action) queryParams.set('action', action);
+          if (candidateId) queryParams.set('id', candidateId);
+          const queryString = queryParams.toString();
+          redirectPath = '/provider/all-candidates' + (queryString ? `?${queryString}` : '');
+          console.log("Redirecting to all-candidates with query params:", redirectPath);
+        } else if (hasTrackingInfo && userType === 'Employer' && requiredUserTypeFromUrl === 'Employer') {
+          // If we have tracking info for a candidate but redirectUrl doesn't match, still redirect to all-candidates
+          const queryParams = new URLSearchParams();
+          if (action) queryParams.set('action', action);
+          if (candidateId) queryParams.set('id', candidateId);
+          const queryString = queryParams.toString();
+          redirectPath = '/provider/all-candidates' + (queryString ? `?${queryString}` : '');
+          console.log("Redirecting to all-candidates with tracking info (fallback):", redirectPath);
+        } else if (hasTrackingInfo && (userType === 'Candidate' || userType === 'Teacher') && requiredUserTypeFromUrl === 'Candidate') {
+          // If we have tracking info for a job but redirectUrl doesn't match, still redirect to all-jobs
+          const queryParams = new URLSearchParams();
+          if (action) queryParams.set('action', action);
+          if (candidateId) queryParams.set('id', candidateId);
+          const queryString = queryParams.toString();
+          redirectPath = '/seeker/all-jobs' + (queryString ? `?${queryString}` : '');
+          console.log("Redirecting to all-jobs with tracking info (fallback):", redirectPath);
         } else {
           // Fallback to dashboard
           redirectPath = userType === "Employer"
@@ -315,8 +401,10 @@ const LoginForm = () => {
       // Use the utility function to clean up all modal remnants
       cleanupModals();
 
-      // Keep loading state active during navigation
-      navigate(redirectPath);
+      // Use window.location.href for immediate redirect to prevent LoginPage from intercepting
+      // This ensures the redirect happens before AuthContext updates and LoginPage redirects to dashboard
+      console.log("Navigating to:", redirectPath);
+      window.location.href = redirectPath;
       // Don't set loading to false - let the new page handle it
     } catch (error) {
       console.error("Login error:", error);
@@ -405,7 +493,7 @@ const LoginForm = () => {
                   layout="card"
                   className="shadow-xl"
                 >
-                  <p className="mt-6 text-lg sm:text-base text-slate-600 text-center leading-normal tracking-tight">
+                  <p className="mt-6 text-sm text-slate-600 text-center">
                     One moment while we prepare your workspace.
                   </p>
                 </LoadingState>
@@ -457,7 +545,7 @@ const LoginForm = () => {
        
 
         <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
-          <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center lg:text-left leading-tight tracking-tight">Login</h2>
+          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center lg:text-left leading-tight tracking-tight">Login</h2>
           
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 md:space-y-8">
             {/* Email Field */}
@@ -470,7 +558,7 @@ const LoginForm = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base placeholder-black leading-normal tracking-tight"
+                  className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black"
                 />
               </div>
             </InputWithTooltip>
@@ -485,7 +573,7 @@ const LoginForm = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base placeholder-black leading-normal tracking-tight"
+                  className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black"
                 />
                 <button
                   type="button"
@@ -501,7 +589,7 @@ const LoginForm = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full text-white font-semibold bg-gradient-brand hover:bg-gradient-primary-hover py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 text-base leading-normal tracking-tight"
+              className="w-full text-white font-semibold bg-gradient-brand hover:bg-gradient-primary-hover py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 text-base sm:text-lg md:text-xl"
             >
               {loading ? "Logging in..." : "Login"}
             </button>
@@ -509,7 +597,7 @@ const LoginForm = () => {
 
           {/* Forgot Password Link */}
           <div className="mt-4 sm:mt-6 md:mt-8 text-center">
-            <span className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Forgot Password? </span>
+            <span className="text-gray-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight">Forgot Password? </span>
             <Link
               to="/forget-password"
               onClick={() => {
@@ -519,7 +607,7 @@ const LoginForm = () => {
                 }
                 cleanupModals();
               }}
-              className="text-red-500 font-semibold hover:text-red-600 text-base leading-normal tracking-tight"
+              className="text-red-500 font-semibold hover:text-red-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight"
             >
               Click here to Change Password
             </Link>
@@ -527,9 +615,24 @@ const LoginForm = () => {
 
           {/* Signup Link */}
           <div className="mt-4 sm:mt-6 md:mt-8 text-center">
-            <span className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Don't have an account? </span>
+            <span className="text-gray-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight">Don't have an account? </span>
             <Link
-              to="/register"
+              to={(() => {
+                // Preserve query parameters when navigating to register
+                const redirect = searchParams.get('redirect');
+                const action = searchParams.get('action');
+                const id = searchParams.get('id');
+                const requiredUserType = searchParams.get('requiredUserType');
+                
+                const params = new URLSearchParams();
+                if (redirect) params.set('redirect', redirect);
+                if (action) params.set('action', action);
+                if (id) params.set('id', id);
+                if (requiredUserType) params.set('requiredUserType', requiredUserType);
+                
+                const queryString = params.toString();
+                return '/register' + (queryString ? `?${queryString}` : '');
+              })()}
               onClick={() => {
                 const modalElement = document.getElementById('loginPopupModal');
                 if (modalElement) {
@@ -537,7 +640,7 @@ const LoginForm = () => {
                 }
                 cleanupModals();
               }}
-              className="text-red-500 font-semibold hover:text-red-600 text-base leading-normal tracking-tight"
+              className="text-red-500 font-semibold hover:text-red-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight"
             >
               Signup Here
             </Link>

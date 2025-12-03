@@ -17,14 +17,24 @@ const PRIVACY_VERSION = "1.0";
 const Register = ({ user_type }) => {
   const [searchParams] = useSearchParams();
   const roleFromUrl = searchParams.get('role');
+  const requiredUserType = searchParams.get('requiredUserType');
   
   // Determine initial user type based on URL parameter
   const getInitialUserType = () => {
+    // First check requiredUserType (from available-jobs/available-candidates pages)
+    if (requiredUserType === 'Candidate') {
+      return "Job Seeker";
+    } else if (requiredUserType === 'Employer') {
+      return "Job Provider";
+    }
+    
+    // Fallback to role parameter (for backward compatibility)
     if (roleFromUrl === 'job-seeker') {
       return "Job Seeker";
     } else if (roleFromUrl === 'job-provider') {
       return "Job Provider";
     }
+    
     return "Job Seeker"; // Default
   };
 
@@ -465,7 +475,37 @@ const Register = ({ user_type }) => {
               🚀 Log in now to continue your journey.
             </p>
             <button
-              onClick={() => window.location.href = '/login'}
+              onClick={() => {
+                // Preserve query parameters when redirecting to login
+                const redirect = searchParams.get('redirect');
+                const action = searchParams.get('action');
+                const id = searchParams.get('id');
+                const requiredUserType = searchParams.get('requiredUserType');
+                
+                // Build login URL with preserved params
+                const params = new URLSearchParams();
+                if (redirect) params.set('redirect', redirect);
+                if (action) params.set('action', action);
+                if (id) params.set('id', id);
+                if (requiredUserType) params.set('requiredUserType', requiredUserType);
+                
+                // Also store in sessionStorage as backup
+                if (action && id) {
+                  sessionStorage.setItem('pendingAction', action);
+                  sessionStorage.setItem('pendingId', id);
+                  if (redirect === '/available-candidates') {
+                    sessionStorage.setItem('pendingCandidateAction', action);
+                    sessionStorage.setItem('pendingCandidateId', id);
+                  } else if (redirect === '/available-jobs') {
+                    sessionStorage.setItem('pendingJobAction', action);
+                    sessionStorage.setItem('pendingJobId', id);
+                  }
+                }
+                
+                const queryString = params.toString();
+                const loginUrl = '/login' + (queryString ? `?${queryString}` : '');
+                window.location.href = loginUrl;
+              }}
               className="bg-red-600 text-white border-none rounded-lg px-4 sm:px-6 py-2 sm:py-3 text-base font-semibold cursor-pointer hover:bg-red-700 transition-colors duration-200 leading-normal tracking-tight"
             >
               Proceed to Login ➡️

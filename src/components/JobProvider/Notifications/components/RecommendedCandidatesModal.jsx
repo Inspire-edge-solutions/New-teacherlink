@@ -34,38 +34,6 @@ const RecommendedCandidatesModal = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [candidatesPerPage] = useState(10);
 
-  // Get unlocked candidates from localStorage
-  const getUnlockedCandidatesFromLocalStorage = useCallback(() => {
-    if (!user) return [];
-    const userId = user.firebase_uid || user.uid;
-    if (!userId) return [];
-
-    const unlockedIds = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith(`unlocked_${userId}_`)) {
-        try {
-          const stored = localStorage.getItem(key);
-          if (!stored) continue;
-          const parsed = JSON.parse(stored);
-          if (parsed?.unlocked && parsed?.timestamp) {
-            const unlockTime = new Date(parsed.timestamp);
-            const now = new Date();
-            const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
-            if (daysDiff <= 30) {
-              const candidateId = key.replace(`unlocked_${userId}_`, '');
-              if (candidateId) {
-                unlockedIds.push(candidateId);
-              }
-            }
-          }
-        } catch (error) {
-          console.error('RecommendedCandidatesModal: Error parsing localStorage entry', key, error);
-        }
-      }
-    }
-    return unlockedIds;
-  }, [user]);
 
   // Check if candidate matches job (same logic as notifications)
   const checkCandidateJobMatch = useCallback((candidate, job, preferences, presentAddress) => {
@@ -272,12 +240,8 @@ const RecommendedCandidatesModal = ({
       setSavedCandidates(prefs.savedCandidates);
       setFavouriteCandidates(prefs.favouriteCandidates);
       
-      // Get unlocked candidates
-      const combinedUnlocked = new Set([
-        ...getUnlockedCandidatesFromLocalStorage().map(String),
-        ...(prefs.unlockedCandidates || []).map(String)
-      ]);
-      setUnlockedCandidateIds(Array.from(combinedUnlocked));
+      // Get unlocked candidate IDs from backend database only (no localStorage)
+      setUnlockedCandidateIds((prefs.unlockedCandidates || []).map(String));
       
       // Fetch photos for candidates
       if (matchingCandidates.length > 0) {
@@ -322,7 +286,7 @@ const RecommendedCandidatesModal = ({
       setShowUnlockPrompt(false);
       setCandidateToUnlock(null);
     }
-  }, [isOpen, fetchRecommendedCandidates, getUnlockedCandidatesFromLocalStorage]);
+  }, [isOpen, fetchRecommendedCandidates]);
 
   const handleViewFull = (candidate) => {
     const candidateId = candidate.firebase_uid;

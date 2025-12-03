@@ -480,7 +480,7 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
         <div className="space-y-4 w-full max-w-full">
           {/* PERMANENT ADDRESS */}
           <div>
-            <h6 className="text-lg font-semibold mb-4 text-black">Permanent Address</h6>
+            <h6 className="text-xl font-semibold mb-4 text-black leading-tight tracking-tight">Permanent Address</h6>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="w-full min-w-0">
                 <InputWithTooltip label="Permanent Country" required>
@@ -552,14 +552,14 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
                 checked={localFormData.presentAddress.sameAsPermanent}
                 className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
               />
-              <span className="text-sm text-gray-700">Present Address (Same as Permanent Address)</span>
+              <span className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">Present Address (Same as Permanent Address)</span>
             </label>
           </div>
 
           {/* PRESENT ADDRESS */}
           {!localFormData.presentAddress.sameAsPermanent && (
             <div className="mt-4">
-              <h6 className="text-lg font-semibold mb-4 text-black">Present Address</h6>
+              <h6 className="text-xl font-semibold mb-4 text-black leading-tight tracking-tight">Present Address</h6>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="w-full min-w-0">
                   <InputWithTooltip label="Present Country" required>

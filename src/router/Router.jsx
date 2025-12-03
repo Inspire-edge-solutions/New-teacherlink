@@ -25,6 +25,7 @@ const ContactUsPage = Loadable(lazy(()=>import("../pages/website/ContactUsPage.j
 const TermsPrivacyPage = Loadable(lazy(()=>import("../pages/website/TermsPrivacyPage.jsx")));
 const AvailableJobsPage = Loadable(lazy(()=>import("../pages/website/AvailableJobsPage.jsx")));
 const AvailableCandidatesPage = Loadable(lazy(()=>import("../pages/website/AvailableCandidatesPage.jsx")));
+const CandidateProfilePage = Loadable(lazy(()=>import("../pages/candidate-profile.jsx")));
 
 const JobProviderDashboard = Loadable(lazy(()=>import("../pages/JobProvider/Dashboard.jsx")));
 const JobProviderPostJobs = Loadable(lazy(()=>import("../pages/JobProvider/PostJobs.jsx")));
@@ -109,6 +110,10 @@ const Router = [
       {
         path: "/available-candidates",
         element: <AvailableCandidatesPage />,
+      },
+      {
+        path: "/candidate-profile/:uid",
+        element: <CandidateProfilePage />,
       }
     ],
   },

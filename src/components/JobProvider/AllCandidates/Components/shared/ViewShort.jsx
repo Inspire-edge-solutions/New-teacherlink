@@ -8,7 +8,7 @@ import '../styles/cv-pdf-print.css';
 import { AvatarImage } from '../utils/avatarUtils.jsx';
 import { useAuth } from "../../../../../Context/AuthContext";
 import { decodeCandidateData } from '../../../../../utils/dataDecoder';
-import CandidateApiService, { checkAndCleanExpiredUnlock } from './CandidateApiService';
+import CandidateApiService from './CandidateApiService';
 import { getPrintPageStyle } from '../utils/printStyles';
 import LoadingState from '../../../../common/LoadingState';
 
@@ -117,9 +117,7 @@ const ViewShort = ({
   // Unlock logic state
   const userId = user?.firebase_uid || user?.uid;
   const candidateId = candidate?.firebase_uid;
-  const unlockKey = `unlocked_${userId}_${candidateId}`;
-  // Always compute initial unlock from localStorage with expiration check
-  const [isUnlocked, setIsUnlocked] = useState(() => checkAndCleanExpiredUnlock(userId, candidateId));
+  const [isUnlocked, setIsUnlocked] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [coinValue, setCoinValue] = useState(null);
   const [unlockLoading, setUnlockLoading] = useState(false);
@@ -133,25 +131,26 @@ const ViewShort = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 30-day validity logic
+  // Check unlock status from backend when userId or candidateId changes
   useEffect(() => {
-    if (!userId || !candidateId) {
+    if (!userId || !candidateId || !user) {
       setIsUnlocked(false);
       return;
     }
 
-    // Check and clean expired unlock, update state
-    const isValid = checkAndCleanExpiredUnlock(userId, candidateId);
-    setIsUnlocked(isValid);
-    
-    // If expired, also update database to remove unlock
-    if (!isValid) {
-      CandidateApiService.upsertCandidateAction(candidate, user, {
-        unlocked_candidate: 0,
-        unblocked_candidate: 0
-      }).catch(err => console.error('Error removing expired unlock from database:', err));
-    }
-  }, [userId, candidateId, unlockKey, candidate, user]);
+    const checkUnlockStatus = async () => {
+      try {
+        const { unlockedCandidates } = await CandidateApiService.fetchUserCandidatePreferences(user);
+        const isUnlockedInBackend = unlockedCandidates.includes(String(candidateId));
+        setIsUnlocked(isUnlockedInBackend);
+      } catch (error) {
+        console.error('Error checking unlock status from backend:', error);
+        setIsUnlocked(false);
+      }
+    };
+
+    checkUnlockStatus();
+  }, [userId, candidateId, user]);
 
   useEffect(() => {
     const checkUnlocked = async () => {
@@ -180,7 +179,7 @@ const ViewShort = ({
       }
     };
     if (userId && candidateId) checkUnlocked();
-  }, [userId, candidateId, unlockKey, isUnlocked]);
+  }, [userId, candidateId, isUnlocked]);
 
   const handleUnlockClick = () => {
     setShowUnlockModal(true);
@@ -224,7 +223,10 @@ const ViewShort = ({
 
       // Mark candidate as unlocked in database FIRST (so it appears in unlocked list)
       try {
-        await CandidateApiService.upsertCandidateAction(candidate, user, { unblocked_candidate: 1 });
+        await CandidateApiService.upsertCandidateAction(candidate, user, { 
+          unlocked_candidate: 1,
+          unblocked_candidate: 1 
+        });
       } catch (dbError) {
         console.error("Error updating unlock status in database:", dbError);
         // Still continue - we'll try again, but don't fail the whole unlock
@@ -287,11 +289,8 @@ const ViewShort = ({
 
       setTimeout(() => {
         setShowUnlockModal(false);
-        localStorage.setItem(unlockKey, JSON.stringify({
-          unlocked: true,
-          timestamp: new Date().toISOString()
-        }));
         setIsUnlocked(true);
+        // Note: Unlock status is stored in backend database only (no localStorage)
       }, 2000);
     } catch (e) {
       setUnlockStatus("error");

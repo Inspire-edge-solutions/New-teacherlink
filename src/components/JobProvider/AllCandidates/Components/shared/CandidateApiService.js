@@ -27,37 +27,6 @@ const getCandidateId = (candidate) => {
 };
 
 // Utility function to check if unlock is valid (within 30 days) and clean up expired entries
-export const checkAndCleanExpiredUnlock = (userId, candidateId) => {
-  if (!userId || !candidateId) return false;
-  
-  const unlockKey = `unlocked_${userId}_${candidateId}`;
-  const stored = localStorage.getItem(unlockKey);
-  
-  if (!stored) return false;
-  
-  try {
-    const parsed = JSON.parse(stored);
-    if (parsed.unlocked && parsed.timestamp) {
-      const unlockTime = new Date(parsed.timestamp);
-      const now = new Date();
-      const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
-      
-      // If expired (more than 30 days), remove from localStorage
-      if (daysDiff > 30) {
-        localStorage.removeItem(unlockKey);
-        return false;
-      }
-      
-      // Still valid (within 30 days)
-      return true;
-    }
-  } catch (e) {
-    // Invalid format, remove it
-    localStorage.removeItem(unlockKey);
-  }
-  
-  return false;
-};
 
 // Utility function to clean all expired unlocks for a user
 export const cleanAllExpiredUnlocks = (userId) => {
@@ -353,15 +322,126 @@ class CandidateApiService {
         .map(c => String(c.firebase_uid || ''))
         .filter(Boolean);
 
-      const unlockedCandidates = userRows
-        .filter(c => 
-          c.unlocked_candidate === 1 ||
-          c.unlocked_candidate === true ||
-          c.unblocked_candidate === 1 ||
-          c.unblocked_candidate === true
-        )
-        .map(c => String(c.firebase_uid || ''))
-        .filter(Boolean);
+      // Debug: Log all user rows to see what fields exist (including timestamp fields)
+      console.log('📥 fetchUserCandidatePreferences: ALL user rows with ALL fields:', userRows.slice(0, 10).map(r => ({
+        firebase_uid: r.firebase_uid,
+        added_by: r.added_by,
+        unlocked_candidate: r.unlocked_candidate,
+        unblocked_candidate: r.unblocked_candidate,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+        allKeys: Object.keys(r).filter(k => k.includes('unlock') || k.includes('block') || k.includes('date') || k.includes('time') || k.includes('created') || k.includes('updated'))
+      })));
+
+      // Helper function to check if unlock is expired (more than 30 days)
+      const isUnlockExpired = (row) => {
+        // For expiration check, we use updated_at when unlock was set
+        // Note: If the record was updated for other reasons after unlock, this might not be accurate
+        // but it's the best we can do without a dedicated unlock_timestamp field
+        const unlockDate = row.updated_at || row.created_at;
+        if (!unlockDate) {
+          // If no timestamp, assume not expired (for backward compatibility with old records)
+          return false;
+        }
+        
+        try {
+          const unlockTime = new Date(unlockDate);
+          // Check if the date is valid
+          if (isNaN(unlockTime.getTime())) {
+            return false;
+          }
+          
+          const now = new Date();
+          const daysDiff = (now - unlockTime) / (1000 * 60 * 60 * 24);
+          const expired = daysDiff > 30;
+          
+          if (expired) {
+            console.log(`⏰ Unlock expired for candidate ${row.firebase_uid}: ${Math.floor(daysDiff)} days old`);
+          }
+          
+          return expired;
+        } catch (error) {
+          console.warn('Error parsing unlock date:', unlockDate, error);
+          return false;
+        }
+      };
+
+      // Separate expired and valid unlocks
+      const expiredUnlocks = [];
+      const validUnlocks = [];
+
+      userRows.forEach(c => {
+        const unlocked = c.unlocked_candidate === 1 || c.unlocked_candidate === true || c.unlocked_candidate === '1';
+        const unblocked = c.unblocked_candidate === 1 || c.unblocked_candidate === true || c.unblocked_candidate === '1';
+        const isUnlocked = unlocked || unblocked;
+        
+        if (isUnlocked) {
+          if (isUnlockExpired(c)) {
+            expiredUnlocks.push(c);
+          } else {
+            validUnlocks.push(String(c.firebase_uid || ''));
+          }
+        }
+      });
+
+      // Filter out empty strings
+      const unlockedCandidates = validUnlocks.filter(Boolean);
+
+      // Update database to set unblocked_candidate to 0 for expired unlocks (async, don't wait)
+      if (expiredUnlocks.length > 0) {
+        console.log(`⏰ Found ${expiredUnlocks.length} expired unlock(s), updating database...`);
+        
+        // Update expired unlocks in parallel (but don't block the response)
+        Promise.all(
+          expiredUnlocks.map(async (expiredRow) => {
+            try {
+              // Only update if we have an id (required for PUT)
+              if (!expiredRow.id) {
+                console.warn(`⚠️ Cannot update expired unlock for ${expiredRow.firebase_uid}: missing id`);
+                return;
+              }
+              
+              const updatePayload = {
+                id: expiredRow.id,
+                firebase_uid: expiredRow.firebase_uid,
+                added_by: expiredRow.added_by,
+                unblocked_candidate: 0,
+                unlocked_candidate: 0
+              };
+              
+              // Preserve other fields that might exist
+              if (expiredRow.favroute_candidate !== undefined) {
+                updatePayload.favroute_candidate = expiredRow.favroute_candidate;
+              }
+              if (expiredRow.saved_candidate !== undefined) {
+                updatePayload.saved_candidate = expiredRow.saved_candidate;
+              }
+              
+              await axios.put(API_ENDPOINTS.FAV_API, updatePayload);
+              console.log(`✅ Updated expired unlock for candidate: ${expiredRow.firebase_uid}`);
+            } catch (error) {
+              console.error(`❌ Error updating expired unlock for ${expiredRow.firebase_uid}:`, error.response?.data || error.message);
+            }
+          })
+        ).catch(err => {
+          console.error('Error in batch update of expired unlocks:', err);
+        });
+      }
+
+      console.log('📥 fetchUserCandidatePreferences: Valid unlocked candidates count:', unlockedCandidates.length);
+      console.log('📥 fetchUserCandidatePreferences: Expired unlocks count:', expiredUnlocks.length);
+      console.log('📥 fetchUserCandidatePreferences: Unlocked candidates IDs:', unlockedCandidates);
+      
+      if (unlockedCandidates.length === 0 && expiredUnlocks.length === 0) {
+        console.warn('⚠️ fetchUserCandidatePreferences: NO unlocked candidates found! Checking all rows...');
+        const rowsWithUnlockFields = userRows.filter(r => 
+          r.unlocked_candidate !== undefined || r.unblocked_candidate !== undefined
+        );
+        console.warn('⚠️ Rows with unlock fields:', rowsWithUnlockFields.length);
+        console.warn('⚠️ Sample rows with unlock fields:', rowsWithUnlockFields.slice(0, 5));
+      } else if (expiredUnlocks.length > 0) {
+        console.log(`⏰ Filtered out ${expiredUnlocks.length} expired unlock(s) (>30 days old)`);
+      }
 
       return { 
         savedCandidates, 
@@ -543,11 +623,15 @@ class CandidateApiService {
           )
         : null;
       
-      console.log('💾 upsertCandidateAction: Saving favourite', {
+      const isUnlockAction = updatePayload.unlocked_candidate === 1 || updatePayload.unblocked_candidate === 1;
+      const isFavouriteAction = updatePayload.favroute_candidate === 1;
+      
+      console.log('💾 upsertCandidateAction:', {
+        action: isUnlockAction ? 'UNLOCK' : isFavouriteAction ? 'FAVOURITE' : 'OTHER',
         candidateId: String(candidateId || ''),
         userId: String(userId || ''),
-        isFavourite: updatePayload.favroute_candidate === 1,
-        existing: !!existing
+        updatePayload,
+        existing: existing ? { id: existing.id, firebase_uid: existing.firebase_uid, added_by: existing.added_by } : null
       });
 
       const payload = {
@@ -556,12 +640,23 @@ class CandidateApiService {
         ...updatePayload
       };
 
+      // If updating existing record, include the id (required for PUT)
+      if (existing && existing.id) {
+        payload.id = existing.id;
+      }
+
+      console.log('💾 upsertCandidateAction: Payload being sent:', payload);
+
       if (existing) {
         // Update existing preference (only for this user)
-        await axios.put(API_ENDPOINTS.FAV_API, payload);
+        console.log('💾 upsertCandidateAction: Updating existing record via PUT');
+        const response = await axios.put(API_ENDPOINTS.FAV_API, payload);
+        console.log('💾 upsertCandidateAction: PUT response:', response.status, response.data);
       } else if (Object.values(updatePayload).some(val => val === 1)) {
         // Only create if marking as true (never create for unmark)
-        await axios.post(API_ENDPOINTS.FAV_API, payload);
+        console.log('💾 upsertCandidateAction: Creating new record via POST');
+        const response = await axios.post(API_ENDPOINTS.FAV_API, payload);
+        console.log('💾 upsertCandidateAction: POST response:', response.status, response.data);
       }
 
       return { success: true };

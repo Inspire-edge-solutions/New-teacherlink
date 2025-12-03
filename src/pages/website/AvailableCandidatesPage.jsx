@@ -391,7 +391,7 @@ const AvailableCandidatesPage = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header Banner */}
           <div className="bg-gradient-brand text-white text-center rounded-lg p-6 mb-6 shadow-lg">
-            <h1 className="text-3xl font-bold mb-2 leading-tight tracking-tight">Find your best teacher</h1>
+            <h1 className="text-3xl font-bold mb-2 leading-tight tracking-tight">Find Your Best Teacher</h1>
             <p className="text-lg sm:text-base opacity-90 leading-normal tracking-tight">
             Connect with expert teachers who match your goals, learn smarter and grow faster.  
             Register or login to unlock full profiles and contact teachers.

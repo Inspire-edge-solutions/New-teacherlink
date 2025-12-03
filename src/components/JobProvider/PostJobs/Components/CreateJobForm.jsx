@@ -497,6 +497,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
   const [totalExpError, setTotalExpError] = useState("");
   const [teachingExpError, setTeachingExpError] = useState("");
   const [nonTeachingExpError, setNonTeachingExpError] = useState("");
+  const [experienceSumError, setExperienceSumError] = useState("");
 
   // Helper function to get error styles for Select components
   const getSelectErrorStyles = (hasError) => {
@@ -529,6 +530,46 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
     // Return true if max >= min (greater than or equal to)
     // Allow equal values (e.g., 3 years = 3 years is valid)
     return maxTotal >= minTotal;
+  };
+
+  // Helper function to convert experience to total months
+  const getExperienceInMonths = (years, months) => {
+    const yearsVal = parseExperienceValue(years?.value) ?? 0;
+    const monthsVal = parseExperienceValue(months?.value) ?? 0;
+    return yearsVal * 12 + monthsVal;
+  };
+
+  // Helper function to validate that total experience >= teaching + non-teaching experience
+  const validateExperienceSum = () => {
+    // Get minimum values for all experience types
+    const totalExpMin = getExperienceInMonths(totalExpMinYears, totalExpMinMonths);
+    const teachingExpMin = getExperienceInMonths(teachingExpMinYears, teachingExpMinMonths);
+    const nonTeachingExpMin = getExperienceInMonths(nonTeachingExpMinYears, nonTeachingExpMinMonths);
+    
+    // Get maximum values for all experience types
+    const totalExpMax = getExperienceInMonths(totalExpMaxYears, totalExpMaxMonths);
+    const teachingExpMax = getExperienceInMonths(teachingExpMaxYears, teachingExpMaxMonths);
+    const nonTeachingExpMax = getExperienceInMonths(nonTeachingExpMaxYears, nonTeachingExpMaxMonths);
+    
+    // If any of the values are not set, skip validation
+    if (totalExpMin === 0 && totalExpMax === 0) return null;
+    if (teachingExpMin === 0 && teachingExpMax === 0 && nonTeachingExpMin === 0 && nonTeachingExpMax === 0) return null;
+    
+    // Calculate the sum of teaching + non-teaching (using minimum values for minimum total check)
+    const sumMin = teachingExpMin + nonTeachingExpMin;
+    const sumMax = teachingExpMax + nonTeachingExpMax;
+    
+    // Validation: Total experience minimum should be >= sum of teaching + non-teaching minimum
+    // Total experience maximum should be >= sum of teaching + non-teaching maximum
+    if (totalExpMin > 0 && sumMin > 0 && totalExpMin < sumMin) {
+      return "Total Experience (Minimum) should be greater than or equal to the sum of Teaching + Non-Teaching Experience (Minimum).";
+    }
+    
+    if (totalExpMax > 0 && sumMax > 0 && totalExpMax < sumMax) {
+      return "Total Experience (Maximum) should be greater than or equal to the sum of Teaching + Non-Teaching Experience (Maximum).";
+    }
+    
+    return null;
   };
 
   // Real-time validation for Total Experience
@@ -584,6 +625,17 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nonTeachingExpMinYears, nonTeachingExpMinMonths, nonTeachingExpMaxYears, nonTeachingExpMaxMonths]);
+
+  // Real-time validation for Total Experience = Teaching + Non-Teaching Experience
+  useEffect(() => {
+    const sumError = validateExperienceSum();
+    setExperienceSumError(sumError || "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    totalExpMinYears, totalExpMinMonths, totalExpMaxYears, totalExpMaxMonths,
+    teachingExpMinYears, teachingExpMinMonths, teachingExpMaxYears, teachingExpMaxMonths,
+    nonTeachingExpMinYears, nonTeachingExpMinMonths, nonTeachingExpMaxYears, nonTeachingExpMaxMonths
+  ]);
 
   useEffect(() => {
     if (!editJobData) {
@@ -1003,6 +1055,12 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
       if (!compareExperience(nonTeachingExpMinYears, nonTeachingExpMinMonths, nonTeachingExpMaxYears, nonTeachingExpMaxMonths)) {
         validationError = validationError || "Maximum Non-Teaching Experience must be greater than or equal to Minimum Non-Teaching Experience.";
       }
+    }
+    
+    // Check Total Experience = Teaching + Non-Teaching Experience
+    const sumValidationError = validateExperienceSum();
+    if (sumValidationError) {
+      validationError = validationError || sumValidationError;
     }
     
     if (validationError) {
@@ -1597,6 +1655,13 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                 </div>
               </div>
             </div>
+            {experienceSumError && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600 text-lg sm:text-base leading-normal tracking-tight font-medium">
+                  ⚠️ {experienceSumError}
+                </p>
+              </div>
+            )}
 
           {/* Location Section */}
           <div className="mb-8">

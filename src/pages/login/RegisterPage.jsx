@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../Context/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import Register from '../../components/Login/Register';
 
 const getDashboardPath = (user) => {
@@ -21,19 +21,53 @@ const getDashboardPath = (user) => {
 
 const RegisterPage = () => {
   const { user, loading } = useAuth();
+  const [searchParams] = useSearchParams();
 
   // Show loading state while checking auth
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  // If user is already logged in, redirect to their dashboard
+  // If user is already logged in, check for pending redirects (similar to LoginPage)
   if (user) {
+    const redirectUrl = searchParams.get('redirect');
+    const action = searchParams.get('action');
+    const id = searchParams.get('id');
+    
+    // Check sessionStorage as backup
+    const pendingAction = sessionStorage.getItem('pendingAction') || 
+                         (redirectUrl === '/available-candidates' ? sessionStorage.getItem('pendingCandidateAction') : null) ||
+                         (redirectUrl === '/available-jobs' ? sessionStorage.getItem('pendingJobAction') : null);
+    const pendingId = sessionStorage.getItem('pendingId') || 
+                     (redirectUrl === '/available-candidates' ? sessionStorage.getItem('pendingCandidateId') : null) ||
+                     (redirectUrl === '/available-jobs' ? sessionStorage.getItem('pendingJobId') : null);
+    
+    // If we have candidate tracking info, redirect to all-candidates
+    if (user.user_type === 'Employer' && redirectUrl === '/available-candidates' && (action || pendingAction) && (id || pendingId)) {
+      const queryParams = new URLSearchParams();
+      if (action || pendingAction) queryParams.set('action', action || pendingAction);
+      if (id || pendingId) queryParams.set('id', id || pendingId);
+      const queryString = queryParams.toString();
+      const targetPath = '/provider/all-candidates' + (queryString ? `?${queryString}` : '');
+      return <Navigate to={targetPath} replace />;
+    }
+    
+    // If we have job tracking info, redirect to all-jobs
+    if ((user.user_type === 'Candidate' || user.user_type === 'Teacher') && redirectUrl === '/available-jobs' && (action || pendingAction) && (id || pendingId)) {
+      const queryParams = new URLSearchParams();
+      if (action || pendingAction) queryParams.set('action', action || pendingAction);
+      if (id || pendingId) queryParams.set('id', id || pendingId);
+      const queryString = queryParams.toString();
+      const targetPath = '/seeker/all-jobs' + (queryString ? `?${queryString}` : '');
+      return <Navigate to={targetPath} replace />;
+    }
+    
+    // Otherwise, redirect to dashboard
     const dashboardPath = getDashboardPath(user);
     return <Navigate to={dashboardPath} replace />;
   }
 
-  // User is not logged in, show register form
+  // User is not logged in, show register form (query params will be passed through)
   return (
     <div>
         <Register />

@@ -25,29 +25,33 @@ const JobDetailsView = ({
 
   // Helper function to format experience values
   const formatExperience = (years, months) => {
-    if (!years && !months) return "Not specified";
+    // Handle empty strings, null, undefined, or 0
+    const hasYears = years !== null && years !== undefined && years !== "" && String(years).trim() !== "";
+    const hasMonths = months !== null && months !== undefined && months !== "" && String(months).trim() !== "";
+    
+    if (!hasYears && !hasMonths) return "Not specified";
     
     // Extract numeric values from various formats
     let yearValue = 0;
     let monthValue = 0;
     
-    if (years) {
+    if (hasYears) {
       if (typeof years === 'number') {
         yearValue = years;
       } else if (typeof years === 'string') {
         // Handle strings like "0 years", "1 year", "2 years", "3 years", or just "3"
-        const match = years.match(/^(\d+)/);
-        yearValue = match ? parseInt(match[1]) : 0;
+        const match = String(years).trim().match(/^(\d+)/);
+        yearValue = match ? parseInt(match[1], 10) : 0;
       }
     }
     
-    if (months) {
+    if (hasMonths) {
       if (typeof months === 'number') {
         monthValue = months;
       } else if (typeof months === 'string') {
         // Handle strings like "0 months", "1 month", "2 months", or just "3"
-        const match = months.match(/^(\d+)/);
-        monthValue = match ? parseInt(match[1]) : 0;
+        const match = String(months).trim().match(/^(\d+)/);
+        monthValue = match ? parseInt(match[1], 10) : 0;
       }
     }
     
@@ -107,6 +111,26 @@ const JobDetailsView = ({
     if (maxLPA) return `Up to ${maxLPA}`;
     
     return "Not specified";
+  };
+
+  // Helper function to format experience range
+  const formatExperienceRange = (minYears, minMonths, maxYears, maxMonths) => {
+    const minExp = formatExperience(minYears, minMonths);
+    const maxExp = formatExperience(maxYears, maxMonths);
+    
+    if (minExp === "Not specified" && maxExp === "Not specified") {
+      return "Not specified";
+    }
+    if (minExp === "Not specified" && maxExp !== "Not specified") {
+      return `Up to ${maxExp}`;
+    }
+    if (minExp !== "Not specified" && maxExp === "Not specified") {
+      return `${minExp}+`;
+    }
+    if (minExp === maxExp) {
+      return minExp;
+    }
+    return `${minExp} to ${maxExp}`;
   };
 
   // Default date formatter
@@ -195,9 +219,9 @@ const JobDetailsView = ({
           💼 Experience Requirements
         </h4>
         <div className={contentClassName}>
-          <div className="leading-normal tracking-tight"><strong>Total Experience:</strong> {formatExperience(jobData.total_experience_min_years, jobData.total_experience_min_months)} - {formatExperience(jobData.total_experience_max_years, jobData.total_experience_max_months)}</div>
-          <div className="leading-normal tracking-tight"><strong>Teaching Experience:</strong> {formatExperience(jobData.teaching_experience_min_years, jobData.teaching_experience_min_months)} - {formatExperience(jobData.teaching_experience_max_years, jobData.teaching_experience_max_months)}</div>
-          <div className="leading-normal tracking-tight"><strong>Non-Teaching Experience:</strong> {formatExperience(jobData.non_teaching_experience_min_years, jobData.non_teaching_experience_min_months)} - {formatExperience(jobData.non_teaching_experience_max_years, jobData.non_teaching_experience_max_months)}</div>
+          <div className="leading-normal tracking-tight"><strong>Total Experience:</strong> {formatExperienceRange(jobData.total_experience_min_years, jobData.total_experience_min_months, jobData.total_experience_max_years, jobData.total_experience_max_months)}</div>
+          <div className="leading-normal tracking-tight"><strong>Teaching Experience:</strong> {formatExperienceRange(jobData.teaching_experience_min_years, jobData.teaching_experience_min_months, jobData.teaching_experience_max_years, jobData.teaching_experience_max_months)}</div>
+          <div className="leading-normal tracking-tight"><strong>Non-Teaching Experience:</strong> {formatExperienceRange(jobData.non_teaching_experience_min_years, jobData.non_teaching_experience_min_months, jobData.non_teaching_experience_max_years, jobData.non_teaching_experience_max_months)}</div>
         </div>
       </div>
 
