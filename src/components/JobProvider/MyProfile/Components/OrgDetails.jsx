@@ -4,7 +4,7 @@ import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
-import { FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle, FaCheckSquare } from "react-icons/fa";
 import { useAuth } from "../../../../Context/AuthContext";
 import { getAuth, updateEmail, fetchSignInMethodsForEmail } from "firebase/auth";
 import { validateField, formatFieldValue, validateWithFeedback, validatePincodeForStateWithFeedback } from "../../../../utils/formValidation";
@@ -1280,11 +1280,18 @@ const OrgDetails = () => {
                       ) : (
                         <button
                           type="button"
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-brand text-white text-lg sm:text-base rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium whitespace-nowrap leading-normal tracking-tight"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-brand text-white text-lg sm:text-base rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium whitespace-nowrap leading-normal tracking-tight flex items-center justify-center"
                           onClick={sendPhoneOtp}
                           disabled={isPhoneVerifying}
                         >
-                          {isPhoneVerifying ? "Sending..." : "Verify"}
+                          {isPhoneVerifying ? (
+                            <span className="hidden sm:inline">Sending...</span>
+                          ) : (
+                            <>
+                              <FaCheckSquare className="sm:hidden" />
+                              <span className="hidden sm:inline">Verify</span>
+                            </>
+                          )}
                         </button>
                       )}
                   </div>
@@ -1329,11 +1336,18 @@ const OrgDetails = () => {
                       ) : (
                         <button
                           type="button"
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-brand text-white text-lg sm:text-base rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium whitespace-nowrap leading-normal tracking-tight"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-brand text-white text-lg sm:text-base rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium whitespace-nowrap leading-normal tracking-tight flex items-center justify-center"
                           onClick={sendEmailOtp}
                           disabled={isVerifying}
                         >
-                          {isVerifying ? "Sendingâ€¦" : "Verify"}
+                          {isVerifying ? (
+                            <span className="hidden sm:inline">Sendingâ€¦</span>
+                          ) : (
+                            <>
+                              <FaCheckSquare className="sm:hidden" />
+                              <span className="hidden sm:inline">Verify</span>
+                            </>
+                          )}
                         </button>
                       )}
                   </div>

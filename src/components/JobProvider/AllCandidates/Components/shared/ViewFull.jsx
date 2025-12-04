@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
@@ -11,6 +12,14 @@ import { decodeCandidateData } from '../../../../../utils/dataDecoder';
 import CandidateApiService from './CandidateApiService';
 import { getPrintPageStyle } from '../utils/printStyles';
 import LoadingState from '../../../../common/LoadingState';
+import { 
+  formatNoticePeriod, 
+  capitalizeWords, 
+  capitalizeFirst, 
+  formatCurriculum, 
+  formatGrade 
+} from '../utils/candidateUtils';
+
 
 const IMAGE_API_URL = "https://2mubkhrjf5.execute-api.ap-south-1.amazonaws.com/dev/upload-image";
 const FULL_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/candidate_details_byid';
@@ -206,9 +215,31 @@ function CandidateDetail({
             const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
               firebase_uid: candidate.firebase_uid
             });
-            if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
-              setUnlockedInfo(unlockInfoResponse.data[0]);
+            let unlockData = unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0 
+              ? unlockInfoResponse.data[0] 
+              : {};
+            
+            // Also fetch from PERSONAL_API to get phone and WhatsApp numbers
+            try {
+              const personalRes = await axios.get(PERSONAL_API, { 
+                params: { firebase_uid: candidate.firebase_uid } 
+              });
+              if (personalRes.status === 200 && Array.isArray(personalRes.data) && personalRes.data.length > 0) {
+                const personalData = personalRes.data[0];
+                // Merge personal data into unlock info, prioritizing unlock API data
+                unlockData = {
+                  ...unlockData,
+                  // Map personal API fields to unlock info format
+                  phone_number: unlockData.phone_number || personalData.callingNumber || personalData.phone_number || null,
+                  whatsup_number: unlockData.whatsup_number || personalData.whatsappNumber || personalData.whatsapp_number || personalData.whatsup_number || null,
+                  email: unlockData.email || personalData.email || null
+                };
+              }
+            } catch (personalError) {
+              console.warn("Error fetching personal data for unlock info:", personalError);
             }
+            
+            setUnlockedInfo(unlockData);
           } catch (unlockError) {
             console.error("Error fetching unlock info:", unlockError);
           }
@@ -353,9 +384,31 @@ function CandidateDetail({
         const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
           firebase_uid: candidate.firebase_uid
         });
-        if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
-          setUnlockedInfo(unlockInfoResponse.data[0]);
+        let unlockData = unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0 
+          ? unlockInfoResponse.data[0] 
+          : {};
+        
+        // Also fetch from PERSONAL_API to get phone and WhatsApp numbers
+        try {
+          const personalRes = await axios.get(PERSONAL_API, { 
+            params: { firebase_uid: candidate.firebase_uid } 
+          });
+          if (personalRes.status === 200 && Array.isArray(personalRes.data) && personalRes.data.length > 0) {
+            const personalData = personalRes.data[0];
+            // Merge personal data into unlock info, prioritizing unlock API data
+            unlockData = {
+              ...unlockData,
+              // Map personal API fields to unlock info format
+              phone_number: unlockData.phone_number || personalData.callingNumber || personalData.phone_number || null,
+              whatsup_number: unlockData.whatsup_number || personalData.whatsappNumber || personalData.whatsapp_number || personalData.whatsup_number || null,
+              email: unlockData.email || personalData.email || null
+            };
+          }
+        } catch (personalError) {
+          console.warn("Error fetching personal data for unlock info:", personalError);
         }
+        
+        setUnlockedInfo(unlockData);
       } catch (unlockError) {
         console.error("Error fetching unlock info:", unlockError);
       }
@@ -898,21 +951,21 @@ function CandidateDetail({
       if (!education) return null;
       const educationType = getEducationTypeTitle(education.education_type);
       let details = [];
-      if (education.schoolName) details.push(`${education.schoolName}`);
-      if (education.collegeName) details.push(`${education.collegeName}`);
-      if (education.universityName) details.push(`${education.universityName}`);
-      if (education.instituteName) details.push(`${education.instituteName}`);
+      if (education.schoolName) details.push(capitalizeWords(education.schoolName));
+      if (education.collegeName) details.push(capitalizeWords(education.collegeName));
+      if (education.universityName) details.push(capitalizeWords(education.universityName));
+      if (education.instituteName) details.push(capitalizeWords(education.instituteName));
       let additionalInfo = [];
       if (education.yearOfPassing) additionalInfo.push(`${education.yearOfPassing}`);
       if (education.percentage) additionalInfo.push(`${education.percentage}%`);
-      if (education.mode) additionalInfo.push(`${education.mode}`);
-      if (education.syllabus) additionalInfo.push(`${education.syllabus}`);
-      if (education.courseStatus) additionalInfo.push(`${education.courseStatus}`);
-      if (education.courseName) additionalInfo.push(`${education.courseName}`);
-      if (education.placeOfStudy) additionalInfo.push(`${education.placeOfStudy}`);
-      if (education.affiliatedTo) additionalInfo.push(`Affiliated to: ${education.affiliatedTo}`);
+      if (education.mode) additionalInfo.push(capitalizeWords(education.mode));
+      if (education.syllabus) additionalInfo.push(capitalizeWords(education.syllabus));
+      if (education.courseStatus) additionalInfo.push(capitalizeWords(education.courseStatus));
+      if (education.courseName) additionalInfo.push(capitalizeWords(education.courseName));
+      if (education.placeOfStudy) additionalInfo.push(capitalizeWords(education.placeOfStudy));
+      if (education.affiliatedTo) additionalInfo.push(`Affiliated to: ${capitalizeWords(education.affiliatedTo)}`);
       if (education.courseDuration) additionalInfo.push(`Duration: ${education.courseDuration}`);
-      if (education.specialization) additionalInfo.push(`${education.specialization}`);
+      if (education.specialization) additionalInfo.push(capitalizeWords(education.specialization));
       return (
         <div className={`${isMobile ? 'mb-3' : 'mb-5'} p-4 bg-[#f5f7fc] rounded-lg`} key={index}>
           <div className="text-xl text-[#202124] mb-2.5 font-semibold leading-tight tracking-tight">{educationType}</div>
@@ -927,9 +980,9 @@ function CandidateDetail({
               <div className="mt-2 text-lg sm:text-base leading-normal tracking-tight">
                 <strong>Core Subjects:</strong> {
                   Array.isArray(education.coreSubjects) 
-                    ? education.coreSubjects.join(', ') 
+                    ? education.coreSubjects.map(sub => capitalizeWords(sub)).join(', ')
                     : typeof education.coreSubjects === 'string'
-                      ? JSON.parse(education.coreSubjects).join(', ')
+                      ? JSON.parse(education.coreSubjects).map(sub => capitalizeWords(sub)).join(', ')
                       : ''
                 }
               </div>
@@ -1177,7 +1230,7 @@ function CandidateDetail({
             {label}:
           </span>
           <span className={`text-lg sm:text-base flex-1 text-gray-700 font-medium leading-normal tracking-tight`}>
-            {languages.length > 0 ? languages.join(', ') : <span className="text-gray-500 italic font-normal">None</span>}
+            {languages.length > 0 ? languages.map(lang => capitalizeWords(lang)).join(', ') : <span className="text-gray-500 italic font-normal">None</span>}
           </span>
         </div>
       );
@@ -1249,10 +1302,10 @@ function CandidateDetail({
         {/* Optimized grid layout for better space utilization */}
         <div className={`${isMobile ? 'block' : 'grid'} ${isMobile ? '' : isTablet ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} ${isMobile ? 'gap-0' : isTablet ? 'gap-x-3 gap-y-0' : 'gap-x-4 gap-y-0'}`}>
           {additionalInfo1?.religion && (
-            <InfoItem label="Religion" value={additionalInfo1.religion} />
+            <InfoItem label="Religion" value={capitalizeWords(additionalInfo1.religion)} />
           )}
           {additionalInfo1?.marital_status && (
-            <InfoItem label="Marital Status" value={additionalInfo1.marital_status} />
+            <InfoItem label="Marital Status" value={capitalizeWords(additionalInfo1.marital_status)} />
           )}
           {additionalInfo1?.accounting_knowledge !== undefined && (
             <InfoItem 
@@ -1261,10 +1314,10 @@ function CandidateDetail({
             />
           )}
           {additionalInfo1?.citizenship && (
-            <InfoItem label="Citizenship" value={additionalInfo1.citizenship} />
+            <InfoItem label="Citizenship" value={capitalizeWords(additionalInfo1.citizenship)} />
           )}
           {additionalInfo1?.differently_abled && (
-            <InfoItem label="Differently abled" value={additionalInfo1.differently_abled} />
+            <InfoItem label="Differently abled" value={capitalizeWords(additionalInfo1.differently_abled)} />
           )}
         </div>
         
@@ -1326,9 +1379,9 @@ function CandidateDetail({
     });
     let educationText = getEducationTypeTitle(highestEducation.education_type);
     if (highestEducation.courseName) {
-      educationText += ` in ${highestEducation.courseName}`;
+      educationText += ` in ${capitalizeWords(highestEducation.courseName)}`;
     } else if (highestEducation.specialization) {
-      educationText += ` in ${highestEducation.specialization}`;
+      educationText += ` in ${capitalizeWords(highestEducation.specialization)}`;
     }
     return educationText;
   };
@@ -1450,7 +1503,7 @@ function CandidateDetail({
             
             {/* Personal Details */}
             <div className={`text-lg sm:text-base mb-3 text-gray-600 break-words leading-normal tracking-tight`}>
-              {profileData?.gender && <span>{profileData.gender}</span>}
+              {profileData?.gender && <span>{capitalizeFirst(profileData.gender)}</span>}
               {profileData?.dateOfBirth && (
                 <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
               )}
@@ -1482,10 +1535,10 @@ function CandidateDetail({
             
             {/* Email */}
             {(profileData?.email || unlockedInfo?.email) && (
-              <div className={`flex items-center gap-1.5 text-lg sm:text-base min-w-0 leading-normal tracking-tight`}>
-                <FaEnvelope className="text-gray-400 shrink-0" />
+              <div className={`flex items-start gap-1.5 text-lg sm:text-base min-w-0 leading-normal tracking-tight`}>
+                <FaEnvelope className="text-gray-400 shrink-0 mt-0.5" />
                 <BlurWrapper isUnlocked={isUnlocked}>
-                  <a href={isUnlocked ? `mailto:${unlockedInfo?.email || profileData?.email}` : undefined} className={`no-underline text-[#1967d2] break-words ${!isUnlocked ? 'pointer-events-none' : ''}`}>
+                  <a href={isUnlocked ? `mailto:${unlockedInfo?.email || profileData?.email}` : undefined} className={`no-underline text-[#1967d2] break-all break-words flex-1 min-w-0 ${!isUnlocked ? 'pointer-events-none' : ''}`} style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                     {isUnlocked && unlockedInfo?.email ? unlockedInfo.email : (profileData?.email || 'N/A')}
                   </a>
                 </BlurWrapper>
@@ -1495,13 +1548,13 @@ function CandidateDetail({
         </div>
         
         {/* Right Side: Contact Information */}
-        <div className={`font-sans text-lg sm:text-base w-full sm:w-1/2 leading-normal tracking-tight ${isMobile ? 'mt-2' : isTablet ? 'pl-4' : 'pl-6'} min-w-0`}>
+        <div className={`font-sans text-lg sm:text-base w-full sm:w-1/2 leading-normal tracking-tight ${isMobile ? 'mt-2' : isTablet ? 'pl-4' : 'pl-6'} min-w-0 overflow-hidden`}>
           {/* Address Information */}
           <div className={`flex ${isMobile ? 'flex-row' : 'flex-col'} ${isMobile ? 'gap-[15px]' : 'gap-2'} ${isMobile ? 'mb-2 flex-wrap' : 'mb-2.5'}`}>
-            <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'} mb-1`}>
+            <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'} mb-1 min-w-0`}>
               <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
               <span className="font-semibold mr-1.5 shrink-0">Present:</span>
-              <span className={`${isMobile ? 'overflow-hidden text-ellipsis whitespace-nowrap max-w-[280px]' : 'break-words'}`}>
+              <span className={`${isMobile ? 'overflow-hidden text-ellipsis whitespace-nowrap max-w-[280px]' : 'break-words'} flex-1 min-w-0`}>
                 {[
                   profileData?.present_city_name,
                   profileData?.present_state_name,
@@ -1510,10 +1563,10 @@ function CandidateDetail({
               </span>
             </div>
             
-            <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'} mb-1`}>
+            <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'} mb-1 min-w-0`}>
               <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
               <span className="font-semibold mr-1.5 shrink-0">Permanent:</span>
-              <span className={`${isMobile ? 'overflow-hidden text-ellipsis whitespace-nowrap max-w-[280px]' : 'break-words'}`}>
+              <span className={`${isMobile ? 'overflow-hidden text-ellipsis whitespace-nowrap max-w-[280px]' : 'break-words'} flex-1 min-w-0`}>
                 {[
                   profileData?.permanent_city_name,
                   profileData?.permanent_state_name,
@@ -1525,29 +1578,33 @@ function CandidateDetail({
           
           {/* Phone Numbers - Responsive layout */}
           <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} ${isMobile ? 'gap-2.5' : isTablet ? 'gap-4' : 'gap-5'} ${isMobile ? 'mb-2.5' : 'mb-3'}`}>
-            <div className="flex items-center gap-1.5 flex-nowrap">
+            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
               <FaPhone className="text-[#1a73e8] text-[13px] shrink-0" />
               <span className="font-semibold shrink-0 whitespace-nowrap">Phone:</span>
               <BlurWrapper isUnlocked={isUnlocked}>
-                {isUnlocked
-                  ? unlockedInfo?.phone_number || profileData?.callingNumber || "N/A"
-                  : (unlockedInfo?.phone_number || profileData?.callingNumber)
-                    ? <span className="tracking-wide">{(unlockedInfo?.phone_number || profileData?.callingNumber).replace(/\d/g, "•")}</span>
-                    : "N/A"
-                }
+                <span className="tracking-wide break-all min-w-0">
+                  {isUnlocked
+                    ? unlockedInfo?.phone_number || unlockedInfo?.callingNumber || profileData?.callingNumber || profileData?.phone_number || "N/A"
+                    : (unlockedInfo?.phone_number || unlockedInfo?.callingNumber || profileData?.callingNumber || profileData?.phone_number)
+                      ? (unlockedInfo?.phone_number || unlockedInfo?.callingNumber || profileData?.callingNumber || profileData?.phone_number).replace(/\d/g, "•")
+                      : "N/A"
+                  }
+                </span>
               </BlurWrapper>
             </div>
              
-            <div className="flex items-center gap-1.5 flex-nowrap">
+            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
               <FaWhatsapp className="text-[#25D366] text-[13px] shrink-0" />
               <span className="font-semibold shrink-0 whitespace-nowrap">WhatsApp:</span>
               <BlurWrapper isUnlocked={isUnlocked}>
-                {isUnlocked
-                  ? unlockedInfo?.whatsup_number || profileData?.whatsappNumber || "N/A"
-                  : (unlockedInfo?.whatsup_number || profileData?.whatsappNumber)
-                    ? <span className="tracking-wide">{(unlockedInfo?.whatsup_number || profileData?.whatsappNumber).replace(/\d/g, "•")}</span>
-                    : "N/A"
-                }
+                <span className="tracking-wide break-all min-w-0">
+                  {isUnlocked
+                    ? unlockedInfo?.whatsup_number || unlockedInfo?.whatsappNumber || unlockedInfo?.whatsapp_number || profileData?.whatsappNumber || profileData?.whatsup_number || profileData?.whatsapp_number || "N/A"
+                    : (unlockedInfo?.whatsup_number || unlockedInfo?.whatsappNumber || unlockedInfo?.whatsapp_number || profileData?.whatsappNumber || profileData?.whatsup_number || profileData?.whatsapp_number)
+                      ? (unlockedInfo?.whatsup_number || unlockedInfo?.whatsappNumber || unlockedInfo?.whatsapp_number || profileData?.whatsappNumber || profileData?.whatsup_number || profileData?.whatsapp_number).replace(/\d/g, "•")
+                      : "N/A"
+                  }
+                </span>
               </BlurWrapper>
             </div>
           </div>
@@ -1556,11 +1613,11 @@ function CandidateDetail({
           {(socialLinks.facebook || socialLinks.linkedin) && (
             <div className={`flex ${isMobile ? 'flex-col gap-2' : 'flex-col gap-1.5'} items-start`}>
               {socialLinks?.facebook && (
-                <div className="flex items-start flex-wrap gap-1.5">
+                <div className="flex items-start flex-wrap gap-1.5 min-w-0">
                   <FaFacebook className="text-[#385898] text-[13px] shrink-0 mt-0.5" /> 
                   <span className="font-semibold shrink-0">Facebook:</span>
                   <BlurWrapper isUnlocked={isUnlocked}>
-                    <a href={isUnlocked ? socialLinks.facebook : undefined} className={`no-underline text-[#385898] break-all ${!isUnlocked ? 'pointer-events-none' : ''}`}>
+                    <a href={isUnlocked ? socialLinks.facebook : undefined} className={`no-underline text-[#385898] break-all break-words flex-1 min-w-0 ${!isUnlocked ? 'pointer-events-none' : ''}`} style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                       {socialLinks.facebook}
                     </a>
                   </BlurWrapper>
@@ -1568,11 +1625,11 @@ function CandidateDetail({
               )}
               
               {socialLinks?.linkedin && (
-                <div className="flex items-start flex-wrap gap-1.5">
+                <div className="flex items-start flex-wrap gap-1.5 min-w-0">
                   <FaLinkedin className="text-[#0077b5] text-[13px] shrink-0 mt-0.5" /> 
                   <span className="font-semibold shrink-0">LinkedIn:</span>
                   <BlurWrapper isUnlocked={isUnlocked}>
-                    <a href={isUnlocked ? socialLinks.linkedin : undefined} className={`no-underline text-[#0077b5] break-all ${!isUnlocked ? 'pointer-events-none' : ''}`}>
+                    <a href={isUnlocked ? socialLinks.linkedin : undefined} className={`no-underline text-[#0077b5] break-all break-words flex-1 min-w-0 ${!isUnlocked ? 'pointer-events-none' : ''}`} style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                       {socialLinks.linkedin}
                     </a>
                   </BlurWrapper>
@@ -1729,7 +1786,7 @@ function CandidateDetail({
                   )}
                   
                   {jobPreferenceData.notice_period && (
-                    <div><strong>Notice Period:</strong> {jobPreferenceData.notice_period}</div>
+                    <div><strong>Notice Period:</strong> {formatNoticePeriod(jobPreferenceData.notice_period)}</div>
                   )}
 
                   {/* Conditional Data Based on Job Type */}
@@ -1737,27 +1794,27 @@ function CandidateDetail({
                     <>
                       {jobPreferenceData.teaching_designations && Array.isArray(jobPreferenceData.teaching_designations) && jobPreferenceData.teaching_designations.length > 0 && (
                         <div>
-                          <strong>Teaching Designations:</strong> {jobPreferenceData.teaching_designations.join(', ')}
+                          <strong>Teaching Designations:</strong> {jobPreferenceData.teaching_designations.map(d => capitalizeWords(d)).join(', ')}
                         </div>
                       )}
                       {jobPreferenceData.teaching_curriculum && Array.isArray(jobPreferenceData.teaching_curriculum) && jobPreferenceData.teaching_curriculum.length > 0 && (
                         <div>
-                          <strong>Teaching Curriculum:</strong> {jobPreferenceData.teaching_curriculum.join(', ')}
+                          <strong>Teaching Curriculum:</strong> {jobPreferenceData.teaching_curriculum.map(c => formatCurriculum(c)).join(', ')}
                         </div>
                       )}
                       {jobPreferenceData.teaching_subjects && Array.isArray(jobPreferenceData.teaching_subjects) && jobPreferenceData.teaching_subjects.length > 0 && (
                         <div>
-                          <strong>Teaching Subjects:</strong> {jobPreferenceData.teaching_subjects.join(', ')}
+                          <strong>Teaching Subjects:</strong> {jobPreferenceData.teaching_subjects.map(s => capitalizeWords(s)).join(', ')}
                         </div>
                       )}
                       {jobPreferenceData.teaching_grades && Array.isArray(jobPreferenceData.teaching_grades) && jobPreferenceData.teaching_grades.length > 0 && (
                         <div>
-                          <strong>Teaching Grades:</strong> {jobPreferenceData.teaching_grades.join(', ')}
+                          <strong>Teaching Grades:</strong> {jobPreferenceData.teaching_grades.map(g => formatGrade(g)).join(', ')}
                         </div>
                       )}
                       {jobPreferenceData.teaching_coreExpertise && Array.isArray(jobPreferenceData.teaching_coreExpertise) && jobPreferenceData.teaching_coreExpertise.length > 0 && (
                         <div>
-                          <strong>Core Expertise:</strong> {jobPreferenceData.teaching_coreExpertise.join(', ')}
+                          <strong>Core Expertise:</strong> {jobPreferenceData.teaching_coreExpertise.map(e => capitalizeWords(e)).join(', ')}
                         </div>
                       )}
                     </>
@@ -1767,12 +1824,12 @@ function CandidateDetail({
                     <>
                       {jobPreferenceData.administrative_designations && Array.isArray(jobPreferenceData.administrative_designations) && jobPreferenceData.administrative_designations.length > 0 && (
                         <div>
-                          <strong>Administrative Designations:</strong> {jobPreferenceData.administrative_designations.join(', ')}
+                          <strong>Administrative Designations:</strong> {jobPreferenceData.administrative_designations.map(d => capitalizeWords(d)).join(', ')}
                         </div>
                       )}
                       {jobPreferenceData.administrative_curriculum && Array.isArray(jobPreferenceData.administrative_curriculum) && jobPreferenceData.administrative_curriculum.length > 0 && (
                         <div>
-                          <strong>Administrative Curriculum:</strong> {jobPreferenceData.administrative_curriculum.join(', ')}
+                          <strong>Administrative Curriculum:</strong> {jobPreferenceData.administrative_curriculum.map(c => formatCurriculum(c)).join(', ')}
                         </div>
                       )}
                     </>
@@ -1782,27 +1839,27 @@ function CandidateDetail({
                     <>
                       {jobPreferenceData.teaching_administrative_designations && Array.isArray(jobPreferenceData.teaching_administrative_designations) && jobPreferenceData.teaching_administrative_designations.length > 0 && (
                         <div>
-                          <strong>Teaching + Admin Designations:</strong> {jobPreferenceData.teaching_administrative_designations.join(', ')}
+                          <strong>Teaching + Admin Designations:</strong> {jobPreferenceData.teaching_administrative_designations.map(d => capitalizeWords(d)).join(', ')}
                         </div>
                       )}
                       {jobPreferenceData.teaching_administrative_curriculum && Array.isArray(jobPreferenceData.teaching_administrative_curriculum) && jobPreferenceData.teaching_administrative_curriculum.length > 0 && (
                         <div>
-                          <strong>Teaching + Admin Curriculum:</strong> {jobPreferenceData.teaching_administrative_curriculum.join(', ')}
+                          <strong>Teaching + Admin Curriculum:</strong> {jobPreferenceData.teaching_administrative_curriculum.map(c => formatCurriculum(c)).join(', ')}
                         </div>
                       )}
                       {jobPreferenceData.teaching_administrative_subjects && Array.isArray(jobPreferenceData.teaching_administrative_subjects) && jobPreferenceData.teaching_administrative_subjects.length > 0 && (
                         <div>
-                          <strong>Teaching + Admin Subjects:</strong> {jobPreferenceData.teaching_administrative_subjects.join(', ')}
+                          <strong>Teaching + Admin Subjects:</strong> {jobPreferenceData.teaching_administrative_subjects.map(s => capitalizeWords(s)).join(', ')}
                         </div>
                       )}
                       {jobPreferenceData.teaching_administrative_grades && Array.isArray(jobPreferenceData.teaching_administrative_grades) && jobPreferenceData.teaching_administrative_grades.length > 0 && (
                         <div>
-                          <strong>Teaching + Admin Grades:</strong> {jobPreferenceData.teaching_administrative_grades.join(', ')}
+                          <strong>Teaching + Admin Grades:</strong> {jobPreferenceData.teaching_administrative_grades.map(g => formatGrade(g)).join(', ')}
                         </div>
                       )}
                       {jobPreferenceData.teaching_administrative_coreExpertise && Array.isArray(jobPreferenceData.teaching_administrative_coreExpertise) && jobPreferenceData.teaching_administrative_coreExpertise.length > 0 && (
                         <div>
-                          <strong>Teaching + Admin Core Expertise:</strong> {jobPreferenceData.teaching_administrative_coreExpertise.join(', ')}
+                          <strong>Teaching + Admin Core Expertise:</strong> {jobPreferenceData.teaching_administrative_coreExpertise.map(e => capitalizeWords(e)).join(', ')}
                         </div>
                       )}
                     </>

@@ -448,10 +448,10 @@ const RecruiterActions = () => {
     <div className="min-h-[calc(100vh-120px)] py-8 px-4 sm:px-6 lg:px-10">
       <div className="max-w-3xl mx-auto w-full">
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-1 leading-tight tracking-tight">
+          <h1 className="text-2xl font-semibold inline-block bg-gradient-brand bg-clip-text text-transparent mb-1 leading-tight tracking-tight">
             Recruiter Actions
           </h1>
-          <p className="text-lg sm:text-base text-gray-500 m-0 leading-normal tracking-tight">
+          <p className="text-lg sm:text-base text-gray-600 m-0 leading-normal tracking-tight">
             Track how recruiters are interacting with your profile.
           </p>
         </div>

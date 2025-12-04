@@ -8,6 +8,7 @@ import { Skeleton } from "@mui/material";
 import TermsPrivacy from "../website/TermsPrivacy";
 import LoginWithSocial from "./LoginWithSocial";
 import InputWithTooltip from "../../services/InputWithTooltip";
+import LoadingState from "../common/LoadingState";
 import loginImage from "../../assets/login.png";
 
 // Terms and Privacy Policy version tracking
@@ -215,7 +216,7 @@ const Register = ({ user_type }) => {
           <button 
             className={`text-white border-none rounded-lg px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-semibold transition-colors duration-200 ${
               hasReadTermsAndPrivacy 
-                ? 'bg-red-600 cursor-pointer hover:bg-red-700' 
+                ? 'bg-gradient-brand cursor-pointer hover:opacity-90' 
                 : 'bg-gray-400 cursor-not-allowed'
             }`}
             onClick={() => {
@@ -233,49 +234,94 @@ const Register = ({ user_type }) => {
 
   return (
     <div className="flex flex-col lg:flex-row lg:min-h-screen font-sans">
-      {/* Left Section - Promotional */}
-      <div className="hidden lg:flex lg:flex-[1.2] bg-gradient-to-br from-red-50 to-red-100 relative overflow-hidden justify-center p-8">
-        {/* Decorative shapes */}
-        <div className="absolute top-[10%] right-[10%] w-15 h-15 bg-pink-200/30 rounded-full rotate-45"></div>
-        <div className="absolute bottom-[20%] left-[5%] w-10 h-10 bg-gray-300/40" style={{clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)'}}></div>
-        <div className="absolute top-[30%] left-[15%] w-8 h-8 bg-pink-200/20 rotate-45"></div>
+      {loading ? (
+        <>
+          {/* Left Section - Promotional (Still visible during loading) */}
+          <div className="hidden lg:flex lg:flex-[1.2] bg-gradient-to-br from-red-50 to-red-100 relative overflow-hidden justify-center p-8">
+            {/* Decorative shapes */}
+            <div className="absolute top-[10%] right-[10%] w-15 h-15 bg-pink-200/30 rounded-full rotate-45"></div>
+            <div className="absolute bottom-[20%] left-[5%] w-10 h-10 bg-gray-300/40" style={{clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)'}}></div>
+            <div className="absolute top-[30%] left-[15%] w-8 h-8 bg-pink-200/20 rotate-45"></div>
 
-        {/* Content */}
-        <div className="z-10 relative flex flex-col justify-center items-center h-full space-y-8">
-          {/* Welcome Text */}
-          <div className="text-center max-w-lg">
-            {getWelcomeText()}
-          </div>
-          
-          {/* Login Image */}
-          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl flex items-center justify-center relative overflow-hidden p-4">
-            <img 
-              src={loginImage} 
-              alt="Login Illustration" 
-              className="w-full h-full object-contain rounded-2xl"
-            />
+            {/* Content */}
+            <div className="z-10 relative flex flex-col justify-center items-center h-full space-y-8">
+              {/* Welcome Text */}
+              <div className="text-center max-w-lg">
+                {getWelcomeText()}
+              </div>
+              
+              {/* Login Image */}
+              <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl flex items-center justify-center relative overflow-hidden p-4">
+                <img 
+                  src={loginImage} 
+                  alt="Login Illustration" 
+                  className="w-full h-full object-contain rounded-2xl"
+                />
+              </div>
+            
+              {/* Additional Info */}
+              <div className="text-center max-w-lg">
+                <p className="text-lg text-gray-600 leading-normal tracking-tight">
+                  Join thousands of educators and institutions who trust TeacherLink for their career and hiring needs.
+                </p>
+              </div>
             </div>
-          
-          {/* Additional Info */}
-          <div className="text-center max-w-lg">
-            <p className="text-lg text-gray-600 leading-normal tracking-tight">
-              Join thousands of educators and institutions who trust TeacherLink for their career and hiring needs.
-            </p>
           </div>
-        </div>
-      </div>
 
-      {/* Right Section - Form */}
-      <div className="w-full lg:flex-1 bg-white flex items-center justify-center px-3 sm:px-4 md:px-6 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg lg:-ml-12">
-        {loading ? (
-          /* Loading Spinner */
-          <div className="flex flex-col items-center justify-center space-y-4">
-            <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-gray-600 text-lg sm:text-base font-medium leading-normal tracking-tight">Creating your account...</p>
+          {/* Right Section - Enhanced Loading Experience */}
+          <div className="w-full lg:flex-1 bg-white flex items-center justify-center px-3 sm:px-4 md:px-6 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg lg:-ml-12">
+            <div className="relative w-full max-w-md">
+              <LoadingState
+                title="Creating your account!"
+                subtitle="We're setting up your TeacherLink profile right now."
+                layout="card"
+                className="shadow-xl"
+              >
+                <p className="mt-6 text-sm text-slate-600 text-center">
+                  One moment while we prepare your account.
+                </p>
+              </LoadingState>
+            </div>
           </div>
-        ) : (
-          /* Form Container */
-          <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg bg-white p-3 sm:p-4 md:p-6 relative">
+        </>
+      ) : (
+        <>
+          {/* Left Section - Promotional */}
+          <div className="hidden lg:flex lg:flex-[1.2] bg-gradient-to-br from-red-50 to-red-100 relative overflow-hidden justify-center p-8">
+            {/* Decorative shapes */}
+            <div className="absolute top-[10%] right-[10%] w-15 h-15 bg-pink-200/30 rounded-full rotate-45"></div>
+            <div className="absolute bottom-[20%] left-[5%] w-10 h-10 bg-gray-300/40" style={{clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)'}}></div>
+            <div className="absolute top-[30%] left-[15%] w-8 h-8 bg-pink-200/20 rotate-45"></div>
+
+            {/* Content */}
+            <div className="z-10 relative flex flex-col justify-center items-center h-full space-y-8">
+              {/* Welcome Text */}
+              <div className="text-center max-w-lg">
+                {getWelcomeText()}
+              </div>
+              
+              {/* Login Image */}
+              <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl flex items-center justify-center relative overflow-hidden p-4">
+                <img 
+                  src={loginImage} 
+                  alt="Login Illustration" 
+                  className="w-full h-full object-contain rounded-2xl"
+                />
+              </div>
+            
+              {/* Additional Info */}
+              <div className="text-center max-w-lg">
+                <p className="text-lg text-gray-600 leading-normal tracking-tight">
+                  Join thousands of educators and institutions who trust TeacherLink for their career and hiring needs.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Section - Form */}
+          <div className="w-full lg:flex-1 bg-white flex items-center justify-center px-3 sm:px-4 md:px-6 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg lg:-ml-12">
+            {/* Form Container */}
+            <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg bg-white p-3 sm:p-4 md:p-6 relative">
 
             <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center leading-tight tracking-tight">
               Create Account
@@ -426,7 +472,7 @@ const Register = ({ user_type }) => {
               className={`w-full py-3 sm:py-3.5 md:py-4 text-white border-none rounded-lg text-base font-semibold transition-colors duration-200 leading-normal tracking-tight ${
                 loading || !acceptedTerms 
                   ? 'bg-gray-400 cursor-not-allowed opacity-60' 
-                  : 'bg-red-600 hover:bg-red-700 cursor-pointer'
+                  : 'bg-gradient-brand hover:opacity-90 cursor-pointer'
               }`}
             >
               {loading ? "Creating Account..." : "Create Account"}
@@ -458,18 +504,19 @@ const Register = ({ user_type }) => {
             <LoginWithSocial />
           </div>
         </div>
-        )}
       </div>
+        </>
+      )}
 
       {/* Modals */}
       {(showTermsModal || showPrivacyModal) && <TermsAndPrivacyModal />}
       {showLoginPrompt && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-4">
-          <div className="bg-white rounded-xl p-4 sm:p-6 md:p-8 max-w-md w-full text-center">
+          <div className="bg-[#F0D8D9] rounded-xl p-4 sm:p-6 md:p-8 max-w-md w-full text-center">
             <h3 className="text-xl font-bold mb-4 leading-tight tracking-tight">
               Welcome to TeacherLink! 🌟
             </h3>
-            <p className="text-gray-500 mb-4 sm:mb-6 leading-normal tracking-tight text-lg sm:text-base">
+            <p className="text-gray-900 mb-4 sm:mb-6 leading-normal tracking-tight text-lg sm:text-base">
               🎉 Your account is ready. <br/> 
               Hire passionate educators or explore rewarding teaching opportunities. <br/>
               🚀 Log in now to continue your journey.
@@ -506,7 +553,7 @@ const Register = ({ user_type }) => {
                 const loginUrl = '/login' + (queryString ? `?${queryString}` : '');
                 window.location.href = loginUrl;
               }}
-              className="bg-red-600 text-white border-none rounded-lg px-4 sm:px-6 py-2 sm:py-3 text-base font-semibold cursor-pointer hover:bg-red-700 transition-colors duration-200 leading-normal tracking-tight"
+              className="bg-gradient-brand text-white border-none rounded-lg px-4 sm:px-6 py-2 sm:py-3 text-base font-semibold cursor-pointer hover:opacity-90 transition-colors duration-200 leading-normal tracking-tight"
             >
               Proceed to Login ➡️
             </button>

@@ -782,3 +782,135 @@ export const getQualificationString = (eduJson) => {
     return 'Not specified';
   }
 };
+
+/**
+ * Text Formatting Utilities
+ * Functions for formatting and capitalizing text values
+ */
+
+/**
+ * Split compound words (e.g., "Masterdegree" -> "Master Degree")
+ * @param {string} str - String to process
+ * @returns {string} String with compound words split
+ */
+export const splitCompoundWords = (str) => {
+  if (!str || typeof str !== 'string') return str;
+  
+  // Common compound words that should be split
+  const compoundPatterns = [
+    { pattern: /masterdegree/gi, replacement: 'Master Degree' },
+    { pattern: /bachelordegree/gi, replacement: 'Bachelor Degree' },
+    { pattern: /doctoratedegree/gi, replacement: 'Doctorate Degree' },
+    { pattern: /master'sdegree/gi, replacement: "Master's Degree" },
+    { pattern: /bachelor'sdegree/gi, replacement: "Bachelor's Degree" },
+    { pattern: /doctorate'sdegree/gi, replacement: "Doctorate's Degree" },
+    { pattern: /master/gi, replacement: 'Master' },
+    { pattern: /bachelor/gi, replacement: 'Bachelor' },
+    { pattern: /doctorate/gi, replacement: 'Doctorate' },
+  ];
+  
+  let result = str;
+  // Apply compound word replacements
+  for (const { pattern, replacement } of compoundPatterns) {
+    result = result.replace(pattern, replacement);
+  }
+  
+  // Split camelCase or PascalCase words
+  result = result.replace(/([a-z])([A-Z])/g, '$1 $2');
+  
+  return result;
+};
+
+/**
+ * Capitalize first letter of each word
+ * @param {string} str - String to capitalize
+ * @returns {string} Capitalized string
+ */
+export const capitalizeWords = (str) => {
+  if (!str || typeof str !== 'string') return str;
+  
+  // First split compound words
+  let processed = splitCompoundWords(str);
+  
+  // Then capitalize each word
+  return processed
+    .split(' ')
+    .map(word => {
+      // Handle words with apostrophes (e.g., "Master's")
+      if (word.includes("'")) {
+        const parts = word.split("'");
+        return parts.map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()).join("'");
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
+};
+
+/**
+ * Capitalize first letter only
+ * @param {string} str - String to capitalize
+ * @returns {string} String with first letter capitalized
+ */
+export const capitalizeFirst = (str) => {
+  if (!str || typeof str !== 'string') return str;
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
+/**
+ * Format curriculum (handles acronyms like CBSE, ICSE)
+ * @param {string} curriculum - Curriculum string to format
+ * @returns {string} Formatted curriculum string
+ */
+export const formatCurriculum = (curriculum) => {
+  if (!curriculum || typeof curriculum !== 'string') return curriculum;
+  const curriculumStr = curriculum.trim();
+  
+  // Common curriculum acronyms that should be uppercase
+  const acronyms = ['cbse', 'icse', 'igcse', 'ib', 'state', 'ncert', 'syllabus'];
+  const lowerStr = curriculumStr.toLowerCase();
+  
+  // Check if it's an acronym
+  for (const acronym of acronyms) {
+    if (lowerStr === acronym || lowerStr.startsWith(acronym + ' ') || lowerStr.endsWith(' ' + acronym)) {
+      return curriculumStr.toUpperCase();
+    }
+  }
+  
+  // Otherwise capitalize words normally
+  return capitalizeWords(curriculumStr);
+};
+
+/**
+ * Format grade values (e.g., "grade1" -> "Grade 1", "1" -> "Grade 1")
+ * Also validates that the value is actually a grade, not a degree or other value
+ * @param {string|number} grade - Grade value to format
+ * @returns {string} Formatted grade string
+ */
+export const formatGrade = (grade) => {
+  if (!grade) return grade;
+  const gradeStr = String(grade).trim().toLowerCase();
+  
+  // Check if it's clearly NOT a grade (degree types, etc.)
+  const nonGradeKeywords = ['degree', 'master', 'bachelor', 'doctorate', 'diploma', 'certificate', 'phd', 'mba', 'btech', 'mtech'];
+  if (nonGradeKeywords.some(keyword => gradeStr.includes(keyword))) {
+    // If it's not a grade, just capitalize it normally
+    return capitalizeWords(String(grade).trim());
+  }
+  
+  // Remove "grade" prefix if present and extract number
+  const match = gradeStr.match(/(?:grade)?\s*(\d+)/i);
+  if (match) {
+    return `Grade ${match[1]}`;
+  }
+  // If it's just a number
+  if (/^\d+$/.test(gradeStr)) {
+    return `Grade ${gradeStr}`;
+  }
+  // If it contains numbers but might be a grade range (e.g., "1-5", "1 to 5")
+  const rangeMatch = gradeStr.match(/(\d+)\s*[-to]+\s*(\d+)/i);
+  if (rangeMatch) {
+    return `Grade ${rangeMatch[1]} - Grade ${rangeMatch[2]}`;
+  }
+  // Otherwise capitalize words
+  return capitalizeWords(String(grade).trim());
+};

@@ -112,7 +112,7 @@ const Router = [
         element: <AvailableCandidatesPage />,
       },
       {
-        path: "/candidate-profile/:uid",
+        path: "/profile/:uid",
         element: <CandidateProfilePage />,
       }
     ],

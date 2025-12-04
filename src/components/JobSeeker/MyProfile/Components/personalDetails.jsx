@@ -4,7 +4,7 @@ import axios from "axios";
 import { useAuth } from "../../../../Context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { FaCheckCircle, FaChevronDown } from "react-icons/fa";
+import { FaCheckCircle, FaChevronDown, FaCheckSquare } from "react-icons/fa";
 import { getAuth, updateEmail } from "firebase/auth";
 import ImageUpload from "../../../../services/ImageUpload";
 import WheelDatePicker from "../../../../utils/WheelDatePicker";
@@ -893,12 +893,18 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                 ) : (
                   <button
                     type="button"
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors whitespace-nowrap leading-normal tracking-tight"
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors whitespace-nowrap leading-normal tracking-tight flex items-center justify-center"
                     onClick={sendEmailOtp}
                     disabled={isEmailVerifying}
                   >
-                    <span className="hidden md:inline">{isEmailVerifying ? "Sending..." : "Verify"}</span>
-                    <span className="md:hidden">{isEmailVerifying ? "..." : "Verify"}</span>
+                    {isEmailVerifying ? (
+                      <span className="hidden md:inline">Sending...</span>
+                    ) : (
+                      <>
+                        <FaCheckSquare className="md:hidden" />
+                        <span className="hidden md:inline">Verify</span>
+                      </>
+                    )}
                   </button>
                 )}
               </div>
@@ -984,12 +990,18 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                 ) : (
                   <button
                     type="button"
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors whitespace-nowrap leading-normal tracking-tight"
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors whitespace-nowrap leading-normal tracking-tight flex items-center justify-center"
                     onClick={sendPhoneOtp}
                     disabled={isPhoneVerifying}
                   >
-                    <span className="hidden md:inline">{isPhoneVerifying ? "Sending..." : "Verify"}</span>
-                    <span className="md:hidden">{isPhoneVerifying ? "..." : "Verify"}</span>
+                    {isPhoneVerifying ? (
+                      <span className="hidden md:inline">Sending...</span>
+                    ) : (
+                      <>
+                        <FaCheckSquare className="md:hidden" />
+                        <span className="hidden md:inline">Verify</span>
+                      </>
+                    )}
                   </button>
                 )}
               </div>

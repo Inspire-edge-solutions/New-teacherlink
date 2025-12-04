@@ -11,6 +11,14 @@ import { decodeCandidateData } from '../../../../../utils/dataDecoder';
 import CandidateApiService from './CandidateApiService';
 import { getPrintPageStyle } from '../utils/printStyles';
 import LoadingState from '../../../../common/LoadingState';
+import { 
+  formatNoticePeriod, 
+  capitalizeWords, 
+  capitalizeFirst, 
+  formatCurriculum, 
+  formatGrade 
+} from '../utils/candidateUtils';
+
 
 const FULL_API = 'https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/fullapi';
 const EDUCATION_API = 'https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails';
@@ -165,9 +173,31 @@ const ViewShort = ({
             const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
               firebase_uid: candidateId
             });
-            if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
-              setUnlockedInfo(unlockInfoResponse.data[0]);
+            let unlockData = unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0 
+              ? unlockInfoResponse.data[0] 
+              : {};
+            
+            // Also fetch from PERSONAL_API to get phone and WhatsApp numbers
+            try {
+              const personalRes = await axios.get(PERSONAL_API, { 
+                params: { firebase_uid: candidateId } 
+              });
+              if (personalRes.status === 200 && Array.isArray(personalRes.data) && personalRes.data.length > 0) {
+                const personalData = personalRes.data[0];
+                // Merge personal data into unlock info, prioritizing unlock API data
+                unlockData = {
+                  ...unlockData,
+                  // Map personal API fields to unlock info format
+                  phone_number: unlockData.phone_number || personalData.callingNumber || personalData.phone_number || null,
+                  whatsup_number: unlockData.whatsup_number || personalData.whatsappNumber || personalData.whatsapp_number || personalData.whatsup_number || null,
+                  email: unlockData.email || personalData.email || null
+                };
+              }
+            } catch (personalError) {
+              console.warn("Error fetching personal data for unlock info:", personalError);
             }
+            
+            setUnlockedInfo(unlockData);
           } catch (unlockError) {
             console.error("Error fetching unlock info:", unlockError);
           }
@@ -237,9 +267,31 @@ const ViewShort = ({
         const unlockInfoResponse = await axios.post(UNLOCK_INFO_API, {
           firebase_uid: candidateId
         });
-        if (unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0) {
-          setUnlockedInfo(unlockInfoResponse.data[0]);
+        let unlockData = unlockInfoResponse.status === 200 && unlockInfoResponse.data.length > 0 
+          ? unlockInfoResponse.data[0] 
+          : {};
+        
+        // Also fetch from PERSONAL_API to get phone and WhatsApp numbers
+        try {
+          const personalRes = await axios.get(PERSONAL_API, { 
+            params: { firebase_uid: candidateId } 
+          });
+          if (personalRes.status === 200 && Array.isArray(personalRes.data) && personalRes.data.length > 0) {
+            const personalData = personalRes.data[0];
+            // Merge personal data into unlock info, prioritizing unlock API data
+            unlockData = {
+              ...unlockData,
+              // Map personal API fields to unlock info format
+              phone_number: unlockData.phone_number || personalData.callingNumber || personalData.phone_number || null,
+              whatsup_number: unlockData.whatsup_number || personalData.whatsappNumber || personalData.whatsapp_number || personalData.whatsup_number || null,
+              email: unlockData.email || personalData.email || null
+            };
+          }
+        } catch (personalError) {
+          console.warn("Error fetching personal data for unlock info:", personalError);
         }
+        
+        setUnlockedInfo(unlockData);
       } catch (unlockError) {
         console.error("Error fetching unlock info:", unlockError);
       }
@@ -572,7 +624,7 @@ const ViewShort = ({
           <div className="my-1.5 text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Year of Passing: {education.yearOfPassing}</div>
         )}
         {education.courseName && (
-          <div className="my-1.5 text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Course Name: {education.courseName}</div>
+          <div className="my-1.5 text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Course Name: {capitalizeWords(education.courseName)}</div>
         )}
       </div>
     ));
@@ -839,7 +891,7 @@ const ViewShort = ({
               
               {/* Personal Details */}
               <div className={`text-lg sm:text-base mb-3 text-gray-600 break-words leading-normal tracking-tight`}>
-                {profileData.gender && <span>{profileData.gender}</span>}
+                {profileData.gender && <span>{capitalizeFirst(profileData.gender)}</span>}
                 {profileData.dateOfBirth && (
                   <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
                 )}
@@ -871,10 +923,10 @@ const ViewShort = ({
               
               {/* Email */}
               {(profileData.email || unlockedInfo?.email) && (
-                <div className={`flex items-center gap-1.5 text-lg sm:text-base min-w-0 leading-normal tracking-tight`}>
-                  <FaEnvelope className="text-gray-400 shrink-0" />
+                <div className={`flex items-start gap-1.5 text-lg sm:text-base min-w-0 leading-normal tracking-tight`}>
+                  <FaEnvelope className="text-gray-400 shrink-0 mt-0.5" />
                   <BlurWrapper isUnlocked={isUnlocked}>
-                    <a href={isUnlocked ? `mailto:${unlockedInfo?.email || profileData.email}` : undefined} className={`no-underline text-[#1967d2] break-words ${!isUnlocked ? 'pointer-events-none' : ''}`}>
+                    <a href={isUnlocked ? `mailto:${unlockedInfo?.email || profileData.email}` : undefined} className={`no-underline text-[#1967d2] break-all break-words flex-1 min-w-0 ${!isUnlocked ? 'pointer-events-none' : ''}`} style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                       {isUnlocked && unlockedInfo?.email ? unlockedInfo.email : (profileData.email || 'N/A')}
                     </a>
                   </BlurWrapper>
@@ -884,26 +936,26 @@ const ViewShort = ({
           </div>
           
           {/* Right Side: Contact Information */}
-          <div className={`font-sans text-lg sm:text-base w-full sm:w-1/2 leading-normal tracking-tight ${windowWidth <= 768 ? 'mt-2' : 'pl-4'} min-w-0`}>
+          <div className={`font-sans text-lg sm:text-base w-full sm:w-1/2 leading-normal tracking-tight ${windowWidth <= 768 ? 'mt-2' : 'pl-4'} min-w-0 overflow-hidden`}>
             {/* Address Information */}
             <div className={`flex ${windowWidth <= 768 ? 'flex-col' : 'flex-col'} ${windowWidth <= 768 ? 'gap-2' : 'gap-1.5'} ${windowWidth <= 768 ? 'mb-2' : 'mb-2'}`}>
-              <div className={`flex items-start ${windowWidth <= 768 ? 'flex-col sm:flex-row sm:items-center' : 'flex-wrap'} gap-1.5`}>
+              <div className={`flex items-start ${windowWidth <= 768 ? 'flex-col sm:flex-row sm:items-center' : 'flex-wrap'} gap-1.5 min-w-0`}>
                 <div className="flex items-center flex-shrink-0">
                   <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
                   <span className="font-semibold shrink-0">Present:</span>
                 </div>
-                <span className={`${windowWidth <= 768 ? 'break-words ml-6 sm:ml-0' : 'break-words'}`}>
+                <span className={`${windowWidth <= 768 ? 'break-words ml-6 sm:ml-0' : 'break-words'} flex-1 min-w-0`}>
                   {profileData.present_state_name || 'N/A'}
                 </span>
               </div>
               
               {profileData.permanent_state_name && (
-                <div className={`flex items-start ${windowWidth <= 768 ? 'flex-col sm:flex-row sm:items-center' : 'flex-wrap'} gap-1.5`}>
+                <div className={`flex items-start ${windowWidth <= 768 ? 'flex-col sm:flex-row sm:items-center' : 'flex-wrap'} gap-1.5 min-w-0`}>
                   <div className="flex items-center flex-shrink-0">
                     <FaMapMarkerAlt className="mr-1.5 text-[#e74c3c] text-[13px] shrink-0" />
                     <span className="font-semibold shrink-0">Permanent:</span>
                   </div>
-                  <span className={`${windowWidth <= 768 ? 'break-words ml-6 sm:ml-0' : 'break-words'}`}>
+                  <span className={`${windowWidth <= 768 ? 'break-words ml-6 sm:ml-0' : 'break-words'} flex-1 min-w-0`}>
                     {profileData.permanent_state_name}
                   </span>
                 </div>
@@ -912,29 +964,33 @@ const ViewShort = ({
             
             {/* Phone Numbers - Responsive layout */}
             <div className={`flex ${windowWidth <= 768 ? 'flex-col' : 'flex-row'} ${windowWidth <= 768 ? 'gap-2.5' : 'gap-5'} ${windowWidth <= 768 ? 'mb-2.5' : 'mb-3'}`}>
-              <div className="flex items-center flex-wrap gap-1.5 mb-1">
+              <div className="flex items-center flex-wrap gap-1.5 mb-1 min-w-0">
                 <FaPhone className="text-[#1a73e8] text-[13px] shrink-0" />
                 <span className="font-semibold shrink-0">Phone:</span>
                 <BlurWrapper isUnlocked={isUnlocked}>
-                  {isUnlocked
-                    ? unlockedInfo?.phone_number || profileData.callingNumber || "N/A"
-                    : (unlockedInfo?.phone_number || profileData.callingNumber)
-                      ? <span className="tracking-wide break-all">{(unlockedInfo?.phone_number || profileData.callingNumber).replace(/\d/g, "•")}</span>
-                      : "N/A"
-                  }
+                  <span className="tracking-wide break-all min-w-0">
+                    {isUnlocked
+                      ? unlockedInfo?.phone_number || unlockedInfo?.callingNumber || profileData.callingNumber || profileData?.phone_number || "N/A"
+                      : (unlockedInfo?.phone_number || unlockedInfo?.callingNumber || profileData.callingNumber || profileData?.phone_number)
+                        ? (unlockedInfo?.phone_number || unlockedInfo?.callingNumber || profileData.callingNumber || profileData?.phone_number).replace(/\d/g, "•")
+                        : "N/A"
+                    }
+                  </span>
                 </BlurWrapper>
               </div>
               
-              <div className="flex items-center flex-wrap gap-1.5 mb-1">
+              <div className="flex items-center flex-wrap gap-1.5 mb-1 min-w-0">
                 <FaWhatsapp className="text-[#25D366] text-[13px] shrink-0" />
                 <span className="font-semibold shrink-0">WhatsApp:</span>
                 <BlurWrapper isUnlocked={isUnlocked}>
-                  {isUnlocked
-                    ? unlockedInfo?.whatsup_number || profileData.whatsappNumber || "N/A"
-                    : (unlockedInfo?.whatsup_number || profileData.whatsappNumber)
-                      ? <span className="tracking-wide break-all">{(unlockedInfo?.whatsup_number || profileData.whatsappNumber).replace(/\d/g, "•")}</span>
-                      : "N/A"
-                  }
+                  <span className="tracking-wide break-all min-w-0">
+                    {isUnlocked
+                      ? unlockedInfo?.whatsup_number || unlockedInfo?.whatsappNumber || unlockedInfo?.whatsapp_number || profileData.whatsappNumber || profileData?.whatsup_number || profileData?.whatsapp_number || "N/A"
+                      : (unlockedInfo?.whatsup_number || unlockedInfo?.whatsappNumber || unlockedInfo?.whatsapp_number || profileData.whatsappNumber || profileData?.whatsup_number || profileData?.whatsapp_number)
+                        ? (unlockedInfo?.whatsup_number || unlockedInfo?.whatsappNumber || unlockedInfo?.whatsapp_number || profileData.whatsappNumber || profileData?.whatsup_number || profileData?.whatsapp_number).replace(/\d/g, "•")
+                        : "N/A"
+                    }
+                  </span>
                 </BlurWrapper>
               </div>
             </div>
@@ -1021,7 +1077,7 @@ const ViewShort = ({
                     )}
                     
                     {jobPreferenceData.notice_period && (
-                      <div><strong>Notice Period:</strong> {jobPreferenceData.notice_period}</div>
+                      <div><strong>Notice Period:</strong> {formatNoticePeriod(jobPreferenceData.notice_period)}</div>
                     )}
 
                     {/* Conditional Data Based on Job Type */}
@@ -1029,27 +1085,27 @@ const ViewShort = ({
                       <>
                         {jobPreferenceData.teaching_designations && Array.isArray(jobPreferenceData.teaching_designations) && jobPreferenceData.teaching_designations.length > 0 && (
                           <div>
-                            <strong>Teaching Designations:</strong> {jobPreferenceData.teaching_designations.join(', ')}
+                            <strong>Teaching Designations:</strong> {jobPreferenceData.teaching_designations.map(d => capitalizeWords(d)).join(', ')}
                           </div>
                         )}
                         {jobPreferenceData.teaching_curriculum && Array.isArray(jobPreferenceData.teaching_curriculum) && jobPreferenceData.teaching_curriculum.length > 0 && (
                           <div>
-                            <strong>Teaching Curriculum:</strong> {jobPreferenceData.teaching_curriculum.join(', ')}
+                            <strong>Teaching Curriculum:</strong> {jobPreferenceData.teaching_curriculum.map(c => formatCurriculum(c)).join(', ')}
                           </div>
                         )}
                         {jobPreferenceData.teaching_subjects && Array.isArray(jobPreferenceData.teaching_subjects) && jobPreferenceData.teaching_subjects.length > 0 && (
                           <div>
-                            <strong>Teaching Subjects:</strong> {jobPreferenceData.teaching_subjects.join(', ')}
+                            <strong>Teaching Subjects:</strong> {jobPreferenceData.teaching_subjects.map(s => capitalizeWords(s)).join(', ')}
                           </div>
                         )}
                         {jobPreferenceData.teaching_grades && Array.isArray(jobPreferenceData.teaching_grades) && jobPreferenceData.teaching_grades.length > 0 && (
                           <div>
-                            <strong>Teaching Grades:</strong> {jobPreferenceData.teaching_grades.join(', ')}
+                            <strong>Teaching Grades:</strong> {jobPreferenceData.teaching_grades.map(g => formatGrade(g)).join(', ')}
                           </div>
                         )}
                         {jobPreferenceData.teaching_coreExpertise && Array.isArray(jobPreferenceData.teaching_coreExpertise) && jobPreferenceData.teaching_coreExpertise.length > 0 && (
                           <div>
-                            <strong>Core Expertise:</strong> {jobPreferenceData.teaching_coreExpertise.join(', ')}
+                            <strong>Core Expertise:</strong> {jobPreferenceData.teaching_coreExpertise.map(e => capitalizeWords(e)).join(', ')}
                           </div>
                         )}
                       </>
@@ -1059,12 +1115,12 @@ const ViewShort = ({
                       <>
                         {jobPreferenceData.administrative_designations && Array.isArray(jobPreferenceData.administrative_designations) && jobPreferenceData.administrative_designations.length > 0 && (
                           <div>
-                            <strong>Administrative Designations:</strong> {jobPreferenceData.administrative_designations.join(', ')}
+                            <strong>Administrative Designations:</strong> {jobPreferenceData.administrative_designations.map(d => capitalizeWords(d)).join(', ')}
                           </div>
                         )}
                         {jobPreferenceData.administrative_curriculum && Array.isArray(jobPreferenceData.administrative_curriculum) && jobPreferenceData.administrative_curriculum.length > 0 && (
                           <div>
-                            <strong>Administrative Curriculum:</strong> {jobPreferenceData.administrative_curriculum.join(', ')}
+                            <strong>Administrative Curriculum:</strong> {jobPreferenceData.administrative_curriculum.map(c => formatCurriculum(c)).join(', ')}
                           </div>
                         )}
                       </>
@@ -1074,27 +1130,27 @@ const ViewShort = ({
                       <>
                         {jobPreferenceData.teaching_administrative_designations && Array.isArray(jobPreferenceData.teaching_administrative_designations) && jobPreferenceData.teaching_administrative_designations.length > 0 && (
                           <div>
-                            <strong>Teaching + Admin Designations:</strong> {jobPreferenceData.teaching_administrative_designations.join(', ')}
+                            <strong>Teaching + Admin Designations:</strong> {jobPreferenceData.teaching_administrative_designations.map(d => capitalizeWords(d)).join(', ')}
                           </div>
                         )}
                         {jobPreferenceData.teaching_administrative_curriculum && Array.isArray(jobPreferenceData.teaching_administrative_curriculum) && jobPreferenceData.teaching_administrative_curriculum.length > 0 && (
                           <div>
-                            <strong>Teaching + Admin Curriculum:</strong> {jobPreferenceData.teaching_administrative_curriculum.join(', ')}
+                            <strong>Teaching + Admin Curriculum:</strong> {jobPreferenceData.teaching_administrative_curriculum.map(c => formatCurriculum(c)).join(', ')}
                           </div>
                         )}
                         {jobPreferenceData.teaching_administrative_subjects && Array.isArray(jobPreferenceData.teaching_administrative_subjects) && jobPreferenceData.teaching_administrative_subjects.length > 0 && (
                           <div>
-                            <strong>Teaching + Admin Subjects:</strong> {jobPreferenceData.teaching_administrative_subjects.join(', ')}
+                            <strong>Teaching + Admin Subjects:</strong> {jobPreferenceData.teaching_administrative_subjects.map(s => capitalizeWords(s)).join(', ')}
                           </div>
                         )}
                         {jobPreferenceData.teaching_administrative_grades && Array.isArray(jobPreferenceData.teaching_administrative_grades) && jobPreferenceData.teaching_administrative_grades.length > 0 && (
                           <div>
-                            <strong>Teaching + Admin Grades:</strong> {jobPreferenceData.teaching_administrative_grades.join(', ')}
+                            <strong>Teaching + Admin Grades:</strong> {jobPreferenceData.teaching_administrative_grades.map(g => formatGrade(g)).join(', ')}
                           </div>
                         )}
                         {jobPreferenceData.teaching_administrative_coreExpertise && Array.isArray(jobPreferenceData.teaching_administrative_coreExpertise) && jobPreferenceData.teaching_administrative_coreExpertise.length > 0 && (
                           <div>
-                            <strong>Teaching + Admin Core Expertise:</strong> {jobPreferenceData.teaching_administrative_coreExpertise.join(', ')}
+                            <strong>Teaching + Admin Core Expertise:</strong> {jobPreferenceData.teaching_administrative_coreExpertise.map(e => capitalizeWords(e)).join(', ')}
                           </div>
                         )}
                       </>
