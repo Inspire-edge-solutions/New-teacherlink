@@ -65,8 +65,8 @@ const ConfirmationModal = ({
             <div className="flex items-start gap-3">
               <div className="text-2xl">💼</div>
               <div className="flex-1">
-                <p className="text-lg sm:text-base text-gray-500 mb-1 font-medium leading-snug tracking-tight">Job Title</p>
-                <p className="text-lg font-semibold text-gray-900 m-0 leading-tight tracking-tight">
+                <p className="text-base text-gray-500 mb-1 font-medium leading-snug tracking-tight">Job Title</p>
+                <p className="text-xl font-semibold text-gray-900 m-0 leading-tight tracking-tight">
                   {selectedJob?.job_title || 'Untitled Job'}
                 </p>
               </div>
@@ -78,10 +78,10 @@ const ConfirmationModal = ({
             <div className="flex items-start gap-2">
               <span className="text-blue-600 text-xl">ℹ️</span>
               <div>
-                <p className="text-lg sm:text-base font-semibold text-blue-900 m-0 mb-2 leading-snug tracking-tight">
+                <p className="text-base font-semibold text-blue-900 m-0 mb-2 leading-snug tracking-tight">
                   Post the same job again?
                 </p>
-                <p className="text-lg sm:text-base text-blue-800 m-0 leading-normal tracking-tight">
+                <p className="text-base text-blue-800 m-0 leading-normal tracking-tight">
                   This will create a new job posting with the same details as the current one. The new posting will be active for 30 days from today.
                 </p>
               </div>
@@ -93,14 +93,14 @@ const ConfirmationModal = ({
         <div className="p-6 border-t border-gray-200 bg-white flex flex-col sm:flex-row justify-end gap-3">
           <button 
             type="button" 
-            className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors min-w-[120px] text-lg sm:text-base leading-normal tracking-tight"
+            className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors min-w-[120px] text-base leading-normal tracking-tight"
             onClick={handleClose}
           >
             Cancel
           </button>
           <button 
             type="button" 
-            className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-brand text-white font-medium hover:bg-gradient-primary-hover transition-colors min-w-[150px] shadow-md text-lg sm:text-base leading-normal tracking-tight"
+            className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-brand text-white font-medium hover:bg-gradient-primary-hover transition-colors min-w-[150px] shadow-md text-base leading-normal tracking-tight"
             onClick={confirmPostSameJob}
           >
             🔄 Post Same Job
@@ -177,7 +177,7 @@ const CloseJobModal = ({
               <div className="text-2xl">💼</div>
               <div className="flex-1">
                 <p className="text-sm text-gray-500 mb-1 font-medium leading-snug tracking-tight">Job Title</p>
-                <p className="text-lg font-semibold text-gray-900 m-0 leading-tight tracking-tight">
+                <p className="text-xl font-semibold text-gray-900 m-0 leading-tight tracking-tight">
                   {jobToClose?.job_title || 'N/A'}
                 </p>
               </div>
@@ -529,8 +529,8 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
                   alt="No jobs posted" 
                   className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
                 />
-                <h6 className="text-lg font-semibold text-gray-700 mb-2 leading-tight tracking-tight">No Jobs Posted Yet</h6>
-                <p className="text-lg sm:text-base text-gray-500 mb-6 leading-normal tracking-tight">
+                <h6 className="text-xl font-semibold text-gray-700 mb-2 leading-tight tracking-tight">No Jobs Posted Yet</h6>
+                <p className="text-base text-gray-500 mb-6 leading-normal tracking-tight">
                   {searchQuery ? 
                     'No jobs match your search criteria.' : 
                     'You haven\'t posted any jobs yet. Start by creating your first job post.'
@@ -538,7 +538,7 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
                 </p>
                 {!searchQuery && onSwitchToCreateTab && (
                   <button 
-                    className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-full hover:bg-gradient-primary-hover transition-colors inline-flex items-center gap-2 text-lg sm:text-base leading-normal tracking-tight"
+                    className="px-6 py-3 bg-gradient-brand text-white font-medium rounded-full hover:bg-gradient-primary-hover transition-colors inline-flex items-center gap-2 text-base leading-normal tracking-tight"
                     onClick={onSwitchToCreateTab}
                   >
                     <i className="la la-plus"></i> Create New Job
@@ -550,7 +550,7 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
             // Job List
             <div className="w-full">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-5 gap-4 w-full">
-                <h6 className="text-lg font-semibold text-gray-700 whitespace-nowrap leading-tight tracking-tight">Your Posted Jobs: {filteredJobs.length}</h6>
+                <h6 className="text-xl font-semibold text-gray-700 whitespace-nowrap leading-tight tracking-tight">Your Posted Jobs: {filteredJobs.length}</h6>
                 <div className="relative w-full sm:flex-1 sm:max-w-md">
                   <input
                     type="text"
@@ -591,12 +591,12 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
                                 {job.job_title || 'Untitled Job'}
                               </h6>
                               <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 mt-2">
-                                <p className="m-0 text-lg sm:text-base text-gray-500 font-medium uppercase tracking-wide bg-gray-100 px-2 py-0.5 rounded inline-block w-fit leading-normal">
+                                <p className="m-0 text-base text-gray-500 font-medium uppercase tracking-wide bg-gray-100 px-2 py-0.5 rounded inline-block w-fit leading-normal">
                                   {job.job_type ? job.job_type.replace('_', ' ').toUpperCase() : 'N/A'}
                                 </p>
                               </div>
                               {job.is_closed === 1 && job.reason && (
-                                <p className="text-lg sm:text-base text-gray-600 mt-1 break-words sm:truncate w-full leading-normal tracking-tight" title={job.reason}>
+                                <p className="text-base text-gray-600 mt-1 break-words sm:truncate w-full leading-normal tracking-tight" title={job.reason}>
                                   <strong>Reason:</strong> {job.reason}
                                 </p>
                               )}
@@ -604,10 +604,10 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
 
                             {/* Posted Date Section - Hidden on mobile, shown on tablet+ */}
                             <div className="hidden md:flex flex-shrink-0 px-2 text-center flex-col items-center">
-                              <p className="m-0 mb-1 text-lg sm:text-base text-gray-500 font-medium uppercase tracking-wide leading-snug">
+                              <p className="m-0 mb-1 text-base text-gray-500 font-medium uppercase tracking-wide leading-snug">
                                 Posted
                               </p>
-                              <p className="m-0 text-lg sm:text-base text-gray-800 font-semibold bg-gray-100 px-2 py-0.5 rounded border border-gray-200 whitespace-nowrap leading-normal tracking-tight">
+                              <p className="m-0 text-base text-gray-800 font-semibold bg-gray-100 px-2 py-0.5 rounded border border-gray-200 whitespace-nowrap leading-normal tracking-tight">
                                 {formatDate(job.created_at || job.joining_date)}
                               </p>
                             </div>
@@ -628,28 +628,28 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
                         <div className="flex-shrink-0 px-2">
                           <div className="flex flex-col sm:flex-row gap-2 items-end sm:items-center lg:flex-nowrap">
                             <button
-                              className="border-none rounded-md py-1.5 px-2 text-base font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[36px] w-[90px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md leading-normal tracking-tight"
+                              className="border-none rounded-md py-1.5 px-2 text-sm font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[36px] w-[90px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md leading-normal tracking-tight"
                               onClick={() => handlePostSameJob(job)}
                             >
                               Post Same
                             </button>
 
                             <button
-                              className="border-none rounded-md py-1.5 px-2 text-base font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[36px] w-[90px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md leading-normal tracking-tight"
+                              className="border-none rounded-md py-1.5 px-2 text-sm font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[36px] w-[90px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md leading-normal tracking-tight"
                               onClick={() => handleEditAndPost(job)}
                             >
                               Edit & Post
                             </button>
 
                             <button
-                              className={`border-none rounded-md py-1.5 px-2 text-base font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[36px] w-[90px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md leading-normal tracking-tight ${expandedJobId === (job.id || index) ? 'opacity-90' : ''}`}
+                              className={`border-none rounded-md py-1.5 px-2 text-sm font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[36px] w-[90px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md leading-normal tracking-tight ${expandedJobId === (job.id || index) ? 'opacity-90' : ''}`}
                               onClick={() => handleViewJob(job.id || index)}
                             >
                               {expandedJobId === (job.id || index) ? 'Hide' : 'View'}
                             </button>
 
                             <button
-                              className="border-none rounded-md py-1.5 px-2 text-base font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[36px] w-[90px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed leading-normal tracking-tight"
+                              className="border-none rounded-md py-1.5 px-2 text-sm font-semibold duration-300 transition-colors inline-flex items-center gap-1 justify-center whitespace-nowrap cursor-pointer no-underline min-h-[36px] w-[90px] bg-gradient-brand-light text-white hover:bg-gradient-brand-light-hover sm:bg-gradient-brand sm:hover:bg-gradient-primary-hover hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed leading-normal tracking-tight"
                               onClick={() => handleCloseJob(job)}
                               disabled={job.is_closed === 1}
                             >

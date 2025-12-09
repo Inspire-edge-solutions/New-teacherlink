@@ -22,10 +22,10 @@ const SuccessModal = ({ open, onClose, message }) => {
               className="w-10 h-10 sm:w-12 sm:h-12"
             />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-3 leading-tight tracking-tight">Congrats!!</h2>
-          <p className="text-gray-600 text-lg sm:text-base mb-6 leading-normal tracking-tight">{message}</p>
+          <h2 className="text-xl font-semibold text-gray-800 mb-3 leading-tight tracking-tight">Congrats!!</h2>
+          <p className="text-gray-600 text-base mb-6 leading-normal tracking-tight">{message}</p>
           <button 
-            className="w-full bg-gradient-brand text-white py-2 sm:py-3 rounded-lg hover:bg-gradient-primary-hover duration-200 transition-colors font-medium text-lg sm:text-base leading-normal tracking-tight"
+            className="w-full bg-gradient-brand text-white py-2 sm:py-3 rounded-lg hover:bg-gradient-primary-hover duration-200 transition-colors font-medium text-base leading-normal tracking-tight"
             onClick={onClose}
           >
             OK
@@ -54,10 +54,10 @@ const InfoModal = ({ open, onClose, iconUrl, message, loading }) => {
               />
             )}
           </div>
-          <h3 className="text-xl font-bold text-red-600 mb-3 leading-tight tracking-tight">Info</h3>
-          <p className="text-gray-600 text-lg sm:text-base mb-6 leading-normal tracking-tight">{message}</p>
+          <h3 className="text-xl font-semibold text-red-600 mb-3 leading-tight tracking-tight">Info</h3>
+          <p className="text-gray-600 text-base mb-6 leading-normal tracking-tight">{message}</p>
           <button 
-            className="w-full bg-gradient-brand text-white py-2 sm:py-3 rounded-lg hover:bg-gradient-primary-hover duration-200 transition-colors font-medium text-lg sm:text-base leading-normal tracking-tight"
+            className="w-full bg-gradient-brand text-white py-2 sm:py-3 rounded-lg hover:bg-gradient-primary-hover duration-200 transition-colors font-medium text-base leading-normal tracking-tight"
             onClick={onClose}
           >
             OK
@@ -76,52 +76,52 @@ const SubscriptionDetailsView = ({ subscription }) => {
         <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
           <span className="text-2xl sm:text-3xl">✓</span>
         </div>
-        <h3 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">Premium Subscription Activated!</h3>
+        <h3 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">Premium Subscription Activated!</h3>
       </div>
       
       <div className="bg-gray-50 rounded-lg sm:rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <div className="flex justify-between items-center">
-            <span className="text-lg sm:text-base font-medium text-gray-700 leading-snug tracking-tight">Status</span>
-            <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-lg sm:text-base font-semibold leading-normal tracking-tight">Active</span>
+            <span className="text-base font-medium text-gray-700 leading-snug tracking-tight">Status</span>
+            <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-base font-semibold leading-normal tracking-tight">Active</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-lg sm:text-base font-medium text-gray-700 leading-snug tracking-tight">Start Date</span>
-            <span className="text-lg sm:text-base text-gray-800 leading-normal tracking-tight">{new Date(subscription.start_date).toLocaleDateString()}</span>
+            <span className="text-base font-medium text-gray-700 leading-snug tracking-tight">Start Date</span>
+            <span className="text-base text-gray-800 leading-normal tracking-tight">{new Date(subscription.start_date).toLocaleDateString()}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-lg sm:text-base font-medium text-gray-700 leading-snug tracking-tight">Valid Until</span>
-            <span className="text-lg sm:text-base text-gray-800 leading-normal tracking-tight">{new Date(subscription.end_date).toLocaleDateString()}</span>
+            <span className="text-base font-medium text-gray-700 leading-snug tracking-tight">Valid Until</span>
+            <span className="text-base text-gray-800 leading-normal tracking-tight">{new Date(subscription.end_date).toLocaleDateString()}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-lg sm:text-base font-medium text-gray-700 leading-snug tracking-tight">Plan Type</span>
-            <span className="text-lg sm:text-base text-gray-800 leading-normal tracking-tight">Premium Job Provider</span>
+            <span className="text-base font-medium text-gray-700 leading-snug tracking-tight">Plan Type</span>
+            <span className="text-base text-gray-800 leading-normal tracking-tight">Premium Job Provider</span>
           </div>
           <div className="flex justify-between items-center sm:col-span-2">
-            <span className="text-lg sm:text-base font-medium text-gray-700 leading-snug tracking-tight">Coins Balance</span>
-            <span className="text-lg sm:text-base font-semibold text-gray-800 leading-normal tracking-tight">{subscription.coins_balance} coins</span>
+            <span className="text-base font-medium text-gray-700 leading-snug tracking-tight">Coins Balance</span>
+            <span className="text-base font-semibold text-gray-800 leading-normal tracking-tight">{subscription.coins_balance} coins</span>
           </div>
         </div>
       </div>
       
       <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg sm:rounded-xl p-4 sm:p-6">
-        <h4 className="text-lg font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 text-center leading-tight tracking-tight">Premium Benefits Unlocked</h4>
+        <h4 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-4 text-center leading-tight tracking-tight">Premium Benefits Unlocked</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="flex items-center gap-3">
             <span className="text-lg sm:text-xl">🎯</span>
-            <span className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">Priority Job Postings</span>
+            <span className="text-base text-gray-700 leading-normal tracking-tight">Priority Job Postings</span>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-lg sm:text-xl">💼</span>
-            <span className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">Access to Premium Candidates</span>
+            <span className="text-base text-gray-700 leading-normal tracking-tight">Access to Premium Candidates</span>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-lg sm:text-xl">📊</span>
-            <span className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">Advanced Analytics</span>
+            <span className="text-base text-gray-700 leading-normal tracking-tight">Advanced Analytics</span>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-lg sm:text-xl">🌟</span>
-            <span className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">Featured Profile</span>
+            <span className="text-base text-gray-700 leading-normal tracking-tight">Featured Profile</span>
           </div>
         </div>
       </div>
@@ -163,8 +163,8 @@ const Subscription = () => {
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🔒</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2 leading-tight tracking-tight">Access Denied</h2>
-          <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">Please log in to access subscription features.</p>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2 leading-tight tracking-tight">Access Denied</h2>
+          <p className="text-base text-gray-600 leading-normal tracking-tight">Please log in to access subscription features.</p>
         </div>
       </div>
     );
@@ -325,7 +325,7 @@ const Subscription = () => {
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
         <div className="text-center">
           <div className="text-red-500 text-xl font-semibold mb-2 leading-tight tracking-tight">Error</div>
-          <div className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">{error}</div>
+          <div className="text-base text-gray-600 leading-normal tracking-tight">{error}</div>
         </div>
       </div>
     );
@@ -336,14 +336,14 @@ const Subscription = () => {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
-            <h2 className="text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 leading-tight tracking-tight">Active Subscription</h2>
+            <h2 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-4 leading-tight tracking-tight">Active Subscription</h2>
             <div className="bg-gray-50 rounded-lg sm:rounded-xl p-4 sm:p-6">
-              <p className="text-lg sm:text-base text-gray-700 mb-2 leading-normal tracking-tight">
+              <p className="text-base text-gray-700 mb-2 leading-normal tracking-tight">
                 <span className="font-semibold">Valid until:</span> {new Date(subscription.endDate).toLocaleDateString()}
               </p>
-              <p className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">
+              <p className="text-base text-gray-700 leading-normal tracking-tight">
                 <span className="font-semibold">Status:</span> 
-                <span className="ml-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-lg sm:text-base font-semibold leading-normal tracking-tight">Active</span>
+                <span className="ml-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-base font-semibold leading-normal tracking-tight">Active</span>
               </p>
             </div>
           </div>
@@ -359,7 +359,7 @@ const Subscription = () => {
         <div className="mb-6 sm:mb-8">
           {/* Title */}
           <div className="mb-4 sm:mb-6">
-          <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
+          <h2 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
                 Subscription plans
               </h2>
           </div>
@@ -370,7 +370,7 @@ const Subscription = () => {
             <div className={`flex justify-center ${activeTab === 'payment' ? 'w-full sm:flex-1' : 'w-full'}`}>
               <div className="flex bg-white rounded-full p-1 shadow-lg w-full sm:w-auto">
                 <button
-                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-lg sm:text-base leading-normal tracking-tight ${
+                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-base leading-normal tracking-tight ${
                     activeTab === 'payment' 
                       ? 'bg-gradient-brand text-white shadow-md hover:bg-gradient-primary-hover' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -382,7 +382,7 @@ const Subscription = () => {
                 </button>
                 
                 <button
-                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-lg sm:text-base leading-normal tracking-tight ${
+                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-base leading-normal tracking-tight ${
                     activeTab === 'referral' 
                       ? 'bg-gradient-brand text-white shadow-md hover:bg-gradient-primary-hover' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -394,7 +394,7 @@ const Subscription = () => {
                 </button>
                 
                 <button
-                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-lg sm:text-base leading-normal tracking-tight ${
+                  className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 sm:py-3 rounded-full font-medium duration-200 transition-colors text-base leading-normal tracking-tight ${
                     activeTab === 'coupon' 
                       ? 'bg-gradient-brand text-white shadow-md hover:bg-gradient-primary-hover' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -411,7 +411,7 @@ const Subscription = () => {
             {activeTab === 'payment' && (
               <div className="flex justify-center sm:justify-end">
                 <button
-                  className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-lg font-medium text-lg sm:text-base leading-normal tracking-tight"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-lg font-medium text-base leading-normal tracking-tight"
                   onClick={fetchPaymentHistory}
                   disabled={historyLoading}
                 >
@@ -467,10 +467,10 @@ const Subscription = () => {
             {/* Header with Close Button */}
             <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-start relative">
               <div className="flex-1 pr-3 sm:pr-4">
-                <h3 className="text-2xl font-semibold text-gray-800 flex items-center gap-2 m-0 leading-tight tracking-tight">
+                <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2 m-0 leading-tight tracking-tight">
                   💳 Payment History
                 </h3>
-                <p className="text-lg sm:text-base text-gray-600 mt-1 m-0 leading-normal tracking-tight">
+                <p className="text-base text-gray-600 mt-1 m-0 leading-normal tracking-tight">
                   Your transaction history and payment details
                 </p>
               </div>
@@ -500,7 +500,7 @@ const Subscription = () => {
                     className="w-48 h-48 sm:w-64 sm:h-64 mb-4 mx-auto"
                   />
                   <h3 className="text-xl font-semibold text-gray-800 mb-2 leading-tight tracking-tight">No Payment History</h3>
-                  <p className="text-lg sm:text-base leading-normal tracking-tight">You haven't made any payments yet.</p>
+                  <p className="text-base leading-normal tracking-tight">You haven't made any payments yet.</p>
                 </div>
               ) : (
                 <div className="flex-1 overflow-y-auto flex flex-col">
@@ -542,24 +542,24 @@ const Subscription = () => {
                           }
                         }
                       `}</style>
-                      <table className="w-full border-collapse text-lg sm:text-base bg-white leading-normal tracking-tight" style={{ borderCollapse: 'separate', borderSpacing: 0, minWidth: freezeColumns > 0 ? '500px' : '600px' }}>
+                      <table className="w-full border-collapse text-base bg-white leading-normal tracking-tight" style={{ borderCollapse: 'separate', borderSpacing: 0, minWidth: freezeColumns > 0 ? '500px' : '600px' }}>
                         <thead className="sticky top-0 z-10">
                           <tr className="bg-gray-50 border-b-2 border-gray-200">
-                            <th className={`px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-lg sm:text-base leading-normal tracking-tight freeze-col-1 ${freezeColumns >= 1 ? 'sticky freeze-sticky-1 z-20 bg-gray-50' : ''}`}
+                            <th className={`px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-base leading-normal tracking-tight freeze-col-1 ${freezeColumns >= 1 ? 'sticky freeze-sticky-1 z-20 bg-gray-50' : ''}`}
                               style={freezeColumns >= 1 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
                             >
                               Amount
                             </th>
-                            <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-lg sm:text-base leading-normal tracking-tight">
+                            <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-base leading-normal tracking-tight">
                               Status
                             </th>
-                            <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-lg sm:text-base leading-normal tracking-tight">
+                            <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-base leading-normal tracking-tight">
                               Transaction ID
                             </th>
-                            <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-lg sm:text-base leading-normal tracking-tight">
+                            <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 border-r border-gray-200 text-base leading-normal tracking-tight">
                               Date
                             </th>
-                            <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 text-lg sm:text-base leading-normal tracking-tight">
+                            <th className="px-1 sm:px-2 py-2 sm:py-3 text-left font-semibold text-gray-700 text-base leading-normal tracking-tight">
                               Receipt
                             </th>
                           </tr>
@@ -572,14 +572,14 @@ const Subscription = () => {
                                 key={payment.id || index}
                                 className="group border-b border-gray-200 transition-all duration-200 cursor-pointer"
                               >
-                                <td className={`px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 font-semibold text-gray-800 text-lg sm:text-base leading-normal tracking-tight freeze-col-1 ${freezeColumns >= 1 ? 'sticky freeze-sticky-1 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
+                                <td className={`px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 font-semibold text-gray-800 text-base leading-normal tracking-tight freeze-col-1 ${freezeColumns >= 1 ? 'sticky freeze-sticky-1 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
                                   style={freezeColumns >= 1 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
                                 >
                                   ₹{payment.amount}
                                 </td>
                                 <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 group-hover:bg-gray-50">
                                   <span 
-                                    className="inline-block px-1 sm:px-2 py-1 rounded-full text-lg sm:text-base font-semibold leading-normal tracking-tight"
+                                    className="inline-block px-1 sm:px-2 py-1 rounded-full text-base font-semibold leading-normal tracking-tight"
                                     style={{
                                       backgroundColor: statusInfo.color + '20',
                                       color: statusInfo.color,
@@ -589,11 +589,11 @@ const Subscription = () => {
                                     {statusInfo.text}
                                   </span>
                                 </td>
-                                <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 font-mono text-lg sm:text-base text-gray-600 break-all max-w-[120px] sm:max-w-[150px] leading-normal tracking-tight group-hover:bg-gray-50">
+                                <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 font-mono text-base text-gray-600 break-all max-w-[120px] sm:max-w-[150px] leading-normal tracking-tight group-hover:bg-gray-50">
                                   {payment.user_transaction_id}
                                 </td>
                                 <td className="px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 text-gray-600 min-w-[80px] sm:min-w-[100px] group-hover:bg-gray-50">
-                                  <div className="text-lg sm:text-base leading-tight">
+                                  <div className="text-base leading-tight">
                                     {formatDate(payment.created_at)}
                                     <br />
                                     <span className="text-base text-gray-500 leading-normal tracking-tight">
@@ -601,7 +601,7 @@ const Subscription = () => {
                                     </span>
                                   </div>
                                 </td>
-                                <td className="px-1 sm:px-2 py-2 sm:py-3 text-gray-600 text-lg sm:text-base max-w-[100px] sm:max-w-[120px] break-all leading-normal tracking-tight group-hover:bg-gray-50">
+                                <td className="px-1 sm:px-2 py-2 sm:py-3 text-gray-600 text-base max-w-[100px] sm:max-w-[120px] break-all leading-normal tracking-tight group-hover:bg-gray-50">
                                   {payment.receipt}
                                 </td>
                               </tr>

@@ -224,11 +224,11 @@ const ForgetPassword = () => {
         {/* Content */}
         <div className="flex flex-col justify-center px-12 py-16 relative z-10">
           <div className="space-y-6">
-            <h1 className="text-4xl font-bold text-red-600 leading-tight tracking-tight">
+            <h1 className="text-xl font-semibold text-red-600 leading-tight tracking-tight">
               Reset Your Password
             </h1>
             <div className="space-y-4">
-              <p className="text-lg text-gray-700 leading-normal tracking-tight">
+              <p className="text-base text-gray-700 leading-normal tracking-tight">
                 Don't worry! We'll help you regain access to your account with a secure password reset process.
               </p>
               <div className="space-y-3">
@@ -236,19 +236,19 @@ const ForgetPassword = () => {
                   <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-base leading-normal tracking-tight">1</span>
                   </div>
-                  <span className="text-gray-700 text-lg sm:text-base leading-normal tracking-tight">Enter your registered email address</span>
+                  <span className="text-gray-700 text-base leading-normal tracking-tight">Enter your registered email address</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-base leading-normal tracking-tight">2</span>
                   </div>
-                  <span className="text-gray-700 text-lg sm:text-base leading-normal tracking-tight">Verify with the OTP sent to your email</span>
+                  <span className="text-gray-700 text-base leading-normal tracking-tight">Verify with the OTP sent to your email</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-base leading-normal tracking-tight">3</span>
                   </div>
-                  <span className="text-gray-700 text-lg sm:text-base leading-normal tracking-tight">Create a new secure password</span>
+                  <span className="text-gray-700 text-base leading-normal tracking-tight">Create a new secure password</span>
                 </div>
               </div>
             </div>
@@ -260,7 +260,7 @@ const ForgetPassword = () => {
       {/* Right Section - Forget Password Form */}
       <div className="w-full lg:w-1/2 bg-white flex items-center justify-center px-3 sm:px-6 md:px-8 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg">
         <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
-          <h2 className="text-2xl font-bold text-black mb-4 sm:mb-6 text-center lg:text-left leading-tight tracking-tight">Reset Password</h2>
+          <h2 className="text-xl font-semibold text-black mb-4 sm:mb-6 text-center lg:text-left leading-tight tracking-tight">Reset Password</h2>
           
           {!isCompleted ? (
             <>
@@ -297,7 +297,7 @@ const ForgetPassword = () => {
                       onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
                       placeholder="Enter OTP"
                       required
-                      className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black text-center tracking-widest"
+                      className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base placeholder-black text-center tracking-widest"
                     />
                   </div>
                   
@@ -329,7 +329,7 @@ const ForgetPassword = () => {
                       onChange={e => setNewPassword(e.target.value)}
                       placeholder="New Password"
                       required
-                      className={`w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black ${
+                      className={`w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 focus:outline-none text-base placeholder-black ${
                         showValidationErrors && !passwordValidation.length 
                           ? 'border-red-500' 
                           : 'border-gray-300 focus:border-red-500'
@@ -391,12 +391,12 @@ const ForgetPassword = () => {
                 </svg>
               </div>
               <div>
-                <h4 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-2 leading-tight tracking-tight">Success!</h4>
-                <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-normal tracking-tight">Your password has been changed successfully!</p>
+                <h4 className="text-xl font-semibold text-gray-800 mb-2 leading-tight tracking-tight">Success!</h4>
+                <p className="text-base text-gray-600 leading-normal tracking-tight">Your password has been changed successfully!</p>
               </div>
               <button 
                 onClick={() => navigate('/login')}
-                className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-semibold py-3 sm:py-4 md:py-5 px-6 rounded-lg duration-200 transition-colors text-base sm:text-lg md:text-xl"
+                className="w-full bg-gradient-brand hover:bg-gradient-primary-hover text-white font-medium py-3 sm:py-4 md:py-5 px-6 rounded-lg duration-200 transition-colors text-base"
               >
                 Back to Login
               </button>

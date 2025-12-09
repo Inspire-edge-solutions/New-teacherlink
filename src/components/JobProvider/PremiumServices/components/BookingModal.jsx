@@ -901,7 +901,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
                 onClick={(e) => e.stopPropagation()}
               >
         <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
-          <h3 className="text-xl font-bold text-gray-800 leading-tight tracking-tight">Book Advertising Service</h3>
+          <h3 className="text-xl font-semibold text-gray-800 leading-tight tracking-tight">Book Advertising Service</h3>
           <button
             onClick={handleClose}
             className="text-gray-500 hover:text-gray-700 text-base w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-gray-100 flex-shrink-0 transition-colors"
@@ -912,11 +912,11 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
         </div>
         
         <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
-          <p className="text-lg sm:text-base text-gray-800 mb-1 sm:mb-2 leading-normal tracking-tight">
+          <p className="text-base text-gray-800 mb-1 sm:mb-2 leading-normal tracking-tight">
             Selected Package: 
-            <span className="font-semibold text-gray-800 text-lg sm:text-base ml-1 leading-snug tracking-tight"> {selectedPackage.name} </span>
+            <span className="font-semibold text-gray-800 text-base ml-1 leading-snug tracking-tight"> {selectedPackage.name} </span>
           </p>
-          <p className="text-lg sm:text-base font-bold text-pink-600 mt-1 sm:mt-2 leading-tight tracking-tight">₹{selectedPackage.price} / {selectedPackage.duration}</p>
+          <p className="text-base font-bold text-pink-600 mt-1 sm:mt-2 leading-tight tracking-tight">₹{selectedPackage.price} / {selectedPackage.duration}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">

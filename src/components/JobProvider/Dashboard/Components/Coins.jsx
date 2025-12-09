@@ -308,7 +308,7 @@ const Content = () => {
         <div className="text-center py-12">
           <h5 className="text-xl font-semibold text-red-600 mb-4 leading-tight tracking-tight">Unable to load coin data</h5>
           <button 
-            className="px-4 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white rounded-lg transition-colors text-lg sm:text-base leading-normal tracking-tight" 
+            className="px-4 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white rounded-lg transition-colors text-base leading-normal tracking-tight" 
             onClick={fetchUserCoins}
           >
             Retry
@@ -327,15 +327,15 @@ const Content = () => {
           {coinData && (coinData.coin_value > 0 || coinData.is_razor_pay === 1 || coinData.is_coupon === 1 || coinData.is_refer === 1) ? (
             <>
               {/* Heading centered */}
-              <h3 className="text-xl font-bold text-gray-800 mb-3 sm:mb-4 text-center leading-tight tracking-tight">Coin Details</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-3 sm:mb-4 text-center leading-tight tracking-tight">Coin Details</h3>
               
               {/* Two Column Layout */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3 sm:mb-4">
                 {/* Left Column: Recharge Mode, Coupon Code (if exists), and Status */}
                 <div className="flex flex-col gap-2">
                   <div className="flex flex-row items-center gap-2 flex-wrap">
-                    <span className="text-lg sm:text-base text-gray-700 font-bold whitespace-nowrap leading-snug tracking-tight">Recharge Mode:</span>
-                    <span className="text-lg sm:text-base font-bold text-red-500 break-words leading-normal tracking-tight">{getRechargeMode(coinData)}</span>
+                    <span className="text-base text-gray-700 font-medium whitespace-nowrap leading-snug tracking-tight">Recharge Mode:</span>
+                    <span className="text-base font-semibold text-red-500 break-words leading-normal tracking-tight">{getRechargeMode(coinData)}</span>
                   </div>
                   {/* Only show coupon code for actual coupons, not for referrals or payments */}
                   {coinData.coupon_code && 
@@ -344,13 +344,13 @@ const Content = () => {
                    coinData.is_coupon === 1 && 
                    coinData.is_razor_pay !== 1 && (
                     <div className="flex items-center gap-2">
-                      <span className="text-lg sm:text-base text-gray-700 font-bold leading-snug tracking-tight">Coupon Code:</span>
-                      <span className="text-lg sm:text-base font-bold text-red-500 leading-normal tracking-tight">{coinData.coupon_code}</span>
+                      <span className="text-base text-gray-700 font-medium leading-snug tracking-tight">Coupon Code:</span>
+                      <span className="text-base font-semibold text-red-500 leading-normal tracking-tight">{coinData.coupon_code}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-2">
-                    <span className="text-lg sm:text-base text-gray-700 font-bold leading-snug tracking-tight">Status:</span>
-                    <span className={`text-lg sm:text-base font-bold leading-normal tracking-tight ${
+                    <span className="text-base text-gray-700 font-medium leading-snug tracking-tight">Status:</span>
+                    <span className={`text-base font-semibold leading-normal tracking-tight ${
                       new Date(coinData.redeem_valid) > new Date() 
                         ? 'text-green-600' 
                         : 'text-red-600'
@@ -363,12 +363,12 @@ const Content = () => {
                 {/* Right Column: Valid From and Valid Till */}
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg sm:text-base text-gray-700 font-bold leading-snug tracking-tight">Valid From:</span>
-                    <span className="text-lg sm:text-base text-gray-800 leading-normal tracking-tight">{formatDate(coinData.valid_from)}</span>
+                    <span className="text-base text-gray-700 font-medium leading-snug tracking-tight">Valid From:</span>
+                    <span className="text-base text-gray-800 leading-normal tracking-tight">{formatDate(coinData.valid_from)}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg sm:text-base text-gray-700 font-bold leading-snug tracking-tight">Valid Till:</span>
-                    <span className="text-lg sm:text-base text-gray-800 leading-normal tracking-tight">{formatDate(coinData.redeem_valid)}</span>
+                    <span className="text-base text-gray-700 font-medium leading-snug tracking-tight">Valid Till:</span>
+                    <span className="text-base text-gray-800 leading-normal tracking-tight">{formatDate(coinData.redeem_valid)}</span>
                   </div>
                 </div>
               </div>
@@ -376,7 +376,7 @@ const Content = () => {
               {/* View Coin History Button - Centered */}
               <div className="text-center mt-3 sm:mt-4">
                 <button 
-                  className="px-4 sm:px-6 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white text-lg sm:text-base rounded-lg transition-colors font-medium leading-normal tracking-tight"
+                  className="px-4 sm:px-6 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white text-base rounded-lg transition-colors font-medium leading-normal tracking-tight"
                   onClick={handleHistoryClick}
                 >
                   View Coin History
@@ -386,8 +386,8 @@ const Content = () => {
           ) : (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <h5 className="text-lg font-semibold text-gray-700 mb-2 leading-tight tracking-tight">You don't have coins yet</h5>
-                <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">Apply a coupon code or make payment or refer friends to get coins!</p>
+                <h5 className="text-xl font-semibold text-gray-700 mb-2 leading-tight tracking-tight">You don't have coins yet</h5>
+                <p className="text-base text-gray-600 leading-normal tracking-tight">Apply a coupon code or make payment or refer friends to get coins!</p>
               </div>
             </div>
           )}
@@ -400,7 +400,7 @@ const Content = () => {
               className="rounded-[20px] p-4 sm:p-5 flex flex-col items-center justify-between gap-3 sm:gap-4 h-full"
               style={{ backgroundColor: '#FFDEE0' }}
             >
-              <h6 className="text-lg sm:text-base font-semibold text-gray-800 leading-snug tracking-tight">Available Coins</h6>
+              <h6 className="text-xl font-semibold text-gray-800 leading-snug tracking-tight">Available Coins</h6>
               
               <div className="text-3xl font-bold text-gray-800 leading-tight tracking-tight">
                 {coinData.coin_value?.toLocaleString() || 0}
@@ -411,7 +411,7 @@ const Content = () => {
               </div>
               
               <button 
-                className="px-4 sm:px-5 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white text-lg sm:text-base rounded-lg transition-colors font-medium leading-normal tracking-tight"
+                className="px-4 sm:px-5 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white text-base rounded-lg transition-colors font-medium leading-normal tracking-tight"
                 onClick={fetchUserCoins}
                 disabled={isLoading}
               >
@@ -423,12 +423,12 @@ const Content = () => {
               <div className="flex justify-center mb-3 sm:mb-4">
                 <img src={noCoinsIllustration} alt="No Coins" className="w-48 sm:w-64 h-auto" />
               </div>
-              <h5 className="text-lg font-semibold text-gray-700 mb-2 leading-tight tracking-tight">No Coins Available</h5>
-              <p className="text-lg sm:text-base text-gray-600 mb-3 sm:mb-4 px-2 leading-normal tracking-tight">
+              <h5 className="text-xl font-semibold text-gray-700 mb-2 leading-tight tracking-tight">No Coins Available</h5>
+              <p className="text-base text-gray-600 mb-3 sm:mb-4 px-2 leading-normal tracking-tight">
                 Apply coupon code or make payment or refer friends to get coins!
               </p>
               <button 
-                className="px-4 sm:px-5 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white text-lg sm:text-base rounded-lg transition-colors font-medium mx-auto leading-normal tracking-tight" 
+                className="px-4 sm:px-5 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white text-base rounded-lg transition-colors font-medium mx-auto leading-normal tracking-tight" 
                 onClick={fetchUserCoins}
                 disabled={isLoading}
               >
@@ -446,7 +446,7 @@ const Content = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4" onClick={closeHistoryModal}>
             <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
               <div className="border-b px-6 py-4">
-                <h5 className="text-xl font-bold text-gray-800 leading-tight tracking-tight">Coin Transaction History</h5>
+                <h5 className="text-xl font-semibold text-gray-800 leading-tight tracking-tight">Coin Transaction History</h5>
               </div>
               
               <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
@@ -454,9 +454,9 @@ const Content = () => {
               <div className="mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-lg sm:text-base font-bold text-gray-700 mb-2 leading-snug tracking-tight">Month:</label>
+                    <label className="block text-base font-medium text-gray-700 mb-2 leading-snug tracking-tight">Month:</label>
                     <select 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg sm:text-base leading-normal tracking-tight"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base leading-normal tracking-tight"
                       value={selectedMonth}
                       onChange={(e) => setSelectedMonth(e.target.value)}
                     >
@@ -476,9 +476,9 @@ const Content = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-lg sm:text-base font-bold text-gray-700 mb-2 leading-snug tracking-tight">Year:</label>
+                    <label className="block text-base font-medium text-gray-700 mb-2 leading-snug tracking-tight">Year:</label>
                     <select 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg sm:text-base leading-normal tracking-tight"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base leading-normal tracking-tight"
                       value={selectedYear}
                       onChange={(e) => setSelectedYear(e.target.value)}
                     >
@@ -490,7 +490,7 @@ const Content = () => {
                   </div>
                   <div className="flex items-end">
                     <button 
-                      className="w-full px-4 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white rounded-lg transition-colors text-lg sm:text-base leading-normal tracking-tight"
+                      className="w-full px-4 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white rounded-lg transition-colors text-base leading-normal tracking-tight"
                       onClick={filterHistory}
                     >
                       Search
@@ -596,36 +596,36 @@ const Content = () => {
                     <thead className="bg-gradient-brand text-white">
                       <tr>
                         <th 
-                          className={`px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal freeze-col-1 ${freezeColumns >= 1 ? 'sticky freeze-sticky-1 z-20 bg-gradient-brand' : ''}`}
+                          className={`px-4 py-3 text-left text-base font-medium uppercase tracking-wider leading-normal freeze-col-1 ${freezeColumns >= 1 ? 'sticky freeze-sticky-1 z-20 bg-gradient-brand' : ''}`}
                           style={freezeColumns >= 1 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
                         >
                           <span className="hidden md:inline">Date & Time</span>
                           <span className="md:hidden">Date</span>
                         </th>
                         <th 
-                          className={`px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal freeze-col-2 ${freezeColumns >= 2 ? 'sticky freeze-sticky-2 z-20 bg-gradient-brand' : ''}`}
+                          className={`px-4 py-3 text-left text-base font-medium uppercase tracking-wider leading-normal freeze-col-2 ${freezeColumns >= 2 ? 'sticky freeze-sticky-2 z-20 bg-gradient-brand' : ''}`}
                           style={freezeColumns >= 2 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
                         >
                           Reason
                         </th>
                         <th 
-                          className={`px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal freeze-col-3 ${freezeColumns >= 3 ? 'sticky freeze-sticky-3 z-20 bg-gradient-brand' : ''}`}
+                          className={`px-4 py-3 text-left text-base font-medium uppercase tracking-wider leading-normal freeze-col-3 ${freezeColumns >= 3 ? 'sticky freeze-sticky-3 z-20 bg-gradient-brand' : ''}`}
                           style={freezeColumns >= 3 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
                         >
                           Coin Value
                         </th>
-                        <th className="px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal">Reduction</th>
-                        <th className="px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal">Candidate ID</th>
-                        <th className="px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal">Job ID</th>
-                        <th className="px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal">Payment ID</th>
-                        <th className="px-4 py-3 text-left text-lg sm:text-base font-medium uppercase tracking-wider leading-normal">Unblocked Candidate</th>
+                        <th className="px-4 py-3 text-left text-base font-medium uppercase tracking-wider leading-normal">Reduction</th>
+                        <th className="px-4 py-3 text-left text-base font-medium uppercase tracking-wider leading-normal">Candidate ID</th>
+                        <th className="px-4 py-3 text-left text-base font-medium uppercase tracking-wider leading-normal">Job ID</th>
+                        <th className="px-4 py-3 text-left text-base font-medium uppercase tracking-wider leading-normal">Payment ID</th>
+                        <th className="px-4 py-3 text-left text-base font-medium uppercase tracking-wider leading-normal">Unblocked Candidate</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {filteredHistory.map((transaction, index) => (
                         <tr key={transaction.id || index} className="group">
                           <td 
-                            className={`px-4 py-3 text-lg sm:text-base leading-normal tracking-tight freeze-col-1 ${freezeColumns >= 1 ? 'sticky freeze-sticky-1 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
+                            className={`px-4 py-3 text-base leading-normal tracking-tight freeze-col-1 ${freezeColumns >= 1 ? 'sticky freeze-sticky-1 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
                             style={freezeColumns >= 1 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
                           >
                             <div className="hidden md:block whitespace-nowrap">
@@ -644,22 +644,22 @@ const Content = () => {
                             </div>
                           </td>
                           <td 
-                            className={`px-4 py-3 text-lg sm:text-base leading-normal tracking-tight freeze-col-2 ${freezeColumns >= 2 ? 'sticky freeze-sticky-2 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
+                            className={`px-4 py-3 text-base leading-normal tracking-tight freeze-col-2 ${freezeColumns >= 2 ? 'sticky freeze-sticky-2 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
                             style={freezeColumns >= 2 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
                           >
                             {transaction.reason || 'N/A'}
                           </td>
                           <td 
-                            className={`px-4 py-3 text-lg sm:text-base font-bold leading-normal tracking-tight freeze-col-3 ${freezeColumns >= 3 ? 'sticky freeze-sticky-3 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
+                            className={`px-4 py-3 text-base font-bold leading-normal tracking-tight freeze-col-3 ${freezeColumns >= 3 ? 'sticky freeze-sticky-3 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
                             style={freezeColumns >= 3 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
                           >
                             🪙 {transaction.coin_value?.toLocaleString() || 0}
                           </td>
-                          <td className="px-4 py-3 text-lg sm:text-base text-red-600 leading-normal tracking-tight group-hover:bg-gray-50">{transaction.reduction ? `-${transaction.reduction}` : 'N/A'}</td>
-                          <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.candidate_id || 'N/A'}</td>
-                          <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.job_id || 'N/A'}</td>
-                          <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.payment_id || 'N/A'}</td>
-                          <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight group-hover:bg-gray-50">
+                          <td className="px-4 py-3 text-base text-red-600 leading-normal tracking-tight group-hover:bg-gray-50">{transaction.reduction ? `-${transaction.reduction}` : 'N/A'}</td>
+                          <td className="px-4 py-3 text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.candidate_id || 'N/A'}</td>
+                          <td className="px-4 py-3 text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.job_id || 'N/A'}</td>
+                          <td className="px-4 py-3 text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.payment_id || 'N/A'}</td>
+                          <td className="px-4 py-3 text-base leading-normal tracking-tight group-hover:bg-gray-50">
                             {transaction.unblocked_candidate_name ? (
                               <div>
                                 <div className="font-bold leading-normal tracking-tight">{transaction.unblocked_candidate_name}</div>
@@ -676,8 +676,8 @@ const Content = () => {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <h6 className="text-lg font-semibold text-gray-600 mb-2 leading-tight tracking-tight">No Coins Transactions</h6>
-                  <p className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">
+                  <h6 className="text-xl font-semibold text-gray-600 mb-2 leading-tight tracking-tight">No Coins Transactions</h6>
+                  <p className="text-base text-gray-500 leading-normal tracking-tight">
                     {selectedMonth || selectedYear 
                       ? "No transactions found for the selected filter criteria."
                       : "No transaction history available."
@@ -690,7 +690,7 @@ const Content = () => {
               <div className="border-t px-6 py-4 flex justify-end">
                 <button 
                   type="button" 
-                  className="px-6 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white rounded-lg transition-colors font-medium text-lg sm:text-base leading-normal tracking-tight"
+                  className="px-6 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white rounded-lg transition-colors font-medium text-base leading-normal tracking-tight"
                   onClick={closeHistoryModal}
                 >
                   Close

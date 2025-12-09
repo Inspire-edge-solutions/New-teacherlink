@@ -77,10 +77,10 @@ const ContactSection = () => {
         className="text-center"
       >
         <Zoom in={checked} timeout={1000} style={{ transitionDelay: '200ms' }}>
-          <h2 className="text-2xl font-bold mb-3 sm:mb-4 bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">Ready to Get Started?</h2>
+          <h2 className="text-xl font-semibold mb-3 sm:mb-4 bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">Ready to Get Started?</h2>
         </Zoom>
         <Fade in={checked} timeout={1000} style={{ transitionDelay: '400ms' }}>
-          <p className="text-lg sm:text-base mb-3 sm:mb-4 opacity-90 px-2 leading-normal tracking-tight">
+          <p className="text-base mb-3 sm:mb-4 opacity-90 px-2 leading-normal tracking-tight">
             Contact our advertising team to discuss custom packages and special offers
           </p>
         </Fade>

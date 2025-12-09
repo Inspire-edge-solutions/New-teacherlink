@@ -205,7 +205,7 @@ const EmployerProfileCompletion = () => {
     <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 relative h-full">
       {/* Title at top */}
       <div className="text-center mb-3 sm:mb-4">
-        <h5 className="text-lg font-bold text-gray-800 leading-tight tracking-tight">Profile Completion</h5>
+        <h5 className="text-xl font-semibold text-gray-800 leading-tight tracking-tight">Profile Completion</h5>
       </div>
 
       {/* Circular Progress - Centered */}

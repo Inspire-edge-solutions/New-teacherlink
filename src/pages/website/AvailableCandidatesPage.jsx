@@ -391,8 +391,8 @@ const AvailableCandidatesPage = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header Banner */}
           <div className="bg-gradient-brand text-white text-center rounded-lg p-6 mb-6 shadow-lg">
-            <h1 className="text-3xl font-bold mb-2 leading-tight tracking-tight">Find Your Best Teacher</h1>
-            <p className="text-lg sm:text-base opacity-90 leading-normal tracking-tight">
+            <h1 className="text-xl font-semibold mb-2 leading-tight tracking-tight">Find Your Best Teacher</h1>
+            <p className="text-base opacity-90 leading-normal tracking-tight">
             Connect with expert teachers who match your goals, learn smarter and grow faster.  
             Register or login to unlock full profiles and contact teachers.
             </p>
@@ -402,7 +402,7 @@ const AvailableCandidatesPage = () => {
             >
               Register Now to Unlock Details
             </button>
-            <p className="text-sm p-4 sm:text-base text-white-600 leading-normal tracking-tight">
+            <p className="text-base p-4 text-white-600 leading-normal tracking-tight">
               Use coupon code <span className="font-bold text-xl">'HIRE25'</span> to get full access at no cost.
               </p>
           </div>
@@ -432,8 +432,10 @@ const AvailableCandidatesPage = () => {
 
           {/* Candidates Count and Records Per Page */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
-            <h2 className="text-xl sm:text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight">
-              {filteredCandidates.length} {filteredCandidates.length === 1 ? 'Profile' : 'Profiles'} Available
+            <h2 className="text-xl font-semibold bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight">
+              {isSearching || activeFiltersCount > 0
+                ? `Found ${filteredCandidates.length.toLocaleString()} ${filteredCandidates.length === 1 ? 'profile' : 'profiles'}`
+                : 'Available Candidates'}
             </h2>
             <RecordsPerPageDropdown 
               itemsPerPage={candidatesPerPage}
@@ -480,7 +482,7 @@ const AvailableCandidatesPage = () => {
                   alt="No candidates" 
                   className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
                 />
-                <p className="text-gray-600 text-lg sm:text-base font-medium leading-normal tracking-tight">
+                <p className="text-gray-600 text-base font-medium leading-normal tracking-tight">
                   {isSearching || activeFiltersCount > 0
                     ? 'No candidates found matching your search or filters.'
                     : 'No candidates available at the moment.'}

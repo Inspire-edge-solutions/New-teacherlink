@@ -56,7 +56,7 @@ const NotificationItem = ({ notification, index, checked, onMarkAsRead, onDelete
                     <span className="w-2 h-2 bg-gradient-brand rounded-full flex-shrink-0"></span>
                   )}
                 </div>
-                <p className={`text-lg sm:text-base mb-2 leading-normal tracking-tight ${
+                <p className={`text-base mb-2 leading-normal tracking-tight ${
                   notification.read ? 'text-gray-600' : 'text-gray-700'
                 }`}>
                   {notification.message}

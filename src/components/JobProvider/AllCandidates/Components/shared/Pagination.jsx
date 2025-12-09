@@ -63,7 +63,7 @@ const Pagination = ({
     <div className="mt-6 border-t pt-4">
       {/* Pagination Info */}
       <div className="flex justify-between items-center mb-3">
-        <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">
+        <p className="text-base text-gray-600 leading-normal tracking-tight">
           Showing {currentPageStart} to {currentPageEnd} of {totalItems} candidates
         </p>
       </div>

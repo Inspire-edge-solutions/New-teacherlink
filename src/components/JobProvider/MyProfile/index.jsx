@@ -95,7 +95,7 @@ const MyProfileComponent = () => {
         <div className="bg-white rounded-lg shadow-sm p-2">
             {/* Header with View/Edit Profile Button */}
             <div className="flex items-center justify-between gap-3 mb-2">
-                <h4 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">Profile Details</h4>
+                <h4 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">Profile Details</h4>
 
                 {showProfile ? (
                     <button

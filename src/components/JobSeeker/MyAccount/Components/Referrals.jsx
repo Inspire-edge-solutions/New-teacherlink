@@ -565,8 +565,8 @@ const Referrals = ({ user, onSuccess }) => {
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <h3 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-2 leading-tight tracking-tight">Refer candidates and get free access to our Basic Plan</h3>
-          <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Add up to 20 candidates contact numbers and get free access to our Basic Plan when 10 register</p>
+          <h3 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-2 leading-tight tracking-tight">Refer candidates and get free access to our Basic Plan</h3>
+          <p className="text-gray-600 text-base leading-normal tracking-tight">Add up to 20 candidates contact numbers and get free access to our Basic Plan when 10 register</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
@@ -614,7 +614,7 @@ const Referrals = ({ user, onSuccess }) => {
                     maxLength="10"
                     minLength="10"
                     required
-                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-lg sm:text-base leading-normal tracking-tight"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base leading-normal tracking-tight"
                   />
                   <button
                     type="submit"
@@ -645,7 +645,7 @@ const Referrals = ({ user, onSuccess }) => {
                             onChange={e => setEditValue(normalizePhoneNumber(e.target.value))}
                             maxLength="10"
                             pattern="[0-9]{10}"
-                            className="px-2 sm:px-3 py-1 border border-gray-300 rounded text-lg sm:text-base w-24 sm:w-32 leading-normal tracking-tight"
+                            className="px-2 sm:px-3 py-1 border border-gray-300 rounded text-base w-24 sm:w-32 leading-normal tracking-tight"
                           />
                           <div className="flex gap-1 sm:gap-2">
                             <button 
@@ -664,8 +664,8 @@ const Referrals = ({ user, onSuccess }) => {
                         </div>
                       ) : (
                         <div>
-                          <div className="font-medium text-gray-800 text-lg sm:text-base leading-normal tracking-tight">{number}</div>
-                          <div className={`text-lg sm:text-base leading-normal tracking-tight ${
+                          <div className="font-medium text-gray-800 text-base leading-normal tracking-tight">{number}</div>
+                          <div className={`text-base leading-normal tracking-tight ${
                             registeredContacts.includes(number) 
                               ? 'bg-gradient-brand-text bg-clip-text text-transparent font-semibold' 
                               : 'text-gray-500'
@@ -703,7 +703,7 @@ const Referrals = ({ user, onSuccess }) => {
             ) : (
               <div className="text-center py-6 sm:py-8 text-gray-500">
                 <div className="text-3xl sm:text-4xl mb-2">📱</div>
-                <p className="text-lg sm:text-base leading-normal tracking-tight">No candidates added yet</p>
+                <p className="text-base leading-normal tracking-tight">No candidates added yet</p>
               </div>
             )}
 

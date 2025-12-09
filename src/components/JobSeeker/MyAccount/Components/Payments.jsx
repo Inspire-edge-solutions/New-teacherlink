@@ -449,11 +449,11 @@ const Payment = ({ user, onSuccess }) => {
               <h3 className="text-xl font-semibold m-0 leading-tight tracking-tight">📝 Complete Your Profile First</h3>
             </div>
             <div className="mb-4 sm:mb-6">
-              <p className="mb-3 sm:mb-4 text-gray-700 leading-relaxed text-lg sm:text-base tracking-tight">
+              <p className="mb-3 sm:mb-4 text-gray-700 leading-relaxed text-base tracking-tight">
                 We noticed that your profile is not complete. To purchase subscription plans and access our services, 
                 please complete your profile information first.
               </p>
-              <p className="text-gray-700 leading-relaxed text-lg sm:text-base tracking-tight">
+              <p className="text-gray-700 leading-relaxed text-base tracking-tight">
                 <strong>Please go to your profile section and fill in all required information.</strong>
               </p>
             </div>
@@ -483,11 +483,11 @@ const Payment = ({ user, onSuccess }) => {
               <h3 className="text-xl font-semibold m-0 leading-tight tracking-tight">⚠️ Coins Already Available</h3>
             </div>
             <div className="mb-4 sm:mb-6">
-              <p className="mb-3 sm:mb-4 text-gray-700 leading-relaxed text-lg sm:text-base tracking-tight">
+              <p className="mb-3 sm:mb-4 text-gray-700 leading-relaxed text-base tracking-tight">
                 You already have coins in your account that are currently blocked from use.
                 We recommend using your existing coins first before purchasing additional ones.
               </p>
-              <p className="text-gray-700 leading-relaxed text-lg sm:text-base tracking-tight">
+              <p className="text-gray-700 leading-relaxed text-base tracking-tight">
                 <strong>Would you like to proceed with the payment anyway?</strong>
               </p>
             </div>
@@ -532,11 +532,11 @@ const Payment = ({ user, onSuccess }) => {
               <div className="text-center mb-4 sm:mb-6">
                 <div className="text-2xl font-bold text-gray-800 mb-1 leading-tight tracking-tight">
                   ₹{plan.discountedPrice}</div>
-                <div className="text-gray-500 text-lg sm:text-base leading-normal tracking-tight">/ per year</div>
+                <div className="text-gray-500 text-base leading-normal tracking-tight">/ per year</div>
                 {plan.originalPrice > plan.discountedPrice && (
                   <div className="mt-1 sm:mt-2">
-                    <span className="text-gray-500 text-lg sm:text-base leading-normal tracking-tight">Originally </span>
-                    <span className="text-red-500 line-through text-lg sm:text-base leading-normal tracking-tight">₹{plan.originalPrice}</span>
+                    <span className="text-gray-500 text-base leading-normal tracking-tight">Originally </span>
+                    <span className="text-red-500 line-through text-base leading-normal tracking-tight">₹{plan.originalPrice}</span>
                   </div>
                 )}
               </div>
@@ -550,7 +550,7 @@ const Payment = ({ user, onSuccess }) => {
                       <div className="w-4 h-4 sm:w-5 sm:h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-green-600 text-base">✓</span>
                       </div>
-                      <span className="text-gray-700 text-lg sm:text-base leading-normal tracking-tight">{feature}</span>
+                      <span className="text-gray-700 text-base leading-normal tracking-tight">{feature}</span>
                     </li>
                   ))}
                 </ul>

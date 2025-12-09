@@ -62,7 +62,7 @@ const JobMessagingModals = ({
                 <h3 className="font-semibold text-xl mb-4 text-gray-800 leading-tight tracking-tight">
                   Apply To Message
                 </h3>
-                <p className="text-gray-600 text-lg sm:text-base leading-relaxed tracking-tight mb-3">
+                <p className="text-gray-600 text-base leading-relaxed tracking-tight mb-3">
                   To message the institute about the job titled - <strong>{jobToApplyPrompt.job_title || jobToApplyPrompt.title || 'this job'}</strong>, please apply to the job first to unlock messaging.
                 </p>
                 <div className="bg-white/60 rounded-lg p-3 mb-3 border border-gray-200">
@@ -126,7 +126,7 @@ const JobMessagingModals = ({
                 <h3 className="font-semibold text-xl mb-4 text-center text-gray-800 leading-tight tracking-tight">
                   Message Institute
                 </h3>
-                <p className="text-gray-600 text-lg sm:text-base mb-6 text-center leading-relaxed tracking-tight">
+                <p className="text-gray-600 text-base mb-6 text-center leading-relaxed tracking-tight">
                   To send a bulk message, select multiple jobs using the checkboxes and click <strong>Send Message</strong>. Choose <strong>Continue Single</strong> below to message just this institute.
                 </p>
               </div>
@@ -177,7 +177,7 @@ const JobMessagingModals = ({
               <h3 className="font-semibold text-xl mb-4 text-gray-800 leading-tight tracking-tight">
                 Send Bulk Message
               </h3>
-              <div className="text-gray-600 text-lg sm:text-base leading-relaxed space-y-1 tracking-tight">
+              <div className="text-gray-600 text-base leading-relaxed space-y-1 tracking-tight">
                 <p>
                   <strong>{WHATSAPP_COST} coins</strong> per institute via WhatsApp
                 </p>
@@ -185,11 +185,11 @@ const JobMessagingModals = ({
                   <strong>{RCS_COST} coins</strong> per institute via RCS
                 </p>
                 {coinBalance !== null && (
-                  <p className="text-lg sm:text-base text-gray-500 mt-2 leading-normal tracking-tight">
+                  <p className="text-base text-gray-500 mt-2 leading-normal tracking-tight">
                     Current balance: <strong>{coinBalance}</strong> coins
                   </p>
                 )}
-                <p className="text-lg sm:text-base text-gray-600 mt-2 leading-normal tracking-tight">
+                <p className="text-base text-gray-600 mt-2 leading-normal tracking-tight">
                   Coins will be deducted after admin approval
                 </p>
               </div>
@@ -218,9 +218,9 @@ const JobMessagingModals = ({
                   maxLength={500}
                   rows={5}
                   placeholder="Enter your message here..."
-                  className="w-full border border-gray-300 rounded-lg p-3 text-lg sm:text-base focus:outline-none focus:ring-2 focus:ring-gradient-brand resize-none leading-normal tracking-tight"
+                  className="w-full border border-gray-300 rounded-lg p-3 text-base focus:outline-none focus:ring-2 focus:ring-gradient-brand resize-none leading-normal tracking-tight"
                 />
-                <div className="flex items-center justify-between text-lg sm:text-base text-gray-500 leading-normal tracking-tight">
+                <div className="flex items-center justify-between text-base text-gray-500 leading-normal tracking-tight">
                   <span>{selectedCount} job{selectedCount !== 1 ? 's' : ''} selected</span>
                   <span>{bulkMessageChars}/500</span>
                 </div>
@@ -228,7 +228,7 @@ const JobMessagingModals = ({
             )}
 
             {bulkError && (
-              <div className="mt-3 text-lg sm:text-base text-red-500 text-left leading-normal tracking-tight">
+              <div className="mt-3 text-base text-red-500 text-left leading-normal tracking-tight">
                 {bulkError}
               </div>
             )}
@@ -276,10 +276,10 @@ const JobMessagingModals = ({
               <h3 className="font-semibold text-xl text-gray-800 leading-tight tracking-tight">
                 Confirm &amp; Submit for Approval
               </h3>
-              <p className="text-gray-600 text-lg sm:text-base leading-relaxed tracking-tight">
+              <p className="text-gray-600 text-base leading-relaxed tracking-tight">
                 You are about to submit a <strong>{bulkSummary.channel === 'whatsapp' ? 'WhatsApp' : 'RCS'}</strong> message request to <strong>{bulkSummary.jobs.length}</strong> institute{bulkSummary.jobs.length !== 1 ? 's' : ''} for admin approval.
               </p>
-              <p className="text-gray-600 text-lg sm:text-base leading-relaxed tracking-tight">
+              <p className="text-gray-600 text-base leading-relaxed tracking-tight">
                 Your message will be reviewed by admin before being sent.
               </p>
             </div>
@@ -290,17 +290,17 @@ const JobMessagingModals = ({
                   <div className="font-semibold text-base text-gray-800 leading-normal tracking-tight">
                     {institute?.name || job.institute_name || 'Institute'}
                   </div>
-                  <div className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">
+                  <div className="text-base text-gray-500 leading-normal tracking-tight">
                     {job.job_title || job.title || 'Job role'}
                   </div>
-                  <div className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">
+                  <div className="text-base text-gray-500 leading-normal tracking-tight">
                     {institute?.city || job.city || 'City not available'}{institute?.state || job.state_ut ? `, ${institute?.state || job.state_ut}` : ''}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="mb-4 p-3 bg-gray-50 border border-gray-100 rounded-lg text-left text-lg sm:text-base text-gray-700 whitespace-pre-line leading-normal tracking-tight">
+            <div className="mb-4 p-3 bg-gray-50 border border-gray-100 rounded-lg text-left text-base text-gray-700 whitespace-pre-line leading-normal tracking-tight">
               {bulkSummary.message}
             </div>
 
@@ -354,10 +354,10 @@ const JobMessagingModals = ({
                 <h3 className="font-semibold text-xl text-gray-800 leading-tight tracking-tight">
                   Insufficient Coins
                 </h3>
-                <p className="text-gray-600 text-lg sm:text-base leading-relaxed tracking-tight">
+                <p className="text-gray-600 text-base leading-relaxed tracking-tight">
                   You need <strong>{requiredCoins}</strong> coins to send this bulk message.
                 </p>
-                <p className="text-gray-600 text-lg sm:text-base leading-relaxed tracking-tight">
+                <p className="text-gray-600 text-base leading-relaxed tracking-tight">
                   Current balance: <strong>{coinBalance ?? 0}</strong> coins. You are short by <strong>{Math.max(requiredCoins - (coinBalance ?? 0), 0)}</strong> coins.
                 </p>
               </div>

@@ -13,9 +13,16 @@
     min-height: 100vh;
     font-family: 'Montserrat', sans-serif;
     font-weight: 400;
-    font-size: 16px;
+    font-size: 18px; /* 18px on mobile for better readability */
     line-height: 150%;
     letter-spacing: 0%;
+  }
+
+  /* Responsive font size: 18px mobile, 16px desktop */
+  @media (min-width: 640px) {
+    body {
+      font-size: 16px;
+    }
   }
 
   /* Typography Hierarchy */
@@ -54,9 +61,16 @@
   p {
     font-family: 'Montserrat', sans-serif;
     font-weight: 400;
-    font-size: 16px;
+    font-size: 18px; /* 18px on mobile for better readability */
     line-height: 150%;
     letter-spacing: 0%;
+  }
+
+  /* Responsive font size: 18px mobile, 16px desktop */
+  @media (min-width: 640px) {
+    p {
+      font-size: 16px;
+    }
   }
   
   body::before {
@@ -73,6 +87,20 @@
     opacity: 0.20;
     z-index: -1;
     pointer-events: none;
+  }
+}
+
+@layer utilities {
+  /* Responsive text base - automatically makes text-base responsive */
+  /* This overrides Tailwind's default text-base to be 18px on mobile, 16px on desktop */
+  .text-base {
+    font-size: 18px !important; /* 18px on mobile for better readability */
+  }
+
+  @media (min-width: 640px) {
+    .text-base {
+      font-size: 16px !important; /* 16px on desktop */
+    }
   }
 }
 

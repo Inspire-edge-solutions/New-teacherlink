@@ -21,8 +21,8 @@ const NotificationList = ({
         {filteredNotifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-gray-500">
             <MdNotificationsNone className="text-6xl mb-4 opacity-50" />
-            <p className="text-lg sm:text-base font-semibold leading-tight tracking-tight">No notifications found</p>
-            <p className="text-lg sm:text-base mt-2 leading-normal tracking-tight">
+            <p className="text-xl font-semibold leading-tight tracking-tight">No notifications found</p>
+            <p className="text-base mt-2 leading-normal tracking-tight">
               {filter === 'all' 
                 ? "You're all caught up!" 
                 : `No ${filter} notifications`}

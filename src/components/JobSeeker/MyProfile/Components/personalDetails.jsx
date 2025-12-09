@@ -852,7 +852,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
               />
             </InputWithTooltip>
             {validationErrors.fullName && (
-              <span className="text-red-500 text-lg sm:text-base mt-1 block leading-normal tracking-tight">{validationErrors.fullName}</span>
+              <span className="text-red-500 text-base mt-1 block leading-normal tracking-tight">{validationErrors.fullName}</span>
             )}
           </div>
           {/* Profile Image */}
@@ -910,7 +910,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
               </div>
             </InputWithTooltip>
             {validationErrors.email && (
-              <span className="text-red-500 text-lg sm:text-base mt-1 block leading-normal tracking-tight">{validationErrors.email}</span>
+              <span className="text-red-500 text-base mt-1 block leading-normal tracking-tight">{validationErrors.email}</span>
             )}
             {showEmailOtpInput && !emailVerified && !isGoogleAccount && (
               <div className="flex gap-2 mt-2">
@@ -1007,7 +1007,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
               </div>
             </InputWithTooltip>
             {validationErrors.callingNumber && (
-              <span className="text-red-500 text-lg sm:text-base mt-1 block leading-normal tracking-tight">{validationErrors.callingNumber}</span>
+              <span className="text-red-500 text-base mt-1 block leading-normal tracking-tight">{validationErrors.callingNumber}</span>
             )}
             {showPhoneOtpInput && !phoneVerified && (
               <div className="flex gap-2 mt-2">
@@ -1045,7 +1045,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                 onChange={(e) => setSameAsCallingNumber(e.target.checked)}
                 className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
               />
-              <span className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">WhatsApp Number same as Mobile Number</span>
+              <span className="text-base text-gray-700 leading-normal tracking-tight">WhatsApp Number same as Mobile Number</span>
             </label>
           </div>
           {/* WhatsApp Number */}
@@ -1069,7 +1069,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
               />
             </InputWithTooltip>
             {validationErrors.whatsappNumber && (
-              <span className="text-red-500 text-lg sm:text-base mt-1 block leading-normal tracking-tight">{validationErrors.whatsappNumber}</span>
+              <span className="text-red-500 text-base mt-1 block leading-normal tracking-tight">{validationErrors.whatsappNumber}</span>
             )}
           </div>
           {/* {showWhatsappHint && <small>Calling and WhatsApp numbers can be the same</small>} */}

@@ -153,12 +153,12 @@ const MessagesComponent = () => {
             
             {/* Modal Body */}
             <div className="px-6 py-4">
-              <p className="text-gray-600 mb-3 text-lg sm:text-base leading-normal tracking-tight">
+              <p className="text-gray-600 mb-3 text-base leading-normal tracking-tight">
                 This message will be deleted for everyone in the conversation. This action cannot be undone.
               </p>
               {deleteModal.messageText && (
                 <div className="bg-gray-50 rounded-md p-3 mb-3 border border-gray-200">
-                  <p className="text-lg sm:text-base text-gray-700 italic leading-normal tracking-tight">
+                  <p className="text-base text-gray-700 italic leading-normal tracking-tight">
                     "{deleteModal.messageText}"
                   </p>
                 </div>
@@ -346,10 +346,10 @@ const MessagesComponent = () => {
               </div>
 
               {/* Text */}
-              <h2 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-2 leading-tight tracking-tight">
+              <h2 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-2 leading-tight tracking-tight">
                 No Active Message
               </h2>
-              <p className="text-lg sm:text-base text-gray-500 mb-6 px-4 leading-normal tracking-tight">
+              <p className="text-base text-gray-500 mb-6 px-4 leading-normal tracking-tight">
                 Click on the chat to see full conversation or start a new one
               </p>
 

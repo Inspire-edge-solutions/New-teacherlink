@@ -399,7 +399,7 @@ const ProfileCompletionPopup = () => {
                     Complete Profile - {getCompletionStatus(completionData.fullMode.percentage).text}
                   </span>
                 </div>
-                <p className="m-0 text-gray-500 text-lg sm:text-base leading-relaxed text-center tracking-tight">
+                <p className="m-0 text-gray-500 text-base leading-relaxed text-center tracking-tight">
                   {completionData.percentage === 0 
                     ? "Let's get started with your profile! Choose between Short Profile (4 sections) or Complete Profile (6 sections)." 
                     : completionData.percentage < 50 
@@ -420,7 +420,7 @@ const ProfileCompletionPopup = () => {
                   {displayMissingSections.map((section, index) => (
                     <div key={index} className="flex items-center gap-2.5 p-3 bg-orange-50 text-orange-800 border-l-4 border-orange-400 rounded-lg">
                       <FaExclamationTriangle className="text-orange-500 text-sm flex-shrink-0" />
-                      <span className="text-lg sm:text-base leading-normal tracking-tight">{section.name}</span>
+                      <span className="text-base leading-normal tracking-tight">{section.name}</span>
                     </div>
                   ))}
                 </div>
@@ -432,7 +432,7 @@ const ProfileCompletionPopup = () => {
                   {displayCompletedSections.map((section, index) => (
                     <div key={index} className="flex items-center gap-2.5 p-3 bg-green-50 text-green-800 border-l-4 border-green-500 rounded-lg">
                       <FaCheckCircle className="text-green-500 text-sm flex-shrink-0" />
-                      <span className="text-lg sm:text-base leading-normal tracking-tight">{section.name}</span>
+                      <span className="text-base leading-normal tracking-tight">{section.name}</span>
                     </div>
                   ))}
                 </div>
@@ -444,7 +444,7 @@ const ProfileCompletionPopup = () => {
                 <h4 className="m-0 mb-3 text-xl font-semibold text-gray-800 leading-tight tracking-tight">Next Steps:</h4>
                 <ul className="list-none p-0 m-0">
                   {nextSteps.map((step, index) => (
-                    <li key={index} className="flex items-center gap-2.5 py-2 text-lg sm:text-base text-gray-700 leading-normal tracking-tight">
+                    <li key={index} className="flex items-center gap-2.5 py-2 text-base text-gray-700 leading-normal tracking-tight">
                       <FaArrowRight className="text-[#F34B58] text-xs mt-0.5 flex-shrink-0" />
                       <span>{step}</span>
                     </li>

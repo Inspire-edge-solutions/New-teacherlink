@@ -83,7 +83,7 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, currentUserId, 
       <div className="max-w-4xl mx-auto space-y-4">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
-            <p className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">No messages yet. Start the conversation!</p>
+            <p className="text-base text-gray-500 leading-normal tracking-tight">No messages yet. Start the conversation!</p>
           </div>
         ) : (
           messages

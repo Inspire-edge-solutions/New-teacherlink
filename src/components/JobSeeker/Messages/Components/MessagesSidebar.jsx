@@ -150,7 +150,7 @@ const MessagesSidebar = ({
                       ))
                   ) : (
                     <div className="p-4 text-center">
-                      <p className="text-gray-500 text-lg sm:text-base leading-normal tracking-tight">No applied jobs institutions available. Apply to jobs to start messaging institutions.</p>
+                      <p className="text-gray-500 text-base leading-normal tracking-tight">No applied jobs institutions available. Apply to jobs to start messaging institutions.</p>
                     </div>
                   )}
                 </div>
@@ -162,7 +162,7 @@ const MessagesSidebar = ({
         {/* Active Conversations Section */}
         {filteredPeople.length > 0 && (
           <div className="mb-4">
-            <h3 className="px-4 py-3 text-lg font-semibold text-gray-700 leading-tight tracking-tight">Active Conversations</h3>
+            <h3 className="px-4 py-3 text-xl font-semibold text-gray-700 leading-tight tracking-tight">Active Conversations</h3>
             <div className="space-y-1">
               {filteredPeople.map((person) => (
                 <div
@@ -214,7 +214,7 @@ const MessagesSidebar = ({
         {/* Not Active Jobs Section */}
         {filteredInactiveJobs.length > 0 && (
           <div>
-            <h3 className="px-4 py-3 text-lg font-semibold text-gray-700 leading-tight tracking-tight">Not active Jobs</h3>
+            <h3 className="px-4 py-3 text-xl font-semibold text-gray-700 leading-tight tracking-tight">Not active Jobs</h3>
             <div className="space-y-1">
               {filteredInactiveJobs.map((person) => (
                 <div
@@ -255,7 +255,7 @@ const MessagesSidebar = ({
         {/* Empty State */}
         {filteredPeople.length === 0 && filteredInactiveJobs.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center p-6">
-            <p className="text-gray-400 text-lg sm:text-base leading-normal tracking-tight">
+            <p className="text-gray-400 text-base leading-normal tracking-tight">
               {searchQuery.trim() ? 'No conversations match your search' : 'No conversations yet'}
             </p>
           </div>

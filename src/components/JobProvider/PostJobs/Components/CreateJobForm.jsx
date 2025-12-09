@@ -60,10 +60,10 @@ const ProfileRequiredModal = ({ isOpen, onClose }) => {
           <div className="text-center">
             <div className="text-6xl mb-6">👤</div>
             <div className="bg-white rounded-lg p-6 mb-6 border border-gray-200 shadow-sm">
-              <h4 className="text-lg font-semibold text-gray-900 mb-3 leading-tight tracking-tight">
+              <h4 className="text-xl font-semibold text-gray-900 mb-3 leading-tight tracking-tight">
                 Create Your Profile First
               </h4>
-              <p className="text-gray-700 text-lg sm:text-base leading-normal tracking-tight m-0">
+              <p className="text-gray-700 text-base leading-normal tracking-tight m-0">
                 Please complete your organization profile to start posting jobs. Your profile information helps job seekers learn more about your organization.
               </p>
             </div>
@@ -72,7 +72,7 @@ const ProfileRequiredModal = ({ isOpen, onClose }) => {
             <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg text-left">
               <div className="flex items-start gap-2">
                 <span className="text-blue-600 text-xl">ℹ️</span>
-                <p className="text-lg sm:text-base text-blue-800 m-0 leading-normal tracking-tight">
+                <p className="text-base text-blue-800 m-0 leading-normal tracking-tight">
                   You can access your profile from the "My Profile" section in the navigation menu.
                 </p>
               </div>
@@ -84,7 +84,7 @@ const ProfileRequiredModal = ({ isOpen, onClose }) => {
         <div className="p-6 border-t border-gray-200 bg-white flex justify-center">
           <button
             onClick={onClose}
-            className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors min-w-[120px] shadow-md text-lg sm:text-base leading-normal tracking-tight"
+            className="bg-gradient-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-gradient-primary-hover transition-colors min-w-[120px] shadow-md text-base leading-normal tracking-tight"
           >
             Got It
           </button>
@@ -1398,7 +1398,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                     min={new Date().toISOString().split('T')[0]}
                     max={new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().split('T')[0]}
                   />
-                  <p className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">Today to 6 months from now</p>
+                  <p className="text-base text-gray-500 leading-normal tracking-tight">Today to 6 months from now</p>
                 </div>
               </InputWithTooltip>
 
@@ -1443,7 +1443,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                     min={minSalary || "1"}
                     step="1"
                   />
-                  <p className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">Should be ≥ Minimum Salary</p>
+                  <p className="text-base text-gray-500 leading-normal tracking-tight">Should be ≥ Minimum Salary</p>
                 </div>
               </InputWithTooltip>
             </div>
@@ -1455,7 +1455,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-lg sm:text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Minimum</label>
+                    <label className="block text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Minimum</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Select
@@ -1485,7 +1485,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-lg sm:text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Maximum</label>
+                    <label className="block text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Maximum</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Select
@@ -1513,7 +1513,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                       </div>
                     </div>
                     {totalExpError && (
-                      <p className="text-red-500 text-lg sm:text-base mt-2 leading-normal tracking-tight">{totalExpError}</p>
+                      <p className="text-red-500 text-base mt-2 leading-normal tracking-tight">{totalExpError}</p>
                     )}
                   </div>
                 </div>
@@ -1524,7 +1524,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                 <h3 className="text-xl font-semibold text-gray-800 mb-6 leading-tight tracking-tight">Teaching Experience</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-lg sm:text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Minimum</label>
+                    <label className="block text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Minimum</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Select
@@ -1553,7 +1553,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-lg sm:text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Maximum</label>
+                    <label className="block text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Maximum</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Select
@@ -1581,7 +1581,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                       </div>
                     </div>
                     {teachingExpError && (
-                      <p className="text-red-500 text-lg sm:text-base mt-2 leading-normal tracking-tight">{teachingExpError}</p>
+                      <p className="text-red-500 text-base mt-2 leading-normal tracking-tight">{teachingExpError}</p>
                     )}
                   </div>
                 </div>
@@ -1592,7 +1592,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                 <h3 className="text-xl font-semibold text-gray-800 mb-6 leading-tight tracking-tight">Non-Teaching Experience</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-lg sm:text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Minimum</label>
+                    <label className="block text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Minimum</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Select
@@ -1621,7 +1621,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-lg sm:text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Maximum</label>
+                    <label className="block text-base font-medium text-gray-600 mb-2 leading-snug tracking-tight">Maximum</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Select
@@ -1649,7 +1649,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
                       </div>
                     </div>
                     {nonTeachingExpError && (
-                      <p className="text-red-500 text-lg sm:text-base mt-2 leading-normal tracking-tight">{nonTeachingExpError}</p>
+                      <p className="text-red-500 text-base mt-2 leading-normal tracking-tight">{nonTeachingExpError}</p>
                     )}
                   </div>
                 </div>
@@ -1657,7 +1657,7 @@ const CreateJobForm = ({ editJobData, onClearEditData, onEditSuccess }) => {
             </div>
             {experienceSumError && (
               <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600 text-lg sm:text-base leading-normal tracking-tight font-medium">
+                <p className="text-red-600 text-base leading-normal tracking-tight font-medium">
                   ⚠️ {experienceSumError}
                 </p>
               </div>

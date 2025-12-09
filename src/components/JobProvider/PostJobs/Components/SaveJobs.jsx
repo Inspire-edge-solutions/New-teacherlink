@@ -515,7 +515,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                 <div className="w-10 h-10 bg-gradient-brand rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md">
                   ✅
                 </div>
-                <h3 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent m-0 leading-tight tracking-tight">
+                <h3 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent m-0 leading-tight tracking-tight">
                   Confirm Job Posting
                 </h3>
               </div>
@@ -537,7 +537,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                 <div className="text-2xl">💼</div>
                 <div className="flex-1">
                   <p className="text-sm text-gray-500 mb-1 font-medium leading-snug tracking-tight">Job Title</p>
-                  <p className="text-lg font-semibold text-gray-900 m-0 leading-tight tracking-tight">
+                  <p className="text-xl font-semibold text-gray-900 m-0 leading-tight tracking-tight">
                     {selectedJob?.job_title || 'Untitled Job'}
                   </p>
                 </div>
@@ -637,7 +637,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                 <div className="text-2xl">💼</div>
                 <div className="flex-1">
                   <p className="text-sm text-gray-500 mb-1 font-medium leading-snug tracking-tight">Job Title</p>
-                  <p className="text-lg font-semibold text-gray-900 m-0 leading-tight tracking-tight">
+                  <p className="text-xl font-semibold text-gray-900 m-0 leading-tight tracking-tight">
                     {jobToDelete?.job_title || 'Untitled Job'}
                   </p>
                 </div>
@@ -715,7 +715,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                   alt="No saved jobs" 
                   className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
                 />
-                <h6 className="text-lg font-semibold text-gray-900 mb-2 leading-tight tracking-tight">No Saved Jobs Yet</h6>
+                <h6 className="text-xl font-semibold text-gray-900 mb-2 leading-tight tracking-tight">No Saved Jobs Yet</h6>
                 <p className="text-gray-500 mb-6 leading-normal tracking-tight">
                   You haven't saved any job drafts yet. Start by creating a new job post.
                 </p>
@@ -808,7 +808,7 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
                                 {job.job_title || 'Untitled Job'}
                               </h6>
                               <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 mt-2">
-                                <p className="m-0 text-lg sm:text-base text-gray-500 font-medium uppercase tracking-wide bg-gray-100 px-2 py-0.5 rounded inline-block w-fit leading-normal">
+                                <p className="m-0 text-base text-gray-500 font-medium uppercase tracking-wide bg-gray-100 px-2 py-0.5 rounded inline-block w-fit leading-normal">
                                   {job.job_type ? job.job_type.replace('_', ' ').toUpperCase() : 'Not specified'}
                                 </p>
                               </div>
@@ -816,10 +816,10 @@ const SaveJobs = ({ onCreateNewJob, onEditJob, onSwitchToCreateTab }) => {
 
                             {/* Saved Date Section - Hidden on mobile, shown on tablet+ */}
                             <div className="hidden md:flex flex-shrink-0 px-2 text-center flex-col items-center">
-                              <p className="m-0 mb-1 text-lg sm:text-base text-gray-500 font-medium uppercase tracking-wide leading-snug">
+                              <p className="m-0 mb-1 text-base text-gray-500 font-medium uppercase tracking-wide leading-snug">
                                 Saved
                               </p>
-                              <p className="m-0 text-lg sm:text-base text-gray-800 font-semibold bg-gray-100 px-2 py-0.5 rounded border border-gray-200 whitespace-nowrap leading-normal tracking-tight">
+                              <p className="m-0 text-base text-gray-800 font-semibold bg-gray-100 px-2 py-0.5 rounded border border-gray-200 whitespace-nowrap leading-normal tracking-tight">
                                 {formatDate(job.saved_date || job.created_at) || 'Not specified'}
                               </p>
                             </div>

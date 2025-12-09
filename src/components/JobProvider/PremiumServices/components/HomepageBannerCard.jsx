@@ -89,7 +89,7 @@ const HomepageBannerCard = ({ package: pkg, onSelectPackage }) => {
                 {pkg.icon}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xl font-bold text-black leading-tight tracking-tight truncate">{pkg.name}</h3>
+                <h3 className="text-xl font-semibold text-black leading-tight tracking-tight truncate">{pkg.name}</h3>
               </div>
             </div>
             <Tooltip title="This package is currently available for booking" arrow>
@@ -110,7 +110,7 @@ const HomepageBannerCard = ({ package: pkg, onSelectPackage }) => {
             {/* Price Section with Button - Centered */}
             <div className="mb-4 pb-4 text-center">
               {/* Description */}
-              <p className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight mb-3">{pkg.description}</p>
+              <p className="text-base text-gray-700 leading-normal tracking-tight mb-3">{pkg.description}</p>
               
               <div className="flex items-baseline justify-center gap-2 mb-2">
                 <span className="text-2xl font-bold text-gray-900 leading-tight tracking-tight">₹{pkg.price}</span>
@@ -119,7 +119,7 @@ const HomepageBannerCard = ({ package: pkg, onSelectPackage }) => {
               
               <div className="flex items-center justify-center gap-1.5 mb-3">
                 <FaCoins className="text-yellow-500 text-xs" />
-                <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">or pay with coins</p>
+                <p className="text-base text-gray-600 leading-normal tracking-tight">or pay with coins</p>
               </div>
               
               {/* Select Package Button */}
@@ -154,7 +154,7 @@ const HomepageBannerCard = ({ package: pkg, onSelectPackage }) => {
 
         {/* Right Side - 4 Features (Narrower) */}
         <div className="lg:col-span-2 bg-gradient-to-br from-pink-50 via-white to-gray-50 p-6 border-l border-gray-100">
-          <h4 className="text-xl sm:text-lg font-bold mb-5 flex items-center gap-2 leading-tight tracking-tight">
+          <h4 className="text-xl font-semibold mb-5 flex items-center gap-2 leading-tight tracking-tight">
             <div className="w-1 h-5 bg-gradient-brand rounded-full"></div>
             <span className="bg-gradient-brand-text bg-clip-text text-transparent">Key Features</span>
           </h4>
@@ -162,7 +162,7 @@ const HomepageBannerCard = ({ package: pkg, onSelectPackage }) => {
             {rightSideFeatures.map((feature, index) => (
               <li key={index} className="flex items-start gap-3">
                 <FaCheckCircle className="text-green-500 mt-0.5 flex-shrink-0 text-base" />
-                <span className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight font-medium">{feature}</span>
+                <span className="text-base text-gray-700 leading-normal tracking-tight font-medium">{feature}</span>
               </li>
             ))}
           </ul>

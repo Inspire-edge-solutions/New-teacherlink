@@ -40,7 +40,7 @@ const SearchBar = memo(({ onSearch, placeholder = "Search candidates..." }) => {
         placeholder={placeholder}
         value={searchTerm}
         onChange={handleSearch}
-        className="w-full border-none outline-none py-2 px-3 pl-9 sm:pl-10 text-lg sm:text-base rounded-md bg-transparent focus:ring-2 focus:ring-blue-500 leading-normal tracking-tight"
+        className="w-full border-none outline-none py-2 px-3 pl-9 sm:pl-10 text-base rounded-md bg-transparent focus:ring-2 focus:ring-blue-500 leading-normal tracking-tight"
       />
     </div>
   );

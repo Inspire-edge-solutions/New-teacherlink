@@ -1287,11 +1287,10 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
 
       <div className="job-listing">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-          <h3 className="text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 leading-tight tracking-tight">
+          <h3 className="text-xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 leading-tight tracking-tight">
             {isSearching || activeFilters.size > 0
-              ? `Found ${finalFilteredJobs.length} job${finalFilteredJobs.length !== 1 ? 's' : ''}`
-              : `${jobs.length} Jobs Available`
-            }
+              ? `Found ${finalFilteredJobs.length.toLocaleString()} job${finalFilteredJobs.length !== 1 ? 's' : ''}`
+              : 'Available Jobs'}
           </h3>
           <RecordsPerPageDropdown
             className="w-full sm:w-auto justify-between sm:justify-end"
@@ -1305,7 +1304,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
             {userHasAppliedFilters && hasFiltersApplied && filteredJobsByFilters.length === 0 && (
               <div className="mb-3">
                 <p className="font-semibold mb-1 text-xl leading-tight tracking-tight">No jobs match your filters.</p>
-                <p className="mb-3 text-lg sm:text-base leading-normal tracking-tight">
+                <p className="mb-3 text-base leading-normal tracking-tight">
                   We're showing all available jobs instead. Adjust your selections or reset them to refine the results.
                 </p>
                 <div className="flex flex-wrap gap-3">
@@ -1327,7 +1326,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
             {isSearching && searchResults.length === 0 && (
               <div>
                 <p className="font-semibold mb-1 text-xl leading-tight tracking-tight">No jobs match your search.</p>
-                <p className="text-lg sm:text-base leading-normal tracking-tight">
+                <p className="text-base leading-normal tracking-tight">
                   Showing all available jobs. Try a different keyword or clear your search to explore more opportunities.
                 </p>
               </div>
@@ -1378,7 +1377,7 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
                   <p className="text-gray-700 text-xl font-semibold mb-2 leading-tight tracking-tight">
                     No jobs match your filters.
                   </p>
-                  <p className="text-gray-600 mb-4 text-lg sm:text-base leading-normal tracking-tight">
+                  <p className="text-gray-600 mb-4 text-base leading-normal tracking-tight">
                     Try adjusting your selections or clear them to see more opportunities.
                   </p>
                   <div className="flex flex-wrap gap-3 justify-center">
@@ -1398,15 +1397,15 @@ const AllJobs = ({ onViewJob, onBackFromJobView, highlightJobId }) => {
                 </>
               ) : isSearching ? (
                 <>
-                  <p className="text-gray-700 text-lg font-semibold mb-2">
+                  <p className="text-gray-700 text-xl font-semibold mb-2 leading-tight tracking-tight">
                     No jobs found for your search.
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 text-base leading-normal tracking-tight">
                     Try a different keyword or clear the search to explore all openings.
                   </p>
                 </>
               ) : (
-                <p className="text-gray-600 text-lg sm:text-base font-medium leading-normal tracking-tight">
+                <p className="text-gray-600 text-base font-medium leading-normal tracking-tight">
                   No jobs available at the moment.
                 </p>
               )}

@@ -14,7 +14,7 @@ const CollapsibleSection = ({ title, children, defaultOpen = true }) => {
         className="flex items-center justify-between p-4 cursor-pointer"
         onClick={toggleOpen}
       >
-        <h3 className="text-lg font-semibold text-gray-800 leading-tight tracking-tight">{title}</h3>
+        <h3 className="text-xl font-semibold text-gray-800 leading-tight tracking-tight">{title}</h3>
         {isOpen ? (
           <FaChevronUp className="text-gray-600 transition-transform" />
         ) : (

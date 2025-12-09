@@ -6,7 +6,7 @@ import { BsArrowLeft, BsBriefcase, BsClock, BsCash, BsMortarboard } from 'react-
 import { IoLocationOutline, IoMailOutline, IoGlobeOutline, IoCallOutline } from 'react-icons/io5';
 import { FaUsers, FaCalendarAlt, FaStar, FaPlus, FaTasks, FaBook, FaChalkboard, FaCheck } from 'react-icons/fa';
 import { useAuth } from "../../../../Context/AuthContext";
-import { formatQualification } from '../utils/formatUtils';
+import { formatQualification, formatJobType } from '../utils/formatUtils';
 import ApplyModal from './shared/ApplyModal';
 
 // === Add your new API endpoints for WhatsApp, login/org, RCS ===
@@ -99,16 +99,14 @@ const formatSalary = (minSalary, maxSalary) => {
 };
 
 const BlurWrapper = ({ isUnlocked, children }) => {
-  return isUnlocked
-    ? children
-    : <span className="blurred-contact text-gray-400 select-none" tabIndex={-1}>🔒 Contact details locked</span>;
+  return isUnlocked ? children : null;
 };
 
 const BlurredOrLink = ({ isUnlocked, type, value, href, children }) => {
   if (!isUnlocked) {
     return (
       <span className="blurred-contact text-gray-400 select-none" tabIndex={-1}>
-        🔒 Contact details locked
+        🔒 Details are locked
       </span>
     );
   }
@@ -125,7 +123,7 @@ const BlurredOrLink = ({ isUnlocked, type, value, href, children }) => {
       </a>
     );
   }
-  return <span className="info-value text-gray-800">{value}</span>;
+  return <span className="info-value text-gray-700">{value}</span>;
 };
 
 // Simplified UnlockModal with Tailwind CSS
@@ -945,7 +943,7 @@ const ViewJobs = ({ job, onBack, fromNotifications = false, fromRecruiterActions
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600 text-lg sm:text-base mb-4 leading-normal tracking-tight">No job selected</p>
           <button 
@@ -960,13 +958,13 @@ const ViewJobs = ({ job, onBack, fromNotifications = false, fromRecruiterActions
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Top Navigation Bar */}
-      <div className="bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 py-2 pt-0">
-        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
-          <h1 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">Job Details</h1>
+      <div className="bg-white shadow-sm border-b border-gray-200 px-3 sm:px-6 py-1.5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
+          <h1 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-normal tracking-tight">Job Details</h1>
           <button 
-          className="w-full sm:w-auto px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors font-medium text-center text-base leading-normal tracking-tight"
+          className="w-full sm:w-auto px-3 py-1.5 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover transition-colors font-medium text-center text-base leading-normal tracking-tight"
             onClick={() => onBack('list')}
           >
             {fromRecruiterActions ? 'Back to Recruiter Actions' : fromNotifications ? 'Back to Notifications' : 'Back to Jobs'}
@@ -974,137 +972,129 @@ const ViewJobs = ({ job, onBack, fromNotifications = false, fromRecruiterActions
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-2 sm:px-6 py-2">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3">
         {/* Job Header Section */}
-        <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-4 sm:p-6 mb-6">
-          <div className="text-center mb-4">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2 leading-tight tracking-tight">{job.job_title || 'Position not specified'}</h1>
+        <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-3 sm:p-5 mb-4">
+          <div className="text-center mb-3">
+            <h1 className="text-2xl font-normal bg-gradient-brand-text bg-clip-text text-transparent mb-1 leading-normal tracking-tight">{job.job_title || 'Position not specified'}</h1>
             {job.institute_name && (
-              <h2 className="text-xl text-gray-600 leading-tight tracking-tight">{job.institute_name}</h2>
+              <h2 className="text-base text-gray-600 leading-normal tracking-tight">{job.institute_name}</h2>
             )}
           </div>
           
           {/* Key Job Information Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="grid grid-cols-[auto,1fr] items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-3 col-span-1">
-                <BsBriefcase className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                <span className="text-base font-medium text-gray-500 leading-normal tracking-tight">Job Type:</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="flex items-start gap-2 p-2 rounded-lg">
+              <BsBriefcase className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Job Type: </span>
+                <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">{formatJobType(job.job_type)}</span>
               </div>
-              <span className="text-base font-semibold text-gray-800 col-span-1 leading-normal tracking-tight">{(job.job_type && job.job_type.toString().trim()) || 'Not specified'}</span>
             </div>
-            <div className="grid grid-cols-[auto,1fr] items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-3 col-span-1">
-                <IoLocationOutline className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                <span className="text-base font-medium text-gray-500">Location:</span>
+            <div className="flex items-start gap-2 p-2 rounded-lg">
+              <IoLocationOutline className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Location: </span>
+                <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">{job.city && job.state_ut ? `${job.city}, ${job.state_ut}` : 'Not specified'}</span>
               </div>
-              <span className="text-base font-semibold text-gray-800 col-span-1 leading-normal tracking-tight">{job.city && job.state_ut ? `${job.city}, ${job.state_ut}` : 'Not specified'}</span>
             </div>
-            <div className="grid grid-cols-[auto,1fr] items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-3 col-span-1">
-                <BsCash className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                <span className="text-base font-medium text-gray-500">Salary Range:</span>
+            <div className="flex items-start gap-2 p-2 rounded-lg">
+              <BsCash className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Salary Range: </span>
+                <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">{formatSalary(job.min_salary, job.max_salary)}</span>
               </div>
-              <span className="text-base font-semibold text-gray-800 col-span-1 leading-normal tracking-tight">{formatSalary(job.min_salary, job.max_salary)}</span>
             </div>
-            <div className="grid grid-cols-[auto,1fr] items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-3 col-span-1">
-                <BsClock className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                <span className="text-base font-medium text-gray-500">Experience:</span>
+            <div className="flex items-start gap-2 p-2 rounded-lg">
+              <BsClock className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Experience: </span>
+                <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">{job.experience_required ? `${job.experience_required} years` : 'Not specified'}</span>
               </div>
-              <span className="text-base font-semibold text-gray-800 col-span-1 leading-normal tracking-tight">{job.experience_required ? `${job.experience_required} years` : 'Not specified'}</span>
             </div>
-            <div className="grid grid-cols-[auto,1fr] items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-3 col-span-1">
-                <FaUsers className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                <span className="text-base font-medium text-gray-500">Openings:</span>
+            <div className="flex items-start gap-2 p-2 rounded-lg">
+              <FaUsers className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Openings: </span>
+                <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">{(job.no_of_opening && job.no_of_opening.toString().trim()) || 'Not specified'}</span>
               </div>
-              <span className="text-base font-semibold text-gray-800 col-span-1 leading-normal tracking-tight">{(job.no_of_opening && job.no_of_opening.toString().trim()) || 'Not specified'}</span>
             </div>
-            <div className="grid grid-cols-[auto,1fr] items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-3 col-span-1">
-                <FaCalendarAlt className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                <span className="text-base font-medium text-gray-500">Joining Date:</span>
+            <div className="flex items-start gap-2 p-2 rounded-lg">
+              <FaCalendarAlt className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Joining Date: </span>
+                <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">{formatDate(job.joining_date)}</span>
               </div>
-              <span className="text-base font-semibold text-gray-800 col-span-1 leading-normal tracking-tight">{formatDate(job.joining_date)}</span>
             </div>
           </div>
         </div>
 
         {/* Main Content Grid - Balanced Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
           {/* Left Column - Job Details */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Job Requirements */}
-            <div className="bg-white rounded-lg shadow-md border border-gray-200 p-2 sm:p-6">
-              <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200 leading-tight tracking-tight">JOB REQUIREMENTS</h3>
-              <div className="space-y-3">
-                <div className="grid grid-cols-[auto,1fr] items-start gap-3 p-2 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <BsMortarboard className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                    <span className="text-base font-medium text-gray-500">Qualification:</span>
+            <div className="bg-white rounded-lg shadow-md border border-gray-200 p-3 sm:p-5">
+              <h3 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent text-center mb-3 pb-2 border-b border-gray-200 leading-normal tracking-tight">JOB REQUIREMENTS</h3>
+              <div className="space-y-2">
+                <div className="flex items-start gap-2 p-2 rounded-lg">
+                  <BsMortarboard className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Qualification: </span>
+                    <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">{formatQualification(job.qualification)}</span>
                   </div>
-                  <span className="text-base font-semibold text-gray-800">{formatQualification(job.qualification)}</span>
                 </div>
-                <div className="grid grid-cols-[auto,1fr] items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <FaTasks className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                    <span className="text-base font-medium text-gray-500">Selection Process:</span>
+                <div className="flex items-start gap-2 p-2 rounded-lg">
+                  <FaTasks className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Selection Process: </span>
+                    <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">{(job.job_process && job.job_process.toString().trim()) || 'Not specified'}</span>
                   </div>
-                  <span className="text-base font-semibold text-gray-800">{(job.job_process && job.job_process.toString().trim()) || 'Not specified'}</span>
                 </div>
-                <div className="grid grid-cols-[auto,1fr] items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <BsClock className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                    <span className="text-base font-medium text-gray-500">Working Shifts:</span>
+                <div className="flex items-start gap-2 p-2 rounded-lg">
+                  <BsClock className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Working Shifts: </span>
+                    <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">{(job.job_shifts && job.job_shifts.toString().trim()) || 'Not specified'}</span>
                   </div>
-                  <span className="text-base font-semibold text-gray-800">{(job.job_shifts && job.job_shifts.toString().trim()) || 'Not specified'}</span>
                 </div>
-                <div className="grid grid-cols-[auto,1fr] items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <FaBook className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                    <span className="text-base font-medium text-gray-500">Curriculum:</span>
+                <div className="flex items-start gap-2 p-2 rounded-lg">
+                  <FaBook className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Curriculum: </span>
+                    <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">{(job.curriculum && job.curriculum.toString().trim()) || 'Not specified'}</span>
                   </div>
-                  <span className="text-base font-semibold text-gray-800">{(job.curriculum && job.curriculum.toString().trim()) || 'Not specified'}</span>
                 </div>
-                <div className="grid grid-cols-[auto,1fr] items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <FaChalkboard className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                    <span className="text-base font-medium text-gray-500">Board:</span>
+                <div className="flex items-start gap-2 p-2 rounded-lg">
+                  <FaChalkboard className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Board: </span>
+                    <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">{(job.board && job.board.toString().trim()) || 'Not specified'}</span>
                   </div>
-                  <span className="text-base font-semibold text-gray-800">{(job.board && job.board.toString().trim()) || 'Not specified'}</span>
                 </div>
               </div>
             </div>
 
             {/* Subjects Required */}
             {(coreSubjects.length > 0 || otherSubjects.length > 0) && (
-              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
-                <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200 leading-tight tracking-tight">Subject Requirements</h3>
-                <div className="space-y-4">
+              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-3 sm:p-5">
+                <h3 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent text-center mb-3 pb-2 border-b border-gray-200 leading-normal tracking-tight">SUBJECT REQUIREMENTS</h3>
+                <div className="space-y-3">
                   {coreSubjects.length > 0 && (
-                    <div>
-                      <h4 className="text-lg font-medium text-gray-700 mb-3 leading-tight tracking-tight">Core Subjects</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {coreSubjects.map((subject, index) => (
-                          <span key={index} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-base font-medium leading-normal tracking-tight">
-                            <FaStar className="w-4 h-4" />
-                            {subject}
-                          </span>
-                        ))}
+                    <div className="flex items-start gap-2 p-2 rounded-lg">
+                      <FaStar className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Core Subjects: </span>
+                        <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">{coreSubjects.join(', ')}</span>
                       </div>
                     </div>
                   )}
                   {otherSubjects.length > 0 && (
-                    <div>
-                      <h4 className="text-lg font-medium text-gray-700 mb-3 leading-tight tracking-tight">Additional Subjects</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {otherSubjects.map((subject, index) => (
-                          <span key={index} className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-base font-medium leading-normal tracking-tight">
-                            <FaPlus className="w-4 h-4" />
-                            {subject}
-                          </span>
-                        ))}
+                    <div className="flex items-start gap-2 p-2 rounded-lg">
+                      <FaPlus className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Additional Subjects: </span>
+                        <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">{otherSubjects.join(', ')}</span>
                       </div>
                     </div>
                   )}
@@ -1114,119 +1104,119 @@ const ViewJobs = ({ job, onBack, fromNotifications = false, fromRecruiterActions
           </div>
 
           {/* Right Column - Institute Info & Job Description */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Institute Info Section */}
-            <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
-              <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200 leading-tight tracking-tight">INSTITUTE INFORMATION</h3>
+            <div className="bg-white rounded-lg shadow-md border border-gray-200 p-3 sm:p-5">
+              <h3 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent text-center mb-3 pb-2 border-b border-gray-200 leading-normal tracking-tight">INSTITUTE INFORMATION</h3>
               {instituteLoading ? (
-                <div className="flex justify-center py-8">
+                <div className="flex justify-center py-6">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                 </div>
               ) : error ? (
-                <div className="text-center py-4">
-                  <p className="text-red-600 mb-3">{error}</p>
+                <div className="text-center py-3">
+                  <p className="text-base text-red-600 mb-2 leading-normal tracking-tight">{error}</p>
                   <button
                     onClick={() => fetchInstituteData(job.firebase_uid)}
-                    className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                    className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-base leading-normal tracking-tight"
                   >
                     Retry
                   </button>
                 </div>
               ) : instituteData ? (
                 <div>
-                  <div className="text-center mb-6">
-                    <h4 className="text-xl font-medium text-gray-800 mb-2 leading-tight tracking-tight">
+                  <div className="text-center mb-0">
+                    <h4 className="text-xl font-normal text-gray-800 mb-1 leading-normal tracking-tight">
                       <BlurWrapper isUnlocked={isUnlocked}>
                         {instituteData.name}
                       </BlurWrapper>
                     </h4>
                   </div>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {instituteData.address && (
-                      <div className="grid grid-cols-[auto,1fr] items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <IoLocationOutline className="w-5 h-5 text-blue-500" />
-                          <span className="text-base font-medium text-gray-500">Address:</span>
-                        </div>
-                        <div className="text-base font-semibold text-gray-800">
-                          <BlurredOrLink
-                            isUnlocked={isUnlocked}
-                            value={instituteData.address}
-                            type="text"
-                          />
+                      <div className="flex items-start gap-2 p-2 rounded-lg">
+                        <IoLocationOutline className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Address: </span>
+                          <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">
+                            <BlurredOrLink
+                              isUnlocked={isUnlocked}
+                              value={instituteData.address}
+                              type="text"
+                            />
+                          </span>
                         </div>
                       </div>
                     )}
                     {instituteData.contact_person_name && (
-                      <div className="grid grid-cols-[auto,1fr] items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <FaUsers className="w-5 h-5 text-blue-500" />
-                          <span className="text-base font-medium text-gray-500">Contact Person:</span>
-                        </div>
-                        <div className="text-base font-semibold text-gray-800">
-                          <BlurredOrLink
-                            isUnlocked={isUnlocked}
-                            value={instituteData.contact_person_name}
-                            type="text"
-                          />
+                      <div className="flex items-start gap-2 p-2 rounded-lg">
+                        <FaUsers className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Contact Person: </span>
+                          <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">
+                            <BlurredOrLink
+                              isUnlocked={isUnlocked}
+                              value={instituteData.contact_person_name}
+                              type="text"
+                            />
+                          </span>
                         </div>
                       </div>
                     )}
                     {instituteData.contact_person_email && (
-                      <div className="grid grid-cols-[auto,1fr] items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <IoMailOutline className="w-5 h-5 text-blue-500" />
-                          <span className="text-base font-medium text-gray-500">Email:</span>
-                        </div>
-                        <div className="text-base font-semibold text-gray-800">
-                          <BlurredOrLink
-                            isUnlocked={isUnlocked}
-                            value={instituteData.contact_person_email}
-                            type="email"
-                          />
+                      <div className="flex items-start gap-2 p-2 rounded-lg">
+                        <IoMailOutline className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Email: </span>
+                          <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">
+                            <BlurredOrLink
+                              isUnlocked={isUnlocked}
+                              value={instituteData.contact_person_email}
+                              type="email"
+                            />
+                          </span>
                         </div>
                       </div>
                     )}
                     {instituteData.contact_person_phone1 && (
-                      <div className="grid grid-cols-[auto,1fr] items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <IoCallOutline className="w-5 h-5 text-blue-500" />
-                          <span className="text-base font-medium text-gray-500">Phone:</span>
-                        </div>
-                        <div className="text-base font-semibold text-gray-800">
-                          <BlurredOrLink
-                            isUnlocked={isUnlocked}
-                            value={instituteData.contact_person_phone1}
-                            type="phone"
-                          />
+                      <div className="flex items-start gap-2 p-2 rounded-lg">
+                        <IoCallOutline className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Phone: </span>
+                          <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">
+                            <BlurredOrLink
+                              isUnlocked={isUnlocked}
+                              value={instituteData.contact_person_phone1}
+                              type="phone"
+                            />
+                          </span>
                         </div>
                       </div>
                     )}
                     {instituteData.website_url && (
-                      <div className="grid grid-cols-[auto,1fr] items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <IoGlobeOutline className="w-5 h-5 text-blue-500" />
-                          <span className="text-base font-medium text-gray-500">Website:</span>
-                        </div>
-                        <div className="text-base font-semibold text-gray-800">
-                          <BlurredOrLink
-                            isUnlocked={isUnlocked}
-                            value={instituteData.website_url}
-                            type="website"
-                            href={instituteData.website_url}
-                          >
-                            Visit Website
-                          </BlurredOrLink>
+                      <div className="flex items-start gap-2 p-2 rounded-lg">
+                        <IoGlobeOutline className="w-3.5 h-3.5 text-gray-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-base font-medium text-gray-900 leading-normal tracking-tight">Website: </span>
+                          <span className="text-base font-normal text-gray-700 leading-normal tracking-tight">
+                            <BlurredOrLink
+                              isUnlocked={isUnlocked}
+                              value={instituteData.website_url}
+                              type="website"
+                              href={instituteData.website_url}
+                            >
+                              Visit Website
+                            </BlurredOrLink>
+                          </span>
                         </div>
                       </div>
                     )}
                   </div>
                   
                   {!isUnlocked && (
-                    <div className="mt-6">
+                    <div className="mt-2">
                       <button
-                        className="w-full bg-gradient-brand text-white py-4 px-6 rounded-lg font-semibold text-base hover:bg-gradient-primary-hover transition-colors flex items-center justify-center gap-3"
+                        className="w-full bg-gradient-brand text-white py-2 px-4 rounded-lg font-semibold text-base hover:bg-gradient-primary-hover transition-colors flex items-center justify-center gap-2 leading-normal tracking-tight"
                         onClick={handleUnlockClick}
                       >
                         <span>💰</span>
@@ -1235,22 +1225,22 @@ const ViewJobs = ({ job, onBack, fromNotifications = false, fromRecruiterActions
                     </div>
                   )}
                   {instituteData.description && (
-                    <div className="mt-6 pt-6 border-t border-gray-200">
-                      <h4 className="text-xl font-medium text-gray-800 mb-3 leading-tight tracking-tight">About the Institute</h4>
-                      <p className="text-gray-700 leading-relaxed">{instituteData.description}</p>
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <h4 className="text-base font-medium text-gray-900 mb-2 leading-normal tracking-tight">About the Institute</h4>
+                      <p className="text-base text-gray-700 leading-relaxed">{instituteData.description}</p>
                     </div>
                   )}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-4">Institute details not available</p>
+                <p className="text-base text-gray-500 text-center py-3 leading-normal tracking-tight">Institute details not available</p>
               )}
             </div>
 
             {/* Job Description */}
             {job.job_description && (
-              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
-                <h3 className="text-xl font-semibold text-orange-500 text-center mb-4 pb-3 border-b border-gray-200 leading-tight tracking-tight">Job Description</h3>
-                <div className="prose max-w-none text-gray-700 leading-relaxed text-sm" style={{ fontSize: '14px', lineHeight: '1.4', padding: '8px 12px' }}>
+              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-3 sm:p-5">
+                <h3 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent text-center mb-3 pb-2 border-b border-gray-200 leading-normal tracking-tight">Job Description</h3>
+                <div className="text-base text-gray-700 leading-relaxed">
                   {job.job_description}
                 </div>
               </div>
@@ -1258,12 +1248,12 @@ const ViewJobs = ({ job, onBack, fromNotifications = false, fromRecruiterActions
 
             {/* Application Deadline Card */}
             {job.application_deadline && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-                <h3 className="text-xl font-semibold text-red-800 mb-3 flex items-center justify-center gap-2 leading-tight tracking-tight">
-                  <i className="fas fa-hourglass-end"></i>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <h3 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-2 flex items-center justify-center gap-2 leading-normal tracking-tight">
+                  <FaCalendarAlt className="w-4 h-4" />
                   Application Deadline
                 </h3>
-                <p className="text-red-700 font-bold text-center text-lg sm:text-base leading-normal tracking-tight">{formatDate(job.application_deadline)}</p>
+                <p className="text-base text-red-700 font-normal text-center leading-normal tracking-tight">{formatDate(job.application_deadline)}</p>
               </div>
             )}
           </div>
@@ -1282,9 +1272,9 @@ const ViewJobs = ({ job, onBack, fromNotifications = false, fromRecruiterActions
         />
 
         {/* Apply Job Button */}
-        <div className="flex justify-center mt-6 mb-4">
+        <div className="flex justify-center mt-4 mb-3">
           <button
-            className={`px-8 py-4 rounded-lg font-semibold text-base transition-all duration-300 flex items-center justify-center gap-3 leading-normal tracking-tight ${
+            className={`px-6 py-3 rounded-lg font-semibold text-base transition-all duration-300 flex items-center justify-center gap-2 leading-normal tracking-tight ${
               isApplied 
                 ? 'bg-gray-300 text-gray-700 cursor-not-allowed' 
                 : 'bg-gradient-brand text-white hover:bg-gradient-primary-hover transition-colors shadow-lg hover:shadow-xl'
@@ -1294,7 +1284,7 @@ const ViewJobs = ({ job, onBack, fromNotifications = false, fromRecruiterActions
           >
             {isApplied ? (
               <>
-                <FaCheck className="w-5 h-5" />
+                <FaCheck className="w-4 h-4" />
                 Applied
               </>
             ) : (

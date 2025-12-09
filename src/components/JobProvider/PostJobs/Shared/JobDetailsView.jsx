@@ -151,7 +151,7 @@ const JobDetailsView = ({
   // Use same layout for both modal and expanded view
   const sectionClassName = 'mb-8';
   // Uniform heading style with brand color
-  const headingClassName = 'text-lg font-semibold text-[#A1025D] mb-4 pb-2 border-b-2 border-[#A1025D] leading-tight tracking-tight';
+  const headingClassName = 'text-xl font-semibold text-[#A1025D] mb-4 pb-2 border-b-2 border-[#A1025D] leading-tight tracking-tight';
   const contentClassName = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
 
   // Get location string (handle both API format and form format)

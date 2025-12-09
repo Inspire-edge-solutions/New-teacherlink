@@ -347,9 +347,9 @@ const LoginForm = () => {
           const queryString = queryParams.toString();
           redirectPath = '/seeker/all-jobs' + (queryString ? `?${queryString}` : '');
           console.log("Redirecting to all-jobs with query params:", redirectPath);
-        } else if ((redirectUrl === '/available-candidates' || redirectUrl?.startsWith('/candidate-profile/')) && userType === 'Employer' && hasTrackingInfo) {
+        } else if ((redirectUrl === '/available-candidates' || redirectUrl?.startsWith('/profile/')) && userType === 'Employer' && hasTrackingInfo) {
           // Preserve action and id query parameters for candidate tracking
-          // Also handle candidate-profile page redirects
+          // Also handle profile page redirects
           const queryParams = new URLSearchParams();
           if (action) queryParams.set('action', action);
           if (candidateId) queryParams.set('id', candidateId);
@@ -433,9 +433,9 @@ const LoginForm = () => {
           
           <div className="text-[clamp(2.5rem,8vw,3.5rem)] text-red-600 mb-6 drop-shadow-[0_3px_6px_rgba(220,53,69,0.2)] animate-gentlePulse">⚠</div>
           
-          <h2 className="text-[clamp(1.2rem,4vw,1.6rem)] mb-5 text-gray-800 font-bold bg-gradient-to-br from-red-600 to-red-700 bg-clip-text text-transparent leading-tight tracking-tight">{blockedTitle}</h2>
+          <h2 className="text-xl font-semibold mb-5 text-gray-800 bg-gradient-to-br from-red-600 to-red-700 bg-clip-text text-transparent leading-tight tracking-tight">{blockedTitle}</h2>
           
-          <div className="text-[clamp(0.9rem,3vw,1.05rem)] leading-normal text-gray-600 whitespace-pre-line text-left bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] mt-2 tracking-tight">
+          <div className="text-base leading-normal text-gray-600 whitespace-pre-line text-left bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)] mt-2 tracking-tight">
             {blockedMsg}
           </div>
         </div>
@@ -461,11 +461,11 @@ const LoginForm = () => {
               {/* Content */}
               <div className="flex flex-col justify-center px-12 py-16 relative z-10">
                 <div className="space-y-6">
-                  <h1 className="text-4xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
+                  <h1 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
                     Welcome Back!
                   </h1>
                   <div className="space-y-4">
-                    <p className="text-lg text-gray-700 leading-normal tracking-tight">
+                    <p className="text-base text-gray-700 leading-normal tracking-tight">
                       Continue your journey with us and connect with qualified educators and professionals effortlessly!
                     </p>
                   </div>
@@ -515,12 +515,12 @@ const LoginForm = () => {
         {/* Content */}
         <div className="flex flex-col justify-center px-12 py-16 relative z-10">
           <div className="space-y-6">
-            <h1 className="text-4xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
+            <h1 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
               Welcome Back!
             </h1>
             <div className="space-y-4">
              
-              <p className="text-lg text-gray-700 leading-normal tracking-tight">
+              <p className="text-base text-gray-700 leading-normal tracking-tight">
                 Continue your journey with us and connect with qualified educators and professionals effortlessly!
               </p>
             </div>
@@ -542,12 +542,10 @@ const LoginForm = () => {
 
         {/* Right Section - Login Form */}
         <div className="w-full lg:w-1/2 bg-white flex items-center justify-center px-3 sm:px-6 md:px-8 py-8 sm:py-12 lg:py-6 lg:pt-8 lg:pb-6 relative lg:rounded-tl-[3rem] lg:rounded-bl-[3rem] overflow-hidden lg:border-l-4 lg:border-t-4 lg:border-b-4 border-red-300 shadow-lg">
-       
-
         <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
-          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center lg:text-left leading-tight tracking-tight">Login</h2>
+          <h2 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center lg:text-left leading-tight tracking-tight">Login</h2>
           
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 md:space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-12 sm:space-y-8 md:space-y-8">
             {/* Email Field */}
             <InputWithTooltip label="Email" required>
               <div className="relative">
@@ -558,7 +556,7 @@ const LoginForm = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black"
+                  className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base placeholder-black"
                 />
               </div>
             </InputWithTooltip>
@@ -573,7 +571,7 @@ const LoginForm = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base sm:text-lg md:text-xl placeholder-black"
+                  className="w-full px-0 py-3 sm:py-4 md:py-5 border-0 border-b-2 border-gray-300 focus:border-red-500 focus:outline-none text-base placeholder-black"
                 />
                 <button
                   type="button"
@@ -589,15 +587,15 @@ const LoginForm = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full text-white font-semibold bg-gradient-brand hover:bg-gradient-primary-hover py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 text-base sm:text-lg md:text-xl"
+              className="w-full text-white font-medium bg-gradient-brand hover:bg-gradient-primary-hover py-3 sm:py-8 sm:px-8 md:py-5 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 text-base"
             >
               {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 
           {/* Forgot Password Link */}
-          <div className="mt-4 sm:mt-6 md:mt-8 text-center">
-            <span className="text-gray-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight">Forgot Password? </span>
+          <div className="mt-4 sm:mt-6 mb-8 md:mt-8 text-center">
+            <span className="text-gray-600 text-base leading-normal tracking-tight">Forgot Password? </span>
             <Link
               to="/forget-password"
               onClick={() => {
@@ -607,7 +605,7 @@ const LoginForm = () => {
                 }
                 cleanupModals();
               }}
-              className="text-red-500 font-semibold hover:text-red-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight"
+              className="text-red-500 font-semibold hover:text-red-600 text-base leading-normal tracking-tight"
             >
               Click here to Change Password
             </Link>
@@ -615,7 +613,7 @@ const LoginForm = () => {
 
           {/* Signup Link */}
           <div className="mt-4 sm:mt-6 md:mt-8 text-center">
-            <span className="text-gray-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight">Don't have an account? </span>
+            <span className="text-gray-600 text-base leading-normal tracking-tight">Don't have an account? </span>
             <Link
               to={(() => {
                 // Preserve query parameters when navigating to register
@@ -640,7 +638,7 @@ const LoginForm = () => {
                 }
                 cleanupModals();
               }}
-              className="text-red-500 font-semibold hover:text-red-600 text-sm sm:text-base md:text-lg leading-normal tracking-tight"
+              className="text-red-500 font-semibold hover:text-red-600 text-base leading-normal tracking-tight"
             >
               Signup Here
             </Link>
@@ -649,7 +647,7 @@ const LoginForm = () => {
          
 
           {/* Google Sign In */}
-          <div className="mt-6 sm:mt-8 md:mt-10">
+          <div className="mt-6 sm:mt-8 mb-6 md:mt-10">
             {/* <button className="w-full border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-medium py-3 sm:py-4 md:py-5 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-3 text-sm sm:text-base md:text-lg">
               <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

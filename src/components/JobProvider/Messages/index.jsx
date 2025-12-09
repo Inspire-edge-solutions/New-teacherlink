@@ -134,10 +134,10 @@ const MessagesComponent = () => {
       <div className="flex items-center justify-center h-full bg-gray-50">
         <div className="text-center">
           <div className="text-red-500 text-xl mb-2 leading-tight tracking-tight">Connection Error</div>
-          <div className="text-lg sm:text-base text-gray-600 mb-4 leading-normal tracking-tight">{error}</div>
+          <div className="text-base text-gray-600 mb-4 leading-normal tracking-tight">{error}</div>
           <button 
             onClick={clearError}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-lg sm:text-base leading-normal tracking-tight"
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-base leading-normal tracking-tight"
           >
             Retry
           </button>
@@ -164,12 +164,12 @@ const MessagesComponent = () => {
             
             {/* Modal Body */}
             <div className="px-6 py-4">
-              <p className="text-lg sm:text-base text-gray-600 mb-3 leading-normal tracking-tight">
+              <p className="text-base text-gray-600 mb-3 leading-normal tracking-tight">
                 This message will be deleted for everyone in the conversation. This action cannot be undone.
               </p>
               {deleteModal.messageText && (
                 <div className="bg-gray-50 rounded-md p-3 mb-3 border border-gray-200">
-                  <p className="text-lg sm:text-base text-gray-700 italic leading-normal tracking-tight">
+                  <p className="text-base text-gray-700 italic leading-normal tracking-tight">
                     "{deleteModal.messageText}"
                   </p>
                 </div>
@@ -180,13 +180,13 @@ const MessagesComponent = () => {
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
               <button
                 onClick={cancelDelete}
-                className="px-4 py-2 text-lg sm:text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors leading-normal tracking-tight"
+                className="px-4 py-2 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors leading-normal tracking-tight"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDelete}
-                className="px-4 py-2 text-lg sm:text-base font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors leading-normal tracking-tight"
+                className="px-4 py-2 text-base font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors leading-normal tracking-tight"
               >
                 Delete
               </button>
@@ -214,7 +214,7 @@ const MessagesComponent = () => {
               <textarea
                 value={editModal.messageText}
                 onChange={(e) => updateEditText(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-lg sm:text-base leading-normal tracking-tight"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-base leading-normal tracking-tight"
                 rows={4}
                 placeholder="Type your message here..."
                 autoFocus
@@ -225,14 +225,14 @@ const MessagesComponent = () => {
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
               <button
                 onClick={cancelEdit}
-                className="px-4 py-2 text-lg sm:text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors leading-normal tracking-tight"
+                className="px-4 py-2 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors leading-normal tracking-tight"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmEdit}
                 disabled={!editModal.messageText || editModal.messageText.trim() === ''}
-                className="px-4 py-2 text-lg sm:text-base font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed leading-normal tracking-tight"
+                className="px-4 py-2 text-base font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed leading-normal tracking-tight"
               >
                 Save
               </button>
@@ -257,11 +257,11 @@ const MessagesComponent = () => {
             
             {/* Modal Body */}
             <div className="px-6 py-4">
-              <p className="text-lg sm:text-base text-gray-600 mb-3 leading-normal tracking-tight">
+              <p className="text-base text-gray-600 mb-3 leading-normal tracking-tight">
                 Are you sure you want to block <span className="font-semibold text-gray-900">{blockModal.userName}</span>? They won't be able to send you messages anymore.
               </p>
               <div className="bg-red-50 rounded-md p-3 mb-3 border border-red-200">
-                <p className="text-lg sm:text-base text-red-700 leading-normal tracking-tight">
+                <p className="text-base text-red-700 leading-normal tracking-tight">
                   <strong>Note:</strong> Once blocked, this user will not be able to contact you. You can unblock them later from the blocked candidates list.
                 </p>
               </div>
@@ -271,13 +271,13 @@ const MessagesComponent = () => {
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
               <button
                 onClick={cancelBlock}
-                className="px-4 py-2 text-lg sm:text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors leading-normal tracking-tight"
+                className="px-4 py-2 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors leading-normal tracking-tight"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmBlock}
-                className="px-4 py-2 text-lg sm:text-base font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors leading-normal tracking-tight"
+                className="px-4 py-2 text-base font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors leading-normal tracking-tight"
               >
                 Block
               </button>
@@ -387,10 +387,10 @@ const MessagesComponent = () => {
               </div>
 
               {/* Text */}
-              <h2 className="text-2xl font-semibold text-red-500 mb-2 leading-tight tracking-tight">
+              <h2 className="text-xl font-semibold text-red-500 mb-2 leading-tight tracking-tight">
                 No Active Message
               </h2>
-              <p className="text-lg sm:text-base text-gray-500 mb-6 px-4 leading-normal tracking-tight">
+              <p className="text-base text-gray-500 mb-6 px-4 leading-normal tracking-tight">
                 {isConnected 
                   ? "Click on a candidate to start a conversation"
                   : "Connecting to chat server..."
@@ -402,7 +402,7 @@ const MessagesComponent = () => {
                 <div className={`w-2 h-2 rounded-full ${
                   isConnected ? 'bg-green-500' : 'bg-red-500'
                 }`}></div>
-                <span className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">
+                <span className="text-base text-gray-500 leading-normal tracking-tight">
                   {isConnected ? 'Connected' : 'Disconnected'}
                 </span>
               </div>

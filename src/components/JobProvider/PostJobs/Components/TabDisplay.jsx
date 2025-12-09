@@ -97,7 +97,7 @@ const TabDisplay = () => {
           {/* Show create job info only on create-job tab */}
           {activeTab === "create-job" && (
             <div className="mb-4 p-3 border border-purple-200 rounded-lg">
-              <p className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">
+              <p className="text-base text-gray-700 leading-normal tracking-tight">
                 <span className="text-red-500">★</span> Fields highlighted are mandatory to fill
               </p>
             </div>

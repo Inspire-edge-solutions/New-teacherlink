@@ -41,18 +41,18 @@ const Field = ({ label, value, isUrl = false, icon: Icon }) => {
           <Icon className="text-blue-600 text-base mr-2 mt-0.5 flex-shrink-0" />
         )}
         <div className="flex-1 min-w-0">
-          <div className="text-gray-500 text-lg sm:text-base font-medium mb-1 leading-snug tracking-tight">{label}</div>
+          <div className="text-gray-500 text-base font-medium mb-1 leading-snug tracking-tight">{label}</div>
           {isUrl ? (
             <a 
               href={displayValue.startsWith('http') ? displayValue : `https://${displayValue}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 text-lg sm:text-base break-all transition-colors leading-normal tracking-tight"
+              className="text-blue-600 hover:text-blue-800 text-base break-all transition-colors leading-normal tracking-tight"
             >
               {displayValue}
             </a>
           ) : (
-            <span className="text-gray-900 text-lg sm:text-base break-words leading-normal tracking-tight">{displayValue}</span>
+            <span className="text-gray-900 text-base break-words leading-normal tracking-tight">{displayValue}</span>
           )}
         </div>
       </div>
@@ -92,8 +92,8 @@ const StateField = ({ label, countryCode, stateCode }) => {
     <div className="mb-3">
       <div className="flex items-start">
         <div className="flex-1 min-w-0">
-          <div className="text-gray-500 text-lg sm:text-base font-medium mb-1 leading-snug tracking-tight">{label}</div>
-          <span className="text-gray-900 text-lg sm:text-base leading-normal tracking-tight">
+          <div className="text-gray-500 text-base font-medium mb-1 leading-snug tracking-tight">{label}</div>
+          <span className="text-gray-900 text-base leading-normal tracking-tight">
             {isLoading ? "Loading..." : stateName}
           </span>
         </div>
@@ -108,7 +108,7 @@ const Section = ({ title, children, icon: Icon }) => (
       {Icon && (
         <Icon className="text-blue-600 text-lg mr-2" />
       )}
-      <h4 className="text-lg text-gray-900 font-semibold m-0 leading-tight tracking-tight">
+      <h4 className="text-xl text-gray-900 font-semibold m-0 leading-tight tracking-tight">
         {title}
       </h4>
     </div>
@@ -124,7 +124,7 @@ const SocialLink = ({ icon: Icon, url, label, color }) => {
       <div className="flex items-center">
         <Icon className="text-lg mr-2 flex-shrink-0" style={{ color }} />
         <div className="flex-1 min-w-0">
-          <div className="text-gray-500 text-lg sm:text-base font-medium mb-1 leading-snug tracking-tight">{label}</div>
+          <div className="text-gray-500 text-base font-medium mb-1 leading-snug tracking-tight">{label}</div>
           <a 
             href={url.startsWith('http') ? url : `https://${url}`}
             target="_blank"
@@ -304,7 +304,7 @@ const ViewProfile = () => {
                     {orgData?.name || 'Organization Name Not Set'}
                   </h3>
                 </div>
-                <div className="text-lg sm:text-base text-gray-600 truncate leading-normal tracking-tight">
+                <div className="text-base text-gray-600 truncate leading-normal tracking-tight">
                   {orgData?.type || 'Organization Type Not Set'}
                 </div>
               </div>
@@ -317,14 +317,14 @@ const ViewProfile = () => {
               {orgData?.contact_person_name && (
                 <div className="flex items-center">
                   <FaUser className="text-blue-600 text-base mr-2 flex-shrink-0" />
-                  <span className="text-lg sm:text-base text-gray-900 truncate leading-normal tracking-tight">{orgData.contact_person_name}</span>
+                  <span className="text-base text-gray-900 truncate leading-normal tracking-tight">{orgData.contact_person_name}</span>
                 </div>
               )}
               {orgData?.contact_person_email && (
                 <div className="flex items-center">
                   <FaEnvelope className="text-blue-600 text-base mr-2 flex-shrink-0" />
                   <a href={`mailto:${orgData.contact_person_email}`} 
-                     className="text-blue-600 hover:text-blue-800 text-lg sm:text-base truncate transition-colors leading-normal tracking-tight">
+                     className="text-blue-600 hover:text-blue-800 text-base truncate transition-colors leading-normal tracking-tight">
                     {orgData.contact_person_email}
                   </a>
                 </div>
@@ -332,7 +332,7 @@ const ViewProfile = () => {
               {(orgData?.city || orgData?.country) && (
                 <div className="flex items-center">
                   <FaMapMarkerAlt className="text-blue-600 text-base mr-2 flex-shrink-0" />
-                  <span className="text-lg sm:text-base text-gray-900 truncate leading-normal tracking-tight">
+                  <span className="text-base text-gray-900 truncate leading-normal tracking-tight">
                     {[orgData.city, orgData.state, orgData.country].filter(Boolean).join(', ')}
                   </span>
                 </div>
@@ -341,7 +341,7 @@ const ViewProfile = () => {
                 <div className="flex items-center">
                   <FaPhone className="text-blue-600 text-base mr-2 flex-shrink-0" />
                   <a href={`tel:${orgData.contact_person_phone1}`} 
-                     className="text-blue-600 hover:text-blue-800 text-lg sm:text-base truncate transition-colors leading-normal tracking-tight">
+                     className="text-blue-600 hover:text-blue-800 text-base truncate transition-colors leading-normal tracking-tight">
                     {orgData.contact_person_phone1}
                   </a>
                 </div>
@@ -350,7 +350,7 @@ const ViewProfile = () => {
                 <div className="flex items-center">
                   <FaWhatsapp className="text-base mr-2 flex-shrink-0" style={{color: '#25D366'}} />
                   <a href={`https://wa.me/${orgData.contact_person_phone2}`} 
-                     className="text-blue-600 hover:text-blue-800 text-lg sm:text-base truncate transition-colors leading-normal tracking-tight">
+                     className="text-blue-600 hover:text-blue-800 text-base truncate transition-colors leading-normal tracking-tight">
                     {orgData.contact_person_phone2}
                   </a>
                 </div>

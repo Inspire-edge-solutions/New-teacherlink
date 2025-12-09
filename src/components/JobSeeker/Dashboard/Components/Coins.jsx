@@ -320,15 +320,15 @@ const Content = () => {
           {coinData && (coinData.coin_value > 0 || coinData.is_razor_pay === 1 || coinData.is_coupon === 1 || coinData.is_refer === 1) ? (
             <>
               {/* Heading centered */}
-              <h3 className="text-xl font-bold text-gray-800 mb-3 sm:mb-4 text-center leading-tight tracking-tight">Coin Details</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-3 sm:mb-4 text-center leading-tight tracking-tight">Coin Details</h3>
               
               {/* Two Column Layout */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3 sm:mb-4">
                 {/* Left Column: Recharge Mode, Coupon Code (if exists), and Status */}
                 <div className="flex flex-col gap-2">
                   <div className="flex flex-row items-center gap-2 flex-wrap">
-                    <span className="text-base text-gray-700 font-bold whitespace-nowrap leading-normal tracking-tight">Recharge Mode:</span>
-                    <span className="text-lg sm:text-base font-bold text-red-500 break-words leading-normal tracking-tight">{getRechargeMode(coinData)}</span>
+                    <span className="text-base text-gray-700 font-medium whitespace-nowrap leading-normal tracking-tight">Recharge Mode:</span>
+                    <span className="text-base font-semibold text-red-500 break-words leading-normal tracking-tight">{getRechargeMode(coinData)}</span>
                   </div>
                   {/* Only show coupon code for actual coupons, not for referrals or payments */}
                   {coinData.coupon_code && 
@@ -337,13 +337,13 @@ const Content = () => {
                    coinData.is_coupon === 1 && 
                    coinData.is_razor_pay !== 1 && (
                     <div className="flex items-center gap-2">
-                      <span className="text-base text-gray-700 font-bold leading-normal tracking-tight">Coupon Code:</span>
-                      <span className="text-lg sm:text-base font-bold text-red-500 leading-normal tracking-tight">{coinData.coupon_code}</span>
+                      <span className="text-base text-gray-700 font-medium leading-normal tracking-tight">Coupon Code:</span>
+                      <span className="text-base font-semibold text-red-500 leading-normal tracking-tight">{coinData.coupon_code}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-2">
-                    <span className="text-base text-gray-700 font-bold leading-normal tracking-tight">Status:</span>
-                    <span className={`text-lg sm:text-base font-bold leading-normal tracking-tight ${
+                    <span className="text-base text-gray-700 font-medium leading-normal tracking-tight">Status:</span>
+                    <span className={`text-base font-semibold leading-normal tracking-tight ${
                       new Date(coinData.redeem_valid) > new Date() 
                         ? 'text-green-600' 
                         : 'text-red-600'
@@ -356,12 +356,12 @@ const Content = () => {
                 {/* Right Column: Valid From and Valid Till */}
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-base text-gray-700 font-bold leading-normal tracking-tight">Valid From:</span>
-                    <span className="text-lg sm:text-base text-gray-800 leading-normal tracking-tight">{formatDate(coinData.valid_from)}</span>
+                    <span className="text-base text-gray-700 font-medium leading-normal tracking-tight">Valid From:</span>
+                    <span className="text-base text-gray-800 leading-normal tracking-tight">{formatDate(coinData.valid_from)}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-base text-gray-700 font-bold leading-normal tracking-tight">Valid Till:</span>
-                    <span className="text-lg sm:text-base text-gray-800 leading-normal tracking-tight">{formatDate(coinData.redeem_valid)}</span>
+                    <span className="text-base text-gray-700 font-medium leading-normal tracking-tight">Valid Till:</span>
+                    <span className="text-base text-gray-800 leading-normal tracking-tight">{formatDate(coinData.redeem_valid)}</span>
                   </div>
                 </div>
               </div>
@@ -380,7 +380,7 @@ const Content = () => {
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <h5 className="text-xl font-semibold text-gray-700 mb-2 leading-tight tracking-tight">No Coupon Applied</h5>
-                <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">Apply a coupon code to see details here.</p>
+                <p className="text-base text-gray-600 leading-normal tracking-tight">Apply a coupon code to see details here.</p>
               </div>
             </div>
           )}
@@ -417,11 +417,11 @@ const Content = () => {
                 <img src={noCoinsIllustration} alt="No Coins" className="w-48 sm:w-64 h-auto" />
               </div>
               <h5 className="text-xl font-semibold text-gray-700 mb-2 leading-tight tracking-tight">No Coins Available</h5>
-              <p className="text-lg sm:text-base text-gray-600 mb-3 sm:mb-4 px-2 leading-normal tracking-tight">
+              <p className="text-base text-gray-600 mb-3 sm:mb-4 px-2 leading-normal tracking-tight">
                 Apply coupon code or make payment to get coins!
               </p>
               <button 
-                className="px-4 sm:px-5 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white text-xs sm:text-sm rounded-lg transition-colors font-medium mx-auto" 
+                className="px-4 sm:px-5 py-2 bg-gradient-brand hover:bg-gradient-primary-hover text-white text-base rounded-lg transition-colors font-medium mx-auto" 
                 onClick={fetchUserCoins}
                 disabled={isLoading}
               >
@@ -439,7 +439,7 @@ const Content = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4" onClick={closeHistoryModal}>
             <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
               <div className="border-b px-6 py-4">
-                <h5 className="text-xl font-bold text-gray-800 leading-tight tracking-tight">Coin Transaction History</h5>
+                <h5 className="text-xl font-semibold text-gray-800 leading-tight tracking-tight">Coin Transaction History</h5>
               </div>
               
               <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
@@ -447,7 +447,7 @@ const Content = () => {
                 <div className="mb-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-base font-bold text-gray-700 mb-2 leading-normal tracking-tight">Month:</label>
+                      <label className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Month:</label>
                       <select 
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={selectedMonth}
@@ -469,7 +469,7 @@ const Content = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-base font-bold text-gray-700 mb-2 leading-normal tracking-tight">Year:</label>
+                      <label className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Year:</label>
                       <select 
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={selectedYear}
@@ -617,7 +617,7 @@ const Content = () => {
                         {filteredHistory.map((transaction, index) => (
                           <tr key={transaction.id || index} className="group">
                             <td 
-                              className={`px-4 py-3 text-lg sm:text-base leading-normal tracking-tight freeze-col-1 ${freezeColumns >= 1 ? 'sticky freeze-sticky-1 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
+                              className={`px-4 py-3 text-base leading-normal tracking-tight freeze-col-1 ${freezeColumns >= 1 ? 'sticky freeze-sticky-1 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
                               style={freezeColumns >= 1 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
                             >
                               <div className="hidden md:block whitespace-nowrap">
@@ -636,21 +636,21 @@ const Content = () => {
                               </div>
                             </td>
                             <td 
-                              className={`px-4 py-3 text-lg sm:text-base leading-normal tracking-tight freeze-col-2 ${freezeColumns >= 2 ? 'sticky freeze-sticky-2 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
+                              className={`px-4 py-3 text-base leading-normal tracking-tight freeze-col-2 ${freezeColumns >= 2 ? 'sticky freeze-sticky-2 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
                               style={freezeColumns >= 2 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
                             >
                               {transaction.reason || 'N/A'}
                             </td>
                             <td 
-                              className={`px-4 py-3 text-lg sm:text-base font-bold leading-normal tracking-tight freeze-col-3 ${freezeColumns >= 3 ? 'sticky freeze-sticky-3 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
+                              className={`px-4 py-3 text-base font-semibold leading-normal tracking-tight freeze-col-3 ${freezeColumns >= 3 ? 'sticky freeze-sticky-3 z-10 bg-white group-hover:bg-gray-50' : 'group-hover:bg-gray-50'}`}
                               style={freezeColumns >= 3 ? { boxShadow: '2px 0 5px rgba(0,0,0,0.1)' } : {}}
                             >
                               🪙 {transaction.coin_value?.toLocaleString() || 0}
                             </td>
-                            <td className="px-4 py-3 text-lg sm:text-base text-red-600 leading-normal tracking-tight group-hover:bg-gray-50">{transaction.reduction ? `-${transaction.reduction}` : 'N/A'}</td>
-                            <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.candidate_id || 'N/A'}</td>
-                            <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.job_id || 'N/A'}</td>
-                            <td className="px-4 py-3 text-lg sm:text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.payment_id || 'N/A'}</td>
+                            <td className="px-4 py-3 text-base text-red-600 leading-normal tracking-tight group-hover:bg-gray-50">{transaction.reduction ? `-${transaction.reduction}` : 'N/A'}</td>
+                            <td className="px-4 py-3 text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.candidate_id || 'N/A'}</td>
+                            <td className="px-4 py-3 text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.job_id || 'N/A'}</td>
+                            <td className="px-4 py-3 text-base leading-normal tracking-tight group-hover:bg-gray-50">{transaction.payment_id || 'N/A'}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -658,8 +658,8 @@ const Content = () => {
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <h6 className="text-xl font-semibold text-gray-600 mb-2 leading-tight tracking-tight">No Coins Transactions</h6>
-                    <p className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">
+                    <h6 className="text-lg font-semibold text-gray-600 mb-2 leading-tight tracking-tight">No Coins Transactions</h6>
+                    <p className="text-base text-gray-500 leading-normal tracking-tight">
                       {selectedMonth || selectedYear 
                         ? "No transactions found for the selected filter criteria."
                         : "No transaction history available."

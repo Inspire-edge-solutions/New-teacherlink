@@ -3,9 +3,41 @@
  */
 
 /**
+ * Format a single education type to title case
+ * Maps actual stored values to display labels (consistent with candidate profiles)
+ * @param {string} educationType - Education type value
+ * @returns {string} Formatted education type in title case
+ */
+const formatEducationType = (educationType) => {
+  if (!educationType) return '';
+  
+  const normalized = String(educationType).toLowerCase().trim();
+  
+  // Map actual stored values from Education.jsx educationTypes array
+  const mappings = {
+    'grade10': 'Grade 10',
+    'grade12': 'Grade 12',
+    'degree': 'Degree',
+    'masterdegree': 'Master Degree',
+    'doctorate': 'Doctorate',
+    'bed': 'B.Ed',
+    'ded': 'D.Ed/D.EID',
+    'nttmtt': 'NTT/MTT',
+    'certificate': 'Certificate/Other Course'
+  };
+  
+  if (mappings[normalized]) {
+    return mappings[normalized];
+  }
+  
+  // Return capitalized version if not in mappings
+  return String(educationType).charAt(0).toUpperCase() + String(educationType).slice(1).toLowerCase();
+};
+
+/**
  * Format qualification data for display
  * @param {string|Array|Object} qualification - Qualification data in various formats
- * @returns {string} Formatted qualification string with proper comma separation and uppercase
+ * @returns {string} Formatted qualification string with proper comma separation and title case
  */
 export const formatQualification = (qualification) => {
   if (!qualification) return 'Not specified';
@@ -33,10 +65,10 @@ export const formatQualification = (qualification) => {
     // If it's an object, try to extract values
     qualArray = Object.values(qualification).filter(q => q);
   } else {
-    return String(qualification);
+    return formatEducationType(String(qualification));
   }
   
-  // Clean up and format each qualification
+  // Clean up and format each qualification using title case
   const formatted = qualArray
     .filter(qual => qual && qual.toString().trim())
     .map(qual => {
@@ -47,8 +79,8 @@ export const formatQualification = (qualification) => {
         .replace(/(\bBBA\b)(\bMBA\b)/g, '$1, $2')
         .replace(/(\bBB\b)(\bA\b)/g, 'BBA')
         .replace(/(\bMB\b)(\bA\b)/g, 'MBA');
-      // Convert to uppercase
-      return qualStr.toUpperCase();
+      // Use formatEducationType for consistent title case formatting
+      return formatEducationType(qualStr);
     });
   
   return formatted.length > 0 ? formatted.join(', ') : 'Not specified';
@@ -125,4 +157,47 @@ export const formatLocation = (city, state) => {
   if (!state) return city;
   if (!city) return state;
   return `${city}, ${state}`;
+};
+
+/**
+ * Format job type for display
+ * Maps actual stored values to display labels (consistent with job category options)
+ * @param {string} jobType - Job type value
+ * @returns {string} Formatted job type string
+ */
+export const formatJobType = (jobType) => {
+  if (!jobType) return 'Type not specified';
+  
+  const normalized = String(jobType).toLowerCase().trim();
+  
+  // Map actual stored values from jobCategoryOptions
+  const mappings = {
+    'fulltime': 'Full Time',
+    'full_time': 'Full Time',
+    'parttime': 'Part Time',
+    'part_time': 'Part Time',
+    'fullpart': 'Full Time / Part Time',
+    'full_part': 'Full Time / Part Time',
+    'tuitions': 'Tuitions',
+    'tuition': 'Tuitions'
+  };
+  
+  if (mappings[normalized]) {
+    return mappings[normalized];
+  }
+  
+  // Handle camelCase conversion (e.g., "fullTime" → "Full Time")
+  // Split camelCase words and capitalize each word
+  const camelCaseMatch = String(jobType).match(/^([a-z]+)([A-Z][a-z]*)+$/);
+  if (camelCaseMatch) {
+    const words = String(jobType)
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+    return words;
+  }
+  
+  // Return capitalized version if not in mappings
+  return String(jobType).charAt(0).toUpperCase() + String(jobType).slice(1).toLowerCase();
 };

@@ -160,20 +160,20 @@ const Photo = () => {
           <div className="flex-grow text-center sm:text-left min-w-0 w-full">
             <div className="flex flex-col sm:flex-row sm:items-start sm:gap-3 mb-1">
               <div className="flex-1 min-w-0">
-                <h2 className="text-2xl font-bold text-gray-800 break-words overflow-wrap-anywhere leading-tight tracking-tight">
+                <h2 className="text-xl font-semibold text-gray-800 break-words overflow-wrap-anywhere leading-tight tracking-tight">
                   {organizationData?.contact_person_name || user?.displayName || 'User Name'}
                 </h2>
               </div>
               {organizationData?.id && (
-                <div className="text-lg sm:text-base text-gray-600 flex-shrink-0 mt-1 sm:mt-0 whitespace-nowrap leading-normal tracking-tight">
+                <div className="text-base text-gray-600 flex-shrink-0 mt-1 sm:mt-0 whitespace-nowrap leading-normal tracking-tight">
                   ID: <span className="font-semibold text-gray-800">{organizationData.id}</span>
                 </div>
               )}
             </div>
-            <p className="text-lg sm:text-base text-gray-600 mb-1 leading-normal tracking-tight">
+            <p className="text-base text-gray-600 mb-1 leading-normal tracking-tight">
               {organizationData?.type || 'Organization Type'}
             </p>
-            <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">
+            <p className="text-base text-gray-600 leading-normal tracking-tight">
               {organizationData?.city || organizationData?.parent_city || 'City'}
             </p>
           </div>

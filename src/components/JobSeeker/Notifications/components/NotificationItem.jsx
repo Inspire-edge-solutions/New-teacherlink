@@ -58,7 +58,7 @@ const NotificationItem = ({ notification, index, checked, onMarkAsRead, onDelete
             <div className="flex flex-col gap-2">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className={`text-lg sm:text-xl font-semibold leading-tight tracking-tight truncate ${
+                  <h3 className={`text-xl font-semibold leading-tight tracking-tight truncate ${
                     notification.read ? 'text-gray-700' : 'text-gray-900'
                   }`}>
                     {notification.title}
@@ -67,7 +67,7 @@ const NotificationItem = ({ notification, index, checked, onMarkAsRead, onDelete
                     <span className="w-2 h-2 bg-gradient-brand rounded-full flex-shrink-0"></span>
                   )}
                 </div>
-                <p className={`text-base sm:text-lg mb-2 leading-normal tracking-tight ${
+                <p className={`text-base mb-2 leading-normal tracking-tight ${
                   notification.read ? 'text-gray-600' : 'text-gray-700'
                 }`}>
                   {notification.message}
@@ -86,7 +86,7 @@ const NotificationItem = ({ notification, index, checked, onMarkAsRead, onDelete
                         e.stopPropagation();
                         onMarkAsRead(notification.id);
                       }}
-                      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-gray-500 border border-gray-300 hover:text-green-500 hover:bg-green-50 hover:border-green-500 rounded-lg transition-colors leading-normal tracking-tight whitespace-nowrap"
+                      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-base text-gray-500 border border-gray-300 hover:text-green-500 hover:bg-green-50 hover:border-green-500 rounded-lg transition-colors leading-normal tracking-tight whitespace-nowrap"
                       title="Mark as read"
                     >
                       <FaCheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />

@@ -388,19 +388,19 @@ const ProfileCompletionPopup = () => {
                     onClick={handleDismiss}
                   >
                     <div className="text-3xl font-bold leading-none tracking-tight">{completionData.percentage}%</div>
-                    <div className="text-lg sm:text-base font-semibold mt-2 opacity-90 leading-snug tracking-tight">Profile Completion</div>
-                    <div className="text-lg sm:text-base opacity-80 mt-1 text-center px-2 leading-normal tracking-tight">
+                    <div className="text-base font-semibold mt-2 opacity-90 leading-snug tracking-tight">Profile Completion</div>
+                    <div className="text-base opacity-80 mt-1 text-center px-2 leading-normal tracking-tight">
                       {completionData.completedSections.length} of {completionData.completedSections.length + completionData.missingSections.length} sections
                     </div>
                   </Link>
                 </div>
                 <div className="flex-1 w-full">
                   <div className="flex flex-wrap justify-center gap-2 mb-2">
-                    <span className={`inline-block px-3 py-1.5 rounded-full text-lg sm:text-base font-semibold border uppercase tracking-wide whitespace-nowrap leading-normal ${getStatusBadgeClasses(completionData.status)}`}>
+                    <span className={`inline-block px-3 py-1.5 rounded-full text-base font-semibold border uppercase tracking-wide whitespace-nowrap leading-normal ${getStatusBadgeClasses(completionData.status)}`}>
                       {completionData.status}
                     </span>
                   </div>
-                  <p className="m-0 text-gray-500 text-lg sm:text-base leading-normal tracking-tight text-center">
+                  <p className="m-0 text-gray-500 text-base leading-normal tracking-tight text-center">
                     {completionData.percentage === 0 
                       ? "Let's get started with your organization profile! Fill in the required information to complete your profile." 
                       : completionData.percentage < 50 
@@ -416,24 +416,24 @@ const ProfileCompletionPopup = () => {
             <div className="mb-6">
               {completionData.missingSections.length > 0 ? (
                 <div>
-                  <h4 className="m-0 mb-4 text-lg font-semibold text-gray-800 leading-tight tracking-tight">Missing Information:</h4>
+                  <h4 className="m-0 mb-4 text-xl font-semibold text-gray-800 leading-tight tracking-tight">Missing Information:</h4>
                   <div className="flex flex-col gap-2">
                     {completionData.missingSections.map((section, index) => (
                       <div key={index} className="flex items-center gap-2.5 p-3 bg-orange-50 text-orange-800 border-l-4 border-orange-400 rounded-lg">
                         <FaExclamationTriangle className="text-orange-500 text-base flex-shrink-0" />
-                        <span className="text-lg sm:text-base leading-normal tracking-tight">{section.name}</span>
+                        <span className="text-base leading-normal tracking-tight">{section.name}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               ) : completionData.completedSections.length > 0 ? (
                 <div>
-                  <h4 className="m-0 mb-4 text-lg font-semibold text-gray-800 leading-tight tracking-tight">Great job! All sections are complete:</h4>
+                  <h4 className="m-0 mb-4 text-xl font-semibold text-gray-800 leading-tight tracking-tight">Great job! All sections are complete:</h4>
                   <div className="flex flex-col gap-2">
                     {completionData.completedSections.map((section, index) => (
                       <div key={index} className="flex items-center gap-2.5 p-3 bg-green-50 text-green-800 border-l-4 border-green-500 rounded-lg">
                         <FaCheckCircle className="text-green-500 text-base flex-shrink-0" />
-                        <span className="text-lg sm:text-base leading-normal tracking-tight">{section.name}</span>
+                        <span className="text-base leading-normal tracking-tight">{section.name}</span>
                       </div>
                     ))}
                   </div>
@@ -442,10 +442,10 @@ const ProfileCompletionPopup = () => {
 
               {nextSteps.length > 0 && (
                 <div className="mt-5 pt-5 border-t border-gray-200">
-                  <h4 className="m-0 mb-3 text-lg font-semibold text-gray-800 leading-tight tracking-tight">Next Steps:</h4>
+                  <h4 className="m-0 mb-3 text-xl font-semibold text-gray-800 leading-tight tracking-tight">Next Steps:</h4>
                   <ul className="list-none p-0 m-0">
                     {nextSteps.map((step, index) => (
-                      <li key={index} className="flex items-center gap-2.5 py-2 text-lg sm:text-base text-gray-700 leading-normal tracking-tight">
+                      <li key={index} className="flex items-center gap-2.5 py-2 text-base text-gray-700 leading-normal tracking-tight">
                         <FaArrowRight className="text-[#F34B58] text-base mt-0.5 flex-shrink-0" />
                         <span>{step}</span>
                       </li>
@@ -458,13 +458,13 @@ const ProfileCompletionPopup = () => {
 
           <div className="flex gap-3 p-4 sm:p-6 border-t border-gray-200 bg-white mx-4 mb-4 rounded-b-xl">
             <button 
-              className="flex-1 px-5 py-3 bg-gray-100 text-gray-600 border border-gray-300 rounded-lg text-lg sm:text-base font-semibold cursor-pointer transition-all duration-200 text-center hover:bg-gray-200 hover:text-gray-700 leading-normal tracking-tight"
+              className="flex-1 px-5 py-3 bg-gray-100 text-gray-600 border border-gray-300 rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 text-center hover:bg-gray-200 hover:text-gray-700 leading-normal tracking-tight"
               onClick={handleDismiss}
             >
               Remind me later
             </button>
             <button 
-              className="flex-1 px-5 py-3 bg-gradient-brand text-white rounded-lg text-lg sm:text-base font-semibold cursor-pointer transition-colors duration-200 shadow-lg text-center hover:bg-gradient-primary-hover hover:shadow-xl hover:-translate-y-0.5 leading-normal tracking-tight"
+              className="flex-1 px-5 py-3 bg-gradient-brand text-white rounded-lg text-base font-semibold cursor-pointer transition-colors duration-200 shadow-lg text-center hover:bg-gradient-primary-hover hover:shadow-xl hover:-translate-y-0.5 leading-normal tracking-tight"
               onClick={handleCompleteProfile}
             >
               Complete Profile Now
@@ -473,7 +473,7 @@ const ProfileCompletionPopup = () => {
           
           <div className="p-2 sm:p-4 text-center border-t border-gray-200 bg-white mx-4 mb-4 rounded-b-xl">
             <button 
-              className="bg-transparent border-none text-gray-400 text-lg sm:text-base cursor-pointer px-3 py-1.5 rounded-md transition-all duration-200 hover:bg-gray-100 hover:text-gray-600 leading-normal tracking-tight"
+              className="bg-transparent border-none text-gray-400 text-base cursor-pointer px-3 py-1.5 rounded-md transition-all duration-200 hover:bg-gray-100 hover:text-gray-600 leading-normal tracking-tight"
               onClick={handleRefresh} 
               title="Refresh completion status"
             >

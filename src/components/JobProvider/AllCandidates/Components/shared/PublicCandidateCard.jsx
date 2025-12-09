@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AiOutlineEye, AiOutlineFileText, AiOutlineMessage } from 'react-icons/ai';
-import { FaBriefcase, FaWallet, FaMapMarkerAlt, FaGraduationCap, FaStar } from 'react-icons/fa';
+import { FaBriefcase, FaWallet, FaMapMarkerAlt, FaGraduationCap, FaStar, FaBook, FaUser, FaBirthdayCake } from 'react-icons/fa';
 import { AvatarImage } from '../utils/avatarUtils.jsx';
 import { 
   getExperience, 
   parseEducationDetails, 
   parseCoreExpertise, 
-  getLocationString
+  getLocationString,
+  formatSalary,
+  getSubjectsString,
+  getGenderString,
+  getAgeString,
+  getQualificationString
 } from '../utils/candidateUtils.js';
 import LoginConsentModal from '../../../../../components/common/LoginConsentModal';
 
@@ -69,11 +74,11 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
         <div className="flex-1 min-w-0">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-start gap-2 sm:gap-0">
             <div className="flex-1 min-w-0">
-              <h3 className="text-base sm:text-lg font-bold text-gray-800 leading-tight truncate">
+              <h3 className="text-xl font-semibold text-gray-800 leading-tight truncate">
                 {candidate.fullName || candidate.name || 'Name not available'}
               </h3>
               {(candidate.job_name || candidate.designation) && (
-                <p className="text-xs sm:text-sm text-gray-600 mt-0.5 truncate">
+                <p className="text-base text-gray-600 mt-0.5 truncate">
                   {candidate.job_name ? (
                     <>
                       Applied for <span className="font-semibold">{candidate.job_name}</span>
@@ -127,29 +132,55 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
 
           {/* Details Grid for Desktop */}
           <div className="hidden lg:block space-y-2 mt-2">
-            <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-sm sm:text-base">
+            {/* First Row - 4 cols on desktop */}
+            <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-base leading-normal tracking-tight">
+              {/* Gender */}
+              <div className="flex items-center gap-2 text-gray-700 min-w-0">
+                <FaUser className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <span className="truncate font-medium leading-normal tracking-tight">{getGenderString(candidate)}</span>
+              </div>
+              {/* Experience */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaBriefcase className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium">Exp: {getExperience(candidate.total_experience_years)}</span>
+                <span className="truncate font-medium leading-normal tracking-tight">Exp: {getExperience(candidate.total_experience_years)}</span>
               </div>
+              {/* Subject */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
-                <FaWallet className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium">₹{candidate.expected_salary?.toLocaleString() || 'Not specified'}</span>
+                <FaBook className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <span className="truncate font-medium leading-normal tracking-tight" title={getSubjectsString(candidate)}>
+                  {getSubjectsString(candidate)}
+                </span>
               </div>
+              {/* Core Expertise */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
-                <FaMapMarkerAlt className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium">{getLocationString(candidate)}</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-700 min-w-0">
-                <FaGraduationCap className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <span className="truncate font-medium">{parseEducationDetails(candidate.education_details_json)}</span>
+                <FaStar className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <span className="truncate font-medium leading-normal tracking-tight" title={typeof expertise === 'object' && expertise.hasMore ? expertise.full : expertise}>
+                  {typeof expertise === 'object' && expertise.hasMore ? expertise.display : expertise}
+                </span>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-gray-700 text-sm sm:text-base">
-              <FaStar className="w-4 h-4 text-gray-600 flex-shrink-0" />
-              <span className="truncate font-medium" title={typeof expertise === 'object' && expertise.hasMore ? expertise.full : expertise}>
-                {typeof expertise === 'object' && expertise.hasMore ? expertise.display : expertise}
-              </span>
+            {/* Second Row - 4 cols on desktop */}
+            <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-base leading-normal tracking-tight">
+              {/* Qualification */}
+              <div className="flex items-center gap-2 text-gray-700 min-w-0">
+                <FaGraduationCap className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <span className="truncate font-medium leading-normal tracking-tight">{getQualificationString(candidate.education_details_json)}</span>
+              </div>
+              {/* Age */}
+              <div className="flex items-center gap-2 text-gray-700 min-w-0">
+                <FaBirthdayCake className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <span className="truncate font-medium leading-normal tracking-tight">{getAgeString(candidate)}</span>
+              </div>
+              {/* Salary */}
+              <div className="flex items-center gap-2 text-gray-700 min-w-0">
+                <FaWallet className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <span className="truncate font-medium leading-normal tracking-tight">{formatSalary(candidate.expected_salary)}</span>
+              </div>
+              {/* Location */}
+              <div className="flex items-center gap-2 text-gray-700 min-w-0">
+                <FaMapMarkerAlt className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <span className="truncate font-medium leading-normal tracking-tight">{getLocationString(candidate)}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -157,29 +188,55 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
 
       {/* Details Grid for Mobile */}
       <div className="lg:hidden space-y-2 mt-2">
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm sm:text-base">
+        {/* First Row - 2 cols on mobile */}
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-base leading-normal tracking-tight">
+          {/* Gender */}
+          <div className="flex items-center gap-2 text-gray-700 min-w-0">
+            <FaUser className="w-4 h-4 text-gray-600 flex-shrink-0" />
+            <span className="truncate font-medium leading-normal tracking-tight">{getGenderString(candidate)}</span>
+          </div>
+          {/* Experience */}
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaBriefcase className="w-4 h-4 text-gray-600 flex-shrink-0" />
-            <span className="truncate font-medium">Exp: {getExperience(candidate.total_experience_years)}</span>
+            <span className="truncate font-medium leading-normal tracking-tight">Exp: {getExperience(candidate.total_experience_years)}</span>
           </div>
+          {/* Subject */}
+          <div className="flex items-center gap-2 text-gray-700 min-w-0">
+            <FaBook className="w-4 h-4 text-gray-600 flex-shrink-0" />
+            <span className="truncate font-medium leading-normal tracking-tight" title={getSubjectsString(candidate)}>
+              {getSubjectsString(candidate)}
+            </span>
+          </div>
+          {/* Core Expertise */}
+          <div className="flex items-center gap-2 text-gray-700 min-w-0">
+            <FaStar className="w-4 h-4 text-gray-600 flex-shrink-0" />
+            <span className="truncate font-medium leading-normal tracking-tight" title={typeof expertise === 'object' && expertise.hasMore ? expertise.full : expertise}>
+              {typeof expertise === 'object' && expertise.hasMore ? expertise.display : expertise}
+            </span>
+          </div>
+        </div>
+        {/* Second Row - 2 cols on mobile */}
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-base leading-normal tracking-tight">
+          {/* Qualification */}
+          <div className="flex items-center gap-2 text-gray-700 min-w-0">
+            <FaGraduationCap className="w-4 h-4 text-gray-600 flex-shrink-0" />
+            <span className="truncate font-medium">{getQualificationString(candidate.education_details_json)}</span>
+          </div>
+          {/* Age */}
+          <div className="flex items-center gap-2 text-gray-700 min-w-0">
+            <FaBirthdayCake className="w-4 h-4 text-gray-600 flex-shrink-0" />
+            <span className="truncate font-medium">{getAgeString(candidate)}</span>
+          </div>
+          {/* Salary */}
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaWallet className="w-4 h-4 text-gray-600 flex-shrink-0" />
-            <span className="truncate font-medium">₹{candidate.expected_salary?.toLocaleString() || 'Not specified'}</span>
+            <span className="truncate font-medium">{formatSalary(candidate.expected_salary)}</span>
           </div>
+          {/* Location */}
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaMapMarkerAlt className="w-4 h-4 text-gray-600 flex-shrink-0" />
             <span className="truncate font-medium">{getLocationString(candidate)}</span>
           </div>
-          <div className="flex items-center gap-2 text-gray-700 min-w-0">
-            <FaGraduationCap className="w-4 h-4 text-gray-600 flex-shrink-0" />
-            <span className="truncate font-medium">{parseEducationDetails(candidate.education_details_json)}</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 text-gray-700 text-sm sm:text-base">
-          <FaStar className="w-4 h-4 text-gray-600 flex-shrink-0" />
-          <span className="truncate font-medium" title={typeof expertise === 'object' && expertise.hasMore ? expertise.full : expertise}>
-            {typeof expertise === 'object' && expertise.hasMore ? expertise.display : expertise}
-          </span>
         </div>
       </div>
 

@@ -58,7 +58,7 @@ const HowItWorks = () => {
     <Fade in={checked} timeout={800}>
       <Paper elevation={4} className="bg-white rounded-lg shadow-md p-6 mb-8">
         <Fade in={checked} timeout={1000} style={{ transitionDelay: '200ms' }}>
-          <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent text-center mb-4 leading-tight tracking-tight">How It Works</h2>
+          <h2 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent text-center mb-4 leading-tight tracking-tight">How It Works</h2>
         </Fade>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {steps.map((step, index) => (
@@ -79,7 +79,7 @@ const HowItWorks = () => {
                   </div>
                 </Zoom>
                 <h3 className="text-xl font-semibold text-gray-800 mb-1 leading-snug tracking-tight">{step.title}</h3>
-                <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">{step.description}</p>
+                <p className="text-base text-gray-600 leading-normal tracking-tight">{step.description}</p>
               </div>
             </Fade>
           ))}

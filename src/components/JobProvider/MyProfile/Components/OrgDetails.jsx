@@ -926,7 +926,7 @@ const OrgDetails = () => {
         <div className="mb-6">
           <div className="bg-[#F0D8D9] rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="mb-4">
-              <label className="block text-lg sm:text-base font-medium text-gray-700 mb-2 leading-snug tracking-tight">
+              <label className="block text-base font-medium text-gray-700 mb-2 leading-snug tracking-tight">
                 Organization/Entity Type
               </label>
               <select
@@ -1280,7 +1280,7 @@ const OrgDetails = () => {
                       ) : (
                         <button
                           type="button"
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-brand text-white text-lg sm:text-base rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium whitespace-nowrap leading-normal tracking-tight flex items-center justify-center"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-brand text-white text-base rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium whitespace-nowrap leading-normal tracking-tight flex items-center justify-center"
                           onClick={sendPhoneOtp}
                           disabled={isPhoneVerifying}
                         >
@@ -1336,7 +1336,7 @@ const OrgDetails = () => {
                       ) : (
                         <button
                           type="button"
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-brand text-white text-lg sm:text-base rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium whitespace-nowrap leading-normal tracking-tight flex items-center justify-center"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-brand text-white text-base rounded-lg hover:bg-gradient-primary-hover focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 duration-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg font-medium whitespace-nowrap leading-normal tracking-tight flex items-center justify-center"
                           onClick={sendEmailOtp}
                           disabled={isVerifying}
                         >
@@ -1395,7 +1395,7 @@ const OrgDetails = () => {
                     onChange={(e) => setSameAsCallingNumber(e.target.checked)}
                     className="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-200"
                   />
-                  <span className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">Whatsapp Number same as Mobile Number</span>
+                  <span className="text-base text-gray-700 leading-normal tracking-tight">Whatsapp Number same as Mobile Number</span>
                 </label>
               </div>
 
@@ -1403,7 +1403,7 @@ const OrgDetails = () => {
               {isNonParent() && (
                 <div className="col-span-1 md:col-span-2">
                   <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
-                    <span className="text-lg sm:text-base font-medium text-gray-700 flex-shrink-0 leading-snug tracking-tight">Are you the owner or the main head of the organization?</span>
+                    <span className="text-base font-medium text-gray-700 flex-shrink-0 leading-snug tracking-tight">Are you the owner or the main head of the organization?</span>
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
                       <label className="flex items-center space-x-2 cursor-pointer">
                         <input
@@ -1414,7 +1414,7 @@ const OrgDetails = () => {
                           onChange={(e) => setIsOwner(e.target.value)}
                           className="w-4 h-4 text-pink-600 border-gray-300 focus:ring-pink-200"
                         />
-                        <span className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">Yes</span>
+                        <span className="text-base text-gray-700 leading-normal tracking-tight">Yes</span>
                       </label>
                       <label className="flex items-center space-x-2 cursor-pointer">
                         <input
@@ -1425,7 +1425,7 @@ const OrgDetails = () => {
                           onChange={(e) => setIsOwner(e.target.value)}
                           className="w-4 h-4 text-pink-600 border-gray-300 focus:ring-pink-200"
                         />
-                        <span className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">No</span>
+                        <span className="text-base text-gray-700 leading-normal tracking-tight">No</span>
                       </label>
                     </div>
                   </div>

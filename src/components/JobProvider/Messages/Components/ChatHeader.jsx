@@ -52,13 +52,13 @@ const ChatHeader = ({ chat, isConnected = true, typingUsers = new Set(), isBlock
                 : 'Loading...'}
             </h3>
             <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-              <p className={`text-lg sm:text-base leading-normal tracking-tight ${getStatusColor()}`}>
+              <p className={`text-base leading-normal tracking-tight ${getStatusColor()}`}>
                 {getStatusText()}
               </p>
               {chat.city && chat.state && (
                 <>
                   <span className="text-gray-300 hidden sm:inline">•</span>
-                  <div className="flex items-center text-lg sm:text-base text-gray-500 leading-normal tracking-tight">
+                  <div className="flex items-center text-base text-gray-500 leading-normal tracking-tight">
                     <FiMapPin size={10} className="sm:w-3 sm:h-3 mr-1" />
                     <span className="hidden sm:inline">{chat.city}, {chat.state}</span>
                     <span className="sm:hidden">{chat.city}</span>
@@ -76,7 +76,7 @@ const ChatHeader = ({ chat, isConnected = true, typingUsers = new Set(), isBlock
             <div className={`w-2 h-2 rounded-full ${
               isConnected ? 'bg-green-500' : 'bg-red-500'
             }`}></div>
-            <span className="text-lg sm:text-base text-gray-500 leading-normal tracking-tight">
+            <span className="text-base text-gray-500 leading-normal tracking-tight">
               {isConnected ? 'Connected' : 'Disconnected'}
             </span>
           </div>
@@ -113,7 +113,7 @@ const ChatHeader = ({ chat, isConnected = true, typingUsers = new Set(), isBlock
                           }
                           setShowBlockMenu(false);
                         }}
-                        className="w-full px-4 py-2 text-left text-lg sm:text-base text-gray-700 hover:bg-gray-50 flex items-center gap-2 leading-normal tracking-tight"
+                        className="w-full px-4 py-2 text-left text-base text-gray-700 hover:bg-gray-50 flex items-center gap-2 leading-normal tracking-tight"
                       >
                         <FiUnlock size={16} />
                         <span>Unblock</span>
@@ -128,7 +128,7 @@ const ChatHeader = ({ chat, isConnected = true, typingUsers = new Set(), isBlock
                           }
                           setShowBlockMenu(false);
                         }}
-                        className="w-full px-4 py-2 text-left text-lg sm:text-base text-red-600 hover:bg-red-50 flex items-center gap-2 leading-normal tracking-tight"
+                        className="w-full px-4 py-2 text-left text-base text-red-600 hover:bg-red-50 flex items-center gap-2 leading-normal tracking-tight"
                       >
                         <FiSlash size={16} />
                         <span>Block</span>

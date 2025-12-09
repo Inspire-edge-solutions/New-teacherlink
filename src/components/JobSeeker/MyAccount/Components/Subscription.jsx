@@ -20,8 +20,8 @@ const SuccessModal = ({ open, onClose, message }) => {
             alt="Coin"
             className="w-16 h-16 mx-auto mb-4"
           />
-          <h2 className="text-2xl font-bold text-gray-800 mb-4 leading-tight tracking-tight">Congrats!!</h2>
-          <p className="text-gray-600 mb-6 text-lg sm:text-base leading-normal tracking-tight">{message}</p>
+          <h2 className="text-xl font-semibold text-gray-800 mb-4 leading-tight tracking-tight">Congrats!!</h2>
+          <p className="text-gray-600 mb-6 text-base leading-normal tracking-tight">{message}</p>
           <button 
             className="bg-gradient-brand text-white px-6 py-3 rounded-lg hover:bg-gradient-primary-hover duration-200 transition-colors text-base leading-normal tracking-tight"
             onClick={onClose}
@@ -52,8 +52,8 @@ const InfoModal = ({ open, onClose, iconUrl, message, loading }) => {
               />
             )}
           </div>
-          <h3 className="text-xl font-bold text-red-600 mb-4 leading-tight tracking-tight">Info</h3>
-          <p className="text-gray-600 mb-6 text-lg sm:text-base leading-normal tracking-tight">{message}</p>
+          <h3 className="text-xl font-semibold text-red-600 mb-4 leading-tight tracking-tight">Info</h3>
+          <p className="text-gray-600 mb-6 text-base leading-normal tracking-tight">{message}</p>
           <button 
             className="bg-gradient-brand text-white px-6 py-3 rounded-lg hover:bg-gradient-primary-hover duration-200 transition-colors text-base leading-normal tracking-tight"
             onClick={onClose}
@@ -74,7 +74,7 @@ const SubscriptionDetailsView = ({ subscription }) => {
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-2xl text-green-600">✓</span>
         </div>
-        <h3 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">Premium Subscription Activated!</h3>
+        <h3 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">Premium Subscription Activated!</h3>
       </div>
       
       <div className="bg-gray-50 rounded-xl p-6 mb-8">
@@ -105,7 +105,7 @@ const SubscriptionDetailsView = ({ subscription }) => {
       </div>
       
       <div className="text-center">
-        <h4 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-6 leading-tight tracking-tight">Premium Benefits Unlocked</h4>
+        <h4 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-6 leading-tight tracking-tight">Premium Benefits Unlocked</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
             <span className="text-2xl">🎯</span>
@@ -163,8 +163,8 @@ const Subscription = () => {
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🔒</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2 leading-tight tracking-tight">Access Denied</h2>
-          <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Please log in to access subscription features.</p>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2 leading-tight tracking-tight">Access Denied</h2>
+          <p className="text-gray-600 text-base leading-normal tracking-tight">Please log in to access subscription features.</p>
         </div>
       </div>
     );
@@ -325,8 +325,8 @@ const Subscription = () => {
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
         <div className="text-center">
           <div className="text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2 leading-tight tracking-tight">Error</h2>
-          <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">{error}</p>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2 leading-tight tracking-tight">Error</h2>
+          <p className="text-gray-600 text-base leading-normal tracking-tight">{error}</p>
         </div>
       </div>
     );
@@ -343,8 +343,8 @@ const Subscription = () => {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl text-green-600">✓</span>
             </div>
-            <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 leading-tight tracking-tight">Active Subscription</h2>
-            <div className="space-y-2 text-gray-600 text-lg sm:text-base leading-normal tracking-tight">
+            <h2 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-4 leading-tight tracking-tight">Active Subscription</h2>
+            <div className="space-y-2 text-gray-600 text-base leading-normal tracking-tight">
               <p>Valid until: {new Date(subscription.endDate).toLocaleDateString()}</p>
               <p>Status: <span className="text-green-600 font-semibold">Active</span></p>
             </div>
@@ -361,7 +361,7 @@ const Subscription = () => {
         <div className="mb-6 sm:mb-8">
           {/* Title */}
           <div className="mb-4 sm:mb-6">
-            <h1 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent text-center sm:text-left leading-tight tracking-tight">
+            <h1 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent text-center sm:text-left leading-tight tracking-tight">
               Subscription plans
             </h1>
           </div>
@@ -472,7 +472,7 @@ const Subscription = () => {
                 <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2 m-0 leading-tight tracking-tight">
                   💳 Payment History
                 </h3>
-                <p className="text-gray-600 text-lg sm:text-base mt-1 m-0 leading-normal tracking-tight">
+                <p className="text-gray-600 text-base mt-1 m-0 leading-normal tracking-tight">
                   Your transaction history and payment details
                 </p>
               </div>
@@ -502,7 +502,7 @@ const Subscription = () => {
                     className="w-48 h-48 sm:w-64 sm:h-64 mb-4 mx-auto"
                   />
                   <h3 className="text-xl font-semibold text-gray-800 mb-2 leading-tight tracking-tight">No Payment History</h3>
-                  <p className="text-lg sm:text-base leading-normal tracking-tight">You haven't made any payments yet.</p>
+                  <p className="text-base leading-normal tracking-tight">You haven't made any payments yet.</p>
                 </div>
               ) : (
                 <div className="flex-1 overflow-y-auto flex flex-col">

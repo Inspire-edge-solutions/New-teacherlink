@@ -52,7 +52,7 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, typingUsers = n
       <div className="max-w-4xl mx-auto space-y-4">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
-            <p className="text-lg sm:text-base leading-normal tracking-tight">No messages yet. Start the conversation!</p>
+            <p className="text-base leading-normal tracking-tight">No messages yet. Start the conversation!</p>
           </div>
         ) : (
           messages
@@ -80,7 +80,7 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, typingUsers = n
                       : 'bg-gray-50 text-gray-800 border-2 border-gray-200'
                   }`}
                 >
-                  <p className="text-lg sm:text-base break-words leading-normal tracking-tight">
+                  <p className="text-base break-words leading-normal tracking-tight">
                     {message.text || message.messageText || message.message || ''}
                     {message.isEdited && (
                       <span className="text-base text-gray-400 italic ml-2 leading-normal tracking-tight">(edited)</span>
@@ -163,7 +163,7 @@ const ChatMessages = ({ messages = [], messagesEndRef, onTyping, typingUsers = n
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
-                <span className="text-lg sm:text-base text-gray-500 ml-2">Typing...</span>
+                <span className="text-base text-gray-500 ml-2">Typing...</span>
               </div>
             </div>
           </div>

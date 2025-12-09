@@ -34,7 +34,7 @@ const CandidateActionConfirmationModal = ({
               Add to Favourites
             </h3>
             <p 
-              className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight"
+              className="text-gray-600 text-base leading-normal tracking-tight"
               dangerouslySetInnerHTML={{ __html: `When you add candidates as favourites, you'll receive an instant status alert when the candidate changes their job status to "Actively Searching Jobs". A fee of <strong>20 coins per notification</strong> will apply.` }}
             />
           </div>

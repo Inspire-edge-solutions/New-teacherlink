@@ -37,13 +37,13 @@ const Header = () => {
             </div>
           </Zoom>
           <Fade in={checked} timeout={1000} style={{ transitionDelay: '400ms' }}>
-            <h1 className="text-3xl mb-4 p-2 font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
+            <h1 className="text-xl mb-4 p-2 font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
               Premium Advertising Services
             </h1>
           </Fade>
         </div>
         <Fade in={checked} timeout={1000} style={{ transitionDelay: '600ms' }}>
-          <p className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">
+          <p className="text-base text-gray-600 leading-normal tracking-tight">
             Maximize your reach and attract the best teaching talent with our premium advertising packages.
           </p>
         </Fade>

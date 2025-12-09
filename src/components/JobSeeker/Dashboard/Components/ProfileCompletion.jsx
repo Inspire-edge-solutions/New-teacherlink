@@ -374,7 +374,7 @@ const ProfileCompletion = () => {
     <div className="bg-white rounded-lg shadow-md p-2 sm:p-3 relative">
       {/* Title at top */}
       <div className="text-center mb-1 sm:mb-2">
-        <h5 className="text-xl font-bold text-gray-800 leading-tight tracking-tight">Profile Completion</h5>
+        <h5 className="text-xl font-semibold text-gray-800 leading-tight tracking-tight">Profile Completion</h5>
       </div>
 
       {/* Two Column Grid for Short and Complete Profile */}

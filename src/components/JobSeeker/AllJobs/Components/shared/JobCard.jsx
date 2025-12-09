@@ -3,7 +3,7 @@ import React from 'react';
 import { IoLocationOutline } from "react-icons/io5";
 import { BsBriefcase, BsCash, BsMortarboard } from "react-icons/bs";
 import { AiOutlineEye, AiOutlineSave, AiOutlineHeart, AiFillHeart, AiOutlineMessage } from "react-icons/ai";
-import { formatQualification } from '../../utils/formatUtils';
+import { formatQualification, formatJobType } from '../../utils/formatUtils';
 
 /**
  * Shared JobCard component used across all job sections
@@ -221,7 +221,7 @@ const JobCard = ({
             </div>
             <div className="flex items-center gap-2 text-gray-600 break-words">
               <BsBriefcase className="w-3.5 h-3.5 text-gray-500" />
-              <span className="text-base md:text-lg">{job.job_type || 'Type not specified'}</span>
+              <span className="text-base md:text-lg">{formatJobType(job.job_type)}</span>
             </div>
           </div>
         </div>

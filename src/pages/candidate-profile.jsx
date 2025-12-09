@@ -280,8 +280,8 @@ const CandidateProfilePage = () => {
     }
     return (
       <div className="mb-2 p-2.5 border-b border-gray-200">
-        <div className="mb-2 text-lg sm:text-base leading-normal tracking-tight"><strong>Total Teaching Experience</strong>: {teachingYears} Years & {teachingMonths} months</div>
-        <div className="text-lg sm:text-base leading-normal tracking-tight"><strong>Total Experience (Teaching + Non-Teaching)</strong>: {totalYears} Years & {totalMonths} months</div>
+        <div className="mb-2 text-base leading-normal tracking-tight"><strong>Total Teaching Experience</strong>: {teachingYears} Years & {teachingMonths} months</div>
+        <div className="text-base leading-normal tracking-tight"><strong>Total Experience (Teaching + Non-Teaching)</strong>: {totalYears} Years & {totalMonths} months</div>
       </div>
     );
   };
@@ -312,13 +312,13 @@ const CandidateProfilePage = () => {
           <div className="text-xl text-[#202124] mb-2.5 font-semibold leading-tight tracking-tight">{educationType}</div>
           <div>
             {details.map((detail, i) => (
-              <div key={i} className="my-1.5 text-gray-600 text-lg sm:text-base leading-normal tracking-tight">{detail}</div>
+              <div key={i} className="my-1.5 text-gray-600 text-base leading-normal tracking-tight">{detail}</div>
             ))}
-            <div className="text-lg sm:text-base text-gray-500 mt-1 leading-normal tracking-tight">
+            <div className="text-base text-gray-500 mt-1 leading-normal tracking-tight">
               {additionalInfo.join(' | ')}
             </div>
             {education.coreSubjects && (
-              <div className="mt-2 text-lg sm:text-base leading-normal tracking-tight">
+              <div className="mt-2 text-base leading-normal tracking-tight">
                 <strong>Core Subjects:</strong> {
                   Array.isArray(education.coreSubjects) 
                     ? education.coreSubjects.map(sub => capitalizeWords(sub)).join(', ')
@@ -379,9 +379,9 @@ const CandidateProfilePage = () => {
       }
       const location = [exp.city, exp.state, exp.country].filter(Boolean).join(', ');
       return (
-        <div key={index} className="mb-6 text-lg sm:text-base leading-normal tracking-tight">
+        <div key={index} className="mb-6 text-base leading-normal tracking-tight">
           <div className="flex justify-between font-bold mb-1">
-            <div className="text-lg sm:text-base">{exp.organizationName}</div>
+            <div className="text-base">{exp.organizationName}</div>
             <div>
               {dateRange}
               <span className="font-normal text-gray-600">{durationText}</span>
@@ -568,12 +568,12 @@ const CandidateProfilePage = () => {
           
           {/* Basic Information */}
           <div className="flex-1 min-w-0 overflow-hidden">
-            <h1 className={`candidate-name text-2xl mb-2 bg-gradient-brand bg-clip-text text-transparent break-words leading-tight tracking-tight`}>
+            <h1 className={`candidate-name text-xl font-semibold mb-2 bg-gradient-brand bg-clip-text text-transparent break-words leading-tight tracking-tight`}>
               {profileData?.fullName || 'Candidate Name'}
             </h1>
             
             {/* Personal Details */}
-            <div className={`text-lg sm:text-base mb-3 text-gray-600 break-words leading-normal tracking-tight`}>
+            <div className={`text-base mb-3 text-gray-600 break-words leading-normal tracking-tight`}>
               {profileData?.gender && <span>{capitalizeFirst(profileData.gender)}</span>}
               {profileData?.dateOfBirth && (
                 <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
@@ -605,7 +605,7 @@ const CandidateProfilePage = () => {
             
             {/* Email */}
             {profileData?.email && (
-              <div className={`flex items-start gap-1.5 text-lg sm:text-base min-w-0 leading-normal tracking-tight`}>
+              <div className={`flex items-start gap-1.5 text-base min-w-0 leading-normal tracking-tight`}>
                 <FaEnvelope className="text-gray-400 shrink-0 mt-0.5" />
                 <a href={`mailto:${profileData.email}`} className={`no-underline text-[#1967d2] break-all break-words flex-1 min-w-0`} style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                   {profileData.email}
@@ -616,7 +616,7 @@ const CandidateProfilePage = () => {
         </div>
         
         {/* Right Side: Contact Information */}
-        <div className={`font-sans text-lg sm:text-base w-full sm:w-1/2 leading-normal tracking-tight ${isMobile ? 'mt-2' : isTablet ? 'pl-4' : 'pl-6'} min-w-0 overflow-hidden`}>
+        <div className={`font-sans text-base w-full sm:w-1/2 leading-normal tracking-tight ${isMobile ? 'mt-2' : isTablet ? 'pl-4' : 'pl-6'} min-w-0 overflow-hidden`}>
           {/* Address Information */}
           <div className={`flex ${isMobile ? 'flex-row' : 'flex-col'} ${isMobile ? 'gap-[15px]' : 'gap-2'} ${isMobile ? 'mb-2 flex-wrap' : 'mb-2.5'}`}>
             <div className={`flex items-center ${isMobile ? '' : 'flex-wrap'} mb-1 min-w-0`}>
@@ -720,7 +720,7 @@ const CandidateProfilePage = () => {
           {hasJobPreferencesData() && (
             <div className={`${isMobile ? 'mb-6' : 'mb-8'}`}>
               <h2 className={`section-title text-center ${isMobile ? 'mb-3' : 'mb-4'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>JOB PREFERENCES</h2>
-              <div className={`mb-6 ${isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-5'} bg-[#f5f7fc] rounded-lg text-lg sm:text-base leading-normal tracking-tight`}>
+              <div className={`mb-6 ${isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-5'} bg-[#f5f7fc] rounded-lg text-base leading-normal tracking-tight`}>
                 {/* Two-column details grid */}
                 <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-1' : 'grid-cols-2'} ${isMobile ? 'gap-x-0 gap-y-1' : isTablet ? 'gap-x-3 gap-y-1.5' : 'gap-x-5 gap-y-1.5'}`}>
                   {/* Basic Job Information */}
@@ -836,50 +836,50 @@ const CandidateProfilePage = () => {
               <div className={`${isMobile ? 'block' : 'grid'} ${isMobile ? '' : isTablet ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} ${isMobile ? 'gap-0' : isTablet ? 'gap-x-3 gap-y-0' : 'gap-x-4 gap-y-0'}`}>
                 {additionalInfo1?.religion && (
                   <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
-                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-lg sm:text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
+                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
                       Religion:
                     </span>
-                    <span className={`text-lg sm:text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
+                    <span className={`text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
                       {capitalizeWords(additionalInfo1.religion)}
                     </span>
                   </div>
                 )}
                 {additionalInfo1?.marital_status && (
                   <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
-                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-lg sm:text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
+                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
                       Marital Status:
                     </span>
-                    <span className={`text-lg sm:text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
+                    <span className={`text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
                       {capitalizeWords(additionalInfo1.marital_status)}
                     </span>
                   </div>
                 )}
                 {additionalInfo1?.accounting_knowledge !== undefined && (
                   <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
-                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-lg sm:text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
+                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
                       Accounting Knowledge:
                     </span>
-                    <span className={`text-lg sm:text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
+                    <span className={`text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
                       {additionalInfo1.accounting_knowledge ? 'Yes' : 'No'}
                     </span>
                   </div>
                 )}
                 {additionalInfo1?.citizenship && (
                   <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
-                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-lg sm:text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
+                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
                       Citizenship:
                     </span>
-                    <span className={`text-lg sm:text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
+                    <span className={`text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
                       {capitalizeWords(additionalInfo1.citizenship)}
                     </span>
                   </div>
                 )}
                 {additionalInfo1?.differently_abled && (
                   <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
-                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-lg sm:text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
+                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
                       Differently abled:
                     </span>
-                    <span className={`text-lg sm:text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
+                    <span className={`text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
                       {capitalizeWords(additionalInfo1.differently_abled)}
                     </span>
                   </div>
@@ -890,10 +890,10 @@ const CandidateProfilePage = () => {
               <div className={`${isMobile ? 'mt-2' : 'mt-[5px]'} w-full`}>
                 {additionalInfo1?.computer_skills && (
                   <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
-                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-lg sm:text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
+                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
                       Computer skills:
                     </span>
-                    <span className={`text-lg sm:text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
+                    <span className={`text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
                       {typeof additionalInfo1.computer_skills === 'string' ? (() => {
                         try {
                           const parsed = JSON.parse(additionalInfo1.computer_skills);
@@ -907,50 +907,50 @@ const CandidateProfilePage = () => {
                 )}
                 {additionalInfo1?.certifications && (
                   <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
-                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-lg sm:text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
+                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
                       Certifications:
                     </span>
-                    <span className={`text-lg sm:text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
+                    <span className={`text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
                       {additionalInfo1.certifications}
                     </span>
                   </div>
                 )}
                 {additionalInfo1?.accomplishments && (
                   <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
-                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-lg sm:text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
+                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
                       Accomplishments:
                     </span>
-                    <span className={`text-lg sm:text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
+                    <span className={`text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
                       {additionalInfo1.accomplishments}
                     </span>
                   </div>
                 )}
                 {additionalInfo1?.projects && (
                   <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
-                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-lg sm:text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
+                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
                       Projects:
                     </span>
-                    <span className={`text-lg sm:text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
+                    <span className={`text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
                       {additionalInfo1.projects}
                     </span>
                   </div>
                 )}
                 {additionalInfo1?.research_publications && (
                   <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
-                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-lg sm:text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
+                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
                       Research publications:
                     </span>
-                    <span className={`text-lg sm:text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
+                    <span className={`text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
                       {additionalInfo1.research_publications}
                     </span>
                   </div>
                 )}
                 {additionalInfo1?.additional_info && (
                   <div className={`flex ${isMobile ? 'flex-col mb-3 p-2.5 bg-white rounded-md border border-gray-200 items-start' : 'flex-row mb-0.5 py-0.5 bg-transparent items-start'}`}>
-                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-lg sm:text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
+                    <span className={`${isMobile ? 'w-full mb-1' : isTablet ? 'min-w-fit max-w-[120px]' : 'min-w-fit max-w-[140px]'} font-semibold text-base text-gray-800 shrink-0 leading-normal tracking-tight`}>
                       Anything more about yourself:
                     </span>
-                    <span className={`text-lg sm:text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
+                    <span className={`text-base ${isMobile ? 'ml-0' : isTablet ? 'ml-2' : 'ml-1.5'} flex-1 break-words text-gray-600 leading-normal tracking-tight`}>
                       {additionalInfo1.additional_info}
                     </span>
                   </div>

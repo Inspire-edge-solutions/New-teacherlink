@@ -53,7 +53,7 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
               <span className="text-[#f7b901] font-bold text-xl ml-1.5">-50</span>
             </div>
             <div className="text-[#2e7d32] text-xl font-semibold text-center my-4 leading-tight tracking-tight">Unlocked! <span role="img" aria-label="unlocked">🔓</span></div>
-            <div className="text-gray-500 text-lg sm:text-base text-center leading-normal tracking-tight">Details unlocked successfully.</div>
+            <div className="text-gray-500 text-base text-center leading-normal tracking-tight">Details unlocked successfully.</div>
           </>
         ) : unlockStatus === "error" ? (
           <>
@@ -68,13 +68,13 @@ function UnlockModal({ isOpen, onClose, userId, onUnlock, coinValue, loading, un
             <div className="mb-4 mt-0.5">
               <span className="font-semibold text-xl leading-tight tracking-tight">Unlock candidate details?</span>
             </div>
-            <div className="text-gray-500 text-lg sm:text-base mb-1.5 text-center leading-normal tracking-tight">
+            <div className="text-gray-500 text-base mb-1.5 text-center leading-normal tracking-tight">
               Available Coins: <b>{coinValue === null ? "..." : coinValue}</b>
             </div>
-            <div className="text-gray-800 text-lg sm:text-base mb-2.5 text-center leading-normal tracking-tight">
+            <div className="text-gray-800 text-base mb-2.5 text-center leading-normal tracking-tight">
               <span>Use <b>50 Coins</b> to view email, phone, WhatsApp, and social details.</span>
             </div>
-            <div className="text-red-600 text-lg sm:text-base mb-4 text-center leading-normal tracking-tight">
+            <div className="text-red-600 text-base mb-4 text-center leading-normal tracking-tight">
               <i>Unlocked details remain visible for <b>30 days.</b></i>
             </div>
             <button 
@@ -615,16 +615,16 @@ const ViewShort = ({
 
   const renderEducationBlocks = () => {
     if (!educationData || educationData.length === 0) {
-      return <div className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">No education details available</div>;
+      return <div className="text-gray-600 text-base leading-normal tracking-tight">No education details available</div>;
     }
     return educationData.map((education, index) => (
       <div key={`${education.education_type}-${index}`} className={`${windowWidth <= 768 ? 'mb-3' : 'mb-5'} p-4 bg-[#f5f7fc] rounded-lg`}>
         <div className="text-xl text-[#202124] mb-2.5 font-semibold leading-tight tracking-tight">{getEducationTypeTitle(education.education_type)}</div>
         {education.yearOfPassing && (
-          <div className="my-1.5 text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Year of Passing: {education.yearOfPassing}</div>
+          <div className="my-1.5 text-gray-600 text-base leading-normal tracking-tight">Year of Passing: {education.yearOfPassing}</div>
         )}
         {education.courseName && (
-          <div className="my-1.5 text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Course Name: {capitalizeWords(education.courseName)}</div>
+          <div className="my-1.5 text-gray-600 text-base leading-normal tracking-tight">Course Name: {capitalizeWords(education.courseName)}</div>
         )}
       </div>
     ));
@@ -640,10 +640,10 @@ const ViewShort = ({
       return (
         <div className="mb-4 p-2.5 border-b border-gray-200">
         {total_experience_years !== undefined && total_experience_years !== null && (
-          <div className="mb-2 text-lg sm:text-base leading-normal tracking-tight"><strong>Total Experience:</strong> {total_experience_years} Years {total_experience_months || 0} Months</div>
+          <div className="mb-2 text-base leading-normal tracking-tight"><strong>Total Experience:</strong> {total_experience_years} Years {total_experience_months || 0} Months</div>
         )}
         {teaching_experience_years !== undefined && teaching_experience_years !== null && (
-          <div className="text-lg sm:text-base leading-normal tracking-tight"><strong>Teaching Experience:</strong> {teaching_experience_years} Years {teaching_experience_months || 0} Months</div>
+          <div className="text-base leading-normal tracking-tight"><strong>Teaching Experience:</strong> {teaching_experience_years} Years {teaching_experience_months || 0} Months</div>
         )}
       </div>
       );
@@ -699,10 +699,10 @@ const ViewShort = ({
       }
       const location = [exp.city, exp.state, exp.country].filter(Boolean).join(', ');
       return (
-        <div key={index} className="mb-6 text-lg sm:text-base leading-normal tracking-tight">
+        <div key={index} className="mb-6 text-base leading-normal tracking-tight">
           {/* Organization and date row */}
           <div className="flex justify-between font-bold mb-1">
-            <div className="text-lg sm:text-base">{exp.organizationName}</div>
+            <div className="text-base">{exp.organizationName}</div>
             <div>
               {dateRange}
               <span className="font-normal text-gray-600">{durationText}</span>
@@ -885,12 +885,12 @@ const ViewShort = ({
             
             {/* Basic Information */}
             <div className="flex-1 min-w-0 overflow-hidden">
-              <h1 className={`candidate-name text-2xl mb-2 bg-gradient-brand bg-clip-text text-transparent break-words leading-tight tracking-tight`}>
+              <h1 className={`candidate-name text-xl mb-2 bg-gradient-brand bg-clip-text text-transparent break-words leading-tight tracking-tight`}>
                 {profileData.fullName || 'Candidate Name'}
               </h1>
               
               {/* Personal Details */}
-              <div className={`text-lg sm:text-base mb-3 text-gray-600 break-words leading-normal tracking-tight`}>
+              <div className={`text-base mb-3 text-gray-600 break-words leading-normal tracking-tight`}>
                 {profileData.gender && <span>{capitalizeFirst(profileData.gender)}</span>}
                 {profileData.dateOfBirth && (
                   <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
@@ -923,7 +923,7 @@ const ViewShort = ({
               
               {/* Email */}
               {(profileData.email || unlockedInfo?.email) && (
-                <div className={`flex items-start gap-1.5 text-lg sm:text-base min-w-0 leading-normal tracking-tight`}>
+                <div className={`flex items-start gap-1.5 text-base min-w-0 leading-normal tracking-tight`}>
                   <FaEnvelope className="text-gray-400 shrink-0 mt-0.5" />
                   <BlurWrapper isUnlocked={isUnlocked}>
                     <a href={isUnlocked ? `mailto:${unlockedInfo?.email || profileData.email}` : undefined} className={`no-underline text-[#1967d2] break-all break-words flex-1 min-w-0 ${!isUnlocked ? 'pointer-events-none' : ''}`} style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
@@ -936,7 +936,7 @@ const ViewShort = ({
           </div>
           
           {/* Right Side: Contact Information */}
-          <div className={`font-sans text-lg sm:text-base w-full sm:w-1/2 leading-normal tracking-tight ${windowWidth <= 768 ? 'mt-2' : 'pl-4'} min-w-0 overflow-hidden`}>
+          <div className={`font-sans text-base w-full sm:w-1/2 leading-normal tracking-tight ${windowWidth <= 768 ? 'mt-2' : 'pl-4'} min-w-0 overflow-hidden`}>
             {/* Address Information */}
             <div className={`flex ${windowWidth <= 768 ? 'flex-col' : 'flex-col'} ${windowWidth <= 768 ? 'gap-2' : 'gap-1.5'} ${windowWidth <= 768 ? 'mb-2' : 'mb-2'}`}>
               <div className={`flex items-start ${windowWidth <= 768 ? 'flex-col sm:flex-row sm:items-center' : 'flex-wrap'} gap-1.5 min-w-0`}>
@@ -1015,7 +1015,7 @@ const ViewShort = ({
             {jobPreferenceData && hasJobPreferencesData() && (
               <div className={`${windowWidth <= 768 ? 'mb-6' : 'mb-8'}`}>
                 <h2 className={`section-title text-center ${windowWidth <= 768 ? 'mb-3' : 'mb-4'} uppercase font-bold text-xl bg-gradient-brand bg-clip-text text-transparent leading-tight tracking-tight`}>JOB PREFERENCES</h2>
-                <div className={`mb-6 ${windowWidth <= 768 ? 'p-3' : windowWidth <= 1024 ? 'p-4' : 'p-5'} bg-[#f5f7fc] rounded-lg text-lg sm:text-base leading-normal tracking-tight`}>
+                <div className={`mb-6 ${windowWidth <= 768 ? 'p-3' : windowWidth <= 1024 ? 'p-4' : 'p-5'} bg-[#f5f7fc] rounded-lg text-base leading-normal tracking-tight`}>
                   {/* Two-column details grid */}
                   <div className={`grid ${windowWidth <= 768 ? 'grid-cols-1' : windowWidth <= 1024 ? 'grid-cols-1' : 'grid-cols-2'} ${windowWidth <= 768 ? 'gap-x-0 gap-y-1' : windowWidth <= 1024 ? 'gap-x-3 gap-y-1.5' : 'gap-x-5 gap-y-1.5'}`}>
                     {/* Basic Job Information */}

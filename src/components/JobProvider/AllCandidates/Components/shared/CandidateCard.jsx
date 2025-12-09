@@ -95,7 +95,7 @@ const CandidateCard = ({
                   {candidate.fullName || candidate.name || 'Name not available'}
                 </h3>
                 {(candidate.job_name || candidate.designation) && (
-                  <p className="text-lg sm:text-base text-gray-600 mt-0.5 truncate leading-normal tracking-tight max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                  <p className="text-base text-gray-600 mt-0.5 truncate leading-normal tracking-tight max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
                     {candidate.job_name ? (
                       <>
                         Applied for <span className="font-semibold">{candidate.job_name}</span>
@@ -113,7 +113,7 @@ const CandidateCard = ({
                 {showStatusControl && (
                   <div className="flex items-center gap-1.5 sm:gap-2">
                     <select
-                      className="text-lg sm:text-base border border-gray-300 rounded-md px-2 py-1.5 sm:px-3 sm:py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-[120px] sm:min-w-[140px]"
+                      className="text-base border border-gray-300 rounded-md px-2 py-1.5 sm:px-3 sm:py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white min-w-[120px] sm:min-w-[140px]"
                       value={statusValue}
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => {
@@ -218,7 +218,7 @@ const CandidateCard = ({
               {showStatusControl && (
                 <div className="w-auto max-w-[200px]">
                   <select
-                    className="w-auto min-w-[140px] max-w-[200px] text-lg sm:text-base border border-gray-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    className="w-auto min-w-[140px] max-w-[200px] text-base border border-gray-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                     value={statusValue}
                     onClick={(e) => e.stopPropagation()}
                     onChange={(e) => {
@@ -323,7 +323,7 @@ const CandidateCard = ({
           {/* Details Grid for Desktop - After name/actions */}
           <div className={`${forceMobileLayout ? 'hidden' : 'hidden lg:block'} space-y-2 mt-2`}>
             {/* First Row - 4 cols on desktop */}
-            <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-lg sm:text-base leading-normal tracking-tight">
+            <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-base leading-normal tracking-tight">
               {/* Gender */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaUser className="w-4 h-4 text-gray-600 flex-shrink-0" />
@@ -350,7 +350,7 @@ const CandidateCard = ({
               </div>
             </div>
             {/* Second Row - 4 cols on desktop */}
-            <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-lg sm:text-base leading-normal tracking-tight">
+            <div className="grid grid-cols-4 gap-x-3 gap-y-2 text-base leading-normal tracking-tight">
               {/* Qualification */}
               <div className="flex items-center gap-2 text-gray-700 min-w-0">
                 <FaGraduationCap className="w-4 h-4 text-gray-600 flex-shrink-0" />
@@ -379,7 +379,7 @@ const CandidateCard = ({
       {/* Details Grid for Mobile - Starts below profile photo, aligned with photo left edge */}
       <div className={`${forceMobileLayout ? 'block' : 'lg:hidden'} space-y-2 mt-2 ${showCheckbox ? 'pl-6' : 'pl-0'}`}>
         {/* First Row - 2 cols on mobile */}
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-lg sm:text-base leading-normal tracking-tight">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-base leading-normal tracking-tight">
           {/* Gender */}
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaUser className="w-4 h-4 text-gray-600 flex-shrink-0" />
@@ -406,7 +406,7 @@ const CandidateCard = ({
           </div>
         </div>
         {/* Second Row - 2 cols on mobile */}
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-lg sm:text-base leading-normal tracking-tight">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-base leading-normal tracking-tight">
           {/* Qualification */}
           <div className="flex items-center gap-2 text-gray-700 min-w-0">
             <FaGraduationCap className="w-4 h-4 text-gray-600 flex-shrink-0" />

@@ -760,11 +760,11 @@ const Coupons = ({
               <h3 className="text-xl font-semibold m-0 leading-tight tracking-tight">📝 Complete Your Profile First</h3>
             </div>
             <div className="mb-4 sm:mb-6">
-              <p className="mb-3 sm:mb-4 text-gray-700 leading-relaxed text-lg sm:text-base tracking-tight">
+              <p className="mb-3 sm:mb-4 text-gray-700 leading-relaxed text-base tracking-tight">
                 We noticed that your profile is not complete. To redeem coupons and access our services, 
                 please complete your profile information first.
               </p>
-              <p className="text-gray-700 leading-relaxed text-lg sm:text-base tracking-tight">
+              <p className="text-gray-700 leading-relaxed text-base tracking-tight">
                 <strong>Please go to your profile section and fill in all required information.</strong>
               </p>
             </div>
@@ -794,11 +794,11 @@ const Coupons = ({
               <h3 className="text-xl font-semibold m-0 leading-tight tracking-tight">⚠️ Coins Already Available</h3>
             </div>
             <div className="mb-4 sm:mb-6">
-              <p className="mb-3 sm:mb-4 text-gray-700 leading-relaxed text-lg sm:text-base tracking-tight">
+              <p className="mb-3 sm:mb-4 text-gray-700 leading-relaxed text-base tracking-tight">
                 You already have coins in your account that are currently blocked from use. 
                 We recommend using your existing coins first before redeeming additional coupons.
               </p>
-              <p className="text-gray-700 leading-relaxed text-lg sm:text-base tracking-tight">
+              <p className="text-gray-700 leading-relaxed text-base tracking-tight">
                 <strong>Would you like to proceed with the coupon redemption anyway?</strong>
               </p>
             </div>
@@ -823,7 +823,7 @@ const Coupons = ({
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
         <div className="text-center mb-6 sm:mb-8">
           <h3 className="text-xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-2 leading-tight tracking-tight">Apply Coupon Code</h3>
-          <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight">Enter your coupon code to get access to our Basic Plan</p>
+          <p className="text-gray-600 text-base leading-normal tracking-tight">Enter your coupon code to get access to our Basic Plan</p>
         </div>
         
         <form onSubmit={handleCouponSubmit} className="max-w-md mx-auto">
@@ -833,7 +833,7 @@ const Coupons = ({
               placeholder="Enter coupon code here"
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value)}
-              className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-lg sm:text-base leading-normal tracking-tight"
+              className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-base leading-normal tracking-tight"
             />
             <button 
               type="submit"
@@ -845,7 +845,7 @@ const Coupons = ({
         </form>
         <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-blue-50 rounded-lg">
           <h4 className="font-semibold text-gray-800 mb-2 text-base leading-normal tracking-tight">How to use:</h4>
-          <ul className="text-gray-600 space-y-1 text-lg sm:text-base leading-normal tracking-tight">
+          <ul className="text-gray-600 space-y-1 text-base leading-normal tracking-tight">
             <li>• Enter your coupon code in the field above</li>
             <li>• Click "Apply Coupon" to redeem</li>
             <li>• Coins will be added to your account instantly</li>

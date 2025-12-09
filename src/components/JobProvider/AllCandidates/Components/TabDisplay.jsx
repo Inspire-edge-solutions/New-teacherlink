@@ -181,7 +181,7 @@ const TabDisplay = () => {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium text-base transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                   activeTab === tab.id
                     ? 'bg-gradient-brand text-white shadow-sm hover:bg-gradient-primary-hover transition-colors'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'

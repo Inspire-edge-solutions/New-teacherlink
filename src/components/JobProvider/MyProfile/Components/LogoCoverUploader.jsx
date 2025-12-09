@@ -326,7 +326,7 @@ const LogoCoverUploader = () => {
             onChange={e => setAddressProofType(e.target.value)}
             disabled={addressUploading}
           >
-          <option value="" disabled>Select Address Proof University</option>
+          <option value="" disabled>Select Address Proof Type</option>
           <option value="Bank Account Statement">Bank Account Statement</option>
           <option value="Credit Card Statement">Credit Card Statement</option>
           <option value="Service Tax / Sales Tax/ TAN">Service Tax / Sales Tax/ TAN</option>

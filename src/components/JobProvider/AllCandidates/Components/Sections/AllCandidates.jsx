@@ -1547,10 +1547,10 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
   if (!user) {
     return (
       <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-        <p className="text-red-800 text-center mb-2 text-lg sm:text-base leading-normal tracking-tight">
+        <p className="text-red-800 text-center mb-2 text-base leading-normal tracking-tight">
           Please log in to view candidates.
         </p>
-        <p className="text-red-600 text-center text-lg sm:text-base leading-normal tracking-tight">
+        <p className="text-red-600 text-center text-base leading-normal tracking-tight">
           Redirecting you back in a few seconds...
         </p>
       </div>
@@ -1575,15 +1575,13 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
       <div className="widget-title mb-4">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="flex flex-col gap-1">
-            <h3 className="text-lg sm:text-xl md:text-2xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 leading-tight tracking-tight">
-              {isSearching
+            <h3 className="text-xl font-semibold bg-gradient-brand bg-clip-text text-transparent m-0 leading-tight tracking-tight">
+              {isSearching || activeFilters.size > 0
                 ? `Found ${visibleCandidates.toLocaleString()} candidate${visibleCandidates === 1 ? '' : 's'}`
-                : `${totalCandidates.toLocaleString()} Candidate${totalCandidates === 1 ? '' : 's'} Available`}
+                : 'Available Candidates'}
             </h3>
-            <div className="text-lg sm:text-base text-gray-600 flex flex-wrap items-center gap-x-2 gap-y-1 leading-normal tracking-tight">
-              <span>
-                Showing {visibleCandidates.toLocaleString()} of {totalCandidates.toLocaleString()} candidates
-              </span>
+            <div className="text-base text-gray-600 flex flex-wrap items-center gap-x-2 gap-y-1 leading-normal tracking-tight">
+             
               {activeFilters.size > 0 && (
                 <span className="flex items-center gap-2">
                   <span className="text-gray-300">•</span>
@@ -1599,7 +1597,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
             </div>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-            <div className="flex-1 min-w-[240px]">
+            <div className="flex-1 min-w-[300px]">
               <SearchBar
                 onSearch={handleSearch}
                 placeholder="Search candidates..."
@@ -1666,7 +1664,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
               alt="No candidates" 
               className="w-64 h-64 md:w-80 md:h-80 mb-6 mx-auto"
             />
-            <p className="text-gray-600 text-lg sm:text-base font-medium leading-normal tracking-tight">
+            <p className="text-gray-600 text-base font-medium leading-normal tracking-tight">
               {userHasAppliedFilters && activeFilters.size > 0 && filteredCandidatesByFilters.length === 0
                 ? 'No candidates match your filters. Try adjusting your selections or reset them to see more candidates.'
                 : isSearching 
@@ -1725,13 +1723,13 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
               <h3 className="font-semibold text-xl mb-4 text-gray-800 leading-tight tracking-tight">
                 Unlock Candidate Contact Details
               </h3>
-              <p className="text-gray-600 text-lg sm:text-base leading-normal tracking-tight mb-4">
+              <p className="text-gray-600 text-base leading-normal tracking-tight mb-4">
                 To start messaging {candidateToUnlock.fullName || candidateToUnlock.name || 'this candidate'}, you'll need to unlock their contact information first. <span className="font-semibold">Unlocking costs 50 coins</span> (one-time payment) and gives you full access to their profile. After unlocking, <span className="font-semibold">each message you sent costs 10 coins</span>.
               </p>
 
               {unlockError && (
                 <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg text-left">
-                  <p className="text-red-700 text-lg sm:text-base leading-normal tracking-tight">{unlockError}</p>
+                  <p className="text-red-700 text-base leading-normal tracking-tight">{unlockError}</p>
                 </div>
               )}
             </div>
@@ -1779,7 +1777,7 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
               <h3 className="font-semibold text-xl mb-4 text-center text-gray-800 leading-tight tracking-tight">
                 Message Candidate
               </h3>
-              <p className="text-gray-600 text-lg sm:text-base mb-6 text-center leading-normal tracking-tight">
+              <p className="text-gray-600 text-base mb-6 text-center leading-normal tracking-tight">
                 If you want to send bulk message, save the candidate.
               </p>
             </div>

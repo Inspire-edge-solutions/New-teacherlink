@@ -73,13 +73,13 @@ const Register = ({ user_type }) => {
     if (selectedUserType === "Job Seeker") {
       return (
         <div className="space-y-4">
-          <h1 className="text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
+          <h1 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
             Looking for a teaching or non-teaching job in educational institutions?
           </h1>
-          <h2 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
+          <h2 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
             You're in the right place!
           </h2>
-          <p className="text-lg text-gray-700 leading-normal tracking-tight">
+          <p className="text-base text-gray-700 leading-normal tracking-tight">
             Create your account today and unlock endless opportunities in the education sector! 🚀
           </p>
         </div>
@@ -87,13 +87,13 @@ const Register = ({ user_type }) => {
     } else {
       return (
         <div className="space-y-4">
-          <h1 className="text-3xl font-bold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
+          <h1 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
             Looking to hire top talent for your educational institution?
           </h1>
-          <h2 className="text-2xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
+          <h2 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
             You're in the right place!
           </h2>
-          <p className="text-lg text-gray-700 leading-normal tracking-tight">
+          <p className="text-base text-gray-700 leading-normal tracking-tight">
             Create your account today and connect with qualified educators and professionals effortlessly! 🎯
           </p>
         </div>
@@ -203,7 +203,7 @@ const Register = ({ user_type }) => {
   const TermsAndPrivacyModal = () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-2 sm:p-4">
       <div className="bg-white rounded-xl p-4 sm:p-6 md:p-8 max-w-4xl max-h-[90vh] w-full flex flex-col">
-        <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 text-center bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
+        <h3 className="text-xl font-semibold mb-4 text-center bg-gradient-brand-text bg-clip-text text-transparent leading-tight tracking-tight">
           Terms and Conditions & Privacy Policy
         </h3>
         <div 
@@ -261,7 +261,7 @@ const Register = ({ user_type }) => {
             
               {/* Additional Info */}
               <div className="text-center max-w-lg">
-                <p className="text-lg text-gray-600 leading-normal tracking-tight">
+                <p className="text-base text-gray-600 leading-normal tracking-tight">
                   Join thousands of educators and institutions who trust TeacherLink for their career and hiring needs.
                 </p>
               </div>
@@ -311,7 +311,7 @@ const Register = ({ user_type }) => {
             
               {/* Additional Info */}
               <div className="text-center max-w-lg">
-                <p className="text-lg text-gray-600 leading-normal tracking-tight">
+                <p className="text-base text-gray-600 leading-normal tracking-tight">
                   Join thousands of educators and institutions who trust TeacherLink for their career and hiring needs.
                 </p>
               </div>
@@ -323,7 +323,7 @@ const Register = ({ user_type }) => {
             {/* Form Container */}
             <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg bg-white p-3 sm:p-4 md:p-6 relative">
 
-            <h2 className="text-2xl font-bold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center leading-tight tracking-tight">
+            <h2 className="text-xl font-semibold bg-gradient-brand-text bg-clip-text text-transparent mb-4 sm:mb-6 text-center leading-tight tracking-tight">
               Create Account
             </h2>
 
@@ -391,7 +391,7 @@ const Register = ({ user_type }) => {
                   value={password}
                   onChange={handlePasswordChange}
                   required
-                  className="w-full py-3 sm:py-4 md:py-5 pr-10 border-b-2 border-gray-300 bg-transparent text-sm sm:text-base md:text-lg outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black"
+                  className="w-full py-3 sm:py-4 md:py-5 pr-10 border-b-2 border-gray-300 bg-transparent text-base outline-none transition-colors duration-200 focus:border-red-600 placeholder:text-black"
                 />
                 <button
                   type="button"
@@ -481,7 +481,7 @@ const Register = ({ user_type }) => {
 
           {/* Login Link */}
           <div className="text-center mt-4 sm:mt-6 md:mt-8">
-            <span className="text-black-500 text-lg sm:text-base leading-normal tracking-tight">
+            <span className="text-black-500 text-base leading-normal tracking-tight">
               Already have an account?{" "}
             </span>
             <Link
@@ -513,10 +513,10 @@ const Register = ({ user_type }) => {
       {showLoginPrompt && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-4">
           <div className="bg-[#F0D8D9] rounded-xl p-4 sm:p-6 md:p-8 max-w-md w-full text-center">
-            <h3 className="text-xl font-bold mb-4 leading-tight tracking-tight">
+            <h3 className="text-xl font-semibold mb-4 leading-tight tracking-tight">
               Welcome to TeacherLink! 🌟
             </h3>
-            <p className="text-gray-900 mb-4 sm:mb-6 leading-normal tracking-tight text-lg sm:text-base">
+            <p className="text-gray-900 mb-4 sm:mb-6 leading-normal tracking-tight text-base">
               🎉 Your account is ready. <br/> 
               Hire passionate educators or explore rewarding teaching opportunities. <br/>
               🚀 Log in now to continue your journey.
