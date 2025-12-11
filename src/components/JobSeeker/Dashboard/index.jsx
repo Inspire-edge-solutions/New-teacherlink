@@ -3,6 +3,7 @@ import { Grow, Paper, Skeleton, Box } from '@mui/material'
 import Photo from './Components/Photo'
 import Coins from './Components/Coins'
 import JobSearchStatus from './Components/JobSearchStatus'
+import MandatoryProfileModal from './Components/MandatoryProfileModal'
 
 const DashboardComponent = () => {
   const [checked, setChecked] = useState(false)
@@ -76,6 +77,9 @@ const DashboardComponent = () => {
 
   return (
     <div className="flex flex-col gap-3 sm:gap-4 w-full md:p-5 p-0">
+      {/* Mandatory Profile Modal */}
+      <MandatoryProfileModal />
+      
       {/* First Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 items-start">
         {/* Left Side - Photo and JobSearchStatus */}

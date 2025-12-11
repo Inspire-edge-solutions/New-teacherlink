@@ -54,20 +54,48 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
         isGoogleAccount: isGoogleAccount
       });
       
-      setFormData({
-        firebase_uid: currentUid,
-        fullName: user.name || "",
-        email: user.email || "",
-        gender: "",
-        dateOfBirth: "",
-        callingNumber: user.phone_number || "",
-        whatsappNumber: "",
-      });
+      // Fetch email from login API if not available in user object
+      const initializeFormData = async () => {
+        let emailToUse = user.email || "";
+        
+        // If email is missing, fetch from login API
+        if (!emailToUse) {
+          try {
+            const token = localStorage.getItem("token");
+            const loginResp = await axios.get(`${API_BASE}/login`, {
+              params: { firebase_uid: currentUid },
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            if (loginResp.data && Array.isArray(loginResp.data) && loginResp.data.length > 0) {
+              const loginUser = loginResp.data.find(u => u.firebase_uid === currentUid) || loginResp.data[0];
+              emailToUse = loginUser.email || "";
+              console.log("📧 Fetched email from login API:", emailToUse);
+            }
+          } catch (err) {
+            console.warn("Failed to fetch email from login API:", err);
+          }
+        }
+        
+        setFormData({
+          firebase_uid: currentUid,
+          fullName: user.name || "",
+          email: emailToUse,
+          gender: "",
+          dateOfBirth: "",
+          callingNumber: user.phone_number || "",
+          whatsappNumber: "",
+        });
+        
+        // Set email as verified for Google accounts
+        if (isGoogleAccount) {
+          setEmailVerified(true);
+        }
+      };
       
-      // Set email as verified for Google accounts
-      if (isGoogleAccount) {
-        setEmailVerified(true);
-      }
+      initializeFormData();
     }
   }, [user, currentUid, formData.firebase_uid, isGoogleAccount]);
 
@@ -113,14 +141,51 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
 
       if (resp.status === 200 && resp.data.length > 0) {
         const u = resp.data[0];
-        setFormData({
-          firebase_uid: currentUid,
-          fullName: u.fullName || "",
-          email: u.email || "",
-          gender: u.gender || "",
-          dateOfBirth: u.dateOfBirth || "",
-          callingNumber: u.callingNumber || "",
-          whatsappNumber: u.whatsappNumber || "",
+        // Ensure email falls back to user.email if database email is empty/null/undefined
+        const dbEmail = u.email?.trim() || "";
+        const finalEmail = dbEmail || user?.email || "";
+        const dbName = u.fullName?.trim() || "";
+        const finalName = dbName || user?.name || "";
+        const dbPhone = u.callingNumber?.trim() || "";
+        const finalPhone = dbPhone || user?.phone_number || "";
+        
+        // If email is still empty, fetch from login API
+        let emailFromLogin = finalEmail || user?.email || "";
+        if (!emailFromLogin) {
+          try {
+            const token = localStorage.getItem("token");
+            const loginResp = await axios.get(`${API_BASE}/login`, {
+              params: { firebase_uid: currentUid },
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            if (loginResp.data && Array.isArray(loginResp.data) && loginResp.data.length > 0) {
+              const loginUser = loginResp.data.find(u => u.firebase_uid === currentUid) || loginResp.data[0];
+              emailFromLogin = loginUser.email || "";
+              console.log("📧 Fetched email from login API in fetchUserDetails:", emailFromLogin);
+            }
+          } catch (err) {
+            console.warn("Failed to fetch email from login API:", err);
+          }
+        }
+        
+        setFormData(prev => {
+          // After API response, ensure email comes from login API or user.email if database email is empty
+          const emailToUse = emailFromLogin || prev.email || "";
+          const nameToUse = finalName || user?.name || prev.fullName || "";
+          const phoneToUse = finalPhone || user?.phone_number || prev.callingNumber || "";
+          
+          return {
+            firebase_uid: currentUid,
+            fullName: nameToUse,
+            email: emailToUse,
+            gender: u.gender || prev.gender || "",
+            dateOfBirth: u.dateOfBirth || prev.dateOfBirth || "",
+            callingNumber: phoneToUse,
+            whatsappNumber: u.whatsappNumber || prev.whatsappNumber || "",
+          };
         });
                  console.log("🔍 Database verification status:", {
            email_verify: u.email_verify,
@@ -180,7 +245,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
     } catch (e) {
       console.error("Error fetching user details:", e);
     }
-  }, [currentUid, isGoogleAccount]);
+  }, [currentUid, isGoogleAccount, user]);
 
   useEffect(() => {
     fetchUserDetails();

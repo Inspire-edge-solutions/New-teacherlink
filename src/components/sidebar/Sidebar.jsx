@@ -82,7 +82,7 @@ export default function Sidebar({
 
   return (
     <div
-      className={`flex flex-col fixed left-0 top-0 h-screen bg-white/80 border-r transition-all duration-300 ease-in-out z-40 ${
+      className={`flex flex-col fixed left-0 top-0 h-screen ${isMobile ? "bg-white" : "bg-white/80"} border-r transition-all duration-300 ease-in-out z-40 ${
         isCollapsed ? "w-20" : "w-64"
       } ${className}`}
     >

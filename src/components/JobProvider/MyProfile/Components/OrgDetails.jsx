@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect } from "react";
+﻿
+import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import axios from "axios";
@@ -104,12 +105,12 @@ const OrgDetails = () => {
     city: "",
     pincode: "",
     contactPerson: {
-      name: user.name || "",
+      name: user?.name || "",
       gender: "",
       designation: [],
-      phone1: user.phone_number || "",
+      phone1: user?.phone_number || "",
       phone2: "",
-      email: user.email || ""
+      email: user?.email || ""
     }
   });
   const [parentDetails, setParentDetails] = useState({
@@ -150,6 +151,41 @@ const OrgDetails = () => {
   const [indiaOption, setIndiaOption] = useState(null);
   const [pincodeInteracted, setPincodeInteracted] = useState(false);
 
+  // Fetch email from login API if user.email is not available
+  useEffect(() => {
+    if (user && firebase_uid && !orgDetails.contactPerson.email && !user.email) {
+      const fetchEmailFromLogin = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const loginResp = await axios.get(LOGIN_API_URL, {
+            params: { firebase_uid },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (loginResp.data && Array.isArray(loginResp.data) && loginResp.data.length > 0) {
+            const loginUser = loginResp.data.find(u => u.firebase_uid === firebase_uid) || loginResp.data[0];
+            const emailFromLogin = loginUser.email || "";
+            if (emailFromLogin) {
+              console.log("📧 JobProvider: Fetched email from login API on init:", emailFromLogin);
+              setOrgDetails(prev => ({
+                ...prev,
+                contactPerson: {
+                  ...prev.contactPerson,
+                  email: emailFromLogin
+                }
+              }));
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to fetch email from login API on init:", err);
+        }
+      };
+      fetchEmailFromLogin();
+    }
+  }, [user, firebase_uid, orgDetails.contactPerson.email]);
+
   useEffect(() => {
     const loadCountries = async () => {
       try {
@@ -184,28 +220,61 @@ const OrgDetails = () => {
           setOriginalType(raw.type || "");
           setEmailVerified(isGoogleAccount || raw.is_email_verified === 1 || raw.is_email_verified === true);
           setPhoneVerified(raw.is_phone1_verified === 1 || raw.is_phone1_verified === true);
-          setOrgDetails(prev => ({
-            ...prev,
-            name: raw.name || "",
-            websiteUrl: raw.website_url || "",
-            video: raw.video_url || "",
-            panNumber: raw.pan_number || "",
-            panName: raw.pan_name || "",
-            gstin: raw.gstin || "",
-            address: raw.address || "",
-            country: (raw.country && raw.country.trim()) || "India",
-            state: (raw.state && raw.state.trim()) || "",
-            city: (raw.city && raw.city.trim()) || "",
-            pincode: raw.pincode || "",
-            contactPerson: {
-              name: raw.contact_person_name || user.name || "",
-              gender: raw.contact_person_gender || "",
-              designation: raw.contact_person_designation || [],
-              phone1: raw.contact_person_phone1 || user.phone_number || "",
-              phone2: raw.contact_person_phone2 || "",
-              email: raw.contact_person_email || user.email || ""
+          
+          // Fetch email from login API if not available
+          let emailFromLogin = "";
+          const dbContactEmail = raw.contact_person_email?.trim() || "";
+          if (!dbContactEmail && !user?.email) {
+            try {
+              const token = localStorage.getItem("token");
+              const loginResp = await axios.get(LOGIN_API_URL, {
+                params: { firebase_uid },
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              if (loginResp.data && Array.isArray(loginResp.data) && loginResp.data.length > 0) {
+                const loginUser = loginResp.data.find(u => u.firebase_uid === firebase_uid) || loginResp.data[0];
+                emailFromLogin = loginUser.email || "";
+                console.log("📧 JobProvider: Fetched email from login API:", emailFromLogin);
+              }
+            } catch (err) {
+              console.warn("Failed to fetch email from login API:", err);
             }
-          }));
+          }
+          
+          setOrgDetails(prev => {
+            // Ensure email, name, and phone fall back properly if database values are empty
+            const finalContactEmail = dbContactEmail || user?.email || emailFromLogin || prev.contactPerson?.email || "";
+            const dbContactName = raw.contact_person_name?.trim() || "";
+            const finalContactName = dbContactName || user?.name || prev.contactPerson?.name || "";
+            const dbContactPhone = raw.contact_person_phone1?.trim() || "";
+            const finalContactPhone = dbContactPhone || user?.phone_number || prev.contactPerson?.phone1 || "";
+            
+            return {
+              ...prev,
+              name: raw.name || "",
+              websiteUrl: raw.website_url || "",
+              video: raw.video_url || "",
+              panNumber: raw.pan_number || "",
+              panName: raw.pan_name || "",
+              gstin: raw.gstin || "",
+              address: raw.address || "",
+              country: (raw.country && raw.country.trim()) || "India",
+              state: (raw.state && raw.state.trim()) || "",
+              city: (raw.city && raw.city.trim()) || "",
+              pincode: raw.pincode || "",
+              contactPerson: {
+                name: finalContactName,
+                gender: raw.contact_person_gender || "",
+                designation: raw.contact_person_designation || [],
+                phone1: finalContactPhone,
+                phone2: raw.contact_person_phone2 || "",
+                email: finalContactEmail
+              }
+            };
+          });
           // Mark pincode as interacted if it exists in loaded data
           if (raw.pincode) {
             setPincodeInteracted(true);
