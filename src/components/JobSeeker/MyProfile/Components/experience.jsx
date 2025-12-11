@@ -2117,7 +2117,7 @@ const Experience = forwardRef(({
               <div key={key} className="bg-white rounded-lg p-4 border border-gray-200">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex-1">
-                    <p className="text-gray-700 font-medium text-lg sm:text-base leading-normal tracking-tight">{label}</p>
+                    <p className="text-gray-700 font-medium text-base leading-normal tracking-tight">{label}</p>
                   </div>
                   <div className="flex items-center gap-6">
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -2133,7 +2133,7 @@ const Experience = forwardRef(({
                         }}
                         className="w-4 h-4 text-rose-600 border-gray-300 focus:ring-rose-500 focus:ring-2"
                       />
-                      <span className="text-lg sm:text-base font-medium text-gray-700 leading-normal tracking-tight">Yes</span>
+                      <span className="text-base font-medium text-gray-700 leading-normal tracking-tight">Yes</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -2148,7 +2148,7 @@ const Experience = forwardRef(({
                         }}
                         className="w-4 h-4 text-rose-600 border-gray-300 focus:ring-rose-500 focus:ring-2"
                       />
-                      <span className="text-lg sm:text-base font-medium text-gray-700 leading-normal tracking-tight">No</span>
+                      <span className="text-base font-medium text-gray-700 leading-normal tracking-tight">No</span>
                     </label>
                   </div>
                 </div>

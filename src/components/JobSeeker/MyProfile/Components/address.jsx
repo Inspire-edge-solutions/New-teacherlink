@@ -552,7 +552,7 @@ const Address = forwardRef(({ className, permanentCity, presentCity, formData: p
                 checked={localFormData.presentAddress.sameAsPermanent}
                 className="w-4 h-4 text-rose-500 border-gray-300 rounded focus:ring-rose-300"
               />
-              <span className="text-lg sm:text-base text-gray-700 leading-normal tracking-tight">Present Address (Same as Permanent Address)</span>
+              <span className="text-base text-gray-700 leading-normal tracking-tight">Present Address (Same as Permanent Address)</span>
             </label>
           </div>
 

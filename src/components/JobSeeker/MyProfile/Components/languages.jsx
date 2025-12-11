@@ -225,7 +225,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
   };
 
   if (isLoading) {
-    return <div className="text-lg sm:text-base text-gray-600 leading-normal tracking-tight">Loading languages...</div>;
+    return <div className="text-base text-gray-600 leading-normal tracking-tight">Loading languages...</div>;
   }
 
   const getLanguageOptions = (currentIndex) =>
@@ -260,7 +260,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
                         <InputWithTooltip label="Language" required>
                           <div className="relative">
                             <select
-                              className="w-full px-2 py-2 md:px-4 md:py-3 text-lg sm:text-base rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-8 md:pr-10 leading-normal tracking-tight"
+                              className="w-full px-2 py-2 md:px-4 md:py-3 text-base rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-8 md:pr-10 leading-normal tracking-tight"
                               style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                               id={`language-${index}`}
                               name={`language-${index}`}
@@ -338,7 +338,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
                     <InputWithTooltip label="Language" required>
                       <div className="relative">
                         <select
-                          className="w-full px-3 py-2 text-lg sm:text-base rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10 leading-normal tracking-tight"
+                          className="w-full px-3 py-2 text-base rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none pr-10 leading-normal tracking-tight"
                           style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                           id={`mobile-language-${index}`}
                           name={`mobile-language-${index}`}
@@ -373,7 +373,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
                 <div className="mt-3">
                   <span className="text-base font-medium text-gray-700 leading-normal tracking-tight">Proficiency</span>
                   <div className="mt-2 grid grid-cols-3 gap-2">
-                    <label className="flex items-center gap-1 text-lg sm:text-base text-gray-700 leading-normal tracking-tight">
+                    <label className="flex items-center gap-1 text-base text-gray-700 leading-normal tracking-tight">
                       <input
                         type="checkbox"
                         checked={lang.speak}
@@ -384,7 +384,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
                       />
                       <span>Speak</span>
                     </label>
-                    <label className="flex items-center gap-1 text-lg sm:text-base text-gray-700 leading-normal tracking-tight">
+                    <label className="flex items-center gap-1 text-base text-gray-700 leading-normal tracking-tight">
                       <input
                         type="checkbox"
                         checked={lang.read}
@@ -395,7 +395,7 @@ const Languages = forwardRef(({ updateFormData, formData }, ref) => {
                       />
                       <span>Read</span>
                     </label>
-                    <label className="flex items-center gap-1 text-lg sm:text-base text-gray-700 leading-normal tracking-tight">
+                    <label className="flex items-center gap-1 text-base text-gray-700 leading-normal tracking-tight">
                       <input
                         type="checkbox"
                         checked={lang.write}

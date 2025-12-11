@@ -49,7 +49,7 @@ const RecruiterActionItem = ({ action }) => {
     <div className="group flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 sm:px-6 py-4 transition-colors duration-200 bg-white hover:bg-[#F0D8D9]/60 focus-within:bg-[#F0D8D9]/60">
       <div className="flex items-start gap-3">
         {getIcon()}
-        <p className="m-0 text-sm sm:text-base text-gray-700 leading-relaxed">
+        <p className="m-0 text-base text-gray-700 leading-relaxed">
           {isInstitutionClickable ? (
             <span 
               className="font-semibold text-gray-900 cursor-pointer hover:bg-gradient-brand hover:bg-clip-text hover:text-transparent hover:underline transition-all"

@@ -213,7 +213,7 @@ const ForgetPassword = () => {
   return (
     <div className="flex flex-col lg:flex-row lg:min-h-screen bg-gradient-to-br from-red-50 to-red-100">
       {/* Left Section - Promotional */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-red-50 to-red-100 relative overflow-hidden">
+      <div className="flex w-full lg:w-1/2 bg-gradient-to-br from-red-50 to-red-100 relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-10 left-10 w-32 h-32 bg-red-500 rounded-full"></div>
@@ -222,30 +222,30 @@ const ForgetPassword = () => {
         </div>
         
         {/* Content */}
-        <div className="flex flex-col justify-center px-12 py-16 relative z-10">
-          <div className="space-y-6">
-            <h1 className="text-xl font-semibold text-red-600 leading-tight tracking-tight">
+        <div className="flex flex-col justify-center px-4 sm:px-6 md:px-8 lg:px-12 py-6 sm:py-8 md:py-12 lg:py-16 relative z-10 w-full">
+          <div className="space-y-4 sm:space-y-5 lg:space-y-6">
+            <h1 className="text-xl font-semibold text-red-600 leading-tight tracking-tight text-center lg:text-left">
               Reset Your Password
             </h1>
-            <div className="space-y-4">
-              <p className="text-base text-gray-700 leading-normal tracking-tight">
+            <div className="space-y-3 sm:space-y-4">
+              <p className="text-base text-gray-700 leading-normal tracking-tight text-center lg:text-left">
                 Don't worry! We'll help you regain access to your account with a secure password reset process.
               </p>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white font-bold text-base leading-normal tracking-tight">1</span>
                   </div>
                   <span className="text-gray-700 text-base leading-normal tracking-tight">Enter your registered email address</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white font-bold text-base leading-normal tracking-tight">2</span>
                   </div>
                   <span className="text-gray-700 text-base leading-normal tracking-tight">Verify with the OTP sent to your email</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white font-bold text-base leading-normal tracking-tight">3</span>
                   </div>
                   <span className="text-gray-700 text-base leading-normal tracking-tight">Create a new secure password</span>
