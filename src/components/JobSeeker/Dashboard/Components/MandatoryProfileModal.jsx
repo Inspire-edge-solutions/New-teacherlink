@@ -223,28 +223,54 @@ const MandatoryProfileModal = () => {
         ]);
 
         // Check if all mandatory fields are filled
+        // Note: Personal data might be collected elsewhere, so we check but don't require it for this modal
         const hasPersonal = personalRes.data.length > 0 && 
           personalRes.data[0].fullName && 
           personalRes.data[0].email && 
           personalRes.data[0].callingNumber;
 
-        const hasPermanentAddress = permanentAddressRes.data.length > 0 && 
+        // Convert to proper booleans
+        const hasPermanentAddress = !!(permanentAddressRes.data.length > 0 && 
           permanentAddressRes.data[0].state_name && 
-          permanentAddressRes.data[0].city_name;
+          permanentAddressRes.data[0].city_name);
 
-        const hasPresentAddress = presentAddressRes.data.length > 0 && 
+        const hasPresentAddress = !!(presentAddressRes.data.length > 0 && 
           presentAddressRes.data[0].state_name && 
-          presentAddressRes.data[0].city_name;
+          presentAddressRes.data[0].city_name);
 
         const hasGrade10 = educationRes.data.length > 0 && 
           educationRes.data.some(edu => edu.education_type === 'grade10' && edu.yearOfPassing);
 
-        const hasExperience = experienceRes.data?.mysqlData?.length > 0 && 
-          experienceRes.data.mysqlData[0].total_experience_years !== undefined &&
-          experienceRes.data.mysqlData[0].teaching_experience_years !== undefined;
+        // Check experience - handle different response structures
+        let hasExperience = false;
+        const experienceData = experienceRes.data;
+        
+        if (experienceData?.mysqlData) {
+          // mysqlData can be an array or single object
+          let experienceRecord = null;
+          
+          if (Array.isArray(experienceData.mysqlData) && experienceData.mysqlData.length > 0) {
+            // Find user's record in array, or use first item
+            experienceRecord = experienceData.mysqlData.find(exp => exp.firebase_uid === user.uid) || 
+                              experienceData.mysqlData[0];
+          } else if (typeof experienceData.mysqlData === 'object' && experienceData.mysqlData !== null) {
+            // Single object (check if it matches user or use it directly if it's the only record)
+            if (experienceData.mysqlData.firebase_uid === user.uid || !experienceData.mysqlData.firebase_uid) {
+              experienceRecord = experienceData.mysqlData;
+            }
+          }
+          
+          // Check if both fields exist (accept 0 as valid, only undefined/null means not filled)
+          if (experienceRecord && 
+              (experienceRecord.total_experience_years !== undefined && experienceRecord.total_experience_years !== null) &&
+              (experienceRecord.teaching_experience_years !== undefined && experienceRecord.teaching_experience_years !== null)) {
+            hasExperience = true;
+          }
+        }
 
-        // If all fields are filled, don't show modal
-        if (hasPersonal && hasPermanentAddress && hasPresentAddress && hasGrade10 && hasExperience) {
+        // Check only the fields that THIS modal collects (not personal data)
+        // Personal data is collected separately and shouldn't block this modal
+        if (hasPermanentAddress && hasPresentAddress && hasGrade10 && hasExperience) {
           setShowModal(false);
         } else {
           setShowModal(true);
@@ -312,26 +338,20 @@ const MandatoryProfileModal = () => {
       errors.grade10Year = "Grade 10 passing year is required";
     }
 
-    if (formData.totalWorkExpYears === '0' && formData.totalWorkExpMonths === '0') {
-      errors.totalWorkExp = "Total work experience is required";
-    }
-
-    if (formData.totalTeachingExpYears === '0' && formData.totalTeachingExpMonths === '0') {
-      errors.totalTeachingExp = "Total teaching experience is required";
-    }
-
+    // Allow 0 years and 0 months for freshers - no validation needed for minimum experience
     // Validate that teaching experience doesn't exceed total experience
-    if (formData.totalWorkExpYears && formData.totalTeachingExpYears) {
-      const totalMonths = (parseInt(formData.totalWorkExpYears) || 0) * 12 + (parseInt(formData.totalWorkExpMonths) || 0);
-      const teachingMonths = (parseInt(formData.totalTeachingExpYears) || 0) * 12 + (parseInt(formData.totalTeachingExpMonths) || 0);
-      
-      if (teachingMonths > totalMonths) {
-        errors.totalTeachingExp = "Teaching experience cannot exceed total work experience";
-      }
+    const totalMonths = (parseInt(formData.totalWorkExpYears) || 0) * 12 + (parseInt(formData.totalWorkExpMonths) || 0);
+    const teachingMonths = (parseInt(formData.totalTeachingExpYears) || 0) * 12 + (parseInt(formData.totalTeachingExpMonths) || 0);
+    
+    if (teachingMonths > totalMonths) {
+      errors.totalTeachingExp = "Teaching experience cannot exceed total work experience";
     }
 
-    if (!formData.currentSalary || parseFloat(formData.currentSalary) <= 0) {
+    // Allow 0 salary for freshers - only check if field is empty or invalid
+    if (formData.currentSalary === '' || formData.currentSalary === null || formData.currentSalary === undefined) {
       errors.currentSalary = "Current salary is required";
+    } else if (isNaN(parseFloat(formData.currentSalary)) || parseFloat(formData.currentSalary) < 0) {
+      errors.currentSalary = "Please enter a valid salary (0 is acceptable for freshers)";
     }
 
     if (!formData.jobType) {

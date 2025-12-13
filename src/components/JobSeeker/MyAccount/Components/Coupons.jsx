@@ -11,46 +11,46 @@ const Coupons = ({
   const [couponCode, setCouponCode] = useState("");
   const [showBlockedPopup, setShowBlockedPopup] = useState(false);
   const [pendingCouponCode, setPendingCouponCode] = useState("");
-  const [showProfilePopup, setShowProfilePopup] = useState(false);
+  // const [showProfilePopup, setShowProfilePopup] = useState(false);
   const firebase_uid = user?.uid;
 
   // Check if user's profile is complete
-  const checkProfileCompletion = async () => {
-    try {
-      const response = await fetch(
-        `https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal`
-      );
-      const personalData = await response.json();
-      
-      // Check if user's firebase_uid exists in the personal data
-      const userProfile = Array.isArray(personalData) 
-        ? personalData.find(profile => profile.firebase_uid === firebase_uid)
-        : null;
-      
-      if (!userProfile) {
-        return false; // No profile found
-      }
-      
-          // Check for required fields (basic profile completion)
-  const requiredFields = [
-    'fullName',
-    'email', 
-    'callingNumber',
-    'gender'
-  ];
+  // const checkProfileCompletion = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       `https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal`
+  //     );
+  //     const personalData = await response.json();
+  //     
+  //     // Check if user's firebase_uid exists in the personal data
+  //     const userProfile = Array.isArray(personalData) 
+  //       ? personalData.find(profile => profile.firebase_uid === firebase_uid)
+  //       : null;
+  //     
+  //     if (!userProfile) {
+  //       return false; // No profile found
+  //     }
+  //     
+  //         // Check for required fields (basic profile completion)
+  // const requiredFields = [
+  //   'fullName',
+  //   'email', 
+  //   'callingNumber',
+  //   'gender'
+  // ];
   
-  const hasRequiredFields = requiredFields.every(field => {
-    const value = userProfile[field];
-    return value && value.toString().trim() !== '' && value.toString().trim() !== 'null';
-  });
+  // const hasRequiredFields = requiredFields.every(field => {
+  //   const value = userProfile[field];
+  //   return value && value.toString().trim() !== '' && value.toString().trim() !== 'null';
+  // });
   
-  // Profile is complete if required fields are filled (dateOfBirth is optional)
-  return hasRequiredFields;
-    } catch (error) {
-      console.error("Error checking profile completion:", error);
-      return false; // Default to incomplete if API fails
-    }
-  };
+  // // Profile is complete if required fields are filled (dateOfBirth is optional)
+  // return hasRequiredFields;
+  //   } catch (error) {
+  //     console.error("Error checking profile completion:", error);
+  //     return false; // Default to incomplete if API fails
+  //   }
+  // };
 
   // Check if user's coins are blocked
   const checkCoinBlockStatus = async () => {
@@ -88,12 +88,12 @@ const Coupons = ({
   };
 
   // Handle profile completion popup
-  const handleProfilePopupClose = () => {
-    setShowProfilePopup(false);
-    setCouponCode("");
-    // Redirect to profile page
-    window.location.href = "/seeker/my-profile";
-  };
+  // const handleProfilePopupClose = () => {
+  //   setShowProfilePopup(false);
+  //   setCouponCode("");
+  //   // Redirect to profile page
+  //   window.location.href = "/seeker/my-profile";
+  // };
 
 
   // Helper: send RCS coupon message
@@ -724,12 +724,12 @@ const Coupons = ({
     toast.dismiss();
 
     // First check if profile is complete
-    const isProfileComplete = await checkProfileCompletion();
+    // const isProfileComplete = await checkProfileCompletion();
     
-    if (!isProfileComplete) {
-      setShowProfilePopup(true);
-      return;
-    }
+    // if (!isProfileComplete) {
+    //   setShowProfilePopup(true);
+    //   return;
+    // }
 
     // Check if coins are blocked before proceeding
     const isBlocked = await checkCoinBlockStatus();
@@ -747,7 +747,7 @@ const Coupons = ({
   return (
     <div className="w-full">
       {/* Profile Completion Popup */}
-      {showProfilePopup && ReactDOM.createPortal(
+      {/* {showProfilePopup && ReactDOM.createPortal(
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-2 sm:p-4" onClick={handleProfilePopupClose}>
           <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 max-w-md w-full mx-2 sm:mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <button 
@@ -778,7 +778,7 @@ const Coupons = ({
             </div>
           </div>
         </div>, document.body
-      )}
+      )} */}
 
       {/* Blocked Coins Popup */}
       {showBlockedPopup && ReactDOM.createPortal(

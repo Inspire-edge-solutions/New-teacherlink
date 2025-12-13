@@ -292,6 +292,69 @@ const parseExperienceInput = (value) => {
   return Number.isNaN(parsed) ? null : parsed;
 };
 
+// Sort candidates by date/ID (newest first) - balanced approach
+const sortCandidatesByDate = (candidates) => {
+  if (!Array.isArray(candidates) || candidates.length === 0) {
+    return candidates;
+  }
+
+  const sorted = [...candidates].sort((a, b) => {
+    // Get timestamp - check most common field names
+    const getDate = (c) => {
+      const timestamp = c.created_at || c.createdAt || c.date_created || 
+                       c.updated_at || c.updatedAt || c.date_updated || null;
+      if (!timestamp) return null;
+      try {
+        const date = new Date(timestamp);
+        return isNaN(date.getTime()) ? null : date.getTime();
+      } catch {
+        return null;
+      }
+    };
+
+    const dateA = getDate(a);
+    const dateB = getDate(b);
+    
+    // Sort by timestamp if both have it
+    if (dateA && dateB) {
+      return dateB - dateA; // Newest first
+    }
+    
+    // Fallback to numeric ID if no timestamps
+    const getId = (c) => {
+      const id = c.id;
+      if (!id) return null;
+      return typeof id === 'number' ? id : (/^\d+$/.test(String(id)) ? parseInt(id, 10) : null);
+    };
+
+    const idA = getId(a);
+    const idB = getId(b);
+    
+    if (idA && idB) {
+      return idB - idA; // Higher ID = newer
+    }
+    
+    return 0; // Maintain original order
+  });
+
+  // If no timestamps or IDs found, reverse array (assume API returns oldest first)
+  const hasTimestamps = sorted.some(c => {
+    const ts = c.created_at || c.createdAt || c.date_created || c.updated_at || c.updatedAt;
+    return ts && !isNaN(new Date(ts).getTime());
+  });
+  
+  const hasNumericIds = sorted.some(c => {
+    const id = c.id;
+    return id && (typeof id === 'number' || /^\d+$/.test(String(id)));
+  });
+
+  if (!hasTimestamps && !hasNumericIds) {
+    return sorted.reverse(); // Reverse to put newest first
+  }
+
+  return sorted;
+};
+
 const getCandidateExperienceYears = (candidate) => {
   const sources = [
     candidate.total_experience_years,
@@ -547,6 +610,9 @@ const { options: apiFilterOptions, loading: filterOptionsLoading } = useCandidat
         console.warn('⚠️ This might mean the approval API is not working or returning empty');
         approvedCandidates = allCandidates;
       }
+      
+      // Sort candidates by date (newest first)
+      approvedCandidates = sortCandidatesByDate(approvedCandidates);
       
       setCandidates(approvedCandidates);
       setSearchResults([]);

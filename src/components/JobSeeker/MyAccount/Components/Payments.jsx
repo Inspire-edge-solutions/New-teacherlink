@@ -218,14 +218,40 @@ const Payment = ({ user, onSuccess }) => {
 
       let userName = "";
       let userNumber = "";
+      let userEmail = "";
 
       if (Array.isArray(userData) && userData.length > 0) {
         userName = userData[0]?.name || "";
         userNumber = userData[0]?.phone_number || "";
+        userEmail = userData[0]?.email || "";
       } else if (userData?.name) {
         userName = userData.name;
         userNumber = userData.phone_number || "";
+        userEmail = userData.email || "";
       }
+
+      // If email is still empty, fetch from personal table as fallback
+      if (!userEmail) {
+        try {
+          const personalRes = await fetch(
+            `https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal?firebase_uid=${encodeURIComponent(firebase_uid)}`
+          );
+          const personalData = await personalRes.json();
+          if (Array.isArray(personalData) && personalData.length > 0) {
+            userEmail = personalData[0]?.email || userEmail;
+          } else if (personalData?.email) {
+            userEmail = personalData.email;
+          }
+          if (userEmail) {
+            console.log("📧 Payment: Fetched email from personal table:", userEmail);
+          }
+        } catch (err) {
+          console.warn("Failed to fetch email from personal table:", err);
+        }
+      }
+
+      // Log final email being used for payment
+      console.log("📧 Payment: Final email to use:", userEmail || user?.email || "NOT FOUND");
 
       // 2. Create order on backend (₹1 = 100 paise)
       const res = await fetch(
@@ -393,7 +419,7 @@ const Payment = ({ user, onSuccess }) => {
         },
         prefill: {
           name: userName,
-          email: user?.email || "",
+          email: userEmail || user?.email || "",
           contact: userNumber,
         },
         theme: { color: "#3399cc" },

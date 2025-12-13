@@ -164,14 +164,40 @@ const Payment = ({ user, onSuccess }) => {
 
       let userName = "";
       let userNumber = "";
+      let userEmail = "";
 
       if (Array.isArray(userData) && userData.length > 0) {
         userName = userData[0]?.name || "";
         userNumber = userData[0]?.phone_number || "";
+        userEmail = userData[0]?.email || "";
       } else if (userData?.name) {
         userName = userData.name;
         userNumber = userData.phone_number || "";
+        userEmail = userData.email || "";
       }
+
+      // If email is still empty, fetch from organisation table as fallback
+      if (!userEmail) {
+        try {
+          const orgRes = await fetch(
+            `https://xx22er5s34.execute-api.ap-south-1.amazonaws.com/dev/organisation?firebase_uid=${encodeURIComponent(firebase_uid)}`
+          );
+          const orgData = await orgRes.json();
+          if (Array.isArray(orgData) && orgData.length > 0) {
+            userEmail = orgData[0]?.contact_person_email || userEmail;
+          } else if (orgData?.contact_person_email) {
+            userEmail = orgData.contact_person_email;
+          }
+          if (userEmail) {
+            console.log("📧 Payment: Fetched email from organisation table:", userEmail);
+          }
+        } catch (err) {
+          console.warn("Failed to fetch email from organisation table:", err);
+        }
+      }
+
+      // Log final email being used for payment
+      console.log("📧 Payment: Final email to use:", userEmail || user?.email || "NOT FOUND");
 
       // 2. Create order on backend (₹1 = 100 paise)
       const res = await fetch(
@@ -339,7 +365,7 @@ const Payment = ({ user, onSuccess }) => {
         },
         prefill: {
           name: userName,
-          email: user?.email || "",
+          email: userEmail || user?.email || "",
           contact: userNumber,
         },
         theme: { color: "#3399cc" },
