@@ -10,7 +10,7 @@ import ModalPortal from '../../../common/ModalPortal';
 
 const API_BASE = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev";
 const EDUCATION_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails";
-const EXPERIENCE_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/workExperience";
+const JOB_PREFERENCE_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference";
 
 const reactSelectStyles = {
   control: (base, state) => ({
@@ -213,13 +213,13 @@ const MandatoryProfileModal = () => {
           permanentAddressRes,
           presentAddressRes,
           educationRes,
-          experienceRes
+          jobPreferenceRes
         ] = await Promise.all([
           axios.get(`${API_BASE}/personal`, { params: { firebase_uid: user.uid }, ...authHeaders }).catch(() => ({ data: [] })),
           axios.get(`${API_BASE}/permanentAddress`, { params: { firebase_uid: user.uid }, ...authHeaders }).catch(() => ({ data: [] })),
           axios.get(`${API_BASE}/presentAddress`, { params: { firebase_uid: user.uid }, ...authHeaders }).catch(() => ({ data: [] })),
           axios.get(EDUCATION_API, { params: { firebase_uid: user.uid } }).catch(() => ({ data: [] })),
-          axios.get(EXPERIENCE_API, { params: { firebase_uid: user.uid } }).catch(() => ({ data: {} }))
+          axios.get(JOB_PREFERENCE_API, { params: { firebase_uid: user.uid } }).catch(() => ({ data: [] }))
         ]);
 
         // Check if all mandatory fields are filled
@@ -241,36 +241,49 @@ const MandatoryProfileModal = () => {
         const hasGrade10 = educationRes.data.length > 0 && 
           educationRes.data.some(edu => edu.education_type === 'grade10' && edu.yearOfPassing);
 
-        // Check experience - handle different response structures
-        let hasExperience = false;
-        const experienceData = experienceRes.data;
+        // Check job preference - handle different response structures
+        let hasJobPreference = false;
+        const jobPreferenceData = jobPreferenceRes.data;
         
-        if (experienceData?.mysqlData) {
-          // mysqlData can be an array or single object
-          let experienceRecord = null;
+        if (jobPreferenceData && Array.isArray(jobPreferenceData) && jobPreferenceData.length > 0) {
+          // Find user's record in array, or use first item
+          const jobPreferenceRecord = jobPreferenceData.find(pref => pref.firebase_uid === user.uid) || 
+                                      jobPreferenceData[0];
           
-          if (Array.isArray(experienceData.mysqlData) && experienceData.mysqlData.length > 0) {
-            // Find user's record in array, or use first item
-            experienceRecord = experienceData.mysqlData.find(exp => exp.firebase_uid === user.uid) || 
-                              experienceData.mysqlData[0];
-          } else if (typeof experienceData.mysqlData === 'object' && experienceData.mysqlData !== null) {
-            // Single object (check if it matches user or use it directly if it's the only record)
-            if (experienceData.mysqlData.firebase_uid === user.uid || !experienceData.mysqlData.firebase_uid) {
-              experienceRecord = experienceData.mysqlData;
+          // Check if required fields exist: Job_Type, expected_salary, and teaching_subjects (if Job_Type is teaching)
+          if (jobPreferenceRecord && 
+              jobPreferenceRecord.Job_Type && 
+              jobPreferenceRecord.expected_salary) {
+            // If Job_Type is teaching, also check for teaching_subjects
+            if (jobPreferenceRecord.Job_Type === 'teaching') {
+              if (jobPreferenceRecord.teaching_subjects && 
+                  Array.isArray(jobPreferenceRecord.teaching_subjects) && 
+                  jobPreferenceRecord.teaching_subjects.length > 0) {
+                hasJobPreference = true;
+              }
+            } else {
+              // For other job types, just having Job_Type and expected_salary is enough
+              hasJobPreference = true;
             }
           }
-          
-          // Check if both fields exist (accept 0 as valid, only undefined/null means not filled)
-          if (experienceRecord && 
-              (experienceRecord.total_experience_years !== undefined && experienceRecord.total_experience_years !== null) &&
-              (experienceRecord.teaching_experience_years !== undefined && experienceRecord.teaching_experience_years !== null)) {
-            hasExperience = true;
+        } else if (jobPreferenceData && typeof jobPreferenceData === 'object' && !Array.isArray(jobPreferenceData)) {
+          // Single object response
+          if (jobPreferenceData.Job_Type && jobPreferenceData.expected_salary) {
+            if (jobPreferenceData.Job_Type === 'teaching') {
+              if (jobPreferenceData.teaching_subjects && 
+                  Array.isArray(jobPreferenceData.teaching_subjects) && 
+                  jobPreferenceData.teaching_subjects.length > 0) {
+                hasJobPreference = true;
+              }
+            } else {
+              hasJobPreference = true;
+            }
           }
         }
 
         // Check only the fields that THIS modal collects (not personal data)
         // Personal data is collected separately and shouldn't block this modal
-        if (hasPermanentAddress && hasPresentAddress && hasGrade10 && hasExperience) {
+        if (hasPermanentAddress && hasPresentAddress && hasGrade10 && hasJobPreference) {
           setShowModal(false);
         } else {
           setShowModal(true);
@@ -306,6 +319,22 @@ const MandatoryProfileModal = () => {
   const monthOptions = Array.from({ length: 12 }, (_, i) => (
     <option key={i} value={i}>{i} Months</option>
   ));
+
+  // Helper function to convert salary (LPA number) to expected_salary format (salary range string)
+  const convertSalaryToRange = (salaryLPA) => {
+    const salary = parseFloat(salaryLPA) || 0;
+    if (salary === 0) return "less_than_40k";
+    if (salary < 0.4) return "less_than_40k";
+    if (salary < 0.6) return "40k_60k";
+    if (salary < 0.8) return "60k_80k";
+    if (salary < 1.0) return "80k_100k";
+    if (salary < 1.2) return "100k_120k";
+    if (salary < 1.4) return "120k_140k";
+    if (salary < 1.6) return "140k_160k";
+    if (salary < 1.8) return "160k_180k";
+    if (salary < 2.0) return "180k_200k";
+    return "more_than_200k";
+  };
 
   // Handle input changes
   const handleInputChange = (field, value) => {
@@ -415,62 +444,82 @@ const MandatoryProfileModal = () => {
         headers: { "Content-Type": "application/json" }
       });
 
-      // 4. Save experience data
-      const experiencePayload = {
+      // 4. Save job preference data
+      const jobPreferencePayload = {
         firebase_uid: user.uid,
-        mysqlDB: {
-          firebase_uid: user.uid,
-          total_experience_years: formData.totalWorkExpYears,
-          total_experience_months: formData.totalWorkExpMonths,
-          teaching_experience_years: formData.totalTeachingExpYears,
-          teaching_experience_months: formData.totalTeachingExpMonths,
-          teaching_exp_fulltime_years: "0",
-          teaching_exp_fulltime_months: "0",
-          teaching_exp_partime_years: "0",
-          teaching_exp_partime_months: "0",
-          administration_fulltime_years: "0",
-          administration_fulltime_months: "0",
-          administration_partime_years: "0",
-          administration_parttime_months: "0",
-          anyrole_fulltime_years: "0",
-          anyrole_fulltime_months: "0",
-          anyrole_partime_years: "0",
-          anyrole_parttime_months: "0",
-          Ed_Tech_Company: 0,
-          on_line: 0,
-          coaching_tuitions_center: 0,
-          group_tuitions: 0,
-          private_tuitions: 0,
-          home_tuitions: 0
-        },
-        dynamoDB: [{
-          firebase_uid: user.uid,
-          organizationName: "Current Organization",
-          jobCategory: "fullTime",
-          jobType: formData.jobType,
-          currentlyWorking: true,
-          work_from_month: new Date().getMonth() + 1,
-          work_from_year: new Date().getFullYear(),
-          salary: formData.currentSalary,
-          country: "India",
-          state: formData.presentState.label,
-          city: formData.presentCity.label,
-          jobProcess: "regular",
-          teachingDesignation: "",
-          teachingSubjects: formData.subjectsHandled,
-          teachingGrades: [],
-          teachingCoreExpertise: [],
-          teachingCurriculum: "",
-          adminDesignation: "",
-          teachingAdminDesignations: [],
-          teachingAdminSubjects: [],
-          teachingAdminGrades: [],
-          teachingAdminCoreExpertise: [],
-          teachingAdminCurriculum: ""
-        }]
+        // Job details from form
+        Job_Type: formData.jobType,
+        expected_salary: convertSalaryToRange(formData.currentSalary),
+        notice_period: "immediateJoiner", // Default value
+        
+        // Location preferences (using present address as preferred location)
+        preferred_country: "India",
+        preferred_state: formData.presentState?.label || "",
+        preferred_city: formData.presentCity?.label || "",
+        
+        // Teaching subjects (only if Job_Type is teaching)
+        teaching_subjects: formData.jobType === 'teaching' ? formData.subjectsHandled : [],
+        teaching_designations: formData.jobType === 'teaching' ? [] : [],
+        teaching_curriculum: formData.jobType === 'teaching' ? [] : [],
+        teaching_grades: formData.jobType === 'teaching' ? [] : [],
+        teaching_coreExpertise: formData.jobType === 'teaching' ? [] : [],
+        
+        // Administration fields (only if Job_Type is administration)
+        administrative_designations: formData.jobType === 'administration' ? [] : [],
+        administrative_curriculum: formData.jobType === 'administration' ? [] : [],
+        
+        // Teaching + Admin fields (only if Job_Type is teachingAndAdmin)
+        teaching_administrative_designations: formData.jobType === 'teachingAndAdmin' ? [] : [],
+        teaching_administrative_curriculum: formData.jobType === 'teachingAndAdmin' ? [] : [],
+        teaching_administrative_subjects: formData.jobType === 'teachingAndAdmin' ? formData.subjectsHandled : [],
+        teaching_administrative_grades: formData.jobType === 'teachingAndAdmin' ? [] : [],
+        teaching_administrative_coreExpertise: formData.jobType === 'teachingAndAdmin' ? [] : [],
+        
+        // Default values for job shift preferences
+        full_time_offline: 1,
+        full_time_online: 1,
+        part_time_weekdays_offline: 1,
+        part_time_weekdays_online: 1,
+        part_time_weekends_offline: 1,
+        part_time_weekends_online: 1,
+        part_time_vacations_offline: 1,
+        part_time_vacations_online: 1,
+        
+        // Default values for organization type preferences
+        school_college_university_offline: 1,
+        school_college_university_online: 1,
+        coaching_institute_offline: 1,
+        coaching_institute_online: 1,
+        Ed_TechCompanies_offline: 1,
+        Ed_TechCompanies_online: 1,
+        
+        // Default values for parent/guardian preferences
+        Home_Tutor_offline: 1,
+        Home_Tutor_online: 1,
+        Private_Tutor_offline: 1,
+        Private_Tutor_online: 1,
+        Group_Tutor_offline: 1,
+        Group_Tutor_online: 1,
+        Private_Tutions_online_online: 1,
+        
+        // Default values for teaching mode
+        teachingMode_online: 1,
+        teachingMode_offline: 1,
+        
+        // Default values for job search status
+        full_time_2_offline: "activelySearching",
+        full_time_2_online: "activelySearching",
+        part_time_weekdays_2_offline: "activelySearching",
+        part_time_weekdays_2_online: "activelySearching",
+        part_time_weekends_2_offline: "activelySearching",
+        part_time_weekends_2_online: "activelySearching",
+        part_time_vacations_2_offline: "activelySearching",
+        part_time_vacations_2_online: "activelySearching",
+        tuitions_2_offline: "activelySearching",
+        tuitions_2_online: "activelySearching"
       };
 
-      await axios.post(EXPERIENCE_API, experiencePayload, {
+      await axios.post(JOB_PREFERENCE_API, jobPreferencePayload, {
         headers: { "Content-Type": "application/json" }
       });
 
@@ -527,8 +576,8 @@ const MandatoryProfileModal = () => {
             {/* Current Salary */}
             <div>
               <InputWithTooltip label="Current Salary (in LPA)" required>
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-700 font-semibold">Rs.</span>
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <span className="text-gray-700 font-semibold whitespace-nowrap flex-shrink-0">Rs.</span>
                   <input
                     type="number"
                     value={formData.currentSalary}
@@ -539,7 +588,7 @@ const MandatoryProfileModal = () => {
                     className={`flex-1 px-3 py-2 rounded-lg border ${validationErrors.currentSalary ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300`}
                     required
                   />
-                  <span className="text-gray-700 font-semibold">LPA</span>
+                  <span className="text-gray-700 font-semibold whitespace-nowrap flex-shrink-0">LPA</span>
                 </div>
               </InputWithTooltip>
               {validationErrors.currentSalary && (

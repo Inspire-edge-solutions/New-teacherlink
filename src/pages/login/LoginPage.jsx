@@ -31,6 +31,25 @@ export default function LoginPage() {
 
   // If user is already logged in, check if there's a pending redirect
   if (user) {
+    // CRITICAL: Check if Google profile completion is in progress
+    // If so, don't redirect - let the user complete their profile
+    const googleProfileIncomplete = sessionStorage.getItem('googleProfileIncomplete');
+    const googleProfileFirebaseUid = sessionStorage.getItem('googleProfileFirebaseUid');
+    
+    // Only check this if the Firebase user matches (to avoid false positives)
+    if (googleProfileIncomplete === 'true' && googleProfileFirebaseUid && user.uid === googleProfileFirebaseUid) {
+      // User doesn't have user_type yet (profile incomplete) - don't redirect
+      if (!user.user_type) {
+        console.log('LoginPage: Google profile completion in progress, not redirecting');
+        // Show login form so user can complete profile
+        return (
+          <div>
+            <Login/>
+          </div>
+        );
+      }
+    }
+    
     // Check if there's a redirect URL in query params
     const redirectUrl = searchParams.get('redirect');
     const action = searchParams.get('action');

@@ -507,12 +507,6 @@ export const buildCandidateSubjects = (candidate) => {
   
   const subjects = new Set();
   
-  // Get subjects from education details
-  const { subjects: parsedSubjects } = parseEducation(candidate.education_details_json);
-  parsedSubjects.forEach((subject) => {
-    if (subject) subjects.add(subject);
-  });
-  
   // Helper to convert to array and add to set
   const toArray = (value) => {
     if (!value) return [];
@@ -528,13 +522,11 @@ export const buildCandidateSubjects = (candidate) => {
     return [value];
   };
   
-  // Collect from various candidate fields
+  // PRIORITY 1: Get subjects directly from dev/change API fields (these are the primary source)
   const subjectFields = [
     candidate.teaching_subjects,
     candidate.teaching_administrative_subjects,
-    candidate.subjects_taught,
-    candidate.core_subjects,
-    candidate.coreSubjects
+    
   ];
   
   subjectFields.forEach((field) => {
@@ -694,13 +686,15 @@ export const getGenderString = (candidate) => {
 export const getAgeString = (candidate) => {
   if (!candidate) return 'Not specified';
   
-  // Check multiple possible field names for date of birth
+  // PRIORITY: Check top-level dateOfBirth fields first (from dev/change API, normalized by CandidateApiService)
+  // These are normalized by CandidateApiService to all field name variants
   const dateOfBirth = 
     candidate.dateOfBirth || 
     candidate.date_of_birth ||
     candidate.dob ||
     candidate.birthDate ||
     candidate.birth_date ||
+    // Fallback to nested fields only if top-level not found (should be rare after normalization)
     candidate.profileData?.dateOfBirth ||
     candidate.profileData?.date_of_birth ||
     candidate.profileData?.dob ||

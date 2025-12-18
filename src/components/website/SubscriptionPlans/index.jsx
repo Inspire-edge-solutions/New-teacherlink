@@ -234,29 +234,29 @@ const SubscriptionPlans = () => {
                     <div className="text-orange-500 mb-2 sm:mb-0 sm:mr-4"><MdLock size={24} className="sm:w-[26px] sm:h-[26px] mx-auto" /></div>
                     <div>
                       <div className="text-base sm:text-lg text-gray-800 font-semibold tracking-tight mb-1.5 sm:mb-0">Unlock more with Premium</div>
-                      <div className="text-sm sm:text-base text-gray-700 leading-normal tracking-tight">More coins, better support, and exclusive features!</div>
+                      <div className="text-base sm:text-base text-gray-700 leading-normal tracking-tight">More coins, better support, and exclusive features!</div>
                     </div>
                   </div>
                   <div className="flex flex-col sm:flex-row items-center justify-center p-4 sm:p-5 text-center">
                     <div className="text-blue-600 mb-2 sm:mb-0 sm:mr-4"><MdRocketLaunch size={24} className="sm:w-[26px] sm:h-[26px] mx-auto" /></div>
                     <div>
                       <div className="text-base sm:text-lg text-gray-800 font-semibold tracking-tight mb-1.5 sm:mb-0">Build your dream career faster</div>
-                      <div className="text-sm sm:text-base text-gray-700 leading-normal tracking-tight">With Standard & Premium perks.</div>
+                      <div className="text-base sm:text-base text-gray-700 leading-normal tracking-tight">With Standard & Premium perks.</div>
                     </div>
                   </div>
                   <div className="flex flex-col sm:flex-row items-center justify-center p-4 sm:p-5 text-center">
                     <div className="text-emerald-600 mb-2 sm:mb-0 sm:mr-4"><MdHowToReg size={24} className="sm:w-[26px] sm:h-[26px] mx-auto" /></div>
                     <div>
                       <div className="text-base sm:text-lg text-gray-800 font-semibold tracking-tight mb-1.5 sm:mb-0">Join now & start applying today!</div>
-                      <div className="text-sm sm:text-base text-gray-700 leading-normal tracking-tight">Get started with your subscription plan</div>
+                      <div className="text-base sm:text-base text-gray-700 leading-normal tracking-tight">Get started with your subscription plan</div>
                     </div>
                   </div>
                   <div className="flex flex-col sm:flex-row items-center justify-center p-4 sm:p-5 text-center">
                     <div className="text-pink-600 mb-2 sm:mb-0 sm:mr-4"><MdGroupAdd size={24} className="sm:w-[26px] sm:h-[26px] mx-auto" /></div>
                     <div>
                       <div className="text-base sm:text-lg text-gray-800 font-semibold tracking-tight mb-1.5 sm:mb-0">Refer & Earn</div>
-                      <div className="text-sm sm:text-base text-gray-700 leading-normal tracking-tight">
-                        <span className="mr-1"><span className="font-bold">✨ </span> Refer 20 candidates </span> → <span className="inline-flex items-center font-semibold ml-1 mr-1">when 10 get placed</span> →<span className="ml-1">🪙 Earn 2000 Bonus Coins!</span>
+                      <div className="text-base sm:text-base text-gray-700 leading-normal tracking-tight">
+                        <span className="mr-1"><span className="font-bold">✨ </span> Refer 20 candidates </span> → <span className="inline-flex items-center font-semibold ml-1 mr-1">when 10 get Registered</span> →<span className="ml-1">🪙 Earn 2000 Bonus Coins!</span>
                       </div>
                     </div>
                   </div>
@@ -264,7 +264,7 @@ const SubscriptionPlans = () => {
                     <div className="text-red-600 mb-2 sm:mb-0 sm:mr-4"><MdRedeem size={24} className="sm:w-[26px] sm:h-[26px] mx-auto" /></div>
                     <div>
                       <div className="text-base sm:text-lg text-gray-800 font-semibold tracking-tight mb-1.5 sm:mb-0">Coupon Redemption</div>
-                      <div className="text-sm sm:text-base text-gray-700 leading-normal tracking-tight"><span className="mr-1">✨</span> Got a promo code? Redeem it now for instant bonus <span className="ml-1">🪙</span></div>
+                      <div className="text-base sm:text-base text-gray-700 leading-normal tracking-tight"><span className="mr-1">✨</span> Got a promo code? Redeem it now for instant bonus <span className="ml-1">🪙</span></div>
                     </div>
                   </div>
                 </div>
@@ -282,8 +282,8 @@ const SubscriptionPlans = () => {
                     <div className="text-pink-600 mb-2 sm:mb-0 sm:mr-4"><MdGroupAdd size={24} className="sm:w-[26px] sm:h-[26px] mx-auto" /></div>
                     <div>
                       <div className="text-base sm:text-lg text-gray-800 font-semibold mb-1.5 sm:mb-0">Refer & Earn</div>
-                      <div className="text-sm sm:text-base text-gray-700 leading-normal tracking-tight">
-                        <span className="mr-1">✨ Refer 10 institutions</span> → <span className="inline-flex items-center font-semibold ml-1 mr-1">When 5 register</span> → <span className="ml-1">🪙 Earn 4000 Bonus Coins!</span>
+                      <div className="text-base sm:text-base text-gray-700 leading-normal tracking-tight">
+                        <span className="mr-1">✨ Refer 10 institutions</span> → <span className="inline-flex items-center font-semibold ml-1 mr-1">When 5 get registered</span> → <span className="ml-1">🪙 Earn 4000 Bonus Coins!</span>
                       </div>
                     </div>
                   </div>
@@ -291,7 +291,7 @@ const SubscriptionPlans = () => {
                     <div className="text-red-600 mb-2 sm:mb-0 sm:mr-4"><MdRedeem size={24} className="sm:w-[26px] sm:h-[26px] mx-auto" /></div>
                     <div>
                       <div className="text-base sm:text-lg text-gray-800 font-semibold mb-1.5 sm:mb-0">Redeem Offer Coupon</div>
-                      <div className="text-sm sm:text-base text-gray-700 leading-normal tracking-tight"><span className="mr-1">✨</span> Got a code? Redeem now to earn extra <span className="ml-1">🪙</span> Coins!</div>
+                      <div className="text-base sm:text-base text-gray-700 leading-normal tracking-tight"><span className="mr-1">✨</span> Got a code? Redeem now to earn extra <span className="ml-1">🪙</span> Coins!</div>
                     </div>
                   </div>
                 </div>

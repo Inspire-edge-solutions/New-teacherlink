@@ -458,7 +458,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
 
       // 3. Setup Razorpay checkout options
       const options = {
-        key: "rzp_live_93pNpUOJq57lgB", // Live Razorpay key
+        key: "rzp_live_Rqbr1MTdQUI4tM", // Live Razorpay key
         amount: order.amount, // Amount in paise (from backend)
         currency: order.currency || "INR",
         name: "TeacherLink",
@@ -680,7 +680,7 @@ const BookingModal = ({ isOpen, selectedPackage, onClose, onSubmit }) => {
       // 3. Setup Razorpay checkout options
       console.log("Opening Razorpay with order:", order);
       const options = {
-        key: "rzp_live_93pNpUOJq57lgB", // Your live key
+        key: "rzp_live_Rqbr1MTdQUI4tM", // Your live key
         amount: order.amount, // Amount in paise (from backend)
         currency: order.currency || "INR",
         name: "TeacherLink",

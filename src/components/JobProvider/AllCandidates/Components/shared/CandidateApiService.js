@@ -182,15 +182,57 @@ class CandidateApiService {
       const merged = candidateList.map((candidate) => {
         const uid = getCandidateId(candidate);
         const supplemental = uid ? supplementalMap.get(uid) : null;
-        if (!supplemental) return candidate;
-        const { id, ...rest } = supplemental;
-        return {
+        
+        // Get dateOfBirth ONLY from dev/change API (main candidate) - no other sources
+        const dateOfBirth = candidate.dateOfBirth || candidate.date_of_birth || candidate.dob || candidate.birthDate || null;
+        
+        if (!supplemental) {
+          // No supplemental data, preserve dateOfBirth from dev/change API if it exists
+          if (dateOfBirth) {
+            return {
+              ...candidate,
+              dateOfBirth: dateOfBirth,
+              date_of_birth: dateOfBirth,
+              dob: dateOfBirth,
+              birthDate: dateOfBirth
+            };
+          }
+          return candidate;
+        }
+        
+        // Remove dateOfBirth fields from supplemental data - we only use dev/change API
+        const { id, dateOfBirth: _, date_of_birth: __, dob: ___, birthDate: ____, ...rest } = supplemental;
+        
+        const mergedCandidate = {
           ...candidate,
-          ...rest
+          ...rest,
+          // Only preserve dateOfBirth from dev/change API (ignore supplemental)
+          ...(dateOfBirth && {
+            dateOfBirth: dateOfBirth,
+            date_of_birth: dateOfBirth,
+            dob: dateOfBirth,
+            birthDate: dateOfBirth
+          })
         };
+        
+        return mergedCandidate;
       });
 
       console.log('✅ fetchCandidates: Merged candidates count:', merged.length);
+      
+      // Debug: Check if dateOfBirth is being fetched correctly from dev/change API ONLY
+      const candidatesWithDob = merged.filter(c => c.dateOfBirth || c.date_of_birth || c.dob || c.birthDate);
+      const candidatesWithoutDob = merged.length - candidatesWithDob.length;
+      
+      console.log('📅 fetchCandidates: DateOfBirth from dev/change API ONLY:', {
+        total: merged.length,
+        withDateOfBirth: candidatesWithDob.length,
+        missing: candidatesWithoutDob,
+        sample: candidatesWithDob[0] ? {
+          firebase_uid: candidatesWithDob[0].firebase_uid,
+          dateOfBirth: candidatesWithDob[0].dateOfBirth || candidatesWithDob[0].date_of_birth || candidatesWithDob[0].dob || candidatesWithDob[0].birthDate
+        } : null
+      });
 
       const uniqueEducationTypes = new Set();
       merged.slice(0, 200).forEach((candidate) => {

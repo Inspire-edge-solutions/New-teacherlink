@@ -10,7 +10,7 @@ const Payment = ({ user, onSuccess }) => {
   // Popup state for blocked coins
   const [showBlockedPopup, setShowBlockedPopup] = useState(false);
   const [selectedPlanForPopup, setSelectedPlanForPopup] = useState(null);
-  const [showProfilePopup, setShowProfilePopup] = useState(false);
+  // const [showProfilePopup, setShowProfilePopup] = useState(false); // PROFILE COMPLETION (disabled)
   const [plansLoading, setPlansLoading] = useState(true);
   
 
@@ -57,9 +57,12 @@ const Payment = ({ user, onSuccess }) => {
     }
   ];
 
-  // Helper: Get auth token
+  // Helper: Get auth token (support both legacy `authToken` and current `token`)
   const getAuthToken = () =>
-    localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+    localStorage.getItem("token") ||
+    sessionStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    sessionStorage.getItem("authToken");
 
   // Helper: Prepare headers for authenticated API calls
   const getAuthHeaders = () => {
@@ -68,43 +71,44 @@ const Payment = ({ user, onSuccess }) => {
     return { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
   };
 
+  // PROFILE COMPLETION (disabled)
   // Check if user's profile is complete
-  const checkProfileCompletion = async () => {
-    try {
-      const response = await fetch(
-        `https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal`
-      );
-      const personalData = await response.json();
-      
-      // Check if user's firebase_uid exists in the personal data
-      const userProfile = Array.isArray(personalData) 
-        ? personalData.find(profile => profile.firebase_uid === firebase_uid)
-        : null;
-      
-      if (!userProfile) {
-        return false; // No profile found
-      }
-      
-      // Check for required fields (basic profile completion)
-      const requiredFields = [
-        'fullName',
-        'email', 
-        'callingNumber',
-        'gender',
-        'dateOfBirth'
-      ];
-      
-      const hasRequiredFields = requiredFields.every(field => {
-        const value = userProfile[field];
-        return value && value.toString().trim() !== '' && value.toString().trim() !== 'null';
-      });
-      
-      return hasRequiredFields;
-    } catch (error) {
-      console.error("Error checking profile completion:", error);
-      return false; // Default to incomplete if API fails
-    }
-  };
+  // const checkProfileCompletion = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       `https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/personal`
+  //     );
+  //     const personalData = await response.json();
+  //
+  //     // Check if user's firebase_uid exists in the personal data
+  //     const userProfile = Array.isArray(personalData)
+  //       ? personalData.find(profile => profile.firebase_uid === firebase_uid)
+  //       : null;
+  //
+  //     if (!userProfile) {
+  //       return false; // No profile found
+  //     }
+  //
+  //     // Check for required fields (basic profile completion)
+  //     const requiredFields = [
+  //       'fullName',
+  //       'email',
+  //       'callingNumber',
+  //       'gender',
+  //       'dateOfBirth'
+  //     ];
+  //
+  //     const hasRequiredFields = requiredFields.every(field => {
+  //       const value = userProfile[field];
+  //       return value && value.toString().trim() !== '' && value.toString().trim() !== 'null';
+  //     });
+  //
+  //     return hasRequiredFields;
+  //   } catch (error) {
+  //     console.error("Error checking profile completion:", error);
+  //     return false; // Default to incomplete if API fails
+  //   }
+  // };
 
   // Check if user's coins are blocked
   const checkCoinBlockStatus = async () => {
@@ -162,12 +166,13 @@ const Payment = ({ user, onSuccess }) => {
     toast.info("Payment cancelled. Please use your existing coins first.");
   };
 
+  // PROFILE COMPLETION (disabled)
   // Handle profile completion popup
-  const handleProfilePopupClose = () => {
-    setShowProfilePopup(false);
-    // Redirect to profile page
-    window.location.href = "/seeker/my-profile";
-  };
+  // const handleProfilePopupClose = () => {
+  //   setShowProfilePopup(false);
+  //   // Redirect to profile page
+  //   window.location.href = "/seeker/my-profile";
+  // };
 
 
   // Main purchase function with plan parameter
@@ -178,12 +183,13 @@ const Payment = ({ user, onSuccess }) => {
     }
 
     // First check if profile is complete
-    const isProfileComplete = await checkProfileCompletion();
-    
-    if (!isProfileComplete) {
-      setShowProfilePopup(true);
-      return;
-    }
+    // PROFILE COMPLETION (disabled)
+    // const isProfileComplete = await checkProfileCompletion();
+    //
+    // if (!isProfileComplete) {
+    //   setShowProfilePopup(true);
+    //   return;
+    // }
 
     // Check if coins are blocked before proceeding
     const isBlocked = await checkCoinBlockStatus();
@@ -280,7 +286,7 @@ const Payment = ({ user, onSuccess }) => {
 
       // 3. Setup Razorpay checkout options
       const options = {
-        key: "rzp_live_93pNpUOJq57lgB", // Your live key
+        key: "rzp_live_Rqbr1MTdQUI4tM", // Your live key
         amount: order.amount,
         currency: order.currency,
         name: selectedPlan.name,
@@ -350,7 +356,7 @@ const Payment = ({ user, onSuccess }) => {
               "https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem",
               {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(redeemPayload),
               }
             );
@@ -461,8 +467,8 @@ const Payment = ({ user, onSuccess }) => {
         </div>
       )}
       
-      {/* Profile Completion Popup */}
-      {showProfilePopup && ReactDOM.createPortal(
+      {/* Profile Completion Popup (disabled) */}
+      {/* {showProfilePopup && ReactDOM.createPortal(
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-2 sm:p-4" onClick={handleProfilePopupClose}>
           <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 max-w-md w-full mx-2 sm:mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <button 
@@ -493,7 +499,7 @@ const Payment = ({ user, onSuccess }) => {
             </div>
           </div>
         </div>, document.body
-      )}
+      )} */}
 
       {/* Blocked Coins Popup */}
       {showBlockedPopup && ReactDOM.createPortal(

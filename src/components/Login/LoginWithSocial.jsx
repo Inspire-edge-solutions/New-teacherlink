@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { FcGoogle } from "react-icons/fc";
 import { Skeleton } from "@mui/material";
 import TermsPrivacy from "../website/TermsPrivacy";
+import LoadingState from "../common/LoadingState";
 
 const GOOGLE_LOGIN_API = "https://ha69bxk1nb.execute-api.ap-south-1.amazonaws.com/dev/google";
 
@@ -331,10 +332,35 @@ const LoginWithSocial = () => {
         // User exists but profile incomplete - show role selection
         console.log("Profile incomplete, showing role selection");
         
+        // CRITICAL: Set flag to prevent AuthContext/LoginPage from redirecting
+        // This flag tells LoginPage that profile completion is in progress
+        sessionStorage.setItem('googleProfileIncomplete', 'true');
+        sessionStorage.setItem('googleProfileFirebaseUid', user.uid);
+        
         // Store tracking info in sessionStorage before showing role selection
         const redirectUrl = searchParams.get('redirect');
         const action = searchParams.get('action');
         const id = searchParams.get('id');
+        let requiredUserTypeFromUrl = searchParams.get('requiredUserType') || requiredUserType;
+        
+        // Determine role based on redirect URL or requiredUserType
+        // If user came from /available-candidates, they should be Employer
+        // If user came from /available-jobs, they should be Candidate
+        let defaultRole = 'Candidate'; // Default fallback
+        if (redirectUrl === '/available-candidates') {
+          defaultRole = 'Employer';
+          if (!requiredUserTypeFromUrl) requiredUserTypeFromUrl = 'Employer';
+        } else if (redirectUrl === '/available-jobs') {
+          defaultRole = 'Candidate';
+          if (!requiredUserTypeFromUrl) requiredUserTypeFromUrl = 'Candidate';
+        } else if (requiredUserTypeFromUrl) {
+          // Fallback to requiredUserType from URL
+          defaultRole = requiredUserTypeFromUrl;
+        }
+        
+        // Set the selected role based on where user came from
+        setSelectedRole(defaultRole);
+        console.log("Setting default role based on redirect URL:", { redirectUrl, defaultRole, requiredUserTypeFromUrl });
         
         if (action && id) {
           sessionStorage.setItem('pendingAction', action);
@@ -377,7 +403,12 @@ const LoginWithSocial = () => {
   };
 
   const handleSubmit = async () => {
-    if (!selectedRole) return setRoleError('Please select a role');
+    // Ensure role is set (should always be set due to initialization, but double-check)
+    if (!selectedRole) {
+      setRoleError('Role selection error. Please try again.');
+      return;
+    }
+    
     if (!number || number.length !== 10) return setPhoneError('Enter valid 10-digit number');
     if (!acceptedTerms) return toast.error("Please accept Terms and Conditions");
     if (!hasReadTermsAndPrivacy) return toast.error("Please read Terms & Privacy");
@@ -403,7 +434,60 @@ const LoginWithSocial = () => {
       console.log("Registration response:", data);
 
       if (res.ok && data.success) {
+        // Get redirect URL and required user type from query params
+        const redirectUrl = searchParams.get('redirect');
+        let requiredUserTypeFromUrl = searchParams.get('requiredUserType') || requiredUserType;
+        
+        // Infer from sessionStorage if not in URL
+        if (!requiredUserTypeFromUrl) {
+          if (sessionStorage.getItem('pendingCandidateAction') || sessionStorage.getItem('pendingCandidateId')) {
+            requiredUserTypeFromUrl = 'Employer';
+          } else if (sessionStorage.getItem('pendingJobAction') || sessionStorage.getItem('pendingJobId')) {
+            requiredUserTypeFromUrl = 'Candidate';
+          }
+        }
+        
+        // CRITICAL: Validate that registered user type matches required user type
+        if (requiredUserTypeFromUrl) {
+          const registeredType = selectedRole; // The role user just registered with
+          const isValidUserType = 
+            (requiredUserTypeFromUrl === 'Candidate' && registeredType === 'Candidate') ||
+            (requiredUserTypeFromUrl === 'Employer' && registeredType === 'Employer');
+          
+          if (!isValidUserType) {
+            // Wrong user type registered - show error and clean up
+            const pageName = requiredUserTypeFromUrl === 'Candidate' ? 'available jobs' : 'available candidates';
+            const correctUserType = requiredUserTypeFromUrl === 'Candidate' ? 'Job Seeker (Candidate)' : 'Job Provider (Employer)';
+            
+            toast.error(`You registered as ${registeredType === 'Candidate' ? 'Job Seeker' : 'Job Provider'}, but you need to be a ${correctUserType} to access ${pageName}. Please contact support or use a different account.`);
+            
+            // Clean up
+            await cleanUpFirebaseUser();
+            sessionStorage.removeItem('googleProfileIncomplete');
+            sessionStorage.removeItem('googleProfileFirebaseUid');
+            
+            setLoading(false);
+            setShowRoleSelection(false);
+            
+            // Redirect back to the original page after a delay
+            setTimeout(() => {
+              if (redirectUrl) {
+                navigate(redirectUrl);
+              } else {
+                navigate('/home');
+              }
+            }, 3000);
+            return;
+          }
+        }
+        
         setShowRoleSelection(false);
+        
+        // CRITICAL: Clear the profile incomplete flag after successful registration
+        sessionStorage.removeItem('googleProfileIncomplete');
+        sessionStorage.removeItem('googleProfileFirebaseUid');
+        console.log("Cleared googleProfileIncomplete flag after successful registration");
+        
         //toast.success("Registration successful!");
         
         // Send email after successful Google registration
@@ -456,7 +540,7 @@ const LoginWithSocial = () => {
         localStorage.setItem("token", token);
         
         // Ensure tracking info is stored in sessionStorage (in case it wasn't stored earlier)
-        const redirectUrl = searchParams.get('redirect');
+        // redirectUrl already declared above, reuse it
         const action = searchParams.get('action');
         const id = searchParams.get('id');
         
@@ -482,6 +566,11 @@ const LoginWithSocial = () => {
     } catch (error) {
       console.error("Registration error:", error);
       await cleanUpFirebaseUser();
+      
+      // Clear the profile incomplete flag on error
+      sessionStorage.removeItem('googleProfileIncomplete');
+      sessionStorage.removeItem('googleProfileFirebaseUid');
+      
       toast.error(error.message || "Server error during registration.");
     } finally {
       setLoading(false);
@@ -490,6 +579,11 @@ const LoginWithSocial = () => {
 
   const handleCancelRegistration = async () => {
     await cleanUpFirebaseUser();
+    
+    // Clear the profile incomplete flag when user cancels
+    sessionStorage.removeItem('googleProfileIncomplete');
+    sessionStorage.removeItem('googleProfileFirebaseUid');
+    
     resetComponentState();
     toast.info("Registration cancelled.");
   };
@@ -537,78 +631,87 @@ const LoginWithSocial = () => {
 
   return (
     <>
+      {loading && showRoleSelection === false ? (
+        // Full-page loading state when Google login is in progress
+        <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+          <div className="relative w-full max-w-md px-4">
+            <LoadingState
+              title="Connecting to Google"
+              subtitle="We're securely authenticating your account."
+              layout="card"
+              className="shadow-xl"
+            >
+              <p className="mt-6 text-sm text-slate-600 text-center">
+                One moment while we verify your credentials.
+              </p>
+            </LoadingState>
+          </div>
+        </div>
+      ) : null}
+      
       <div className="w-full">
-        {loading ? (
-          <button
-            className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-300 text-gray-500 font-medium rounded-lg transition-all duration-200 disabled:opacity-80 disabled:cursor-not-allowed"
-            type="button"
-            disabled
-            aria-live="polite"
-          >
-            <FcGoogle className="w-5 h-5 animate-pulse" />
-            Connecting to Google…
-          </button>
-        ) : (
-          <button
-            className="w-full flex items-center justify-center gap-3 py-3 px-6 border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-            type="button"
-          >
-            <FcGoogle className="w-5 h-5" />
-            Log In via Google
-          </button>
-        )}
+        <button
+          className={`w-full flex items-center justify-center gap-3 py-3 px-6 border-2 transition-all duration-200 font-medium rounded-lg ${
+            loading 
+              ? 'border-gray-300 text-gray-500 cursor-not-allowed opacity-80' 
+              : 'border-gray-300 hover:border-gray-400 text-gray-700 cursor-pointer'
+          }`}
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+          type="button"
+          aria-live="polite"
+        >
+          <FcGoogle className={`w-5 h-5 ${loading ? 'animate-pulse' : ''}`} />
+          {loading ? 'Connecting to Google…' : 'Log In via Google'}
+        </button>
       </div>
 
       {showRoleSelection && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="p-6">
-              <h4 className="text-xl font-semibold text-gray-800 text-center mb-6 leading-tight tracking-tight">Complete Your Profile</h4>
+              <h4 className="text-xl font-semibold text-gray-800 text-center mb-2 leading-tight tracking-tight">Complete Your Profile</h4>
+              {requiredUserType && (
+                <p className="text-sm text-gray-600 text-center mb-4 leading-normal tracking-tight">
+                  Just a few more details to get started!
+                </p>
+              )}
               
-              {/* Role Selection Buttons
-              <div className="flex gap-3 mb-6">
-                {["Employer", "Candidate"].map(role => (
-                  <button
-                    key={role}
-                    className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
-                      selectedRole === role 
-                        ? 'bg-[#f4656a] text-white shadow-md' 
-                        : 'bg-[#FFB0B2] text-gray-700 hover:bg-[#FFB0B2] hover:opacity-80'
-                    }`}
-                    onClick={() => { setSelectedRole(role); setRoleError(''); }}
-                    type="button"
-                  >
-                    {role === 'Employer' ? 'Job Provider' : 'Job Seeker'}
-                  </button>
-                ))}
-              </div> */}
- {/* User Type Selection */}
- <div className="flex mb-4 sm:mb-6 bg-gray-100 rounded-lg p-1">
-            <button
-              type="button"
-              onClick={() => setSelectedRole("Candidate")}
-              className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-sm sm:text-base ${
-                selectedRole === "Candidate" 
-                  ? 'bg-red-200 text-red-600' 
-                  : 'bg-transparent text-gray-500'
-              }`}
-            >
-              Job Seeker
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedRole("Employer")}
-              className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-sm sm:text-base ${
-                selectedRole === "Employer" 
-                  ? 'bg-red-200 text-red-600' 
-                  : 'bg-transparent text-gray-500'
-              }`}
-            >
-              Job Provider
-            </button>
-          </div>
+              {/* User Type Selection - Disabled if requiredUserType is present */}
+              <div className="flex mb-4 sm:mb-6 bg-gray-100 rounded-lg p-1">
+                <button
+                  type="button"
+                  onClick={() => !requiredUserType && setSelectedRole("Candidate")}
+                  disabled={requiredUserType && requiredUserType !== 'Candidate'}
+                  className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium transition-all duration-200 text-sm sm:text-base ${
+                    selectedRole === "Candidate" 
+                      ? 'bg-red-200 text-red-600' 
+                      : 'bg-transparent text-gray-500'
+                  } ${
+                    requiredUserType && requiredUserType !== 'Candidate'
+                      ? 'opacity-40 cursor-not-allowed'
+                      : 'cursor-pointer'
+                  }`}
+                >
+                  Job Seeker
+                </button>
+                <button
+                  type="button"
+                  onClick={() => !requiredUserType && setSelectedRole("Employer")}
+                  disabled={requiredUserType && requiredUserType !== 'Employer'}
+                  className={`flex-1 px-2 sm:px-3 py-2 sm:py-3 border-none rounded-md font-medium transition-all duration-200 text-sm sm:text-base ${
+                    selectedRole === "Employer" 
+                      ? 'bg-red-200 text-red-600' 
+                      : 'bg-transparent text-gray-500'
+                  } ${
+                    requiredUserType && requiredUserType !== 'Employer'
+                      ? 'opacity-40 cursor-not-allowed'
+                      : 'cursor-pointer'
+                  }`}
+                >
+                  Job Provider
+                </button>
+              </div>
 
               {roleError && <div className="text-red-500 text-sm mb-4">{roleError}</div>}
               
@@ -700,7 +803,8 @@ const LoginWithSocial = () => {
               </h3>
               <p className="text-base text-gray-600 mb-6 leading-normal tracking-tight">
                 <span className="mr-1">🎉</span>
-                Your account is ready! <br/> You can now {selectedRole === 'Employer' ? 'start hiring!' : 'explore all teaching & non-teaching opportunities'}.
+                Your account is ready as a <strong>{selectedRole === 'Employer' ? 'Job Provider' : 'Job Seeker'}</strong>! <br/> 
+                You can now {selectedRole === 'Employer' ? 'start hiring qualified educators!' : 'explore all teaching & non-teaching opportunities!'}.
                 <br/>
                 <span className="mr-1">🚀</span> Your dashboard awaits - let&apos;s get started!
               </p>

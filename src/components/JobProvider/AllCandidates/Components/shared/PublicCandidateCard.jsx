@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AiOutlineEye, AiOutlineFileText, AiOutlineMessage } from 'react-icons/ai';
+import { AiOutlineEye, AiOutlineFileText, AiOutlineMessage, AiOutlineUnlock } from 'react-icons/ai';
 import { FaBriefcase, FaWallet, FaMapMarkerAlt, FaGraduationCap, FaStar, FaBook, FaUser, FaBirthdayCake } from 'react-icons/fa';
 import { AvatarImage } from '../utils/avatarUtils.jsx';
 import { 
@@ -19,6 +19,10 @@ import LoginConsentModal from '../../../../../components/common/LoginConsentModa
 /**
  * Public CandidateCard component for unauthenticated users
  * Redirects to login when user tries to interact
+ * 
+ * Note: This component relies on candidate data that has been normalized by CandidateApiService:
+ * - Subjects: Uses getSubjectsString() which prioritizes teaching_subjects and teaching_administrative_subjects from dev/change API
+ * - Date of Birth: Uses getAgeString() which reads dateOfBirth from dev/change API (normalized to multiple field names)
  */
 const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
   const navigate = useNavigate();
@@ -26,6 +30,7 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
 
+  // Parse core expertise - this uses utility functions that prioritize dev/change API fields
   const expertise = parseCoreExpertise(candidate);
 
   // Show consent modal before redirecting to login
@@ -116,7 +121,7 @@ const PublicCandidateCard = ({ candidate, candidatePhoto = null }) => {
                 onClick={() => handleAction('unlock')}
                 title="Unlock Details"
               >
-                🔓
+                <AiOutlineUnlock className="w-4 h-4 sm:w-6 sm:h-6 transition-transform group-hover:scale-110" />
               </button>
               
               {/* Message Icon */}

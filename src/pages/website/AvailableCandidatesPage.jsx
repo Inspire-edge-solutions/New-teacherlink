@@ -22,6 +22,17 @@ const APPROVED_API = 'https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/de
 const normalizeString = (value) =>
   (value ?? '').toString().toLowerCase().trim();
 
+// Sort candidates by date/ID (newest first)
+// API returns newest last, so we reverse the array to show newest first
+const sortCandidatesByDate = (candidates) => {
+  if (!Array.isArray(candidates) || candidates.length === 0) {
+    return candidates;
+  }
+
+  // Reverse array so newest candidates (from API) appear first
+  return [...candidates].reverse();
+};
+
 const searchCandidates = (candidates, searchTerm) => {
   if (!searchTerm) return candidates;
   const term = normalizeString(searchTerm);
@@ -135,6 +146,9 @@ const AvailableCandidatesPage = () => {
         approvedCandidates = allCandidates;
       }
       
+      // Sort candidates by date (newest first) - matching AllCandidates.jsx
+      approvedCandidates = sortCandidatesByDate(approvedCandidates);
+      
       setCandidates(approvedCandidates);
       
       // Fetch photos for visible candidates
@@ -167,7 +181,9 @@ const AvailableCandidatesPage = () => {
     setSearchTerm(normalizedTerm);
     setIsSearching(true);
     const results = searchCandidates(candidates, normalizedTerm);
-    applyFiltersToCandidates(results, activeFilters);
+    // Sort search results (newest first)
+    const sortedResults = sortCandidatesByDate(results);
+    applyFiltersToCandidates(sortedResults, activeFilters);
   }, [candidates, activeFilters]);
 
   // Apply filters
@@ -324,8 +340,11 @@ const AvailableCandidatesPage = () => {
     const hasExperienceFilter = filters.minExperienceYears || filters.maxExperienceYears;
     const finalCount = hasExperienceFilter ? count + 1 : count;
     
+    // Sort filtered results (newest first) to maintain consistent ordering
+    const sortedFiltered = sortCandidatesByDate(filtered);
+    
     setActiveFiltersCount(finalCount);
-    setFilteredCandidates(filtered);
+    setFilteredCandidates(sortedFiltered);
   }, []);
 
   const handleApplyFilters = useCallback((filters) => {

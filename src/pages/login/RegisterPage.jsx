@@ -23,13 +23,17 @@ const RegisterPage = () => {
   const { user, loading } = useAuth();
   const [searchParams] = useSearchParams();
 
+  // CRITICAL: Check if Google profile completion is in progress
+  const googleProfileIncomplete = sessionStorage.getItem('googleProfileIncomplete');
+  
   // Show loading state while checking auth
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  // If user is already logged in, check for pending redirects (similar to LoginPage)
-  if (user) {
+  // If user is already logged in AND not in the middle of Google profile completion
+  // check for pending redirects (similar to LoginPage)
+  if (user && googleProfileIncomplete !== 'true') {
     const redirectUrl = searchParams.get('redirect');
     const action = searchParams.get('action');
     const id = searchParams.get('id');

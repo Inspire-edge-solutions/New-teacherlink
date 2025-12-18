@@ -188,6 +188,16 @@ export const AuthProvider = ({ children }) => {
           console.log("Auth state changed - Firebase user:", firebaseUser ? firebaseUser.uid : "null");
           console.log("Is logging out:", isLoggingOut);
 
+          // CRITICAL: Check if Google profile completion is in progress
+          const googleProfileIncomplete = sessionStorage.getItem('googleProfileIncomplete');
+          const googleProfileUid = sessionStorage.getItem('googleProfileFirebaseUid');
+          
+          if (googleProfileIncomplete === 'true' && firebaseUser && firebaseUser.uid === googleProfileUid) {
+            console.log("Google profile completion in progress - skipping auth state update");
+            setLoading(false);
+            return; // Skip processing to let LoginWithSocial handle the flow
+          }
+
           if (firebaseUser && !isLoggingOut) {
             try {
               console.log("Firebase UID:", firebaseUser.uid);
@@ -322,14 +332,30 @@ export const AuthProvider = ({ children }) => {
                   // Store the user data for future use
                   localStorage.setItem("user", JSON.stringify(userData));
                 } else {
-                  console.log("User not found in API response, using Firebase user only");
-                  setUser(firebaseUser);
+                  console.log("User not found in API response");
+                  // Check if Google profile completion is in progress
+                  const googleProfileIncomplete = sessionStorage.getItem('googleProfileIncomplete');
+                  if (googleProfileIncomplete === 'true') {
+                    console.log("User not found but Google profile completion in progress - not setting user");
+                    setUser(null); // Don't set user until profile is complete
+                  } else {
+                    console.log("Using Firebase user only as fallback");
+                    setUser(firebaseUser);
+                  }
                 }
 
               } catch (apiError) {
-                console.log("API call failed, using Firebase user only:", apiError.message);
-                // Fallback: use Firebase user data only
-                setUser(firebaseUser);
+                console.log("API call failed:", apiError.message);
+                // Check if Google profile completion is in progress
+                const googleProfileIncomplete = sessionStorage.getItem('googleProfileIncomplete');
+                if (googleProfileIncomplete === 'true') {
+                  console.log("API call failed but Google profile completion in progress - not setting user");
+                  setUser(null); // Don't set user until profile is complete
+                } else {
+                  console.log("Using Firebase user only as fallback");
+                  // Fallback: use Firebase user data only
+                  setUser(firebaseUser);
+                }
               }
 
             } catch (error) {

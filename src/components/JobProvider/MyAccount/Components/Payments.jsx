@@ -56,9 +56,12 @@ const Payment = ({ user, onSuccess }) => {
     }
   ];
 
-  // Helper: Get auth token
+  // Helper: Get auth token (support both legacy `authToken` and current `token`)
   const getAuthToken = () =>
-    localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+    localStorage.getItem("token") ||
+    sessionStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    sessionStorage.getItem("authToken");
 
   // Helper: Prepare headers for authenticated API calls
   const getAuthHeaders = () => {
@@ -226,7 +229,7 @@ const Payment = ({ user, onSuccess }) => {
 
       // 3. Setup Razorpay checkout options
       const options = {
-        key: "rzp_live_93pNpUOJq57lgB", // Your live key
+        key: "rzp_live_Rqbr1MTdQUI4tM", // Your live key
         amount: order.amount,
         currency: order.currency,
         name: selectedPlan.name,
@@ -296,7 +299,7 @@ const Payment = ({ user, onSuccess }) => {
               "https://5qkmgbpbd4.execute-api.ap-south-1.amazonaws.com/dev/coinRedeem",
               {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(redeemPayload),
               }
             );
