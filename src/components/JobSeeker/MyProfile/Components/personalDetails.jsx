@@ -949,16 +949,16 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                   maxLength={50}
                   required
                   disabled={isGoogleAccount || emailVerified}
-                  className={`w-full px-4 py-3 rounded-lg border ${validationErrors.email ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:bg-gray-100 max-w-full ${emailVerified ? 'pr-12' : 'pr-24 md:pr-28'}`}
+                  className={`w-full px-3 md:px-4 py-3 rounded-lg border ${validationErrors.email ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:bg-gray-100 max-w-full ${emailVerified ? 'pr-10 md:pr-12' : 'pr-14 md:pr-28'}`}
                 />
                 {emailVerified ? (
-                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
-                    <FaCheckCircle className="text-green-500" size={20} />
+                  <span className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
+                    <FaCheckCircle className="text-green-500" size={18} />
                   </span>
                 ) : (
                   <button
                     type="button"
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors whitespace-nowrap leading-normal tracking-tight flex items-center justify-center"
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-1.5 py-1 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-xs md:text-base font-medium shadow-sm transition-colors whitespace-nowrap leading-normal tracking-tight flex items-center justify-center min-w-[32px] md:min-w-0"
                     onClick={sendEmailOtp}
                     disabled={isEmailVerifying}
                   >
@@ -978,18 +978,18 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
               <span className="text-red-500 text-base mt-1 block leading-normal tracking-tight">{validationErrors.email}</span>
             )}
             {showEmailOtpInput && !emailVerified && !isGoogleAccount && (
-              <div className="flex gap-2 mt-2">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-2">
                 <input
                   type="text"
                   placeholder="Enter Email OTP"
                   value={emailOtp}
                   onChange={(e) => setEmailOtp(e.target.value)}
                   maxLength={6}
-                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                  className="flex-1 px-3 sm:px-4 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 text-base"
                 />
                 <button 
                   type="button" 
-                  className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors leading-normal tracking-tight" 
+                  className="w-full sm:w-auto px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-sm sm:text-base font-medium shadow-sm transition-colors leading-normal tracking-tight whitespace-nowrap" 
                   onClick={verifyEmailOtp}
                 >
                   Submit
@@ -1046,16 +1046,16 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
                   minLength={10}
                   required
                   disabled={phoneVerified}
-                  className={`w-full px-4 py-3 rounded-lg border ${validationErrors.callingNumber ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:bg-gray-100 max-w-full ${phoneVerified ? 'pr-12' : 'pr-24 md:pr-28'}`}
+                  className={`w-full px-3 md:px-4 py-3 rounded-lg border ${validationErrors.callingNumber ? 'border-red-500' : 'border-gray-300'} bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:bg-gray-100 max-w-full ${phoneVerified ? 'pr-10 md:pr-12' : 'pr-14 md:pr-28'}`}
                 />
                 {phoneVerified ? (
-                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
-                    <FaCheckCircle className="text-green-500" size={20} />
+                  <span className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
+                    <FaCheckCircle className="text-green-500" size={18} />
                   </span>
                 ) : (
                   <button
                     type="button"
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors whitespace-nowrap leading-normal tracking-tight flex items-center justify-center"
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 px-1.5 py-1 md:px-4 md:py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-xs md:text-base font-medium shadow-sm transition-colors whitespace-nowrap leading-normal tracking-tight flex items-center justify-center min-w-[32px] md:min-w-0"
                     onClick={sendPhoneOtp}
                     disabled={isPhoneVerifying}
                   >
@@ -1075,29 +1075,31 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
               <span className="text-red-500 text-base mt-1 block leading-normal tracking-tight">{validationErrors.callingNumber}</span>
             )}
             {showPhoneOtpInput && !phoneVerified && (
-              <div className="flex gap-2 mt-2">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-2">
                 <input
                   type="text"
                   placeholder="Enter Phone OTP"
                   value={phoneOtp}
                   onChange={(e) => setPhoneOtp(e.target.value)}
                   maxLength={6}
-                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                  className="flex-1 px-3 sm:px-4 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 text-base"
                 />
-                <button 
-                  type="button" 
-                  className="px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors leading-normal tracking-tight" 
-                  onClick={verifyPhoneOtp}
-                >
-                  Submit
-                </button>
-                <button 
-                  type="button" 
-                  className="px-3 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-base font-medium shadow-sm transition-colors leading-normal tracking-tight" 
-                  onClick={sendPhoneOtp}
-                >
-                  Resend
-                </button>
+                <div className="flex gap-2 sm:gap-3">
+                  <button 
+                    type="button" 
+                    className="flex-1 sm:flex-none px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-sm sm:text-base font-medium shadow-sm transition-colors leading-normal tracking-tight whitespace-nowrap" 
+                    onClick={verifyPhoneOtp}
+                  >
+                    Submit
+                  </button>
+                  <button 
+                    type="button" 
+                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gradient-brand text-white rounded-lg hover:bg-gradient-primary-hover text-sm sm:text-base font-medium shadow-sm transition-colors leading-normal tracking-tight whitespace-nowrap" 
+                    onClick={sendPhoneOtp}
+                  >
+                    Resend
+                  </button>
+                </div>
               </div>
             )}
           </div>

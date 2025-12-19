@@ -7,7 +7,7 @@ import Address from "./address";
 import Languages from "./languages";
 import Education from "./Education";
 import Experience from "./experience";
-import JobPreferences from "./jobPreferences";
+import JobPreferences from "./JobPreferences";
 import Social from "./social";
 import AdditionalInfo from "./additionalInfo";
 import Easyview from "./Easyview";
@@ -42,15 +42,39 @@ const FormInfoBox = () => {
     setFormData(prev => ({ ...prev, firebase_uid: user.uid }));
   }, [user.uid]);
 
-  // Reset viewMode when edit=true in URL params
+  // Handle URL parameters for mode selection and edit reset
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    if (searchParams.get('edit') === 'true') {
+    const editParam = searchParams.get('edit');
+    const modeParam = searchParams.get('mode');
+
+    if (editParam === 'true') {
+      // Reset viewMode when edit=true in URL params
       setViewMode(null);
       setShowProfile(false);
       setIsPreviewMode(false);
       // Clear the URL parameter
       navigate(location.pathname, { replace: true });
+    } else if (modeParam === 'easy') {
+      // Open easy mode when mode=easy in URL params (similar to handleEditProfileEasy)
+      setViewMode("easy");
+      setShowProfile(false);
+      setCurrentStep(1);
+      setIsPreviewMode(false);
+      // Clear the URL parameter
+      navigate(location.pathname, { replace: true });
+      // Scroll to top to show the form steps
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (modeParam === 'full') {
+      // Open full mode when mode=full in URL params (similar to handleEditProfile)
+      setViewMode("full");
+      setShowProfile(false);
+      setCurrentStep(1);
+      setIsPreviewMode(false);
+      // Clear the URL parameter
+      navigate(location.pathname, { replace: true });
+      // Scroll to top to show the form steps
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [location.search, location.pathname, navigate]);
 
@@ -818,7 +842,7 @@ const FormInfoBox = () => {
       }
       
       return (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {currentStepData.components.map(({ component: StepComponent, props }, idx) => (
             <StepComponent
               key={`step-${currentStep}-component-${idx}`}
@@ -968,7 +992,7 @@ const FormInfoBox = () => {
           )}
 
           {/* Accordion Steps */}
-          <div className="p-2 sm:p-4 md:p-4 overflow-x-hidden">
+          <div className="p-0 sm:p-4 md:p-4 overflow-x-hidden">
             <div className="relative">
               {/* Vertical Line - Hidden on mobile, positioned to align with center of badges */}
               <div className="hidden sm:block absolute left-[1.5rem] top-12 bottom-12 w-[2px] bg-rose-700 z-0" />

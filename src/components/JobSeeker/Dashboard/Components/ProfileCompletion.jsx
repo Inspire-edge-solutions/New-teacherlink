@@ -288,7 +288,7 @@ const ProfileCompletion = () => {
     <div className="flex flex-col items-center">
       {/* Circular Progress with Gradient */}
       <div className="flex items-center justify-center mb-1 sm:mb-2">
-        <Link to="/seeker/my-profile">
+        <Link to="/seeker/my-profile?mode=easy">
           <div className="w-[70px] h-[70px] sm:w-[100px] sm:h-[100px] relative">
             <svg style={{ position: 'absolute', width: 0, height: 0 }}>
               <defs>
@@ -317,7 +317,7 @@ const ProfileCompletion = () => {
       
       {/* Arrow Link */}
       <Link 
-        to="/seeker/my-profile" 
+        to="/seeker/my-profile?mode=easy" 
         className="text-red-500 hover:text-red-600 transition-all"
       >
         <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
@@ -331,7 +331,7 @@ const ProfileCompletion = () => {
     <div className="flex flex-col items-center">
       {/* Circular Progress with Gradient */}
       <div className="flex items-center justify-center mb-1 sm:mb-2">
-        <Link to="/seeker/my-profile">
+        <Link to="/seeker/my-profile?mode=full">
           <div className="w-[70px] h-[70px] sm:w-[100px] sm:h-[100px] relative">
             <svg style={{ position: 'absolute', width: 0, height: 0 }}>
               <defs>
@@ -360,7 +360,7 @@ const ProfileCompletion = () => {
       
       {/* Arrow Link */}
       <Link 
-        to="/seeker/my-profile" 
+        to="/seeker/my-profile?mode=full" 
         className="text-red-500 hover:text-red-600 transition-all"
       >
         <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">

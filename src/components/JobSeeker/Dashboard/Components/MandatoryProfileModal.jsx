@@ -11,6 +11,7 @@ import ModalPortal from '../../../common/ModalPortal';
 const API_BASE = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev";
 const EDUCATION_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails";
 const JOB_PREFERENCE_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference";
+const WORK_EXPERIENCE_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/workExperience";
 
 const reactSelectStyles = {
   control: (base, state) => ({
@@ -520,6 +521,43 @@ const MandatoryProfileModal = () => {
       };
 
       await axios.post(JOB_PREFERENCE_API, jobPreferencePayload, {
+        headers: { "Content-Type": "application/json" }
+      });
+
+      // 5. Save work experience data
+      const workExperiencePayload = {
+        firebase_uid: user.uid,
+        mysqlDB: {
+          firebase_uid: user.uid,
+          total_experience_years: formData.totalWorkExpYears,
+          total_experience_months: formData.totalWorkExpMonths,
+          teaching_experience_years: formData.totalTeachingExpYears,
+          teaching_experience_months: formData.totalTeachingExpMonths,
+          // Set default values for detailed experience breakdown
+          teaching_exp_fulltime_years: "0",
+          teaching_exp_fulltime_months: "0",
+          teaching_exp_partime_years: "0",
+          teaching_exp_partime_months: "0",
+          administration_fulltime_years: "0",
+          administration_fulltime_months: "0",
+          administration_partime_years: "0",
+          administration_parttime_months: "0",
+          anyrole_fulltime_years: "0",
+          anyrole_fulltime_months: "0",
+          anyrole_partime_years: "0",
+          anyrole_parttime_months: "0",
+          // Default values for other teaching experiences
+          Ed_Tech_Company: 0,
+          on_line: 0,
+          coaching_tuitions_center: 0,
+          group_tuitions: 0,
+          private_tuitions: 0,
+          home_tuitions: 0
+        },
+        dynamoDB: [] // Empty array as no detailed experience entries yet
+      };
+
+      await axios.post(WORK_EXPERIENCE_API, workExperiencePayload, {
         headers: { "Content-Type": "application/json" }
       });
 

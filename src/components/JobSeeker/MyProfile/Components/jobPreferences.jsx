@@ -88,6 +88,9 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
     state: null,
     city: null
   });
+  
+  // Flag to track if location restoration has been completed
+  const locationRestoredRef = useRef(false);
 
   const getInitialState = () => {
     const defaultPreferences = {
@@ -221,9 +224,9 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
     loadCities();
   }, [jobDetails.preferred_country, jobDetails.preferred_state]);
 
-  // Restore country after countries are loaded
+  // Restore country after countries are loaded (only once)
   useEffect(() => {
-    if (countries.length > 0 && savedLocationRef.current.country && dataFetched.current) {
+    if (countries.length > 0 && savedLocationRef.current.country && dataFetched.current && !locationRestoredRef.current) {
       const currentCountryLabel = jobDetails.preferred_country?.label;
       const savedCountryLabel = savedLocationRef.current.country;
       
@@ -237,14 +240,18 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             preferred_state: null, // Reset state when country changes
             preferred_city: null // Reset city when country changes
           }));
+          // If there's no saved state, mark restoration as complete after country is restored
+          if (!savedLocationRef.current.state) {
+            locationRestoredRef.current = true;
+          }
         }
       }
     }
-  }, [countries, jobDetails.preferred_country]);
+  }, [countries]);
 
-  // Restore state after states are loaded and country is set
+  // Restore state after states are loaded and country is set (only once)
   useEffect(() => {
-    if (states.length > 0 && savedLocationRef.current.state && dataFetched.current && jobDetails.preferred_country) {
+    if (states.length > 0 && savedLocationRef.current.state && dataFetched.current && jobDetails.preferred_country && !locationRestoredRef.current) {
       const currentStateLabel = jobDetails.preferred_state?.label;
       const savedStateLabel = savedLocationRef.current.state;
       
@@ -257,14 +264,18 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             preferred_state: matchedState,
             preferred_city: null // Reset city when state changes
           }));
+          // If there's no saved city, mark restoration as complete after state is restored
+          if (!savedLocationRef.current.city) {
+            locationRestoredRef.current = true;
+          }
         }
       }
     }
-  }, [states, jobDetails.preferred_state, jobDetails.preferred_country]);
+  }, [states, jobDetails.preferred_country]);
 
-  // Restore city after cities are loaded and state is set
+  // Restore city after cities are loaded and state is set (only once)
   useEffect(() => {
-    if (cities.length > 0 && savedLocationRef.current.city && dataFetched.current && jobDetails.preferred_state) {
+    if (cities.length > 0 && savedLocationRef.current.city && dataFetched.current && jobDetails.preferred_state && !locationRestoredRef.current) {
       const currentCityLabel = jobDetails.preferred_city?.label;
       const savedCityLabel = savedLocationRef.current.city;
       
@@ -276,10 +287,12 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             ...prev,
             preferred_city: matchedCity
           }));
+          // Mark location restoration as complete after city is restored
+          locationRestoredRef.current = true;
         }
       }
     }
-  }, [cities, jobDetails.preferred_city, jobDetails.preferred_state]);
+  }, [cities, jobDetails.preferred_state]);
 
   // Update state when formData changes
   useEffect(() => {
@@ -634,12 +647,12 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
     });
   };
 
-  // Effect to handle parent form updates
-  useEffect(() => {
+  // Memoize the validation and update logic
+  const handleFormUpdate = useCallback(() => {
     if (!isMounted.current) return;
-
-    const timeoutId = setTimeout(() => {
-      const isValid = validateJobPreferences();
+    
+    const isValid = validateJobPreferences();
+    if (updateFormData) {
       updateFormData(
         {
           preferences,
@@ -648,10 +661,17 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
         },
         isValid
       );
+    }
+  }, [preferences, jobDetails, jobSearchStatus, updateFormData]);
+
+  // Effect to handle parent form updates with debounce
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      handleFormUpdate();
     }, 100); // Small delay to batch updates
 
     return () => clearTimeout(timeoutId);
-  }, [preferences, jobDetails, jobSearchStatus]);
+  }, [handleFormUpdate]);
 
   // Effect to handle initial mount
   useEffect(() => {
@@ -674,6 +694,11 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
 
         if (response.status === 200 && response.data && response.data.length > 0) {
           const record = response.data[0];
+          
+          // If no saved location exists, mark restoration as complete immediately
+          if (!record.preferred_country && !record.preferred_state && !record.preferred_city) {
+            locationRestoredRef.current = true;
+          }
 
           const pref = {
             jobShift: {
