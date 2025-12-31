@@ -288,7 +288,19 @@ const ActiveJobs = ({
 
   // Check if job is active (posted within last 30 days)
   const isJobActive = (job) => {
-    const jobDate = new Date(job.created_at || job.joining_date);
+    const dateString = job.created_at || job.joining_date;
+    if (!dateString) {
+      // If no date, consider it active (might be a new job)
+      return true;
+    }
+    
+    const jobDate = new Date(dateString);
+    // Check if date is valid
+    if (isNaN(jobDate.getTime())) {
+      console.warn('Invalid date for job:', job.id, dateString);
+      return true; // Consider invalid dates as active to avoid filtering them out
+    }
+    
     const currentDate = new Date();
     const daysDifference = (currentDate - jobDate) / (1000 * 60 * 60 * 24);
     return daysDifference <= 30;
@@ -333,15 +345,58 @@ const ActiveJobs = ({
         `https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes?firebase_uid=${user.uid}`
       );
       
+      console.log("=== ActiveJobs Debug ===");
       console.log("API Response:", response.data);
       console.log("Current User UID:", user.uid);
       
       const allJobs = response.data || [];
+      console.log(`Total jobs from API: ${allJobs.length}`);
+      
       const userJobs = allJobs.filter(job => 
         job.firebase_uid === user.uid || 
         job.user_id === user.uid ||
         job.posted_by === user.uid
       );
+      console.log(`User's jobs (after filtering by uid): ${userJobs.length}`);
+      
+      // Debug: Check why jobs are being filtered out
+      const jobsFilteredOut = {
+        tooOld: [],
+        closed: [],
+        both: []
+      };
+      
+      userJobs.forEach(job => {
+        const isActive = isJobActive(job);
+        const isClosed = isJobClosed(job);
+        
+        if (!isActive && isClosed) {
+          jobsFilteredOut.both.push({
+            id: job.id,
+            title: job.job_title,
+            created_at: job.created_at,
+            is_closed: job.is_closed,
+            daysOld: Math.floor((new Date() - new Date(job.created_at || job.joining_date)) / (1000 * 60 * 60 * 24))
+          });
+        } else if (!isActive) {
+          jobsFilteredOut.tooOld.push({
+            id: job.id,
+            title: job.job_title,
+            created_at: job.created_at,
+            daysOld: Math.floor((new Date() - new Date(job.created_at || job.joining_date)) / (1000 * 60 * 60 * 24))
+          });
+        } else if (isClosed) {
+          jobsFilteredOut.closed.push({
+            id: job.id,
+            title: job.job_title,
+            is_closed: job.is_closed
+          });
+        }
+      });
+      
+      console.log(`Jobs filtered out (too old > 30 days): ${jobsFilteredOut.tooOld.length}`, jobsFilteredOut.tooOld);
+      console.log(`Jobs filtered out (closed): ${jobsFilteredOut.closed.length}`, jobsFilteredOut.closed);
+      console.log(`Jobs filtered out (both): ${jobsFilteredOut.both.length}`, jobsFilteredOut.both);
       
       // Filter for active (open) jobs within the last 30 days, then sort by creation date
       const activeJobs = userJobs
@@ -352,7 +407,10 @@ const ActiveJobs = ({
           return dateB - dateA; // Descending order (newest first)
         });
       
+      console.log(`Final active jobs count: ${activeJobs.length}`);
       console.log("Active Jobs:", activeJobs);
+      console.log("=== End ActiveJobs Debug ===");
+      
       setJobs(activeJobs);
       setFilteredJobs(activeJobs);
     } catch (error) {

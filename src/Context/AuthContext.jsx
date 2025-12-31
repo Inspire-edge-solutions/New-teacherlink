@@ -339,8 +339,13 @@ export const AuthProvider = ({ children }) => {
                     console.log("User not found but Google profile completion in progress - not setting user");
                     setUser(null); // Don't set user until profile is complete
                   } else {
-                    console.log("Using Firebase user only as fallback");
-                    setUser(firebaseUser);
+                    // CRITICAL: Don't use Firebase user only as fallback - it lacks user_type
+                    // This prevents redirect loops caused by incomplete user data
+                    console.log("User not found in API - clearing auth state to prevent redirect loops");
+                    // Clear any stale localStorage data
+                    localStorage.removeItem("user");
+                    localStorage.removeItem("token");
+                    setUser(null); // Set to null instead of incomplete Firebase user
                   }
                 }
 
@@ -352,9 +357,13 @@ export const AuthProvider = ({ children }) => {
                   console.log("API call failed but Google profile completion in progress - not setting user");
                   setUser(null); // Don't set user until profile is complete
                 } else {
-                  console.log("Using Firebase user only as fallback");
-                  // Fallback: use Firebase user data only
-                  setUser(firebaseUser);
+                  // CRITICAL: Don't use Firebase user only as fallback - it lacks user_type
+                  // This prevents redirect loops caused by incomplete user data
+                  console.log("API call failed - clearing auth state to prevent redirect loops");
+                  // Clear any stale localStorage data
+                  localStorage.removeItem("user");
+                  localStorage.removeItem("token");
+                  setUser(null); // Set to null instead of incomplete Firebase user
                 }
               }
 

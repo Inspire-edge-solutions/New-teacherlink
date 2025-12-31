@@ -62,12 +62,19 @@ const Register = ({ user_type }) => {
 
   // Update user type when URL parameter changes
   useEffect(() => {
-    if (roleFromUrl === 'job-seeker') {
+    // First check requiredUserType (from available-jobs/available-candidates pages)
+    if (requiredUserType === 'Candidate') {
+      setSelectedUserType("Job Seeker");
+    } else if (requiredUserType === 'Employer') {
+      setSelectedUserType("Job Provider");
+    }
+    // Fallback to role parameter (for backward compatibility)
+    else if (roleFromUrl === 'job-seeker') {
       setSelectedUserType("Job Seeker");
     } else if (roleFromUrl === 'job-provider') {
       setSelectedUserType("Job Provider");
     }
-  }, [roleFromUrl]);
+  }, [roleFromUrl, requiredUserType]);
 
   const getWelcomeText = () => {
     if (selectedUserType === "Job Seeker") {

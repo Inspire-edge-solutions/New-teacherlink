@@ -9,9 +9,11 @@ import InputWithTooltip from '../../../../services/InputWithTooltip';
 import ModalPortal from '../../../common/ModalPortal';
 
 const API_BASE = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev";
+const LOGIN_API = "https://l4y3zup2k2.execute-api.ap-south-1.amazonaws.com/dev/login";
 const EDUCATION_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails";
 const JOB_PREFERENCE_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference";
 const WORK_EXPERIENCE_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/workExperience";
+const MANDITORY_APPROVE_API = "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/manditoryApprove";
 
 const reactSelectStyles = {
   control: (base, state) => ({
@@ -396,6 +398,33 @@ const MandatoryProfileModal = () => {
     return Object.keys(errors).length === 0;
   };
 
+  // Fetch user details from login API
+  const fetchUserDetailsFromLogin = async (firebaseUid) => {
+    try {
+      const response = await axios.get(`${LOGIN_API}?firebase_uid=${firebaseUid}`, authHeaders);
+      const data = response.data;
+      
+      // Handle both array and single object response
+      const user = Array.isArray(data) 
+        ? data.find(u => u.firebase_uid === firebaseUid) || data[0]
+        : data;
+      
+      return {
+        name: user?.name || '',
+        email: user?.email || '',
+        phone_number: user?.phone_number || ''
+      };
+    } catch (error) {
+      console.error("Error fetching user details from login API:", error);
+      // Return empty values if fetch fails
+      return {
+        name: '',
+        email: '',
+        phone_number: ''
+      };
+    }
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -561,7 +590,94 @@ const MandatoryProfileModal = () => {
         headers: { "Content-Type": "application/json" }
       });
 
-      toast.success("Profile details saved successfully!");
+      // 6. Save to manditory_approve API for admin approval
+      try {
+        // Fetch user details from login API
+        const userDetails = await fetchUserDetailsFromLogin(user.uid);
+        
+        // Convert current salary - user enters in LPA, store as actual salary in rupees
+        const salaryInLPA = parseFloat(formData.currentSalary) || 0;
+        const salaryInRupees = Math.round(salaryInLPA * 100000); // Convert LPA to rupees (1 LPA = 100,000 rupees)
+        
+        // Prepare payload for manditory_approve
+        const manditoryApprovePayload = {
+          firebase_uid: user.uid,
+          name: userDetails.name,
+          email: userDetails.email,
+          phone_number: userDetails.phone_number || null,
+          Grade_10_pass: parseInt(formData.grade10Year) || null,
+          current_salary: salaryInRupees || null,
+          job_type: formData.jobType || null,
+          subjects: formData.subjectsHandled && formData.subjectsHandled.length > 0 
+            ? formData.subjectsHandled 
+            : null,
+          total_exp_year: formData.totalWorkExpYears || null,
+          total_exp_month: formData.totalWorkExpMonths || null,
+          total_teach_exp_year: formData.totalTeachingExpYears || null,
+          total_teach_exp_month: formData.totalTeachingExpMonths || null,
+          permanent_state: formData.permanentState?.label || null,
+          permanent_city: formData.permanentCity?.label || null,
+          present_state: formData.presentState?.label || null,
+          present_city: formData.presentCity?.label || null,
+          is_approved: false,
+          is_rejected: false
+        };
+
+        // Backend accepts both single object and array, but let's send as array to be safe
+        const payload = [manditoryApprovePayload];
+        console.log("📤 Sending mandatory approval data:", payload);
+        const approveResponse = await axios.post(MANDITORY_APPROVE_API, payload, {
+          headers: { "Content-Type": "application/json" }
+        });
+        console.log("✅ Mandatory approval data saved successfully:", approveResponse.data);
+
+        // Also save name, email, phone_number to personal/login tables (without approval)
+        if (userDetails.name || userDetails.email || userDetails.phone_number) {
+          try {
+            // Update login table
+            await axios.put(
+              `${API_BASE}/login`,
+              {
+                firebase_uid: user.uid,
+                name: userDetails.name || "",
+                email: userDetails.email || "",
+                phone_number: userDetails.phone_number || null,
+              },
+              authHeaders
+            );
+            console.log("✅ Login table updated with user details");
+
+            // Update personal table if it exists
+            try {
+              await axios.put(
+                `${API_BASE}/personal`,
+                {
+                  firebase_uid: user.uid,
+                  fullName: userDetails.name || "",
+                  email: userDetails.email || "",
+                  callingNumber: userDetails.phone_number || null,
+                },
+                authHeaders
+              );
+              console.log("✅ Personal table updated with user details");
+            } catch {
+              // Personal table might not exist yet, that's okay
+              console.log("ℹ️ Personal table update skipped (may not exist yet)");
+            }
+          } catch (userDetailsError) {
+            console.warn("⚠️ Failed to update user details in personal/login tables:", userDetailsError);
+            // Don't fail the entire submission for this
+          }
+        }
+      } catch (approveError) {
+        // Log error but don't fail the entire submission
+        console.error("❌ Error saving to manditory_approve API:", approveError);
+        console.error("Error details:", approveError.response?.data || approveError.message);
+        // Show warning to user
+        toast.warning("Profile saved but approval request may not have been submitted. Please contact support if this persists.");
+      }
+
+      toast.success("Profile details saved successfully! Your profile has been sent for admin approval. You will be notified once it's approved.");
       setShowModal(false);
     } catch (error) {
       console.error("Error saving mandatory profile:", error);
@@ -871,4 +987,3 @@ const MandatoryProfileModal = () => {
 };
 
 export default MandatoryProfileModal;
-

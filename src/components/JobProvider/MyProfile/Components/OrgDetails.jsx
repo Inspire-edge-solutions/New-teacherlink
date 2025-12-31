@@ -1020,11 +1020,11 @@ const OrgDetails = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {/* School / College / University Name */}
               <div>
-                    <InputWithTooltip label="School / College / University" required>
+                    <InputWithTooltip label="Organization Name" required>
                       <input
                         name="name"
                         type="text"
-                        placeholder="School / College / University"
+                        placeholder="Organization Name"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
                         value={orgDetails.name}
                         onChange={handleInputChange}
@@ -1112,7 +1112,7 @@ const OrgDetails = () => {
 
               {/* Street / Area */}
               <div>
-                    <InputWithTooltip label="Street / Area" required>
+                    <InputWithTooltip label="Street / Area">
                       <input
                         name="address"
                         type="text"
@@ -1120,14 +1120,14 @@ const OrgDetails = () => {
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-gray-700"
                         value={orgDetails.address}
                         onChange={handleInputChange}
-                        required
+                        
                       />
                     </InputWithTooltip>
                   </div>
 
               {/* Country Dropdown */}
               <div>
-                    <InputWithTooltip label="Country">
+                    <InputWithTooltip label="Country" required>
                       <Select
                         name="country"
                         options={countries}
@@ -1170,7 +1170,7 @@ const OrgDetails = () => {
 
               {/* State Dropdown */}
               <div>
-                    <InputWithTooltip label="State">
+                    <InputWithTooltip label="State" required>
                       <Select
                         name="state"
                         options={states}
@@ -1257,19 +1257,6 @@ const OrgDetails = () => {
                       />
                     </InputWithTooltip>
                   </div>
-
-              {/* Organization Name (Read-only) */}
-              <div>
-                  <InputWithTooltip label="Organization Name">
-                    <input
-                      type="text"
-                      placeholder="Organization Name"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-700"
-                      value={orgDetails.name}
-                      readOnly
-                    />
-                  </InputWithTooltip>
-                </div>
               </div>
           </CollapsibleSection>
           )}

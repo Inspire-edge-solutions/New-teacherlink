@@ -362,24 +362,40 @@ const ViewJobs = ({ job, onBack, fromNotifications = false, fromRecruiterActions
     }
   };
 
-  // Check if user profile is approved
+  // Check if user profile is approved (must check BOTH manditoryApprove AND profile_approved)
   const checkProfileApproval = async () => {
     if (!userId) return false;
     
     try {
-      const response = await axios.get(PROFILE_APPROVED_API);
-      const data = response.data;
+      // Check both approval tables
+      const [profileResponse, mandatoryResponse] = await Promise.all([
+        axios.get(PROFILE_APPROVED_API),
+        axios.get("https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/manditoryApprove?firebase_uid=" + userId)
+      ]);
       
-      if (Array.isArray(data)) {
-        const userProfile = data.find(profile => 
-          profile.firebase_uid === userId
-        );
-        
-        // Return true only if profile exists and isApproved === 1
-        return userProfile && userProfile.isApproved === 1;
+      const profileData = profileResponse.data;
+      const mandatoryData = mandatoryResponse.data;
+      
+      // Check profile_approved table
+      let profileApproved = false;
+      if (Array.isArray(profileData)) {
+        const userProfile = profileData.find(profile => profile.firebase_uid === userId);
+        profileApproved = userProfile && userProfile.isApproved === 1;
+      } else if (profileData && profileData.firebase_uid === userId) {
+        profileApproved = profileData.isApproved === 1;
       }
       
-      return false;
+      // Check manditoryApprove table
+      let mandatoryApproved = false;
+      if (Array.isArray(mandatoryData)) {
+        const mandatoryRecord = mandatoryData.find(record => record.firebase_uid === userId);
+        mandatoryApproved = mandatoryRecord && (mandatoryRecord.is_approved === true || mandatoryRecord.is_approved === 1);
+      } else if (mandatoryData && mandatoryData.firebase_uid === userId) {
+        mandatoryApproved = mandatoryData.is_approved === true || mandatoryData.is_approved === 1;
+      }
+      
+      // Both must be approved
+      return profileApproved && mandatoryApproved;
     } catch (error) {
       console.error('Error checking profile approval:', error);
       return false;

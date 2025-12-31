@@ -68,6 +68,17 @@ const LoginWithSocial = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
+  // Update selectedRole when requiredUserType changes in URL
+  useEffect(() => {
+    if (requiredUserType === 'Employer') {
+      setSelectedRole('Employer');
+    } else if (requiredUserType === 'Candidate') {
+      setSelectedRole('Candidate');
+    }
+    // Note: We don't reset to default 'Candidate' if requiredUserType is null
+    // to avoid overriding user's manual selection
+  }, [requiredUserType]);
+
   // Reset all component state
   const resetComponentState = () => {
     setShowRoleSelection(false);
@@ -211,6 +222,18 @@ const LoginWithSocial = () => {
             }
             return;
           }
+        }
+        
+        // CRITICAL: Validate that user has a valid user_type before proceeding
+        if (!data.user || !data.user.user_type) {
+          console.error("LoginWithSocial: User data incomplete - missing user_type");
+          const auth = getFirebaseAuth();
+          await signOut(auth);
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          toast.error("User data incomplete. Please try logging in again.");
+          setLoading(false);
+          return;
         }
         
         // User exists and is complete - login successful

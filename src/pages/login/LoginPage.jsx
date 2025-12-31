@@ -50,6 +50,17 @@ export default function LoginPage() {
       }
     }
     
+    // CRITICAL: Also check if user has a valid user_type (prevents redirect loop with incomplete user data)
+    // Only proceed with redirects if user has a valid user_type
+    if (!user.user_type) {
+      // User exists but doesn't have user_type - show login form instead of redirecting
+      return (
+        <div>
+          <Login/>
+        </div>
+      );
+    }
+    
     // Check if there's a redirect URL in query params
     const redirectUrl = searchParams.get('redirect');
     const action = searchParams.get('action');

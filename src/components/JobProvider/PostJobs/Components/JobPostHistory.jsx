@@ -298,19 +298,113 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
   const fetchUserJobs = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes?firebase_uid=${user.uid}`
-      );
       
-      console.log("API Response:", response.data);
+      // Try multiple approaches to get all jobs including non-approved ones
+      // The backend API might filter out non-approved jobs by default
+      let allJobs = [];
+      
+      try {
+        // Strategy 1: Try with admin=true parameter (similar to job_post_approval.html)
+        // This might return all jobs including non-approved ones
+        console.log("Attempting to fetch jobs with admin=true (including non-approved)...");
+        try {
+          const adminResponse = await axios.get(
+            `https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes?admin=true`
+          );
+          allJobs = adminResponse.data || [];
+          console.log(`✅ Fetched with admin=true: ${allJobs.length} jobs`);
+          
+          // Check if we got non-approved jobs
+          const nonApprovedCount = allJobs.filter(j => {
+            const isApproved = j.isApproved === 1 || j.isApproved === "1" || j.isApproved === true;
+            return !isApproved;
+          }).length;
+          console.log(`   - Non-approved jobs in response: ${nonApprovedCount}`);
+        } catch (adminErr) {
+          console.warn("⚠️ admin=true parameter failed, trying without filter:", adminErr);
+          
+          // Strategy 2: Try fetching ALL jobs without any filter
+          console.log("Attempting to fetch all jobs (no filter, including non-approved)...");
+          const allJobsResponse = await axios.get(
+            `https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes`
+          );
+          allJobs = allJobsResponse.data || [];
+          console.log(`✅ Fetched all jobs (no filter): ${allJobs.length} jobs`);
+          
+          // Check if we got non-approved jobs
+          const nonApprovedCount = allJobs.filter(j => {
+            const isApproved = j.isApproved === 1 || j.isApproved === "1" || j.isApproved === true;
+            return !isApproved;
+          }).length;
+          console.log(`   - Non-approved jobs in response: ${nonApprovedCount}`);
+          
+          if (nonApprovedCount === 0 && allJobs.length > 0) {
+            console.warn("⚠️ API returned jobs but no non-approved ones. API may be filtering.");
+          }
+        }
+      } catch (err) {
+        console.warn("❌ Failed to fetch all jobs:", err);
+        // Strategy 3: Fallback - try with firebase_uid but this might only return approved jobs
+        try {
+          const response = await axios.get(
+            `https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPostIntstitutes?firebase_uid=${user.uid}`
+          );
+          allJobs = response.data || [];
+          console.log(`⚠️ Fallback: Fetched with firebase_uid filter: ${allJobs.length} jobs (may be missing non-approved)`);
+        } catch (fallbackErr) {
+          console.error("❌ All fetch strategies failed:", fallbackErr);
+          throw fallbackErr;
+        }
+      }
+      
       console.log("Current User UID:", user.uid);
       
-      const allJobs = response.data || [];
+      // Filter for user's jobs (including both approved and non-approved)
       const userJobs = allJobs.filter(job => 
         job.firebase_uid === user.uid || 
         job.user_id === user.uid ||
         job.posted_by === user.uid
       );
+      
+      const approvedCount = userJobs.filter(j => j.isApproved === 1 || j.isApproved === "1" || j.isApproved === true).length;
+      const nonApprovedCount = userJobs.filter(j => {
+        const isApproved = j.isApproved === 1 || j.isApproved === "1" || j.isApproved === true;
+        const isRejected = j.isRejected === 1 || j.isRejected === "1" || j.isRejected === true;
+        return !isApproved && !isRejected;
+      }).length;
+      const rejectedCount = userJobs.filter(j => j.isRejected === 1 || j.isRejected === "1" || j.isRejected === true).length;
+      
+      console.log(`📊 User's jobs breakdown:`);
+      console.log(`   - Total: ${userJobs.length}`);
+      console.log(`   - Approved: ${approvedCount}`);
+      console.log(`   - Non-approved (pending): ${nonApprovedCount}`);
+      console.log(`   - Rejected: ${rejectedCount}`);
+      
+      // Log sample of first 3 jobs to see their isApproved values
+      if (userJobs.length > 0) {
+        console.log("📋 Sample of user's jobs (first 3):");
+        userJobs.slice(0, 3).forEach((job, idx) => {
+          console.log(`   Job ${idx + 1}:`, {
+            id: job.id,
+            title: job.job_title,
+            isApproved: job.isApproved,
+            isApprovedType: typeof job.isApproved,
+            isRejected: job.isRejected,
+            isRejectedType: typeof job.isRejected,
+            firebase_uid: job.firebase_uid,
+            user_id: job.user_id,
+            posted_by: job.posted_by
+          });
+        });
+      }
+      
+      if (nonApprovedCount === 0 && userJobs.length > 0) {
+        console.warn("⚠️ WARNING: No non-approved jobs found! The API may be filtering them out.");
+        console.warn("   All jobs returned have isApproved=1. Check the sample above.");
+        console.warn("   The backend API is likely filtering out jobs where isApproved=0");
+      } else if (nonApprovedCount > 0) {
+        console.log(`✅ Found ${nonApprovedCount} non-approved jobs! They will be shown with PENDING APPROVAL badge.`);
+      }
       
       // Sort jobs by creation date (most recent first)
       const sortedJobs = userJobs.sort((a, b) => {
@@ -319,7 +413,7 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
         return dateB - dateA; // Descending order (newest first)
       });
       
-      console.log("Filtered User Jobs:", sortedJobs);
+      console.log("Filtered User Jobs (including non-approved):", sortedJobs);
       setJobs(sortedJobs);
       setFilteredJobs(sortedJobs);
     } catch (error) {
@@ -563,25 +657,45 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
                 </div>
               </div>
               
-              {filteredJobs.map((job, index) => (
-                <div key={job.id || index} className={`mb-4 border border-gray-200 rounded-lg shadow-sm transition-all duration-300 overflow-hidden bg-white p-3 sm:p-4 w-full hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300 hover:bg-[#F0D8D9] ${job.is_closed === 1 ? 'opacity-70 bg-gray-50 border-gray-200 relative' : ''}`}>
-                  {job.is_closed === 1 && (
-                    <div className="absolute top-2.5 right-2.5 bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold z-10 shadow-md leading-normal tracking-tight">
-                      CLOSED
-                    </div>
-                  )}
+              {filteredJobs.map((job, index) => {
+                // Check if job is approved
+                const isApproved = job.isApproved === 1 || job.isApproved === "1" || job.isApproved === true;
+                const isRejected = job.isRejected === 1 || job.isRejected === "1" || job.isRejected === true;
+                const isPending = !isApproved && !isRejected;
+                
+                return (
+                <div key={job.id || index} className={`mb-4 border border-gray-200 rounded-lg shadow-sm transition-all duration-300 overflow-hidden bg-white p-3 sm:p-4 w-full hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300 hover:bg-[#F0D8D9] relative ${job.is_closed === 1 ? 'opacity-70 bg-gray-50 border-gray-200' : ''}`}>
                   {/* Job Card - Clean One Line */}
                   <div className="border-none shadow-none bg-none m-0 p-0 w-full">
                     <div className="p-0 m-0 bg-none w-full">
                       <div className="flex flex-row items-start m-0 w-full gap-3 overflow-x-hidden">
                         {/* Left Side: ID, Title, Date */}
                         <div className="flex flex-col gap-2 flex-1 min-w-0 overflow-hidden">
-                          {/* Top Row: ID and Title */}
+                          {/* Top Row: ID, Status Badges, and Title */}
                           <div className="flex flex-col sm:flex-row sm:items-start gap-3 overflow-x-hidden">
-                            {/* Job ID Section */}
-                            <div className="flex-shrink-0 flex items-center">
+                            {/* Job ID and Status Badges Section */}
+                            <div className="flex-shrink-0 flex flex-col gap-2 items-start">
+                              {/* Job ID */}
                               <div className="bg-gradient-brand text-white px-2.5 py-1 rounded-xl text-base font-semibold text-center inline-block whitespace-nowrap shadow-md w-fit leading-normal tracking-tight">
                                 ID: {job.id || `${index + 1}`}
+                              </div>
+                              {/* Status Badges - Always visible, positioned below ID */}
+                              <div className="flex flex-wrap gap-1.5">
+                                {job.is_closed === 1 && (
+                                  <div className="bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold shadow-md leading-normal tracking-tight whitespace-nowrap">
+                                    CLOSED
+                                  </div>
+                                )}
+                                {isPending && (
+                                  <div className="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold shadow-md leading-normal tracking-tight whitespace-nowrap">
+                                    PENDING APPROVAL
+                                  </div>
+                                )}
+                                {isRejected && (
+                                  <div className="bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold shadow-md leading-normal tracking-tight whitespace-nowrap">
+                                    REJECTED
+                                  </div>
+                                )}
                               </div>
                             </div>
 
@@ -672,7 +786,8 @@ const JobPostHistory = ({ onEditJob, onSwitchToCreateTab, refreshTrigger }) => {
                     )}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
