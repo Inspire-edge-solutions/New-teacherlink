@@ -625,7 +625,7 @@ function EasyView({ onViewAttempt, onEditProfile }) {
             
             {/* Personal Details */}
             <div className={`mb-0.5 text-base text-gray-600 break-words leading-normal tracking-tight`}>
-              {profileData.gender && <span>{profileData.gender}</span>}
+              {profileData.gender && <span>{profileData.gender.charAt(0).toUpperCase() + profileData.gender.slice(1).toLowerCase()}</span>}
               {profileData.dateOfBirth && (
                 <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
               )}

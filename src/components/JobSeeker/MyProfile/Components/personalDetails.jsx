@@ -45,6 +45,25 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
 
   // Initialize form data when user becomes available (only once)
   useEffect(() => {
+    // Clear form data if user changes (different firebase_uid)
+    if (user && currentUid && formData.firebase_uid && formData.firebase_uid !== currentUid) {
+      console.log("⚠️ User changed! Clearing old data. Old UID:", formData.firebase_uid, "New UID:", currentUid);
+      setFormData({
+        firebase_uid: "",
+        fullName: "",
+        email: "",
+        gender: "",
+        dateOfBirth: "",
+        callingNumber: "",
+        whatsappNumber: "",
+      });
+      setEmailVerified(false);
+      setPhoneVerified(false);
+      setProfilePicId(null);
+      setProfileImageName("");
+      return; // Exit early to re-trigger initialization on next render
+    }
+    
     if (user && currentUid && !formData.firebase_uid) {
       console.log("🚀 Initializing form data with user:", {
         userEmail: user.email,
@@ -133,14 +152,39 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
 
   const fetchUserDetails = useCallback(async () => {
     if (!currentUid) return;
+    
+    console.log("🔍 fetchUserDetails called for UID:", currentUid);
+    
     try {
       const resp = await axios.get(`${API_BASE}/personal`, {
         params: { firebase_uid: currentUid, t: Date.now() },
         ...authHeaders,
       });
+      
+      console.log("🔍 API Response status:", resp.status);
+      console.log("🔍 API Response data count:", resp.data?.length || 0);
 
       if (resp.status === 200 && resp.data.length > 0) {
-        const u = resp.data[0];
+        // 🔍 DEBUG: Log what we received from backend
+        console.log("🔍 CRITICAL DEBUG - Total records received:", resp.data.length);
+        console.log("🔍 CRITICAL DEBUG - Current user firebase_uid:", currentUid);
+        console.log("🔍 CRITICAL DEBUG - All firebase_uids in response:", 
+          resp.data.map(r => ({ uid: r.firebase_uid, gender: r.gender, name: r.fullName }))
+        );
+        
+        // Find the record for the current user (in case backend returns multiple)
+        let u = resp.data.find(record => record.firebase_uid === currentUid);
+        
+        console.log("🔍 CRITICAL DEBUG - Found matching record:", u ? "YES" : "NO");
+        console.log("🔍 CRITICAL DEBUG - Using record with gender:", u?.gender);
+        
+        // If not found by firebase_uid, fall back to first record
+        if (!u) {
+          console.error("❌ CRITICAL ERROR: No record found for current user! Using first record (WRONG USER!)");
+          u = resp.data[0];
+          console.log("🔍 CRITICAL DEBUG - Fallback to first record with firebase_uid:", u.firebase_uid);
+        }
+        
         // Ensure email falls back to user.email if database email is empty/null/undefined
         const dbEmail = u.email?.trim() || "";
         const finalEmail = dbEmail || user?.email || "";
@@ -177,11 +221,34 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
           const nameToUse = finalName || user?.name || prev.fullName || "";
           const phoneToUse = finalPhone || user?.phone_number || prev.callingNumber || "";
           
+          // 🔍 DEBUG: Check what gender value we received
+          console.log("🔍 GENDER DEBUG:", {
+            rawGender: u.gender,
+            typeOfGender: typeof u.gender,
+            isNull: u.gender === null,
+            isUndefined: u.gender === undefined,
+            isEmpty: u.gender === "",
+            fullRecord: u
+          });
+          
+          // For gender, use database value if it exists and is not empty
+          let genderToUse = "";
+          if (u.gender !== undefined && u.gender !== null && u.gender !== "") {
+            // Normalize gender to lowercase to match dropdown options
+            genderToUse = String(u.gender).toLowerCase().trim();
+            console.log("✅ Using database gender:", u.gender, "→ normalized to:", genderToUse);
+          } else if (prev.gender) {
+            genderToUse = prev.gender.toLowerCase().trim();
+            console.log("⚠️ Using previous gender (DB empty):", genderToUse);
+          } else {
+            console.log("❌ No gender value available - will show placeholder");
+          }
+          
           return {
             firebase_uid: currentUid,
             fullName: nameToUse,
             email: emailToUse,
-            gender: u.gender || prev.gender || "",
+            gender: genderToUse,
             dateOfBirth: u.dateOfBirth || prev.dateOfBirth || "",
             callingNumber: phoneToUse,
             whatsappNumber: u.whatsappNumber || prev.whatsappNumber || "",
@@ -287,7 +354,11 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
     if (name === "whatsappNumber" && sameAsCallingNumber) {
       setSameAsCallingNumber(false);
     }
-    setFormData((p) => ({ ...p, [name]: value }));
+    
+    // Normalize gender to lowercase for consistency
+    const normalizedValue = name === "gender" ? value.toLowerCase().trim() : value;
+    
+    setFormData((p) => ({ ...p, [name]: normalizedValue }));
     setValidationErrors((p) => ({ ...p, [name]: undefined }));
   };
 
@@ -334,19 +405,29 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
   };
 
   useEffect(() => {
-    if (currentUid && !profilePicId) {
-      const storedImageData = localStorage.getItem(`profileImage_${currentUid}`);
-      if (storedImageData) {
-        try {
-          const { id, name } = JSON.parse(storedImageData);
-          setProfilePicId(id);
-          setProfileImageName(name);
-        } catch (e) {
-          console.error("Error parsing stored image data", e);
+    if (currentUid) {
+      // Clear profile pic state first
+      if (profilePicId && formData.firebase_uid && formData.firebase_uid !== currentUid) {
+        console.log("⚠️ Clearing profile pic for user change");
+        setProfilePicId(null);
+        setProfileImageName("");
+      }
+      
+      // Then load for current user
+      if (!profilePicId) {
+        const storedImageData = localStorage.getItem(`profileImage_${currentUid}`);
+        if (storedImageData) {
+          try {
+            const { id, name } = JSON.parse(storedImageData);
+            setProfilePicId(id);
+            setProfileImageName(name);
+          } catch (e) {
+            console.error("Error parsing stored image data", e);
+          }
         }
       }
     }
-  }, [currentUid, profilePicId]);
+  }, [currentUid, profilePicId, formData.firebase_uid]);
 
   const checkDuplicates = async () => {
     try {

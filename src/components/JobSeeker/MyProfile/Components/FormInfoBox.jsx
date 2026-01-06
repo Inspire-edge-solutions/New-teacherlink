@@ -134,7 +134,13 @@ const FormInfoBox = () => {
     }
   }, []);
 
-    useEffect(() => {}, [viewMode]);
+    useEffect(() => {
+      console.log("🔄 viewMode changed:", viewMode);
+    }, [viewMode]);
+    
+    useEffect(() => {
+      console.log("🔄 showProfile changed:", showProfile);
+    }, [showProfile]);
 
   // Auto-save function for current step
   const autoSaveCurrentStep = async () => {
@@ -495,8 +501,14 @@ const FormInfoBox = () => {
   }, [isPreviewMode]);
 
   const handleViewChange = async (mode) => {
+    if (!user?.uid) {
+      toast.error("User not authenticated");
+      return;
+    }
+    
     setLoadingApproval(true);
     try {
+      console.log("🔍 Checking approval status for user:", user.uid);
       const res = await axios.get(
         `https://0j7dabchm1.execute-api.ap-south-1.amazonaws.com/dev/profile_approved?firebase_uid=${user.uid}`
       );
@@ -518,47 +530,47 @@ const FormInfoBox = () => {
       if (typeof approved === "string") approved = parseInt(approved);
       if (typeof rejected === "string") rejected = parseInt(rejected);
 
-      // Only block if found and rejected/under review
-      if (recordFound) {
-        if (rejected === 1) {
-          toast.error("Your profile has been rejected by admin", {
-            position: "top-center",
-            autoClose: 5000
-          });
-          setLoadingApproval(false);
-          return;
-        } else if (approved === 0) {
-          toast.warning("Your profile is currently under admin review", {
-            position: "top-center",
-            autoClose: 5000
-          });
-          setLoadingApproval(false);
-          return;
-        }
-        // Note: Admin messages are shown in the notifications system, not here
+      // Normalize undefined/null to 0 for comparison
+      if (approved === undefined || approved === null) approved = 0;
+      if (rejected === undefined || rejected === null) rejected = 0;
 
-        if (approved === 1) {
-          setViewMode(mode);
-          setIsViewAttempted(true);
-          setCurrentStep(1);
-          setFormData({});
-          localStorage.removeItem('formData');
-          setShowProfile(true);
-        }
+      console.log("📊 Approval status:", { recordFound, approved, rejected, mode });
+
+      // Only block if explicitly rejected
+      if (recordFound && rejected === 1) {
+        toast.error("Your profile has been rejected by admin", {
+          position: "top-center",
+          autoClose: 5000
+        });
+        setLoadingApproval(false);
+        return;
+      }
+
+      // Allow viewing in all other cases (approved, pending, or not found)
+      // Users should be able to view their own profile regardless of approval status
+      if (recordFound && approved === 0 && rejected === 0) {
+        console.log("✅ Profile found (pending review), allowing view mode:", mode);
+      } else if (recordFound && approved === 1) {
+        console.log("✅ Profile approved, opening view mode:", mode);
       } else {
-        // No record found: proceed as "approved"
+        console.log("⚠️ No record found, proceeding to view mode:", mode);
+      }
+
+      // Open the view in all allowed cases
+      flushSync(() => {
         setViewMode(mode);
         setIsViewAttempted(true);
         setCurrentStep(1);
-        setFormData({});
-        localStorage.removeItem('formData');
         setShowProfile(true);
-      }
+      });
+      setLoadingApproval(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      console.log("✅ State updated - viewMode:", mode, "showProfile: true");
     } catch (error) {
-      console.error("Approval API error:", error);
+      console.error("❌ Approval API error:", error);
       toast.error("Error checking approval status. Try again later.");
+      setLoadingApproval(false);
     }
-    setLoadingApproval(false);
   };
 
   const toggleProfileView = () => {

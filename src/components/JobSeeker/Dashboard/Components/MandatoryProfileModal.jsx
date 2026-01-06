@@ -211,38 +211,113 @@ const MandatoryProfileModal = () => {
       setIsChecking(true);
 
       try {
+        // FIRST CHECK: If user exists in manditoryApprove API, don't show modal
+        try {
+          const mandatoryApproveRes = await axios.get(MANDITORY_APPROVE_API, { 
+            params: { firebase_uid: user.uid } 
+          });
+          
+          // Check if record exists (handle both array and single object responses)
+          const mandatoryData = mandatoryApproveRes.data;
+          const hasMandatoryRecord = Array.isArray(mandatoryData) 
+            ? mandatoryData.length > 0 && mandatoryData.some(record => record.firebase_uid === user.uid)
+            : mandatoryData && mandatoryData.firebase_uid === user.uid;
+          
+          if (hasMandatoryRecord) {
+            console.log('✅ User found in manditoryApprove API - hiding modal');
+            setShowModal(false);
+            setIsChecking(false);
+            return; // Exit early, don't check other fields
+          }
+        } catch (mandatoryErr) {
+          // If API call fails, continue with other checks (user might not have submitted yet)
+          console.log('ManditoryApprove API check failed (user may not have submitted yet):', mandatoryErr.response?.status);
+        }
+
+        // If not in manditoryApprove, check other fields
         const [
-          personalRes,
           permanentAddressRes,
           presentAddressRes,
           educationRes,
           jobPreferenceRes
         ] = await Promise.all([
-          axios.get(`${API_BASE}/personal`, { params: { firebase_uid: user.uid }, ...authHeaders }).catch(() => ({ data: [] })),
-          axios.get(`${API_BASE}/permanentAddress`, { params: { firebase_uid: user.uid }, ...authHeaders }).catch(() => ({ data: [] })),
-          axios.get(`${API_BASE}/presentAddress`, { params: { firebase_uid: user.uid }, ...authHeaders }).catch(() => ({ data: [] })),
-          axios.get(EDUCATION_API, { params: { firebase_uid: user.uid } }).catch(() => ({ data: [] })),
-          axios.get(JOB_PREFERENCE_API, { params: { firebase_uid: user.uid } }).catch(() => ({ data: [] }))
+          axios.get(`${API_BASE}/permanentAddress`, { params: { firebase_uid: user.uid }, ...authHeaders }).catch((err) => {
+            console.error("Permanent Address API error:", err.response?.status, err.message);
+            return { data: [] };
+          }),
+          axios.get(`${API_BASE}/presentAddress`, { params: { firebase_uid: user.uid }, ...authHeaders }).catch((err) => {
+            console.error("Present Address API error:", err.response?.status, err.message);
+            return { data: [] };
+          }),
+          axios.get(EDUCATION_API, { params: { firebase_uid: user.uid } }).catch((err) => {
+            console.error("Education API error:", err.response?.status, err.message);
+            return { data: [] };
+          }),
+          axios.get(JOB_PREFERENCE_API, { params: { firebase_uid: user.uid } }).catch((err) => {
+            console.error("Job Preference API error:", err.response?.status, err.message);
+            return { data: [] };
+          })
         ]);
 
         // Check if all mandatory fields are filled
         // Note: Personal data might be collected elsewhere, so we check but don't require it for this modal
-        const hasPersonal = personalRes.data.length > 0 && 
-          personalRes.data[0].fullName && 
-          personalRes.data[0].email && 
-          personalRes.data[0].callingNumber;
+        // Personal data check (not used for modal validation but kept for reference)
+        // const hasPersonal = personalRes.data.length > 0 && 
+        //   personalRes.data[0].fullName && 
+        //   personalRes.data[0].email && 
+        //   personalRes.data[0].callingNumber;
 
-        // Convert to proper booleans
-        const hasPermanentAddress = !!(permanentAddressRes.data.length > 0 && 
-          permanentAddressRes.data[0].state_name && 
-          permanentAddressRes.data[0].city_name);
+        // Convert to proper booleans - handle both array and single object responses
+        const permanentAddr = Array.isArray(permanentAddressRes.data) 
+          ? permanentAddressRes.data[0] 
+          : permanentAddressRes.data;
+        const hasPermanentAddress = !!(permanentAddr && 
+          (permanentAddr.state_name || permanentAddr.state) && 
+          (permanentAddr.city_name || permanentAddr.city));
 
-        const hasPresentAddress = !!(presentAddressRes.data.length > 0 && 
-          presentAddressRes.data[0].state_name && 
-          presentAddressRes.data[0].city_name);
+        const presentAddr = Array.isArray(presentAddressRes.data) 
+          ? presentAddressRes.data[0] 
+          : presentAddressRes.data;
+        const hasPresentAddress = !!(presentAddr && 
+          (presentAddr.state_name || presentAddr.state) && 
+          (presentAddr.city_name || presentAddr.city));
 
-        const hasGrade10 = educationRes.data.length > 0 && 
-          educationRes.data.some(edu => edu.education_type === 'grade10' && edu.yearOfPassing);
+        // Handle education data - support multiple response structures
+        let hasGrade10 = false;
+        if (educationRes.data) {
+          // Handle different response formats
+          let educationData = [];
+          if (Array.isArray(educationRes.data)) {
+            educationData = educationRes.data;
+          } else if (educationRes.data && typeof educationRes.data === 'object') {
+            // If it's a single object, check if it has grade10 nested or is a grade10 record
+            if (educationRes.data.grade10) {
+              // Nested format: { grade10: { yearOfPassing: ... } }
+              educationData = [{ education_type: 'grade10', yearOfPassing: educationRes.data.grade10.yearOfPassing }];
+            } else if (educationRes.data.education_type) {
+              // Single record format
+              educationData = [educationRes.data];
+            } else {
+              // Try to extract from other possible structures
+              educationData = [educationRes.data];
+            }
+          }
+          
+          hasGrade10 = educationData.some(edu => {
+            if (!edu) return false;
+            // Check for grade10 with various possible field name variations
+            const educationType = edu.education_type || edu.educationType || edu.Education_Type || edu.type;
+            const yearOfPassing = edu.yearOfPassing || edu.year_of_passing || edu.YearOfPassing;
+            // Check if it's grade10 and has a year of passing
+            const isGrade10 = educationType && (
+              educationType === 'grade10' || 
+              educationType === 'Grade10' || 
+              educationType === 'Grade 10' ||
+              educationType.toLowerCase() === 'grade10'
+            );
+            return isGrade10 && yearOfPassing && yearOfPassing !== '' && yearOfPassing !== null;
+          });
+        }
 
         // Check job preference - handle different response structures
         let hasJobPreference = false;
@@ -254,28 +329,56 @@ const MandatoryProfileModal = () => {
                                       jobPreferenceData[0];
           
           // Check if required fields exist: Job_Type, expected_salary, and teaching_subjects (if Job_Type is teaching)
-          if (jobPreferenceRecord && 
-              jobPreferenceRecord.Job_Type && 
-              jobPreferenceRecord.expected_salary) {
-            // If Job_Type is teaching, also check for teaching_subjects
-            if (jobPreferenceRecord.Job_Type === 'teaching') {
-              if (jobPreferenceRecord.teaching_subjects && 
-                  Array.isArray(jobPreferenceRecord.teaching_subjects) && 
-                  jobPreferenceRecord.teaching_subjects.length > 0) {
+          if (jobPreferenceRecord) {
+            const jobType = jobPreferenceRecord.Job_Type || jobPreferenceRecord.job_type || jobPreferenceRecord.jobType;
+            const expectedSalary = jobPreferenceRecord.expected_salary || jobPreferenceRecord.expectedSalary || jobPreferenceRecord.Expected_Salary;
+            
+            if (jobType && expectedSalary) {
+              // If Job_Type is teaching, also check for teaching_subjects
+              if (jobType === 'teaching' || jobType === 'Teaching') {
+                const teachingSubjects = jobPreferenceRecord.teaching_subjects || jobPreferenceRecord.teachingSubjects || jobPreferenceRecord.Teaching_Subjects;
+                if (teachingSubjects && 
+                    Array.isArray(teachingSubjects) && 
+                    teachingSubjects.length > 0) {
+                  hasJobPreference = true;
+                }
+              } else if (jobType === 'teachingAndAdmin' || jobType === 'teachingAndAdministration' || jobType === 'TeachingAndAdmin' || jobType === 'TeachingAndAdministration') {
+                // For teaching+admin, check teaching_administrative_subjects
+                const teachingAdminSubjects = jobPreferenceRecord.teaching_administrative_subjects || jobPreferenceRecord.teachingAdministrativeSubjects;
+                if (teachingAdminSubjects && 
+                    Array.isArray(teachingAdminSubjects) && 
+                    teachingAdminSubjects.length > 0) {
+                  hasJobPreference = true;
+                } else {
+                  // If no teaching_administrative_subjects, just check Job_Type and expected_salary
+                  hasJobPreference = true;
+                }
+              } else {
+                // For other job types (administration), just having Job_Type and expected_salary is enough
                 hasJobPreference = true;
               }
-            } else {
-              // For other job types, just having Job_Type and expected_salary is enough
-              hasJobPreference = true;
             }
           }
         } else if (jobPreferenceData && typeof jobPreferenceData === 'object' && !Array.isArray(jobPreferenceData)) {
           // Single object response
-          if (jobPreferenceData.Job_Type && jobPreferenceData.expected_salary) {
-            if (jobPreferenceData.Job_Type === 'teaching') {
-              if (jobPreferenceData.teaching_subjects && 
-                  Array.isArray(jobPreferenceData.teaching_subjects) && 
-                  jobPreferenceData.teaching_subjects.length > 0) {
+          const jobType = jobPreferenceData.Job_Type || jobPreferenceData.job_type || jobPreferenceData.jobType;
+          const expectedSalary = jobPreferenceData.expected_salary || jobPreferenceData.expectedSalary || jobPreferenceData.Expected_Salary;
+          
+          if (jobType && expectedSalary) {
+            if (jobType === 'teaching' || jobType === 'Teaching') {
+              const teachingSubjects = jobPreferenceData.teaching_subjects || jobPreferenceData.teachingSubjects || jobPreferenceData.Teaching_Subjects;
+              if (teachingSubjects && 
+                  Array.isArray(teachingSubjects) && 
+                  teachingSubjects.length > 0) {
+                hasJobPreference = true;
+              }
+            } else if (jobType === 'teachingAndAdmin' || jobType === 'teachingAndAdministration' || jobType === 'TeachingAndAdmin' || jobType === 'TeachingAndAdministration') {
+              const teachingAdminSubjects = jobPreferenceData.teaching_administrative_subjects || jobPreferenceData.teachingAdministrativeSubjects;
+              if (teachingAdminSubjects && 
+                  Array.isArray(teachingAdminSubjects) && 
+                  teachingAdminSubjects.length > 0) {
+                hasJobPreference = true;
+              } else {
                 hasJobPreference = true;
               }
             } else {
@@ -283,6 +386,36 @@ const MandatoryProfileModal = () => {
             }
           }
         }
+
+        // Debug logging to identify which check is failing
+        console.log('=== Mandatory Profile Validation Debug ===');
+        console.log('1. Permanent Address Check:', {
+          hasPermanentAddress,
+          data: permanentAddr,
+          stateName: permanentAddr?.state_name || permanentAddr?.state,
+          cityName: permanentAddr?.city_name || permanentAddr?.city
+        });
+        console.log('2. Present Address Check:', {
+          hasPresentAddress,
+          data: presentAddr,
+          stateName: presentAddr?.state_name || presentAddr?.state,
+          cityName: presentAddr?.city_name || presentAddr?.city
+        });
+        console.log('3. Grade 10 Education Check:', {
+          hasGrade10,
+          rawData: educationRes.data,
+          isArray: Array.isArray(educationRes.data),
+          dataType: typeof educationRes.data
+        });
+        console.log('4. Job Preference Check:', {
+          hasJobPreference,
+          rawData: jobPreferenceData,
+          isArray: Array.isArray(jobPreferenceData),
+          dataType: typeof jobPreferenceData
+        });
+        console.log('=== Final Result ===');
+        console.log('All checks passed?', hasPermanentAddress && hasPresentAddress && hasGrade10 && hasJobPreference);
+        console.log('Will show modal?', !(hasPermanentAddress && hasPresentAddress && hasGrade10 && hasJobPreference));
 
         // Check only the fields that THIS modal collects (not personal data)
         // Personal data is collected separately and shouldn't block this modal

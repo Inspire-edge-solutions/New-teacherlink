@@ -369,19 +369,16 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
   }, [user]);
 
   useEffect(() => {
-    if (formData && Object.keys(formData).length > 0) {
-      setProfileData(formData);
-      setIsLoading(false);
-    } else {
-      fetchProfileData();
-      fetchEducationData();
-      fetchExperienceData();
-      fetchJobPreferenceData();
-      fetchAdditionalInfo();
-      fetchProfilePhoto();
-      fetchSocialLinks();
-    }
-  }, [formData, fetchProfileData, fetchEducationData, fetchExperienceData, 
+    // Always fetch from API when viewing profile (like Easyview does)
+    // formData is only used when editing, not when viewing
+    fetchProfileData();
+    fetchEducationData();
+    fetchExperienceData();
+    fetchJobPreferenceData();
+    fetchAdditionalInfo();
+    fetchProfilePhoto();
+    fetchSocialLinks();
+  }, [fetchProfileData, fetchEducationData, fetchExperienceData, 
       fetchJobPreferenceData, fetchAdditionalInfo, fetchProfilePhoto, fetchSocialLinks]);
 
   const shouldShowEmptyState = useMemo(() => {
@@ -1099,7 +1096,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
             
             {/* Personal Details */}
             <div className={`mb-0.5 text-base text-gray-600 break-words leading-normal tracking-tight`}>
-              {profileData.gender && <span>{profileData.gender}</span>}
+              {profileData.gender && <span>{profileData.gender.charAt(0).toUpperCase() + profileData.gender.slice(1).toLowerCase()}</span>}
               {profileData.dateOfBirth && (
                 <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
               )}
@@ -1144,7 +1141,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
                   profileData.present_city_name,
                   profileData.present_state_name,
                   profileData.present_country_name
-                ].filter(Boolean).join(', ')}
+                ].filter(Boolean).join(', ') || 'Not provided'}
               </span>
             </div>
             
@@ -1156,7 +1153,7 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
                   profileData.permanent_city_name,
                   profileData.permanent_state_name,
                   profileData.permanent_country_name
-                ].filter(Boolean).join(', ')}
+                ].filter(Boolean).join(', ') || 'Not provided'}
               </span>
             </div>
           </div>
@@ -1166,13 +1163,13 @@ function Fullview({ onViewAttempt, onEditProfile, formData }) {
             <div className="flex items-center min-w-0">
               <FaPhone className="mr-1.5 text-[#1a73e8] text-[13px] shrink-0" />
               <span className="font-semibold mr-1.5 shrink-0">Phone:</span>
-              <span className="break-words">{profileData.callingNumber}</span>
+              <span className="break-words">{profileData.callingNumber || 'Not provided'}</span>
             </div>
              
             <div className="flex items-center min-w-0">
               <FaWhatsapp className="mr-1.5 text-[#25D366] text-[13px] shrink-0" />
               <span className="font-semibold mr-1.5 shrink-0">WhatsApp:</span>
-              <span className="break-words">{profileData.whatsappNumber}</span>
+              <span className="break-words">{profileData.whatsappNumber || 'Not provided'}</span>
             </div>
           </div>
           

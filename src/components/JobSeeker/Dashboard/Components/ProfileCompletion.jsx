@@ -77,17 +77,13 @@ const ProfileCompletion = () => {
         const education = educationRes.data.find(edu => edu.firebase_uid === user.uid) || educationRes.data[0];
         const hasBasicEducation = education.degreeName || education.grade12Year || 
                             education.education_type || education.syllabus || 
-                            education.schoolName || education.courseName;
+                            education.schoolName || education.courseName || education.yearOfPassing ||
+                            education.grade10 || education.grade12 || education.degree || education.masterDegree ||
+                            education.instituteName || education.yearOfCompletion;
         
         if (hasBasicEducation) {
           easyModeCompleted++;
-        }
-
-        const hasDetailedEducation = education.degreeYear || education.degreeCollege || education.grade12School || 
-                                    education.grade12Percentage || education.instituteName || education.yearOfCompletion;
-        
-        if (hasBasicEducation && (hasDetailedEducation || education.education_type)) {
-          fullModeCompleted++;
+          fullModeCompleted++; // Count for Complete Profile if any education data exists
         }
       }
 
@@ -97,35 +93,21 @@ const ProfileCompletion = () => {
         const hasDynamoData = experienceRes.data.dynamoData && Object.keys(experienceRes.data.dynamoData).length > 0;
         const hasArrayData = Array.isArray(experienceRes.data) && experienceRes.data.length > 0;
         
-        // Easy Mode Experience Check
-        let hasBasicExperience = false;
+        // Check if any experience data exists
+        let hasExperience = false;
         if (hasMysqlData) {
           const mysql = experienceRes.data.mysqlData;
-          hasBasicExperience = mysql.teaching_experience_years || mysql.teaching_experience_months ||
-                             mysql.non_teaching_experience_years || mysql.non_teaching_experience_months ||
-                             mysql.total_experience_years || mysql.total_experience_months;
+          hasExperience = mysql.teaching_experience_years || mysql.teaching_experience_months ||
+                         mysql.non_teaching_experience_years || mysql.non_teaching_experience_months ||
+                         mysql.total_experience_years || mysql.total_experience_months ||
+                         mysql.other_teaching_experience || mysql.otherTeachingExperience ||
+                         mysql.teaching_experience_radio || mysql.experience_radio ||
+                         mysql.has_other_teaching_experience || mysql.other_experience;
         }
         
-        if (hasBasicExperience || hasDynamoData || hasArrayData) {
+        // Count for both modes if any experience data exists
+        if (hasExperience || hasDynamoData || hasArrayData) {
           easyModeCompleted++;
-        }
-
-        // Full Mode Experience Check
-        let hasComprehensiveExperience = false;
-        if (hasMysqlData) {
-          const mysql = experienceRes.data.mysqlData;
-          const hasNumericExperience = mysql.teaching_experience_years || mysql.teaching_experience_months ||
-                                      mysql.non_teaching_experience_years || mysql.non_teaching_experience_months ||
-                                      mysql.total_experience_years || mysql.total_experience_months;
-          
-          const hasOtherTeachingExperience = mysql.other_teaching_experience || mysql.otherTeachingExperience ||
-                                           mysql.teaching_experience_radio || mysql.experience_radio ||
-                                           mysql.has_other_teaching_experience || mysql.other_experience;
-          
-          hasComprehensiveExperience = hasNumericExperience || hasOtherTeachingExperience;
-        }
-        
-        if (hasComprehensiveExperience || hasMysqlData || hasDynamoData || hasArrayData) {
           fullModeCompleted++;
         }
       }
@@ -133,11 +115,12 @@ const ProfileCompletion = () => {
       // Job Preferences
       if (jobPrefRes.data.length > 0) {
         const jobPref = jobPrefRes.data.find(pref => pref.firebase_uid === user.uid) || jobPrefRes.data[0];
-        if (jobPref.Job_Type || jobPref.expected_salary) {
+        const hasJobPreference = jobPref.Job_Type || jobPref.job_type || jobPref.jobType || 
+                                 jobPref.expected_salary || jobPref.expectedSalary || jobPref.Expected_Salary;
+        
+        if (hasJobPreference) {
           easyModeCompleted++;
-        }
-        if (jobPref.Job_Type && jobPref.expected_salary) {
-          fullModeCompleted++;
+          fullModeCompleted++; // Count for Complete Profile if any job preference data exists
         }
       }
 

@@ -127,6 +127,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
     };
 
     const defaultJobDetails = {
+      firebase_uid: user?.uid || '',
       Job_Type: '',
       expected_salary: '',
       teachingDesignation: [],
@@ -683,17 +684,98 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
 
   // Fetch existing job preferences (if any)
   useEffect(() => {
-    if (!user?.uid || dataFetched.current) return;
+    if (!user?.uid) return;
+    
+    // Reset dataFetched flag when user changes
+    if (dataFetched.current && jobDetails.firebase_uid && jobDetails.firebase_uid !== user.uid) {
+      console.log("⚠️ User changed in jobPreferences! Clearing old data. Old UID:", jobDetails.firebase_uid, "New UID:", user.uid);
+      dataFetched.current = false;
+      locationRestoredRef.current = false;
+      savedLocationRef.current = {
+        country: null,
+        state: null,
+        city: null
+      };
+      // Reset to initial state
+      const defaultPreferences = {
+        jobShift: {
+          Full_time: { value: "yes" },
+          part_time_weekdays: { value: "yes" },
+          part_time_weekends: { value: "yes" },
+          part_time_vacations: { value: "yes" }
+        },
+        organizationType: {
+          school_college_university: { value: "yes" },
+          coaching_institute: { value: "yes" },
+          Ed_TechCompanies: { value: "yes" }
+        },
+        parentGuardian: {
+          Home_Tutor: { value: "yes" },
+          Private_Tutor: { value: "yes" },
+          Group_Tutor: { value: "yes" },
+          Private_Tutions: { value: "yes" },
+          Group_Tuitions: { value: "yes" }
+        },
+        teachingMode: {
+          online: { value: "yes" },
+          offline: { value: "yes" }
+        }
+      };
+      const defaultJobSearchStatus = {
+        Full_time: { value: "activelySearching" },
+        part_time_weekdays: { value: "activelySearching" },
+        part_time_weekends: { value: "activelySearching" },
+        part_time_vacations: { value: "activelySearching" },
+        tuitions: { value: "activelySearching" }
+      };
+      const defaultJobDetails = {
+        firebase_uid: user.uid,
+        Job_Type: '',
+        expected_salary: '',
+        teachingDesignation: [],
+        teachingCurriculum: [],
+        teachingSubjects: [],
+        teachingGrades: [],
+        teachingCoreExpertise: [],
+        adminDesignations: [],
+        adminCurriculum: [],
+        teachingAdminDesignations: [],
+        teachingAdminCurriculum: [],
+        teachingAdminSubjects: [],
+        teachingAdminGrades: [],
+        teachingAdminCoreExpertise: [],
+        preferred_country: indiaOption,
+        preferred_state: '',
+        preferred_city: '',
+        notice_period: null
+      };
+      setPreferences(defaultPreferences);
+      setJobSearchStatus(defaultJobSearchStatus);
+      setJobDetails(defaultJobDetails);
+    }
+    
+    if (dataFetched.current) return;
     
     const fetchJobPreference = async () => {
       try {
+        console.log("🔍 fetchJobPreference called for UID:", user.uid);
         const response = await axios.get(
           "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference",
           { params: { firebase_uid: user.uid } }
         );
+        
+        console.log("🔍 JobPreference API Response:", response.data);
 
-        if (response.status === 200 && response.data && response.data.length > 0) {
-          const record = response.data[0];
+        if (response.status === 200 && response.data) {
+          // Backend now returns single object or null
+          const record = response.data;
+          
+          // If no record found or doesn't match current user, don't load data
+          if (!record || record.firebase_uid !== user.uid) {
+            console.log('No job preference data found for current user');
+            dataFetched.current = true; // Mark as fetched even if no data
+            return;
+          }
           
           // If no saved location exists, mark restoration as complete immediately
           if (!record.preferred_country && !record.preferred_state && !record.preferred_city) {
@@ -768,6 +850,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
           };
 
           const details = {
+            firebase_uid: user.uid, // Track which user this data belongs to
             Job_Type: record.Job_Type || "",
             expected_salary: record.expected_salary || "",
             teachingDesignation:
