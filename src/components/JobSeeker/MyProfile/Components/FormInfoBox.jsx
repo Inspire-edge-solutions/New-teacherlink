@@ -114,25 +114,80 @@ const FormInfoBox = () => {
     }));
   }, []);
 
-  useEffect(() => {
-    if (Object.keys(formData).length > 0) {
-      localStorage.setItem('formData', JSON.stringify(formData));
-      //console.log("💾 Saved to localStorage:", formData);
-    }
-  }, [formData]);
+  // Track previous user to detect user changes
+  const previousUserUidRef = useRef(null);
 
+  // Get user-specific localStorage key
+  const getStorageKey = (uid) => `formData_${uid}`;
+
+  // Save to localStorage with user-specific key and timestamp
   useEffect(() => {
-    const savedFormData = localStorage.getItem('formData');
+    if (!user?.uid) return;
+    
+    // Only save if formData has meaningful content (not just firebase_uid)
+    const hasData = Object.keys(formData).length > 1 || 
+                    (Object.keys(formData).length === 1 && !formData.firebase_uid);
+    
+    if (hasData) {
+      const storageKey = getStorageKey(user.uid);
+      const dataToSave = {
+        ...formData,
+        _timestamp: Date.now(), // Add timestamp to detect stale data
+        _userUid: user.uid // Store user UID to validate on load
+      };
+      localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+    }
+  }, [formData, user?.uid]);
+
+  // Load from localStorage on mount or user change
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    // Detect user change and clear old data
+    const userChanged = previousUserUidRef.current && previousUserUidRef.current !== user.uid;
+    if (userChanged) {
+      // Clear previous user's localStorage data (optional - for privacy)
+      const oldStorageKey = getStorageKey(previousUserUidRef.current);
+      localStorage.removeItem(oldStorageKey);
+    }
+
+    // Load current user's data
+    const storageKey = getStorageKey(user.uid);
+    const savedFormData = localStorage.getItem(storageKey);
+    
     if (savedFormData) {
       try {
         const parsed = JSON.parse(savedFormData);
-        setFormData(parsed);
-        //console.log("📂 Loaded from localStorage:", parsed);
+        
+        // Validate: Check if data belongs to current user
+        if (parsed._userUid !== user.uid) {
+          console.warn('localStorage data belongs to different user, clearing...');
+          localStorage.removeItem(storageKey);
+          return;
+        }
+
+        // Check if data is stale (older than 24 hours) - optional
+        const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+        if (parsed._timestamp && (Date.now() - parsed._timestamp > maxAge)) {
+          console.warn('localStorage data is stale, clearing...');
+          localStorage.removeItem(storageKey);
+          return;
+        }
+
+        // Remove metadata before setting formData
+        const { _timestamp, _userUid, ...cleanData } = parsed;
+        setFormData(cleanData);
+        
+        previousUserUidRef.current = user.uid;
       } catch (error) {
         console.error('Error parsing saved form data:', error);
+        // Clear corrupted data
+        localStorage.removeItem(storageKey);
       }
+    } else {
+      previousUserUidRef.current = user.uid;
     }
-  }, []);
+  }, [user?.uid]); // Only run when user changes, not on every render
 
     useEffect(() => {
       console.log("🔄 viewMode changed:", viewMode);
@@ -780,7 +835,9 @@ const FormInfoBox = () => {
       // Reset to mode selection screen after toast
       setTimeout(() => {
         // Clear localStorage first to prevent useEffect from restoring it
-        localStorage.removeItem('formData');
+        if (user?.uid) {
+          localStorage.removeItem(getStorageKey(user.uid));
+        }
         
         // Use flushSync to ensure state updates are processed immediately
         flushSync(() => {

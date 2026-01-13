@@ -248,7 +248,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
         }
       }
     }
-  }, [countries]);
+  }, [countries, jobDetails.preferred_country]);
 
   // Restore state after states are loaded and country is set (only once)
   useEffect(() => {
@@ -272,7 +272,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
         }
       }
     }
-  }, [states, jobDetails.preferred_country]);
+  }, [states, jobDetails.preferred_country, jobDetails.preferred_state]);
 
   // Restore city after cities are loaded and state is set (only once)
   useEffect(() => {
@@ -291,13 +291,44 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
           // Mark location restoration as complete after city is restored
           locationRestoredRef.current = true;
         }
+      } else if (currentCityLabel === savedCityLabel) {
+        locationRestoredRef.current = true;
       }
     }
-  }, [cities, jobDetails.preferred_state]);
+  }, [cities, jobDetails.preferred_state, jobDetails.preferred_city]);
 
-  // Update state when formData changes
+  // Update state when formData changes - but only if it belongs to current user
   useEffect(() => {
+    if (!user?.uid) return; // Don't update if no user is logged in
+    
+    // CRITICAL: Don't update from formData if we've already fetched fresh data from API
+    // This prevents localStorage stale data from overwriting fresh API data
+    if (dataFetched.current) {
+      return;
+    }
+    
     if (formData && Object.keys(formData).length > 0) {
+      // CRITICAL: Check if formData belongs to current user before updating
+      const formDataUid = formData.jobDetails?.firebase_uid || formData.firebase_uid;
+      
+      // Only update if formData belongs to current user
+      if (formDataUid !== user.uid) {
+        return;
+      }
+      
+      // Check if formData has meaningful values (not just empty strings)
+      const hasValidJobDetails = formData.jobDetails && (
+        formData.jobDetails.Job_Type ||
+        formData.jobDetails.expected_salary ||
+        formData.jobDetails.notice_period ||
+        formData.jobDetails.preferred_country ||
+        formData.jobDetails.preferred_state
+      );
+      
+      if (!hasValidJobDetails && formData.jobDetails) {
+        return;
+      }
+      
       // Only update if formData has the specific keys
       if (formData.preferences) {
         setPreferences(formData.preferences);
@@ -305,11 +336,11 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       if (formData.jobSearchStatus) {
         setJobSearchStatus(formData.jobSearchStatus);
       }
-      if (formData.jobDetails) {
+      if (formData.jobDetails && hasValidJobDetails) {
         setJobDetails(formData.jobDetails);
       }
     }
-  }, [formData]);
+  }, [formData, user?.uid]);
 
   // Helper: Convert numeric from DB => "yes" or "no"
   const convertYesNo = (value) => (Number(value) === 1 ? "yes" : "no");
@@ -369,17 +400,12 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       return null;
     };
 
-    // Debug logs
-    console.log('Preferences State:', preferences);
 
     // 1. Validate job shifts
     const areJobShiftsValid = Object.entries(preferences.jobShift).every(
       ([key, shift]) => {
         const shiftValue = shift?.value;
         const isValid = shiftValue === "yes" || shiftValue === "no";
-        if (!isValid) {
-          console.log(`Job shift validation failed for ${key}:`, shift);
-        }
         return isValid;
       }
     );
@@ -389,9 +415,6 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       ([key, org]) => {
         const orgValue = org?.value;
         const isValid = orgValue === "yes" || orgValue === "no";
-        if (!isValid) {
-          console.log(`Organization type validation failed for ${key}:`, org);
-        }
         return isValid;
       }
     );
@@ -401,9 +424,6 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       ([key, pref]) => {
         const prefValue = pref?.value;
         const isValid = prefValue === "yes" || prefValue === "no";
-        if (!isValid) {
-          console.log(`Parent/guardian validation failed for ${key}:`, pref);
-        }
         return isValid;
       }
     );
@@ -421,18 +441,6 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       hasValue(jobDetails.Job_Type) &&
       hasValue(jobDetails.expected_salary) &&
       hasValue(noticePeriodValue);
-    
-    if (!areBasicDetailsValid) {
-      console.log('Basic details validation failed:', {
-        Job_Type: jobDetails.Job_Type,
-        expected_salary: jobDetails.expected_salary,
-        notice_period: jobDetails.notice_period,
-        noticePeriodValue: noticePeriodValue,
-        Job_TypeValid: hasValue(jobDetails.Job_Type),
-        expected_salaryValid: hasValue(jobDetails.expected_salary),
-        noticePeriodValid: hasValue(noticePeriodValue)
-      });
-    }
 
     // 6. Validate location preferences (if any are filled, all must be filled)
     const hasAnyLocation =
@@ -456,35 +464,14 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
         hasValue(jobDetails.teachingSubjects) &&
         hasValue(jobDetails.teachingGrades) &&
         hasValue(jobDetails.teachingCoreExpertise);
-      if (!areJobTypeFieldsValid) {
-        console.log('Teaching job type fields validation failed:', {
-          teachingDesignation: jobDetails.teachingDesignation,
-          teachingSubjects: jobDetails.teachingSubjects,
-          teachingGrades: jobDetails.teachingGrades,
-          teachingCoreExpertise: jobDetails.teachingCoreExpertise
-        });
-      }
     } else if (jobDetails.Job_Type === 'administration') {
       areJobTypeFieldsValid = hasValue(jobDetails.adminDesignations);
-      if (!areJobTypeFieldsValid) {
-        console.log('Administration job type fields validation failed:', {
-          adminDesignations: jobDetails.adminDesignations
-        });
-      }
     } else if (jobDetails.Job_Type === 'teachingAndAdmin') {
       areJobTypeFieldsValid =
         hasValue(jobDetails.teachingAdminDesignations) &&
         hasValue(jobDetails.teachingAdminSubjects) &&
         hasValue(jobDetails.teachingAdminGrades) &&
         hasValue(jobDetails.teachingAdminCoreExpertise);
-      if (!areJobTypeFieldsValid) {
-        console.log('Teaching+Admin job type fields validation failed:', {
-          teachingAdminDesignations: jobDetails.teachingAdminDesignations,
-          teachingAdminSubjects: jobDetails.teachingAdminSubjects,
-          teachingAdminGrades: jobDetails.teachingAdminGrades,
-          teachingAdminCoreExpertise: jobDetails.teachingAdminCoreExpertise
-        });
-      }
     }
 
     // 8. Validate job search status
@@ -499,31 +486,6 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       }
     );
 
-    // Debug logs
-    console.log('Detailed Validation Results:', {
-      areJobShiftsValid,
-      areOrgTypesValid,
-      areParentPrefsValid,
-      isTeachingModeValid,
-      areBasicDetailsValid,
-      areLocationsValid,
-      areJobTypeFieldsValid,
-      isJobSearchValid,
-      teachingModeValues: {
-        online: onlineValue,
-        offline: offlineValue
-      },
-      jobDetails: {
-        Job_Type: jobDetails.Job_Type,
-        expected_salary: jobDetails.expected_salary,
-        notice_period: jobDetails.notice_period,
-        noticePeriodValue: noticePeriodValue,
-        preferred_country: jobDetails.preferred_country,
-        preferred_state: jobDetails.preferred_state,
-        countryValue: countryValue,
-        stateValue: stateValue
-      }
-    });
 
     const validationResult = 
       areJobShiftsValid &&
@@ -682,13 +644,33 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
     };
   }, []);
 
+  // Track previous user UID to detect user changes
+  const previousUserUidRef = useRef(null);
+  
   // Fetch existing job preferences (if any)
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid) {
+      // If user logs out, reset everything
+      if (previousUserUidRef.current) {
+        dataFetched.current = false;
+        locationRestoredRef.current = false;
+        previousUserUidRef.current = null;
+        savedLocationRef.current = {
+          country: null,
+          state: null,
+          city: null
+        };
+      }
+      return;
+    }
     
-    // Reset dataFetched flag when user changes
-    if (dataFetched.current && jobDetails.firebase_uid && jobDetails.firebase_uid !== user.uid) {
-      console.log("⚠️ User changed in jobPreferences! Clearing old data. Old UID:", jobDetails.firebase_uid, "New UID:", user.uid);
+    // Detect user change
+    const userChanged = previousUserUidRef.current && previousUserUidRef.current !== user.uid;
+    const currentDataUid = jobDetails.firebase_uid;
+    const dataBelongsToDifferentUser = currentDataUid && currentDataUid !== user.uid;
+    
+    // Reset dataFetched flag when user changes or if current data belongs to different user
+    if (userChanged || dataBelongsToDifferentUser) {
       dataFetched.current = false;
       locationRestoredRef.current = false;
       savedLocationRef.current = {
@@ -696,6 +678,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
         state: null,
         city: null
       };
+      
       // Reset to initial state
       const defaultPreferences = {
         jobShift: {
@@ -754,26 +737,49 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       setJobDetails(defaultJobDetails);
     }
     
+    // Update previous user UID reference
+    previousUserUidRef.current = user.uid;
+    
     if (dataFetched.current) return;
     
     const fetchJobPreference = async () => {
       try {
-        console.log("🔍 fetchJobPreference called for UID:", user.uid);
+        // Double-check user is still logged in before fetching
+        if (!user?.uid) {
+          return;
+        }
+        
+        const currentUserUid = user.uid; // Capture UID at start of fetch
+        
         const response = await axios.get(
           "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/jobPreference",
-          { params: { firebase_uid: user.uid } }
+          { params: { firebase_uid: currentUserUid } }
         );
-        
-        console.log("🔍 JobPreference API Response:", response.data);
 
         if (response.status === 200 && response.data) {
-          // Backend now returns single object or null
-          const record = response.data;
+          // Backend might return single object, array, or null
+          let record = response.data;
           
-          // If no record found or doesn't match current user, don't load data
-          if (!record || record.firebase_uid !== user.uid) {
-            console.log('No job preference data found for current user');
+          // Handle array response - take first item if array
+          if (Array.isArray(record)) {
+            record = record.length > 0 ? record[0] : null;
+          }
+          
+          // CRITICAL: Verify user hasn't changed during fetch and data belongs to current user
+          if (!user?.uid || user.uid !== currentUserUid) {
+            return;
+          }
+          
+          // Check if record exists and is not empty/null
+          if (!record || (typeof record === 'object' && Object.keys(record).length === 0)) {
             dataFetched.current = true; // Mark as fetched even if no data
+            return;
+          }
+          
+          // Since we queried by firebase_uid, any returned data belongs to current user
+          // But verify firebase_uid if it exists in response
+          if (record.firebase_uid && record.firebase_uid !== currentUserUid) {
+            dataFetched.current = true;
             return;
           }
           
@@ -849,8 +855,13 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             },
           };
 
+          // CRITICAL: Verify user hasn't changed before setting data
+          if (!user?.uid || user.uid !== currentUserUid) {
+            return;
+          }
+          
           const details = {
-            firebase_uid: user.uid, // Track which user this data belongs to
+            firebase_uid: currentUserUid, // Track which user this data belongs to
             Job_Type: record.Job_Type || "",
             expected_salary: record.expected_salary || "",
             teachingDesignation:
@@ -894,7 +905,23 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             preferred_country: null, // Will be set after countries load
             preferred_state: null, // Will be set after states load
             preferred_city: null, // Will be set after cities load
-            notice_period: record.notice_period || "",
+            notice_period: record.notice_period ? (() => {
+              // Map notice period value to proper label
+              const noticePeriodOptions = [
+                { value: 'immediateJoiner', label: 'Immediate Joiner' },
+                { value: 'lessThan7', label: '< 7 days' },
+                { value: 'lessThan15', label: '< 15 days' },
+                { value: 'lessThan1Month', label: '< 1 month' },
+                { value: 'moreThan1Month', label: '> 1 Month' },
+              ];
+              
+              if (typeof record.notice_period === 'object') {
+                return record.notice_period;
+              }
+              
+              const option = noticePeriodOptions.find(opt => opt.value === record.notice_period);
+              return option || { value: record.notice_period, label: record.notice_period };
+            })() : null,
           };
 
           // Store saved location labels to restore later
@@ -903,6 +930,11 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
             state: record.preferred_state || null,
             city: record.preferred_city || null
           };
+
+          // Final check: Verify user hasn't changed before setting state
+          if (!user?.uid || user.uid !== currentUserUid) {
+            return;
+          }
 
           setPreferences(pref);
           setJobSearchStatus(jobSearch);
@@ -982,7 +1014,6 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
     setIsSaving(true);
     try {
       const isValid = validateJobPreferences();
-      console.log('Form validation result:', isValid);
       
       if (!isValid) {
         toast.error("Please fill all required fields");
@@ -1105,7 +1136,6 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
         { headers: { 'Content-Type': 'application/json' } }
       );
       toast.success("Job preferences saved successfully");
-      console.log('Success:', data);
     } catch (error) {
       console.error('Error saving job preferences:', error);
       toast.error("Failed to save job preferences");
@@ -1555,7 +1585,6 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
       }
 
       const isValid = validateJobPreferences();
-      console.log('Form validation result:', isValid);
       
       if (!isValid) {
         throw new Error("Please fill all required fields");
@@ -1676,7 +1705,6 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
         { headers: { 'Content-Type': 'application/json' } }
       );
       
-      console.log("Job preferences saved successfully");
       return { success: true, data };
     }
   }));
@@ -1939,7 +1967,7 @@ const JobPreference = forwardRef(({ formData, updateFormData }, ref) => {
 
         {/* Job Search Status Section */}
         <div>
-          <h3 className="text-black font-semibold mb-3 text-xl leading-tight tracking-tight">Job Search Status</h3>
+          <h3 className="text-black font-semibold mt-3 mb-3 text-xl leading-tight tracking-tight">Job Search Status</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="w-full">
               <label htmlFor="Full_time_status" className="block text-base font-medium text-gray-700 mb-2 leading-normal tracking-tight">Full Time <span className="text-purple-500">*</span></label>

@@ -71,6 +71,9 @@ const Education = forwardRef(({
 }, ref) => {
   // Add a ref to track if the update is from parent or local
   const isLocalUpdate = useRef(false);
+  // Track if data has been fetched from API to prevent formData prop from overwriting
+  const dataFetched = useRef(false);
+  const previousUserUidRef = useRef(null);
   
   // ---------- Grade 10 (Mandatory) ----------
   const [grade10Data, setGrade10Data] = useState({
@@ -176,27 +179,71 @@ const Education = forwardRef(({
 
   // ------------------- GET: Fetch education details -------------------
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid) {
+      // Reset when user logs out
+      if (previousUserUidRef.current) {
+        dataFetched.current = false;
+        previousUserUidRef.current = null;
+      }
+      return;
+    }
+    
+    // Detect user change
+    const userChanged = previousUserUidRef.current && previousUserUidRef.current !== user.uid;
+    if (userChanged) {
+      dataFetched.current = false;
+      previousUserUidRef.current = user.uid;
+    }
+    
+    // Don't fetch if already fetched for this user
+    if (dataFetched.current) {
+      return;
+    }
     
     // Only prevent API fetch if we have fresh parent data (indicating user made changes)
-    if (formData?.education && (formData.education.grade10 || formData.education.additional)) return;
+    // But only if it's not stale data from a different user
+    if (formData?.education && (formData.education.grade10 || formData.education.additional)) {
+      // Check if formData has meaningful values (not just empty strings)
+      const hasValidGrade10 = formData.education.grade10 && 
+        (formData.education.grade10.yearOfPassing || 
+         formData.education.grade10.schoolName || 
+         formData.education.grade10.syllabus);
+      
+      if (hasValidGrade10 || (formData.education.additional && formData.education.additional.length > 0)) {
+        // Has valid data, mark as fetched and use it
+        dataFetched.current = true;
+        previousUserUidRef.current = user.uid;
+        return;
+      }
+    }
     
     const fetchEducationDetails = async () => {
       try {
-        console.log("Fetching education data with UID:", user.uid);
+        const currentUserUid = user.uid; // Capture UID at start of fetch
+        
         const response = await axios.get(
           "https://2pn2aaw6f8.execute-api.ap-south-1.amazonaws.com/dev/educationDetails",
-          { params: { firebase_uid: user.uid } }
+          { params: { firebase_uid: currentUserUid } }
         );
-        console.log("Raw GET response:", response.data);
+        
+        // Verify user hasn't changed during fetch
+        if (!user?.uid || user.uid !== currentUserUid) {
+          return;
+        }
+        
         if (response.status === 200 && Array.isArray(response.data)) {
           const items = response.data;
           const newAdditionalEducation = [];
+          
           items.forEach((item) => {
             const eduType = (item.education_type || "").trim();
             const coreSubjects = parseArray(item.coreSubjects);
             switch (eduType) {
               case "grade10":
+                // Verify user hasn't changed before setting state
+                if (!user?.uid || user.uid !== currentUserUid) {
+                  return;
+                }
                 setGrade10Data({
                   syllabus: item.syllabus || "",
                   schoolName: item.schoolName || "",
@@ -336,15 +383,31 @@ const Education = forwardRef(({
                 break;
             }
           });
+          
+          // Verify user hasn't changed before setting state
+          if (!user?.uid || user.uid !== currentUserUid) {
+            return;
+          }
+          
           setAdditionalEducation(newAdditionalEducation);
-          console.log("Final additionalEducation:", newAdditionalEducation);
+          
+          // Mark as fetched after successfully setting data
+          dataFetched.current = true;
+          previousUserUidRef.current = currentUserUid;
+        } else {
+          // Even if no data, mark as fetched to prevent re-fetching
+          dataFetched.current = true;
+          previousUserUidRef.current = user.uid;
         }
       } catch (error) {
         console.error("Error fetching education details:", error);
+        // Mark as fetched even on error to prevent infinite retries
+        dataFetched.current = true;
+        previousUserUidRef.current = user.uid;
       }
     };
     fetchEducationDetails();
-  }, [user?.uid, formData?.education]);
+  }, [user?.uid]);
 
   // ------------------- Handler for Grade 10 changes -------------------
   const handleGrade10Change = (field, value) => {
@@ -500,7 +563,6 @@ const Education = forwardRef(({
   const fetchSubjects = async () => {
     try {
       const response = await axios.get(import.meta.env.VITE_DEV1_API + "/education-data");
-      console.log("Education subjects API response:", response.data);
       
       // Handle different response formats
       let dataArray = [];
@@ -522,7 +584,6 @@ const Education = forwardRef(({
         label: subject.label || subject.name || subject.subject
       }));
       setCoreSubjectsOptions(formattedSubjects);
-      console.log("Formatted subjects:", formattedSubjects);
     } catch (error) {
       console.error("Error fetching education subjects:", error);
       toast.error("Failed to load education subjects. Please refresh the page.");
@@ -543,7 +604,6 @@ const Education = forwardRef(({
         }
         
         const data = await response.json();
-        console.log("Constants API response:", data);
         
         // Handle different response formats
         let dataArray = [];
@@ -580,10 +640,6 @@ const Education = forwardRef(({
         setDegrees(degreesList);
         setMasterDegrees(masterDegreesList);
         setSyllabusOptions(syllabusList);
-        
-        //console.log("Degrees:", degreesList);
-        //console.log("Master Degrees:", masterDegreesList);
-        //console.log("Syllabus Options:", syllabusList);
         
         if (degreesList.length === 0 && masterDegreesList.length === 0 && syllabusList.length === 0) {
           console.warn("No matching categories found. Available categories:", 
@@ -2257,7 +2313,6 @@ const Education = forwardRef(({
         { headers: { "Content-Type": "application/json" } }
       );
       
-      console.log("Education details saved successfully");
       return { success: true, data };
     }
   }));
@@ -2286,16 +2341,30 @@ const Education = forwardRef(({
   }, [grade10Data, additionalEducation]);
 
   // Initialize with parent form data when available
+  // But only if we haven't fetched data from API yet
   useEffect(() => {
     if (!formData?.education || isLocalUpdate.current) return;
+    
+    // CRITICAL: Don't update from formData if we've already fetched fresh data from API
+    // This prevents localStorage stale data from overwriting fresh API data
+    if (dataFetched.current) {
+      return;
+    }
     
     const newGrade10Data = formData.education.grade10;
     const newAdditionalEducation = formData.education.additional;
     
+    // Only update if formData has meaningful values (not just empty strings)
     if (newGrade10Data) {
-      setGrade10Data(newGrade10Data);
+      const hasValidData = newGrade10Data.yearOfPassing || 
+                           newGrade10Data.schoolName || 
+                           newGrade10Data.syllabus;
+      
+      if (hasValidData) {
+        setGrade10Data(newGrade10Data);
+      }
     }
-    if (newAdditionalEducation) {
+    if (newAdditionalEducation && Array.isArray(newAdditionalEducation) && newAdditionalEducation.length > 0) {
       setAdditionalEducation(newAdditionalEducation);
     }
   }, [formData?.education]);
@@ -2344,7 +2413,6 @@ const Education = forwardRef(({
         { headers: { "Content-Type": "application/json" } }
       );
       toast.success("Education details saved successfully");
-      console.log("Success:", data);
     } catch (error) {
       console.error("Error saving education details:", error);
       toast.error("Failed to save education details");

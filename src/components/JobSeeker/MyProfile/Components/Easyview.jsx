@@ -361,6 +361,33 @@ function EasyView({ onViewAttempt, onEditProfile }) {
     });
   };
 
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return null;
+    
+    try {
+      const birthDate = new Date(dateOfBirth);
+      const today = new Date();
+      
+      // Check if date is valid
+      if (isNaN(birthDate.getTime())) {
+        return null;
+      }
+      
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      
+      // If birthday hasn't occurred this year yet, subtract 1
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      
+      return age;
+    } catch (error) {
+      console.error('Error calculating age:', error);
+      return null;
+    }
+  };
+
   const getEducationTypeTitle = (type) => {
     const titles = {
       grade10: 'Grade 10',
@@ -626,9 +653,10 @@ function EasyView({ onViewAttempt, onEditProfile }) {
             {/* Personal Details */}
             <div className={`mb-0.5 text-base text-gray-600 break-words leading-normal tracking-tight`}>
               {profileData.gender && <span>{profileData.gender.charAt(0).toUpperCase() + profileData.gender.slice(1).toLowerCase()}</span>}
-              {profileData.dateOfBirth && (
-                <span> | Age: {new Date().getFullYear() - new Date(profileData.dateOfBirth).getFullYear()} Years</span>
-              )}
+              {profileData.dateOfBirth && (() => {
+                const age = calculateAge(profileData.dateOfBirth);
+                return age !== null ? <span> | Age: {age} Years</span> : null;
+              })()}
               {experienceData?.mysqlData?.total_experience_years > 0 && (
                 <span> | Experience: {experienceData.mysqlData.total_experience_years} Years {experienceData.mysqlData.total_experience_months || 0} Months</span>
               )}

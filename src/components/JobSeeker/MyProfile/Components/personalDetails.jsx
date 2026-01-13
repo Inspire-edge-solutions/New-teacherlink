@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, forwardRef, useImperativeHandle } from "react";
+import React, { useState, useEffect, useCallback, forwardRef, useImperativeHandle, useRef } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import { useAuth } from "../../../../Context/AuthContext";
@@ -14,6 +14,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
   PersonalDetails.displayName = 'PersonalDetails';
   const { user } = useAuth();
   const currentUid = user?.uid;
+  const dataFetched = useRef(false); // Track if data has been fetched from API
 
   const isGoogleAccount =
     user?.is_google_account === 1 ||
@@ -43,11 +44,17 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
     whatsappNumber: "",
   });
 
+  // Track previous user UID to detect user changes
+  const previousUserUidRef = useRef(null);
+
   // Initialize form data when user becomes available (only once)
   useEffect(() => {
+    // Detect user change
+    const userChanged = previousUserUidRef.current && previousUserUidRef.current !== currentUid;
+    
     // Clear form data if user changes (different firebase_uid)
-    if (user && currentUid && formData.firebase_uid && formData.firebase_uid !== currentUid) {
-      console.log("⚠️ User changed! Clearing old data. Old UID:", formData.firebase_uid, "New UID:", currentUid);
+    if (userChanged || (user && currentUid && formData.firebase_uid && formData.firebase_uid !== currentUid)) {
+      dataFetched.current = false;
       setFormData({
         firebase_uid: "",
         fullName: "",
@@ -61,20 +68,20 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
       setPhoneVerified(false);
       setProfilePicId(null);
       setProfileImageName("");
+      previousUserUidRef.current = currentUid;
       return; // Exit early to re-trigger initialization on next render
     }
     
-    if (user && currentUid && !formData.firebase_uid) {
-      console.log("🚀 Initializing form data with user:", {
-        userEmail: user.email,
-        userName: user.name,
-        userPhone: user.phone_number,
-        currentUid: currentUid,
-        isGoogleAccount: isGoogleAccount
-      });
-      
+    // Only initialize if we haven't fetched data from API yet
+    // CRITICAL: Double-check dataFetched hasn't changed during async operations
+    if (user && currentUid && !formData.firebase_uid && !dataFetched.current) {
       // Fetch email from login API if not available in user object
       const initializeFormData = async () => {
+        // Double-check dataFetched hasn't changed (API might have completed)
+        if (dataFetched.current) {
+          return; // Don't overwrite API data
+        }
+        
         let emailToUse = user.email || "";
         
         // If email is missing, fetch from login API
@@ -91,21 +98,25 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
             if (loginResp.data && Array.isArray(loginResp.data) && loginResp.data.length > 0) {
               const loginUser = loginResp.data.find(u => u.firebase_uid === currentUid) || loginResp.data[0];
               emailToUse = loginUser.email || "";
-              console.log("📧 Fetched email from login API:", emailToUse);
             }
           } catch (err) {
-            console.warn("Failed to fetch email from login API:", err);
+            // Silent fail
           }
+        }
+        
+        // Final check before setting - make sure API hasn't fetched data
+        if (dataFetched.current) {
+          return; // Don't overwrite API data
         }
         
         setFormData({
           firebase_uid: currentUid,
           fullName: user.name || "",
           email: emailToUse,
-          gender: "",
-          dateOfBirth: "",
+          gender: "", // Will be set by API fetch
+          dateOfBirth: "", // Will be set by API fetch
           callingNumber: user.phone_number || "",
-          whatsappNumber: "",
+          whatsappNumber: "", // Will be set by API fetch
         });
         
         // Set email as verified for Google accounts
@@ -115,13 +126,14 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
       };
       
       initializeFormData();
+      previousUserUidRef.current = currentUid;
     }
   }, [user, currentUid, formData.firebase_uid, isGoogleAccount]);
 
   // Update form data when user data changes (for cases where user data updates after initialization)
+  // But only if we haven't fetched data from API yet
   useEffect(() => {
-    if (user && currentUid && formData.firebase_uid && !formData.email && user.email) {
-      console.log("🔄 Updating form data with user email:", user.email);
+    if (user && currentUid && formData.firebase_uid && !formData.email && user.email && !dataFetched.current) {
       setFormData(prev => ({
         ...prev,
         email: user.email || prev.email,
@@ -153,36 +165,44 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
   const fetchUserDetails = useCallback(async () => {
     if (!currentUid) return;
     
-    console.log("🔍 fetchUserDetails called for UID:", currentUid);
+    // Reset dataFetched flag when user changes
+    const userChanged = previousUserUidRef.current && previousUserUidRef.current !== currentUid;
+    if (userChanged) {
+      dataFetched.current = false;
+      previousUserUidRef.current = currentUid;
+    }
+    
+    // Don't fetch if already fetched for this user
+    if (dataFetched.current) {
+      return;
+    }
     
     try {
       const resp = await axios.get(`${API_BASE}/personal`, {
         params: { firebase_uid: currentUid, t: Date.now() },
         ...authHeaders,
       });
-      
-      console.log("🔍 API Response status:", resp.status);
-      console.log("🔍 API Response data count:", resp.data?.length || 0);
 
-      if (resp.status === 200 && resp.data.length > 0) {
-        // 🔍 DEBUG: Log what we received from backend
-        console.log("🔍 CRITICAL DEBUG - Total records received:", resp.data.length);
-        console.log("🔍 CRITICAL DEBUG - Current user firebase_uid:", currentUid);
-        console.log("🔍 CRITICAL DEBUG - All firebase_uids in response:", 
-          resp.data.map(r => ({ uid: r.firebase_uid, gender: r.gender, name: r.fullName }))
-        );
+      if (resp.status === 200 && resp.data && resp.data.length > 0) {
+        // Handle array response - take first item if array
+        let records = resp.data;
+        if (Array.isArray(records) && records.length === 0) {
+          dataFetched.current = true;
+          return;
+        }
         
         // Find the record for the current user (in case backend returns multiple)
-        let u = resp.data.find(record => record.firebase_uid === currentUid);
+        let u = records.find(record => record.firebase_uid === currentUid);
         
-        console.log("🔍 CRITICAL DEBUG - Found matching record:", u ? "YES" : "NO");
-        console.log("🔍 CRITICAL DEBUG - Using record with gender:", u?.gender);
-        
-        // If not found by firebase_uid, fall back to first record
+        // If not found by firebase_uid, don't use data from wrong user
         if (!u) {
-          console.error("❌ CRITICAL ERROR: No record found for current user! Using first record (WRONG USER!)");
-          u = resp.data[0];
-          console.log("🔍 CRITICAL DEBUG - Fallback to first record with firebase_uid:", u.firebase_uid);
+          dataFetched.current = true;
+          return;
+        }
+        
+        // Verify user hasn't changed during fetch
+        if (!user?.uid || user.uid !== currentUid) {
+          return;
         }
         
         // Ensure email falls back to user.email if database email is empty/null/undefined
@@ -208,11 +228,15 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
             if (loginResp.data && Array.isArray(loginResp.data) && loginResp.data.length > 0) {
               const loginUser = loginResp.data.find(u => u.firebase_uid === currentUid) || loginResp.data[0];
               emailFromLogin = loginUser.email || "";
-              console.log("📧 Fetched email from login API in fetchUserDetails:", emailFromLogin);
             }
           } catch (err) {
             console.warn("Failed to fetch email from login API:", err);
           }
+        }
+        
+        // Verify user hasn't changed before setting state
+        if (!user?.uid || user.uid !== currentUid) {
+          return;
         }
         
         setFormData(prev => {
@@ -221,27 +245,61 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
           const nameToUse = finalName || user?.name || prev.fullName || "";
           const phoneToUse = finalPhone || user?.phone_number || prev.callingNumber || "";
           
-          // 🔍 DEBUG: Check what gender value we received
-          console.log("🔍 GENDER DEBUG:", {
-            rawGender: u.gender,
-            typeOfGender: typeof u.gender,
-            isNull: u.gender === null,
-            isUndefined: u.gender === undefined,
-            isEmpty: u.gender === "",
-            fullRecord: u
-          });
-          
           // For gender, use database value if it exists and is not empty
           let genderToUse = "";
-          if (u.gender !== undefined && u.gender !== null && u.gender !== "") {
-            // Normalize gender to lowercase to match dropdown options
-            genderToUse = String(u.gender).toLowerCase().trim();
-            console.log("✅ Using database gender:", u.gender, "→ normalized to:", genderToUse);
-          } else if (prev.gender) {
+          // Check multiple possible field names (case-insensitive)
+          const genderValue = u.gender !== undefined ? u.gender : 
+                             u.Gender !== undefined ? u.Gender : 
+                             u.GENDER !== undefined ? u.GENDER : 
+                             null;
+          
+          // More lenient check - accept any truthy value or explicit string (even if empty-looking)
+          if (genderValue !== undefined && genderValue !== null) {
+            const genderStr = String(genderValue).trim();
+            if (genderStr !== "" && genderStr !== "null" && genderStr !== "undefined") {
+              // Normalize gender to lowercase to match dropdown options (male, female, transgender)
+              const normalizedGender = genderStr.toLowerCase();
+              // Map common variations to valid options
+              if (normalizedGender === "male" || normalizedGender === "m" || normalizedGender === "1") {
+                genderToUse = "male";
+              } else if (normalizedGender === "female" || normalizedGender === "f" || normalizedGender === "2") {
+                genderToUse = "female";
+              } else if (normalizedGender === "transgender" || normalizedGender === "trans" || normalizedGender === "t" || normalizedGender === "3") {
+                genderToUse = "transgender";
+              } else if (normalizedGender === "male" || normalizedGender === "female" || normalizedGender === "transgender") {
+                // Already in correct format
+                genderToUse = normalizedGender;
+              } else {
+                genderToUse = normalizedGender; // Use as-is if it matches one of the options
+              }
+            }
+          }
+          
+          // If still empty, try previous value
+          if (!genderToUse && prev.gender) {
             genderToUse = prev.gender.toLowerCase().trim();
-            console.log("⚠️ Using previous gender (DB empty):", genderToUse);
-          } else {
-            console.log("❌ No gender value available - will show placeholder");
+          }
+          
+          // For WhatsApp number, use database value if it exists
+          // Check multiple possible field names (case-insensitive)
+          const whatsappValue = u.whatsappNumber !== undefined ? u.whatsappNumber : 
+                               u.WhatsAppNumber !== undefined ? u.WhatsAppNumber : 
+                               u.whatsapp_number !== undefined ? u.whatsapp_number : 
+                               u.WhatsApp_Number !== undefined ? u.WhatsApp_Number :
+                               null;
+          
+          let whatsappToUse = "";
+          // More lenient check - accept any truthy value or explicit string
+          if (whatsappValue !== undefined && whatsappValue !== null) {
+            const whatsappStr = String(whatsappValue).trim();
+            if (whatsappStr !== "" && whatsappStr !== "null" && whatsappStr !== "undefined") {
+              whatsappToUse = whatsappStr;
+            }
+          }
+          
+          // If still empty, try previous value
+          if (!whatsappToUse && prev.whatsappNumber) {
+            whatsappToUse = prev.whatsappNumber;
           }
           
           return {
@@ -251,26 +309,17 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
             gender: genderToUse,
             dateOfBirth: u.dateOfBirth || prev.dateOfBirth || "",
             callingNumber: phoneToUse,
-            whatsappNumber: u.whatsappNumber || prev.whatsappNumber || "",
+            whatsappNumber: whatsappToUse,
           };
         });
-                 console.log("🔍 Database verification status:", {
-           email_verify: u.email_verify,
-           phone_number_verify: u.phone_number_verify,
-           isGoogleAccount: isGoogleAccount
-         });
-         
-         setEmailVerified(isGoogleAccount || u.email_verify === 1);
-         
-         // Check database for phone verification
-         const isPhoneVerified = u.phone_number_verify === 1;
-         
-         console.log("🔍 Phone verification check:", {
-           dbPhoneVerified: isPhoneVerified
-         });
-         
-         setPhoneVerified(isPhoneVerified);
-         setIsNewUser(false);
+        
+        setEmailVerified(isGoogleAccount || u.email_verify === 1);
+        
+        // Check database for phone verification
+        const isPhoneVerified = u.phone_number_verify === 1;
+        setPhoneVerified(isPhoneVerified);
+        setIsNewUser(false);
+        dataFetched.current = true;
 
         if (u.profilePicId) {
           setProfilePicId(u.profilePicId);
@@ -320,6 +369,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
 
 
 
+  // Auto-populate WhatsApp number when "same as calling number" is checked
   useEffect(() => {
     if (sameAsCallingNumber && formData.callingNumber) {
       setFormData((prev) => ({
@@ -327,7 +377,7 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
         whatsappNumber: prev.callingNumber,
       }));
     }
-  }, [sameAsCallingNumber, formData.callingNumber]);
+  }, [sameAsCallingNumber]);
 
   const [dateType, setDateType] = useState("text");
   const handleFocusDate = () => setDateType("date");
@@ -408,7 +458,6 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
     if (currentUid) {
       // Clear profile pic state first
       if (profilePicId && formData.firebase_uid && formData.firebase_uid !== currentUid) {
-        console.log("⚠️ Clearing profile pic for user change");
         setProfilePicId(null);
         setProfileImageName("");
       }
@@ -474,17 +523,12 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
       firebase_uid: currentUid 
     };
     
-    console.log("🔍 OTP Request Data:", requestData);
-    console.log("🔍 OTP API URL:", `${OTP_API}/otp/create`);
-    console.log("🔍 Auth Headers:", authHeaders);
-    
     try {
       const response = await axios.post(
         `${OTP_API}/otp/create`,
         requestData,
         authHeaders
       );
-      console.log("✅ OTP Response:", response.data);
       toast.success("OTP sent to your email!");
       setShowEmailOtpInput(true);
     } catch (e) {
@@ -554,7 +598,6 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
         },
         authHeaders
       );
-      console.log("✅ Login endpoint updated successfully with name:", formData.fullName);
       
       // Show success message based on Firebase update status
       if (firebaseUpdateSuccess) {
@@ -599,7 +642,6 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
         authHeaders
       );
       
-      console.log("✅ Phone OTP Response:", response.data);
       toast.success("OTP sent to your phone!");
       setShowPhoneOtpInput(true);
     } catch (e) {
@@ -630,8 +672,6 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
         authHeaders
       );
       
-      console.log("✅ Phone OTP Verification Response:", response.data);
-      
       // Check if the OTP verification was successful
       if (response.data && response.data.ok === true && response.data.provider && response.data.provider.type === 'success') {
         // OTP verification successful
@@ -642,23 +682,17 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
         
         // Update the phone verification status in the database
         try {
-          console.log("🔍 Phone verification successful - updating database");
-          
           const updatePayload = {
             ...formData,
             firebase_uid: currentUid,
             phone_number_verify: 1  // Use the actual database column name
           };
           
-          console.log("🔍 Updating phone verification in database:", updatePayload);
-          
-          const updateResponse = await axios.put(
+          await axios.put(
             `${API_BASE}/personal`,
             updatePayload,
             authHeaders
           );
-          console.log("✅ Phone verification status updated in database");
-          console.log("🔍 Update Response:", updateResponse.data);
           
           // Add a small delay to ensure database update is committed
           await new Promise(resolve => setTimeout(resolve, 1000));
@@ -677,7 +711,6 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
         }
       } else {
         // OTP verification failed
-        console.log("❌ OTP verification failed:", response.data);
         toast.error("Invalid OTP. Please try again.");
         setPhoneOtp(""); // Clear the OTP input for retry
       }
@@ -813,47 +846,30 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
         fileName: profileImageName || "",
       };
 
-      console.log("🔍 Save Data Payload:", payload);
-      console.log("🔍 API URL:", `${API_BASE}/personal`);
-      console.log("🔍 Method:", isNewUser ? "POST" : "PUT");
-      console.log("🔍 Auth Headers:", authHeaders);
-
       try {
         const method = isNewUser ? axios.post : axios.put;
-        const response = await method(`${API_BASE}/personal`, payload, authHeaders);
-        console.log("✅ Personal API Response:", response.data);
+        await method(`${API_BASE}/personal`, payload, authHeaders);
         
-                 const loginPayload = {
-           firebase_uid: currentUid,
-           email: formData.email,
-           name: formData.fullName,
-           phone_number: formData.callingNumber,
-         };
-         
-         console.log("🔍 Login Payload:", loginPayload);
-         console.log("🔍 Login API URL:", `${API_BASE}/login`);
-         
-         try {
-           const loginResponse = await axios.put(
-             `${API_BASE}/login`,
-             loginPayload,
-             authHeaders
-           );
-           console.log("✅ Login API Response:", loginResponse.data);
-         } catch (loginError) {
-           console.warn("⚠️ Login update failed (non-critical):", {
-             message: loginError.message,
-             status: loginError.response?.status,
-             data: loginError.response?.data,
-             payload: loginPayload
-           });
-           // Don't throw error for login update failure - it's not critical for form save
-         }
+        const loginPayload = {
+          firebase_uid: currentUid,
+          email: formData.email,
+          name: formData.fullName,
+          phone_number: formData.callingNumber,
+        };
+        
+        try {
+          await axios.put(
+            `${API_BASE}/login`,
+            loginPayload,
+            authHeaders
+          );
+        } catch (loginError) {
+          // Don't throw error for login update failure - it's not critical for form save
+        }
         
         // Approval logic after save
         await handleApprovalStatus();
         
-        console.log("Personal details saved successfully");
         return { success: true };
       } catch (error) {
         console.error("❌ Save error details:", {
@@ -967,7 +983,6 @@ const PersonalDetails = forwardRef(({ className, dateOfBirth, photo }, ref) => {
         },
         authHeaders
       );
-      console.log("✅ Login endpoint updated successfully with name:", formData.fullName);
       // Approval logic after save
       await handleApprovalStatus();
       fetchUserDetails();
